@@ -1,0 +1,30 @@
+#include "OpenUrl.h"
+#include "cocos2d.h"
+std::string getonlyID();
+
+void openUrlFunc(const char* url);
+
+void addSpriteToFrameCache(const char* fileName, int startNumber, int endNumber);
+
+Animate* getAnimate(const char* fileName, int startNumber, int endNumber, float duration);
+
+// 获取文件md5
+const char* getFileMD5(const char* fileName);
+
+//	计费
+void purchase(const char* parm);
+
+// 获得SDK返回的开启和关闭的参数
+std::string getEnableInterface();
+
+// 点击更多游戏之后的回调
+void showMoreGameCallback();
+
+// 前往iTunes评论 depl
+void rateIniTunes();
+
+// 显示admob广告或iTunes评论弹框
+void showRateOrAdScene();
+
+//	兑换码功能
+bool decodeExKey(const char* codeKey);

@@ -1,0 +1,1104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="orthogonal" renderorder="right-down" width="41" height="41" tilewidth="64" tileheight="64">
+ <tileset firstgid="1" name="dt_zhanzmw" tilewidth="64" tileheight="64">
+  <image source="dt_zhanzmw.png" width="384" height="192"/>
+ </tileset>
+ <tileset firstgid="19" name="t_00" tilewidth="64" tileheight="64">
+  <image source="t_00.png" width="512" height="384"/>
+  <tile id="0">
+   <properties>
+    <property name="eventid" value="10"/>
+   </properties>
+  </tile>
+  <tile id="1">
+   <properties>
+    <property name="eventid" value="10"/>
+   </properties>
+  </tile>
+  <tile id="2">
+   <properties>
+    <property name="eventid" value="10"/>
+   </properties>
+  </tile>
+  <tile id="3">
+   <properties>
+    <property name="eventid" value="10"/>
+   </properties>
+  </tile>
+  <tile id="4">
+   <properties>
+    <property name="eventid" value="10"/>
+   </properties>
+  </tile>
+  <tile id="5">
+   <properties>
+    <property name="eventid" value="3070"/>
+   </properties>
+  </tile>
+  <tile id="6">
+   <properties>
+    <property name="eventid" value="-3070"/>
+   </properties>
+  </tile>
+  <tile id="7">
+   <properties>
+    <property name="eventid" value="3067"/>
+   </properties>
+  </tile>
+  <tile id="8">
+   <properties>
+    <property name="eventid" value="-3067"/>
+   </properties>
+  </tile>
+  <tile id="9">
+   <properties>
+    <property name="eventid" value="3069"/>
+   </properties>
+  </tile>
+  <tile id="10">
+   <properties>
+    <property name="eventid" value="-3069"/>
+   </properties>
+  </tile>
+  <tile id="11">
+   <properties>
+    <property name="eventid" value="3068"/>
+   </properties>
+  </tile>
+  <tile id="12">
+   <properties>
+    <property name="eventid" value="-3068"/>
+   </properties>
+  </tile>
+  <tile id="13">
+   <properties>
+    <property name="eventid" value="3004"/>
+   </properties>
+  </tile>
+  <tile id="16">
+   <properties>
+    <property name="eventid" value="3071"/>
+   </properties>
+  </tile>
+  <tile id="17">
+   <properties>
+    <property name="eventid" value="-3071"/>
+   </properties>
+  </tile>
+  <tile id="18">
+   <properties>
+    <property name="eventid" value="3072"/>
+   </properties>
+  </tile>
+  <tile id="19">
+   <properties>
+    <property name="eventid" value="-3072"/>
+   </properties>
+  </tile>
+  <tile id="20">
+   <properties>
+    <property name="eventid" value="10"/>
+   </properties>
+  </tile>
+  <tile id="21">
+   <properties>
+    <property name="eventid" value="10"/>
+   </properties>
+  </tile>
+  <tile id="22">
+   <properties>
+    <property name="eventid" value="10"/>
+   </properties>
+  </tile>
+  <tile id="23">
+   <properties>
+    <property name="eventid" value="10"/>
+   </properties>
+  </tile>
+  <tile id="24">
+   <properties>
+    <property name="eventid" value="10"/>
+   </properties>
+  </tile>
+  <tile id="26">
+   <properties>
+    <property name="eventid" value="3036"/>
+   </properties>
+  </tile>
+  <tile id="27">
+   <properties>
+    <property name="eventid" value="3002"/>
+   </properties>
+  </tile>
+  <tile id="28">
+   <properties>
+    <property name="eventid" value="3003"/>
+   </properties>
+  </tile>
+  <tile id="29">
+   <properties>
+    <property name="eventid" value="3053"/>
+   </properties>
+  </tile>
+  <tile id="30">
+   <properties>
+    <property name="eventid" value="3052"/>
+   </properties>
+  </tile>
+  <tile id="31">
+   <properties>
+    <property name="eventid" value="-3052"/>
+   </properties>
+  </tile>
+  <tile id="32">
+   <properties>
+    <property name="eventid" value="3001"/>
+   </properties>
+  </tile>
+  <tile id="33">
+   <properties>
+    <property name="eventid" value="3020"/>
+   </properties>
+  </tile>
+  <tile id="34">
+   <properties>
+    <property name="eventid" value="3073"/>
+   </properties>
+  </tile>
+  <tile id="35">
+   <properties>
+    <property name="eventid" value="-3073"/>
+   </properties>
+  </tile>
+  <tile id="36">
+   <properties>
+    <property name="eventid" value="3074"/>
+   </properties>
+  </tile>
+  <tile id="39">
+   <properties>
+    <property name="eventid" value="10"/>
+   </properties>
+  </tile>
+ </tileset>
+ <tileset firstgid="67" name="dt_ludi" tilewidth="64" tileheight="64">
+  <image source="dt_ludi.png" width="384" height="384"/>
+  <tile id="0">
+   <properties>
+    <property name="eventid" value="1"/>
+   </properties>
+  </tile>
+  <tile id="1">
+   <properties>
+    <property name="eventid" value="1"/>
+   </properties>
+  </tile>
+  <tile id="2">
+   <properties>
+    <property name="eventid" value="1"/>
+   </properties>
+  </tile>
+  <tile id="3">
+   <properties>
+    <property name="eventid" value="1"/>
+   </properties>
+  </tile>
+  <tile id="4">
+   <properties>
+    <property name="eventid" value="1"/>
+   </properties>
+  </tile>
+  <tile id="5">
+   <properties>
+    <property name="eventid" value="1"/>
+   </properties>
+  </tile>
+  <tile id="6">
+   <properties>
+    <property name="eventid" value="1"/>
+   </properties>
+  </tile>
+  <tile id="8">
+   <properties>
+    <property name="eventid" value="1"/>
+   </properties>
+  </tile>
+  <tile id="9">
+   <properties>
+    <property name="eventid" value="1"/>
+   </properties>
+  </tile>
+  <tile id="10">
+   <properties>
+    <property name="eventid" value="1"/>
+   </properties>
+  </tile>
+  <tile id="11">
+   <properties>
+    <property name="eventid" value="1"/>
+   </properties>
+  </tile>
+  <tile id="12">
+   <properties>
+    <property name="eventid" value="1"/>
+   </properties>
+  </tile>
+  <tile id="13">
+   <properties>
+    <property name="eventid" value="1"/>
+   </properties>
+  </tile>
+  <tile id="14">
+   <properties>
+    <property name="eventid" value="1"/>
+   </properties>
+  </tile>
+  <tile id="15">
+   <properties>
+    <property name="eventid" value="1"/>
+   </properties>
+  </tile>
+  <tile id="16">
+   <properties>
+    <property name="eventid" value="1"/>
+   </properties>
+  </tile>
+  <tile id="17">
+   <properties>
+    <property name="eventid" value="1"/>
+   </properties>
+  </tile>
+  <tile id="18">
+   <properties>
+    <property name="eventid" value="1"/>
+   </properties>
+  </tile>
+  <tile id="19">
+   <properties>
+    <property name="eventid" value="1"/>
+   </properties>
+  </tile>
+  <tile id="24">
+   <properties>
+    <property name="eventid" value="1"/>
+   </properties>
+  </tile>
+  <tile id="25">
+   <properties>
+    <property name="eventid" value="1"/>
+   </properties>
+  </tile>
+  <tile id="26">
+   <properties>
+    <property name="eventid" value="1"/>
+   </properties>
+  </tile>
+  <tile id="27">
+   <properties>
+    <property name="eventid" value="1"/>
+   </properties>
+  </tile>
+  <tile id="28">
+   <properties>
+    <property name="eventid" value="1"/>
+   </properties>
+  </tile>
+  <tile id="30">
+   <properties>
+    <property name="eventid" value="1"/>
+   </properties>
+  </tile>
+  <tile id="31">
+   <properties>
+    <property name="eventid" value="1"/>
+   </properties>
+  </tile>
+  <tile id="32">
+   <properties>
+    <property name="eventid" value="1"/>
+   </properties>
+  </tile>
+  <tile id="33">
+   <properties>
+    <property name="eventid" value="1"/>
+   </properties>
+  </tile>
+ </tileset>
+ <tileset firstgid="103" name="dt_senlin" tilewidth="64" tileheight="64">
+  <image source="dt_senlin.png" width="384" height="384"/>
+  <tile id="0">
+   <properties>
+    <property name="eventid" value="1"/>
+   </properties>
+  </tile>
+  <tile id="1">
+   <properties>
+    <property name="eventid" value="1"/>
+   </properties>
+  </tile>
+  <tile id="2">
+   <properties>
+    <property name="eventid" value="1"/>
+   </properties>
+  </tile>
+  <tile id="3">
+   <properties>
+    <property name="eventid" value="1"/>
+   </properties>
+  </tile>
+  <tile id="4">
+   <properties>
+    <property name="eventid" value="1"/>
+   </properties>
+  </tile>
+  <tile id="5">
+   <properties>
+    <property name="eventid" value="1"/>
+   </properties>
+  </tile>
+  <tile id="6">
+   <properties>
+    <property name="eventid" value="1"/>
+   </properties>
+  </tile>
+  <tile id="8">
+   <properties>
+    <property name="eventid" value="1"/>
+   </properties>
+  </tile>
+  <tile id="9">
+   <properties>
+    <property name="eventid" value="1"/>
+   </properties>
+  </tile>
+  <tile id="10">
+   <properties>
+    <property name="eventid" value="1"/>
+   </properties>
+  </tile>
+  <tile id="11">
+   <properties>
+    <property name="eventid" value="1"/>
+   </properties>
+  </tile>
+  <tile id="12">
+   <properties>
+    <property name="eventid" value="1"/>
+   </properties>
+  </tile>
+  <tile id="13">
+   <properties>
+    <property name="eventid" value="1"/>
+   </properties>
+  </tile>
+  <tile id="14">
+   <properties>
+    <property name="eventid" value="1"/>
+   </properties>
+  </tile>
+  <tile id="15">
+   <properties>
+    <property name="eventid" value="1"/>
+   </properties>
+  </tile>
+  <tile id="16">
+   <properties>
+    <property name="eventid" value="1"/>
+   </properties>
+  </tile>
+  <tile id="17">
+   <properties>
+    <property name="eventid" value="1"/>
+   </properties>
+  </tile>
+  <tile id="18">
+   <properties>
+    <property name="eventid" value="1"/>
+   </properties>
+  </tile>
+  <tile id="19">
+   <properties>
+    <property name="eventid" value="1"/>
+   </properties>
+  </tile>
+  <tile id="24">
+   <properties>
+    <property name="eventid" value="1"/>
+   </properties>
+  </tile>
+  <tile id="25">
+   <properties>
+    <property name="eventid" value="1"/>
+   </properties>
+  </tile>
+  <tile id="26">
+   <properties>
+    <property name="eventid" value="1"/>
+   </properties>
+  </tile>
+  <tile id="27">
+   <properties>
+    <property name="eventid" value="1"/>
+   </properties>
+  </tile>
+  <tile id="28">
+   <properties>
+    <property name="eventid" value="1"/>
+   </properties>
+  </tile>
+  <tile id="30">
+   <properties>
+    <property name="eventid" value="1"/>
+   </properties>
+  </tile>
+  <tile id="31">
+   <properties>
+    <property name="eventid" value="1"/>
+   </properties>
+  </tile>
+  <tile id="32">
+   <properties>
+    <property name="eventid" value="1"/>
+   </properties>
+  </tile>
+  <tile id="33">
+   <properties>
+    <property name="eventid" value="1"/>
+   </properties>
+  </tile>
+ </tileset>
+ <tileset firstgid="139" name="grid" tilewidth="64" tileheight="64">
+  <image source="grid.png" width="64" height="64"/>
+ </tileset>
+ <layer name="Sea" width="41" height="41">
+  <data encoding="base64" compression="zlib">
+   eJztmEEShSAMQ72leP+L/I0LhkmhoWll8RcdR8XwJJUiz3VdjyDuN6xzb7TAswznbZxHtKx7u+8yauzqNPCsSlvtzSqndrXbG5nMUY/6o5pR4XPPmMGpiDZEtF2kf087730VY68b1USMCk61N+M7n8jI5A6jl6Xr0fLMOeM4Vs8r93A8MU6q0f/gPTvRO9V6fTdW33s1H+JZ1ckKPjQ3opq7GkcFn9WXda0ql5Bf1trk6zWsh+GrWjjjzNKPaGevGxhtq03GGh7ps/8T1ePoZVD3zfjMeJlZi6y5esaI/MuqSbOaMssly2M1Z3R/D3FmjGW0Nlf5HQ3EuetDRXjHMbtOW7nB+JxZw3svESObH15Gtn3FPxjax/hyX4PhinL+APGkRvw=
+  </data>
+ </layer>
+ <layer name="Blocks_2" width="41" height="41">
+  <data encoding="base64" compression="zlib">
+   eJztl8EKg0AMRPNvpVZoUarVY/3/vzADBoq0e8kumy3zYK5hdNZ1IkLI/9Op+tomEsDfUzXUNpLgoVpUo8R9l5PqrbqoXpW9pIDPyP4IIYQQQkArHdr66VbXzlfQ+67SRo+Gz1I9GlndxPf857xzc1et4tvJbGdanHN+YTl5ZmPGfKhU1iVzygFyQtalcsrB590R1SOw88T9lnhopW9E/hbt/xPZI++LttkBKcgXzQ==
+  </data>
+ </layer>
+ <layer name="Blocks_1" width="41" height="41">
+  <data encoding="base64" compression="zlib">
+   eJztWV1vwjAM9L/dB5MGAwblZUzTYD+bnJqTokgdrWMzM/Ukv1TidEmcs2NEbPCe4inFIcc6xYsRlyXAvSv4oXMjOq2lziE8K7nJ/5gDmvdKnp/8+xpf0uvbpnhTcnviI8VCen3Y44galym6HA+iPyNPMOdbcui/AXm/yKG9n7/xtnLyXtIDrXKfvJ0BJ/2P+X8Sm70seS3WXfJZ3tGlMR98Gjqtzxo1zjLPsZ9j1jzmLtCbWmucFjjDqLWF4B7N3n0/YG/lUWMsAG3oe7+lz/9ovUtZp6AN/uCpT1O3X6Xfu0/x14az0tRtviG8z5Y+2klcP2UfgHyK7Kdj6+uMGWNBf4sMeMjqr0UMgPvHN5lnPdfMjDArYS23mMFdA85qqsfXcz1PneXbZyp3PSP06o/Kt4+Wm3fG+7xbwHWyP4jYGxCRemF6zrH6HkUfgPxD/3uuvnvqg9dNmdnfqp9in85evfX/BUtdfIeWM0UrH74An99rbQ==
+  </data>
+ </layer>
+ <layer name="Meta" width="41" height="41">
+  <data encoding="base64" compression="zlib">
+   eJztzqEBADAIwDAuGoL/f5udQsJEoiobAQAAdHJ7gDH19Fm7AAAA+MMF1xkAkQ==
+  </data>
+ </layer>
+ <objectgroup name="Objects">
+  <object name="Start" x="1314" y="1314">
+   <ellipse/>
+  </object>
+  <object type="1" x="157.576" y="160.606">
+   <ellipse/>
+  </object>
+  <object type="1" x="348.485" y="163.636">
+   <ellipse/>
+  </object>
+  <object type="1" x="545.455" y="166.667">
+   <ellipse/>
+  </object>
+  <object type="1" x="739.394" y="163.636">
+   <ellipse/>
+  </object>
+  <object type="1" x="924.242" y="160.606">
+   <ellipse/>
+  </object>
+  <object type="1" x="1124.24" y="163.636">
+   <ellipse/>
+  </object>
+  <object type="1" x="1306.06" y="160.606">
+   <ellipse/>
+  </object>
+  <object type="1" x="1693.94" y="157.576">
+   <ellipse/>
+  </object>
+  <object type="1" x="1887.88" y="157.576">
+   <ellipse/>
+  </object>
+  <object type="1" x="2075.76" y="160.606">
+   <ellipse/>
+  </object>
+  <object type="1" x="2275.76" y="160.606">
+   <ellipse/>
+  </object>
+  <object type="1" x="2466.67" y="160.606">
+   <ellipse/>
+  </object>
+  <object type="1" x="160.606" y="351.515">
+   <ellipse/>
+  </object>
+  <object type="1" x="536.364" y="351.515">
+   <ellipse/>
+  </object>
+  <object type="1" x="736.364" y="351.515">
+   <ellipse/>
+  </object>
+  <object type="1" x="927.273" y="354.545">
+   <ellipse/>
+  </object>
+  <object type="1" x="1121.21" y="357.576">
+   <ellipse/>
+  </object>
+  <object type="1" x="1312.12" y="354.545">
+   <ellipse/>
+  </object>
+  <object type="1" x="1700" y="351.515">
+   <ellipse/>
+  </object>
+  <object type="1" x="1890.91" y="354.545">
+   <ellipse/>
+  </object>
+  <object type="1" x="2078.79" y="348.485">
+   <ellipse/>
+  </object>
+  <object type="1" x="2272.73" y="351.515">
+   <ellipse/>
+  </object>
+  <object type="1" x="2460.61" y="354.545">
+   <ellipse/>
+  </object>
+  <object type="1" x="157.576" y="548.485">
+   <ellipse/>
+  </object>
+  <object type="1" x="351.515" y="545.455">
+   <ellipse/>
+  </object>
+  <object type="1" x="536.364" y="545.455">
+   <ellipse/>
+  </object>
+  <object type="1" x="739.394" y="551.515">
+   <ellipse/>
+  </object>
+  <object type="1" x="990.909" y="548.485">
+   <ellipse/>
+  </object>
+  <object type="1" x="1178.79" y="545.455">
+   <ellipse/>
+  </object>
+  <object type="1" x="1381.82" y="545.455">
+   <ellipse/>
+  </object>
+  <object type="1" x="1630.3" y="539.394">
+   <ellipse/>
+  </object>
+  <object type="1" x="1818.18" y="545.455">
+   <ellipse/>
+  </object>
+  <object type="1" x="2272.73" y="536.364">
+   <ellipse/>
+  </object>
+  <object type="1" x="2463.64" y="542.424">
+   <ellipse/>
+  </object>
+  <object type="1" x="163.636" y="739.394">
+   <ellipse/>
+  </object>
+  <object type="1" x="351.515" y="739.394">
+   <ellipse/>
+  </object>
+  <object type="1" x="542.424" y="736.364">
+   <ellipse/>
+  </object>
+  <object type="1" x="733.333" y="736.364">
+   <ellipse/>
+  </object>
+  <object type="1" x="990.909" y="733.333">
+   <ellipse/>
+  </object>
+  <object type="1" x="1181.82" y="736.364">
+   <ellipse/>
+  </object>
+  <object type="1" x="1378.79" y="736.364">
+   <ellipse/>
+  </object>
+  <object type="1" x="1569.7" y="736.364">
+   <ellipse/>
+  </object>
+  <object type="1" x="1763.64" y="736.364">
+   <ellipse/>
+  </object>
+  <object type="1" x="1951.52" y="736.364">
+   <ellipse/>
+  </object>
+  <object type="1" x="2269.7" y="736.364">
+   <ellipse/>
+  </object>
+  <object type="1" x="2460.61" y="736.364">
+   <ellipse/>
+  </object>
+  <object type="1" x="100" y="936.364">
+   <ellipse/>
+  </object>
+  <object type="1" x="351.515" y="930.303">
+   <ellipse/>
+  </object>
+  <object type="1" x="542.424" y="930.303">
+   <ellipse/>
+  </object>
+  <object type="1" x="733.333" y="924.242">
+   <ellipse/>
+  </object>
+  <object type="1" x="921.212" y="924.242">
+   <ellipse/>
+  </object>
+  <object type="1" x="1118.18" y="924.242">
+   <ellipse/>
+  </object>
+  <object type="1" x="1312.12" y="924.242">
+   <ellipse/>
+  </object>
+  <object type="1" x="1500" y="921.212">
+   <ellipse/>
+  </object>
+  <object type="1" x="1690.91" y="924.242">
+   <ellipse/>
+  </object>
+  <object type="1" x="1887.88" y="927.273">
+   <ellipse/>
+  </object>
+  <object type="1" x="2081.82" y="927.273">
+   <ellipse/>
+  </object>
+  <object type="1" x="2269.7" y="924.242">
+   <ellipse/>
+  </object>
+  <object type="1" x="2463.64" y="933.333">
+   <ellipse/>
+  </object>
+  <object type="1" x="96.9697" y="1124.24">
+   <ellipse/>
+  </object>
+  <object type="1" x="284.848" y="1121.21">
+   <ellipse/>
+  </object>
+  <object type="1" x="478.788" y="1121.21">
+   <ellipse/>
+  </object>
+  <object type="1" x="675.758" y="1118.18">
+   <ellipse/>
+  </object>
+  <object type="1" x="860.606" y="1121.21">
+   <ellipse/>
+  </object>
+  <object type="1" x="1054.55" y="1124.24">
+   <ellipse/>
+  </object>
+  <object type="1" x="90.9091" y="1321.21">
+   <ellipse/>
+  </object>
+  <object type="1" x="287.879" y="1312.12">
+   <ellipse/>
+  </object>
+  <object type="1" x="475.758" y="1312.12">
+   <ellipse/>
+  </object>
+  <object type="1" x="672.727" y="1312.12">
+   <ellipse/>
+  </object>
+  <object type="1" x="866.667" y="1309.09">
+   <ellipse/>
+  </object>
+  <object type="1" x="96.9697" y="1503.03">
+   <ellipse/>
+  </object>
+  <object type="1" x="227.273" y="1503.03">
+   <ellipse/>
+  </object>
+  <object type="1" x="96.9697" y="1693.94">
+   <ellipse/>
+  </object>
+  <object type="1" x="290.909" y="1696.97">
+   <ellipse/>
+  </object>
+  <object type="1" x="93.9394" y="1890.91">
+   <ellipse/>
+  </object>
+  <object type="1" x="224.242" y="1887.88">
+   <ellipse/>
+  </object>
+  <object type="1" x="418.182" y="1884.85">
+   <ellipse/>
+  </object>
+  <object type="1" x="612.121" y="1887.88">
+   <ellipse/>
+  </object>
+  <object type="1" x="1696.97" y="1121.21">
+   <ellipse/>
+  </object>
+  <object type="1" x="1696.97" y="1309.09">
+   <ellipse/>
+  </object>
+  <object type="1" x="166.667" y="2018.18">
+   <ellipse/>
+  </object>
+  <object type="1" x="351.515" y="2018.18">
+   <ellipse/>
+  </object>
+  <object type="1" x="545.455" y="2012.12">
+   <ellipse/>
+  </object>
+  <object type="1" x="739.394" y="2018.18">
+   <ellipse/>
+  </object>
+  <object type="1" x="609.091" y="1569.7">
+   <ellipse/>
+  </object>
+  <object type="1" x="800" y="1569.7">
+   <ellipse/>
+  </object>
+  <object type="1" x="1051.52" y="1572.73">
+   <ellipse/>
+  </object>
+  <object type="1" x="1312.12" y="1642.42">
+   <ellipse/>
+  </object>
+  <object type="1" x="1509.09" y="1639.39">
+   <ellipse/>
+  </object>
+  <object type="1" x="1706.06" y="1633.33">
+   <ellipse/>
+  </object>
+  <object type="1" x="1696.97" y="1500">
+   <ellipse/>
+  </object>
+  <object type="1" x="675.758" y="1703.03">
+   <ellipse/>
+  </object>
+  <object type="1" x="860.606" y="1696.97">
+   <ellipse/>
+  </object>
+  <object type="1" x="1057.58" y="1700">
+   <ellipse/>
+  </object>
+  <object type="1" x="1248.48" y="1696.97">
+   <ellipse/>
+  </object>
+  <object type="1" x="1442.42" y="1700">
+   <ellipse/>
+  </object>
+  <object type="1" x="1630.3" y="1696.97">
+   <ellipse/>
+  </object>
+  <object type="1" x="1827.27" y="1696.97">
+   <ellipse/>
+  </object>
+  <object type="1" x="742.424" y="1824.24">
+   <ellipse/>
+  </object>
+  <object type="1" x="930.303" y="1821.21">
+   <ellipse/>
+  </object>
+  <object type="1" x="1124.24" y="1821.21">
+   <ellipse/>
+  </object>
+  <object type="1" x="1315.15" y="1824.24">
+   <ellipse/>
+  </object>
+  <object type="1" x="1506.06" y="1827.27">
+   <ellipse/>
+  </object>
+  <object type="1" x="1693.94" y="1827.27">
+   <ellipse/>
+  </object>
+  <object type="1" x="1824.24" y="1887.88">
+   <ellipse/>
+  </object>
+  <object type="1" x="2212.12" y="1121.21">
+   <ellipse/>
+  </object>
+  <object type="1" x="2406.06" y="1121.21">
+   <ellipse/>
+  </object>
+  <object type="1" x="2145.45" y="1248.48">
+   <ellipse/>
+  </object>
+  <object type="1" x="2339.39" y="1242.42">
+   <ellipse/>
+  </object>
+  <object type="1" x="2460.61" y="1315.15">
+   <ellipse/>
+  </object>
+  <object type="1" x="1954.55" y="1375.76">
+   <ellipse/>
+  </object>
+  <object type="1" x="2148.48" y="1375.76">
+   <ellipse/>
+  </object>
+  <object type="1" x="2336.36" y="1375.76">
+   <ellipse/>
+  </object>
+  <object type="1" x="2466.67" y="1442.42">
+   <ellipse/>
+  </object>
+  <object type="1" x="1890.91" y="1503.03">
+   <ellipse/>
+  </object>
+  <object type="1" x="2084.85" y="1506.06">
+   <ellipse/>
+  </object>
+  <object type="1" x="2281.82" y="1503.03">
+   <ellipse/>
+  </object>
+  <object type="1" x="2078.79" y="1636.36">
+   <ellipse/>
+  </object>
+  <object type="1" x="2081.82" y="1766.67">
+   <ellipse/>
+  </object>
+  <object type="1" x="2212.12" y="1636.36">
+   <ellipse/>
+  </object>
+  <object type="1" x="2339.39" y="1636.36">
+   <ellipse/>
+  </object>
+  <object type="1" x="2469.7" y="1642.42">
+   <ellipse/>
+  </object>
+  <object type="1" x="2209.09" y="1760.61">
+   <ellipse/>
+  </object>
+  <object type="1" x="2336.36" y="1760.61">
+   <ellipse/>
+  </object>
+  <object type="1" x="2463.64" y="1766.67">
+   <ellipse/>
+  </object>
+  <object type="1" x="2142.42" y="1887.88">
+   <ellipse/>
+  </object>
+  <object type="1" x="2272.73" y="1884.85">
+   <ellipse/>
+  </object>
+  <object type="1" x="860.606" y="2012.12">
+   <ellipse/>
+  </object>
+  <object type="1" x="993.939" y="2015.15">
+   <ellipse/>
+  </object>
+  <object type="1" x="1124.24" y="2018.18">
+   <ellipse/>
+  </object>
+  <object type="1" x="1251.52" y="2012.12">
+   <ellipse/>
+  </object>
+  <object type="1" x="1375.76" y="2021.21">
+   <ellipse/>
+  </object>
+  <object type="1" x="1700" y="2024.24">
+   <ellipse/>
+  </object>
+  <object type="1" x="1887.88" y="2018.18">
+   <ellipse/>
+  </object>
+  <object type="1" x="2145.45" y="2018.18">
+   <ellipse/>
+  </object>
+  <object type="1" x="2336.36" y="2075.76">
+   <ellipse/>
+  </object>
+  <object type="1" x="2466.67" y="2145.45">
+   <ellipse/>
+  </object>
+  <object type="1" x="2457.58" y="2330.3">
+   <ellipse/>
+  </object>
+  <object type="1" x="2400" y="2463.64">
+   <ellipse/>
+  </object>
+  <object type="1" x="2206.06" y="2393.94">
+   <ellipse/>
+  </object>
+  <object type="1" x="2075.76" y="2466.67">
+   <ellipse/>
+  </object>
+  <object type="1" x="1884.85" y="2463.64">
+   <ellipse/>
+  </object>
+  <object type="1" x="1693.94" y="2463.64">
+   <ellipse/>
+  </object>
+  <object type="1" x="1436.36" y="2460.61">
+   <ellipse/>
+  </object>
+  <object type="1" x="1248.48" y="2463.64">
+   <ellipse/>
+  </object>
+  <object type="1" x="1060.61" y="2460.61">
+   <ellipse/>
+  </object>
+  <object type="1" x="924.242" y="2460.61">
+   <ellipse/>
+  </object>
+  <object type="1" x="672.727" y="2463.64">
+   <ellipse/>
+  </object>
+  <object type="1" x="475.758" y="2457.58">
+   <ellipse/>
+  </object>
+  <object type="1" x="284.848" y="2457.58">
+   <ellipse/>
+  </object>
+  <object type="1" x="157.576" y="2400">
+   <ellipse/>
+  </object>
+  <object type="1" x="227.273" y="2269.7">
+   <ellipse/>
+  </object>
+  <object type="1" x="221.212" y="2142.42">
+   <ellipse/>
+  </object>
+  <object type="1" x="412.121" y="2142.42">
+   <ellipse/>
+  </object>
+  <object type="1" x="612.121" y="2145.45">
+   <ellipse/>
+  </object>
+  <object type="1" x="796.97" y="2142.42">
+   <ellipse/>
+  </object>
+  <object type="1" x="984.848" y="2142.42">
+   <ellipse/>
+  </object>
+  <object type="1" x="1181.82" y="2145.45">
+   <ellipse/>
+  </object>
+  <object type="1" x="1378.79" y="2145.45">
+   <ellipse/>
+  </object>
+  <object type="1" x="1693.94" y="2142.42">
+   <ellipse/>
+  </object>
+  <object type="1" x="1884.85" y="2142.42">
+   <ellipse/>
+  </object>
+  <object type="1" x="2078.79" y="2148.48">
+   <ellipse/>
+  </object>
+  <object type="1" x="2269.7" y="2148.48">
+   <ellipse/>
+  </object>
+  <object type="1" x="2272.73" y="2272.73">
+   <ellipse/>
+  </object>
+  <object type="1" x="2021.21" y="2281.82">
+   <ellipse/>
+  </object>
+  <object type="1" x="1818.18" y="2275.76">
+   <ellipse/>
+  </object>
+  <object type="1" x="1624.24" y="2272.73">
+   <ellipse/>
+  </object>
+  <object type="1" x="1439.39" y="2272.73">
+   <ellipse/>
+  </object>
+  <object type="1" x="1239.39" y="2266.67">
+   <ellipse/>
+  </object>
+  <object type="1" x="1060.61" y="2272.73">
+   <ellipse/>
+  </object>
+  <object type="1" x="927.273" y="2275.76">
+   <ellipse/>
+  </object>
+  <object type="1" x="736.364" y="2275.76">
+   <ellipse/>
+  </object>
+  <object type="1" x="536.364" y="2269.7">
+   <ellipse/>
+  </object>
+  <object type="1" x="354.545" y="2272.73">
+   <ellipse/>
+  </object>
+  <object type="1" x="1566.67" y="2396.97">
+   <ellipse/>
+  </object>
+  <object type="2" x="30.303" y="27.2727"/>
+  <object type="2" x="218.182" y="33.3333"/>
+  <object type="2" x="412.121" y="27.2727"/>
+  <object type="2" x="612.121" y="30.303"/>
+  <object type="2" x="863.636" y="36.3636"/>
+  <object type="2" x="1057.58" y="30.303"/>
+  <object type="2" x="1572.73" y="33.3333"/>
+  <object type="2" x="1757.58" y="33.3333"/>
+  <object type="2" x="1948.48" y="36.3636"/>
+  <object type="2" x="2139.39" y="36.3636"/>
+  <object type="2" x="2330.3" y="27.2727"/>
+  <object type="2" x="2587.88" y="227.273"/>
+  <object type="2" x="2593.94" y="415.152"/>
+  <object type="2" x="2590.91" y="609.091"/>
+  <object type="2" x="2590.91" y="803.03"/>
+  <object type="2" x="2590.91" y="990.909"/>
+  <object type="2" x="2593.94" y="1187.88"/>
+  <object type="2" x="2590.91" y="1378.79"/>
+  <object type="2" x="2587.88" y="1566.67"/>
+  <object type="2" x="2587.88" y="2272.73"/>
+  <object type="2" x="2587.88" y="2396.97"/>
+  <object type="2" x="2584.85" y="2587.88"/>
+  <object type="2" x="2396.97" y="2590.91"/>
+  <object type="2" x="2206.06" y="2587.88"/>
+  <object type="2" x="2021.21" y="2587.88"/>
+  <object type="2" x="1893.94" y="2593.94"/>
+  <object type="2" x="1057.58" y="2593.94"/>
+  <object type="2" x="860.606" y="2600"/>
+  <object type="2" x="666.667" y="2587.88"/>
+  <object type="2" x="475.758" y="2590.91"/>
+  <object type="2" x="284.848" y="2584.85"/>
+  <object type="2" x="30.303" y="2587.88"/>
+  <object type="2" x="27.2727" y="1821.21"/>
+  <object type="2" x="30.303" y="1569.7"/>
+  <object type="2" x="30.303" y="1378.79"/>
+  <object type="2" x="33.3333" y="1181.82"/>
+  <object type="2" x="36.3636" y="987.879"/>
+  <object type="2" x="33.3333" y="803.03"/>
+  <object type="2" x="33.3333" y="612.121"/>
+  <object type="2" x="30.303" y="415.152"/>
+  <object type="2" x="30.303" y="224.242"/>
+  <object type="3" x="1181" y="1162">
+   <polygon points="0,0 -20,43 22,42"/>
+  </object>
+  <object type="3" x="1184" y="1218">
+   <polygon points="0,0 -21,48 18,53"/>
+  </object>
+  <object type="3" x="1183" y="1288">
+   <polygon points="0,0 -20,44 18,44"/>
+  </object>
+  <object type="3" x="1184" y="1350">
+   <polygon points="0,0 -21,46 21,48"/>
+  </object>
+  <object type="3" x="1186" y="1415">
+   <polygon points="0,0 -28,44 19,46"/>
+  </object>
+  <object type="3" x="1249" y="1413">
+   <polygon points="0,0 -22,48 19,48"/>
+  </object>
+  <object type="3" x="1313" y="1415">
+   <polygon points="0,0 -21,46 19,46"/>
+  </object>
+  <object type="3" x="1379" y="1416">
+   <polygon points="0,0 -24,51 12,46"/>
+  </object>
+  <object type="3" x="1438" y="1418">
+   <polygon points="0,0 -16,41 22,47"/>
+  </object>
+  <object type="3" x="1503" y="1415">
+   <polygon points="0,0 -19,46 26,46"/>
+  </object>
+ </objectgroup>
+ <layer name="GridLayer" width="41" height="41">
+  <data encoding="base64" compression="zlib">
+   eJztw0ENAAAMA6HzX9P7TgQkrJqqqqqqqqq+B7J0kOk=
+  </data>
+ </layer>
+ <layer name="Fogs" width="41" height="41">
+  <data encoding="base64" compression="zlib">
+   eJztwzENAAAMBKHb37/frhUBCaumqqqqqqqq7wF5K0g8
+  </data>
+ </layer>
+</map>
