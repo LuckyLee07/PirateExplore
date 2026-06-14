@@ -1,2 +1,6 @@
 /build/*
 /projects/*
+
+/src/engine/cocos2d-x/build/*
+/src/engine/cocos2d-x/plugin/*
+/src/engine/cocos2d-x/tools/*

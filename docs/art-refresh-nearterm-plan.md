@@ -401,6 +401,7 @@ Deliverables:
 - asset replacement table
 - first-priority screen list
 - high-risk asset list
+- `docs/art-refresh-asset-map.md`
 
 Acceptance:
 
