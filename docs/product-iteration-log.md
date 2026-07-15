@@ -128,3 +128,40 @@ Result:
 
 Phase 0 acceptance gates passed. Phase 1 can implement the playable gray-box
 Chapter 1 slice using the isolated V2 data and save baseline.
+
+## 2026-07-16: V2 Phase 1, Playable Chapter 1 Graybox
+
+Goal:
+
+Turn the Phase 0 design contract into a complete, recoverable Chapter 1 flow
+that starts from a fresh save and does not depend on legacy long-term systems.
+
+Implemented:
+
+- Added deterministic CSV-to-Lua runtime export with stale-output checks.
+- Added a pure Lua Chapter 1 state machine covering opening, preparation,
+  exploration, events, naval combat, boarding combat, rune clue, settlement,
+  upgrade, completion, failure, retry, and port recovery.
+- Added immediate scoped saving after every valid chapter action.
+- Added isolated `player`, `qa_explore`, and `qa_combat` runtime entries.
+- Added a full-screen graybox surface with a seven-node map, current objective,
+  resources, route/module context, battle transfer feedback, and valid actions.
+- Hid legacy economy/menu chrome and the legacy random-event overlay in V2.
+- Moved the V2 opening into the chapter flow and isolated the legacy audio
+  backend after diagnosing a CoreAudio deadlock on the iOS 26.2 simulator.
+
+Validation:
+
+- `tools/v2/validate_phase1.sh` passed.
+- Safe and risky routes, both upgrades, ship-to-boarding transfer, defeat,
+  retreat, retry, recovery, invalid actions, and save fallback passed.
+- arm64 iOS simulator build, install, fresh entry, combat QA entry, and extended
+  process stability passed.
+- Validation screenshots are stored in `docs/v2/phase-1-opening.png` and
+  `docs/v2/phase-1-combat.png`.
+
+Result:
+
+The Chapter 1 graybox is playable as a complete product loop. Phase 2 can now
+deepen exploration and combat decisions without replacing the data, save, or
+chapter-flow foundations.

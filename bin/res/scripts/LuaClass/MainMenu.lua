@@ -74,6 +74,7 @@ function MainMenuLayer:init()
     -- 添加顶部菜单背景
     cc.Texture2D:setDefaultAlphaPixelFormat(kCCTexture2DPixelFormat_RGB5A1)
     local TopBg = cc.Sprite:create("Images/UI/TopBg.png")
+    self.topBg = TopBg
     TopBg:setPosition(origin.x + visibleSize.width * 0.5, origin.y + visibleSize.height - (TopBg:getContentSize().height * 0.5))
     self:addChild(TopBg)
 
@@ -214,6 +215,7 @@ function MainMenuLayer:init()
     -- 添加底部背景图
     cc.Texture2D:setDefaultAlphaPixelFormat(kCCTexture2DPixelFormat_RGBA8888)
     local BottomBg = cc.Sprite:create("Images/UI/BottomBg.png")
+    self.bottomBg = BottomBg
     BottomBg:setPosition(TopBg:getPositionX(), origin.y + (BottomBg:getContentSize().height * 0.5))
     self:addChild(BottomBg)
 
@@ -735,6 +737,18 @@ function MainMenuLayer:init()
     
     cc.Texture2D:setDefaultAlphaPixelFormat(kCCTexture2DPixelFormat_RGBA8888)
     return true
+end
+
+-- Keep the legacy story player alive, but hide the old economy/menu chrome while
+-- Chapter 1 owns the playable surface. This prevents accidental exits into
+-- systems that are explicitly outside the V2 vertical slice.
+function MainMenuLayer:setV2Mode(enabled)
+    local showLegacyChrome = not enabled
+    if self.topBg then self.topBg:setVisible(showLegacyChrome) end
+    if self.bottomBg then self.bottomBg:setVisible(showLegacyChrome) end
+    if self.coinNode then self.coinNode:setVisible(showLegacyChrome) end
+    if self.diamondNode then self.diamondNode:setVisible(showLegacyChrome) end
+    if self.boatSpr then self.boatSpr:setVisible(showLegacyChrome) end
 end
 
 -- 根据传进来的对话内容，播放剧情

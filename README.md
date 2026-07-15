@@ -41,3 +41,6 @@ The old Cocos simulator launcher previously stored at the repository root under 
   [`docs/art-direction-app-store.md`](docs/art-direction-app-store.md)
 - Iteration log:
   [`docs/product-iteration-log.md`](docs/product-iteration-log.md)
+- V2 Phase 1 playable graybox and validation:
+  [`docs/v2/phase-1-graybox.md`](docs/v2/phase-1-graybox.md),
+  [`docs/v2/phase-1-validation.md`](docs/v2/phase-1-validation.md)

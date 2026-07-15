@@ -5,7 +5,7 @@
 
 V2Config = {
     VERSION = "2.0",
-    CURRENT_PHASE = 0,
+    CURRENT_PHASE = 1,
     CHAPTER_ID = "chapter_01",
     SAVE_SCHEMA_VERSION = 1,
     SAVE_NAMESPACE = "v2_chapter_01",
@@ -40,6 +40,9 @@ end
 
 function V2Config:getSaveProfile()
     local requestedProfile = rawget(_G, "zqV2SaveProfile")
+    if requestedProfile == nil and os ~= nil and os.getenv ~= nil then
+        requestedProfile = os.getenv("NEWPIRATE_V2_PROFILE")
+    end
     if validSaveProfiles[requestedProfile] then
         return requestedProfile
     end

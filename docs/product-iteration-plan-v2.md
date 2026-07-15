@@ -16,6 +16,8 @@
 - [`v2/phase-0-engineering-baseline.md`](v2/phase-0-engineering-baseline.md)：
   功能隔离、存档、数据源和验证基线。
 - [`v2/phase-0-validation.md`](v2/phase-0-validation.md)：阶段 0 验证结果与证据。
+- [`v2/phase-1-graybox.md`](v2/phase-1-graybox.md)：阶段 1 可玩灰盒实现说明；
+- [`v2/phase-1-validation.md`](v2/phase-1-validation.md)：阶段 1 自动化与真机工程验证。
 
 本文件是在完整审阅以下内容后形成的后续迭代基线：
 

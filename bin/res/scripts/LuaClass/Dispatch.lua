@@ -8,6 +8,7 @@ require "LuaClass/RandomEventMode"
 require "LuaClass/GuideController"
 require "LuaClass/ToastUtil"
 require "LuaClass/V2Config"
+require "LuaClass/V2ChapterLayer"
 
 
 Dispatch = class("Dispatch", function ()
@@ -174,14 +175,22 @@ function Dispatch:init(bIsDead)
     -- local eventDispatcher = self.BaseNode:getEventDispatcher()
     -- eventDispatcher:addEventListenerWithSceneGraphPriority(listener, self.BaseNode)
 
-    -- 随机事件
-    local randomLayer = RandomEventLayer:create()
-    self:addChild(randomLayer)
+    -- V2 Chapter 1 owns its event flow. The legacy random event overlay remains
+    -- available only when the vertical slice is disabled.
+    if not V2Config:isFeatureEnabled("v2.chapter_01") then
+        local randomLayer = RandomEventLayer:create()
+        self:addChild(randomLayer)
+    end
 
     -- 设置仓库为接受信息的主界面
     -- self:setUpdateSystemInfoLayer(self.repository)
 
-    self:moveToRepository()
+    if V2Config:isFeatureEnabled("v2.chapter_01") then
+        self.mainMenu:setV2Mode(true)
+        self:moveToV2Chapter()
+    else
+        self:moveToRepository()
+    end
 
     -- 设置点点选中仓库
     -- self.mainMenu:setPointWithIndex(3, 4)
@@ -197,6 +206,10 @@ function Dispatch:init(bIsDead)
     end)
 
     return true
+end
+
+function Dispatch:moveToV2Chapter()
+    self:setViewWithDirection(V2ChapterLayer:create(), false, 1)
 end
 
 -- 移动到天赋界面

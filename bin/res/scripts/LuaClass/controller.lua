@@ -27,6 +27,14 @@ gotoMainUI = function(isFromExp)
         isFromExp = false
     end
 
+    -- The legacy audio backend deadlocks on current iOS simulator runtimes.
+    -- Phase 1 has no approved V2 sound pass yet, so keep it isolated until the
+    -- Chapter 1 audio work lands in Phase 3.
+    if V2Config:isFeatureEnabled("v2.chapter_01") then
+        DataManager:getInstance():setMusic_off(1)
+        DataManager:getInstance():setSound_off(1)
+    end
+
     cclog("初始化游戏主UI界面")
     cleanUpController()
     require "LuaClass/Dispatch"
@@ -218,6 +226,14 @@ function startGame()
     end
 
     local firstPlotKey = V2Config:scopedPreferenceKey("isFirstPlotShown")
+    -- Chapter 1 now owns its opening inside the playable state machine. The
+    -- legacy seven-panel plot remains available for historical mode only; it
+    -- must not create an untestable screen before the V2 objective appears.
+    if V2Config:isFeatureEnabled("v2.chapter_01") then
+        cc.UserDefault:getInstance():setBoolForKey(firstPlotKey, true)
+        gotoMainUI()
+        return
+    end
     if cc.UserDefault:getInstance():getBoolForKey(firstPlotKey, false) then
         local statue = DataManager:getInstance():getRoleData(roleStatue)
         --若没有状态，则是第一次进入游戏，将状态置为0

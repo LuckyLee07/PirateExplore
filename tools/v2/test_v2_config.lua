@@ -1,7 +1,7 @@
 local config = dofile("bin/res/scripts/LuaClass/V2Config.lua")
 
 assert(config.VERSION == "2.0")
-assert(config.CURRENT_PHASE == 0)
+assert(config.CURRENT_PHASE >= 0 and config.CURRENT_PHASE <= 4)
 assert(config:isFeatureEnabled("v2.chapter_01"))
 assert(config:isFeatureEnabled("v2.scoped_save"))
 
