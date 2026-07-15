@@ -44,3 +44,6 @@ The old Cocos simulator launcher previously stored at the repository root under 
 - V2 Phase 1 playable graybox and validation:
   [`docs/v2/phase-1-graybox.md`](docs/v2/phase-1-graybox.md),
   [`docs/v2/phase-1-validation.md`](docs/v2/phase-1-validation.md)
+- V2 Phase 2 exploration/combat decisions and validation:
+  [`docs/v2/phase-2-exploration-combat.md`](docs/v2/phase-2-exploration-combat.md),
+  [`docs/v2/phase-2-validation.md`](docs/v2/phase-2-validation.md)

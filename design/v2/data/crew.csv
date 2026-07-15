@@ -1,5 +1,5 @@
-id,name,role,active_skill,passive_trait,chapter_id
-crew_gunner,罗克,gunner,齐射标记,舰炮阶段对标记部位伤害提高,chapter_01
-crew_sailor,米克,sailor,甲板守卫,接舷开场为后排承担一次攻击,chapter_01
-crew_navigator,卡特琳娜,navigator,测绘迷雾,提前揭示相邻节点风险,chapter_01
-crew_medic,艾琳,medic,紧急包扎,战斗后恢复一名船员状态,chapter_01
+id,name,role,active_skill,active_action,passive_trait,chapter_id
+crew_gunner,罗克,gunner,齐射标记,gunner_mark_deck,舰炮阶段对标记部位伤害提高,chapter_01
+crew_sailor,米克,sailor,甲板守卫,sailor_guard,接舷开场为后排承担一次攻击,chapter_01
+crew_navigator,卡特琳娜,navigator,测绘迷雾,reveal_route_intel,提前揭示相邻节点风险,chapter_01
+crew_medic,艾琳,medic,紧急包扎,medic_heal,战斗后恢复一名船员状态,chapter_01

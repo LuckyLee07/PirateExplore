@@ -24,8 +24,8 @@ for required in required_files:
         raise SystemExit(f"missing Phase 1 file: {required}")
 
 config = read("bin/res/scripts/LuaClass/V2Config.lua")
-if "CURRENT_PHASE = 1" not in config:
-    raise SystemExit("V2Config must identify Phase 1")
+if not any(f"CURRENT_PHASE = {phase}" in config for phase in range(1, 5)):
+    raise SystemExit("V2Config must identify Phase 1 or a later V2 phase")
 
 state = read("bin/res/scripts/LuaClass/V2ChapterState.lua")
 for marker in (

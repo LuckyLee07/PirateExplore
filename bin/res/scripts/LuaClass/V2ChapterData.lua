@@ -45,14 +45,14 @@ local data = {
         { id = "choice_rune_take", event_id = "event_rune_clue", label = "收下符文碎片", result_text = "第一枚符文线索被记录", reward_id = "reward_rune_clue", grants_flag = "chapter_01_complete" },
     },
     crew = {
-        { id = "crew_gunner", name = "罗克", role = "gunner", active_skill = "齐射标记", passive_trait = "舰炮阶段对标记部位伤害提高", chapter_id = "chapter_01" },
-        { id = "crew_sailor", name = "米克", role = "sailor", active_skill = "甲板守卫", passive_trait = "接舷开场为后排承担一次攻击", chapter_id = "chapter_01" },
-        { id = "crew_navigator", name = "卡特琳娜", role = "navigator", active_skill = "测绘迷雾", passive_trait = "提前揭示相邻节点风险", chapter_id = "chapter_01" },
-        { id = "crew_medic", name = "艾琳", role = "medic", active_skill = "紧急包扎", passive_trait = "战斗后恢复一名船员状态", chapter_id = "chapter_01" },
+        { id = "crew_gunner", name = "罗克", role = "gunner", active_skill = "齐射标记", active_action = "gunner_mark_deck", passive_trait = "舰炮阶段对标记部位伤害提高", chapter_id = "chapter_01" },
+        { id = "crew_sailor", name = "米克", role = "sailor", active_skill = "甲板守卫", active_action = "sailor_guard", passive_trait = "接舷开场为后排承担一次攻击", chapter_id = "chapter_01" },
+        { id = "crew_navigator", name = "卡特琳娜", role = "navigator", active_skill = "测绘迷雾", active_action = "reveal_route_intel", passive_trait = "提前揭示相邻节点风险", chapter_id = "chapter_01" },
+        { id = "crew_medic", name = "艾琳", role = "medic", active_skill = "紧急包扎", active_action = "medic_heal", passive_trait = "战斗后恢复一名船员状态", chapter_id = "chapter_01" },
     },
     ship_module = {
-        { id = "module_reinforced_hull", name = "加固船体", slot = "hull", effect = "提高船体耐久并降低返航风险", tradeoff = "舰炮伤害不变", chapter_id = "chapter_01" },
-        { id = "module_heavy_guns", name = "重炮甲板", slot = "deck", effect = "提高舰炮阶段部位破坏效率", tradeoff = "补给容量降低", chapter_id = "chapter_01" },
+        { id = "module_reinforced_hull", name = "加固船体", slot = "hull", effect = "提高船体耐久并降低返航风险", tradeoff = "舰炮伤害不变", hull_bonus = 20, cannon_bonus = 0, supply_capacity_modifier = 0, chapter_id = "chapter_01" },
+        { id = "module_heavy_guns", name = "重炮甲板", slot = "deck", effect = "提高舰炮阶段部位破坏效率", tradeoff = "补给容量降低", hull_bonus = 0, cannon_bonus = 45, supply_capacity_modifier = -1, chapter_id = "chapter_01" },
     },
     enemy = {
         { id = "enemy_cursed_raider", name = "海魂诅咒追猎者", chapter_id = "chapter_01", ship_hp = 500, boarding_power = 100, transfer_rule = "舰炮击毁甲板后接舷敌人以受伤状态开场", reward_id = "reward_battle" },
@@ -70,6 +70,38 @@ local data = {
         { id = "dialogue_005", chapter_id = "chapter_01", node_id = "node_raider", speaker = "罗克", text = "先轰碎它的甲板，再让米克带人登船！", trigger = "battle_start" },
         { id = "dialogue_006", chapter_id = "chapter_01", node_id = "node_rune_clue", speaker = "海盗王", text = "第一道封印已经松动。继续吧，船长。", trigger = "chapter_complete" },
     },
+    route = {
+        { id = "safe_route", chapter_id = "chapter_01", label = "外海安全航线", supply_cost = 2, risk = 1, hull_damage = 0, crew_max_bonus = 10, status_id = "steady_approach", intel_hint = "风险 1；多消耗补给；接舷队状态上限提高", outcome_hint = "以补给换取接舷容错" },
+        { id = "risky_shortcut", chapter_id = "chapter_01", label = "暗礁高风险近路", supply_cost = 1, risk = 3, reward_id = "reward_salvage", hull_damage = 10, crew_max_bonus = 0, status_id = "exposed_hull", intel_hint = "风险 3；船体受损；获得沉船战利品", outcome_hint = "以船体风险换取升级资源" },
+    },
+    balance = {
+        { id = "initial_gold", category = "economy", value = 40, description = "新档初始金币" },
+        { id = "initial_provisions", category = "economy", value = 8, description = "新档初始补给" },
+        { id = "base_hull", category = "ship", value = 100, description = "基础船体耐久" },
+        { id = "hull_level_bonus", category = "ship", value = 20, description = "每级船体升级增加耐久" },
+        { id = "gun_level_bonus", category = "ship", value = 25, description = "每级火炮升级增加齐射伤害" },
+        { id = "deck_break_threshold", category = "naval", value = 300, description = "击毁甲板所需累计破坏" },
+        { id = "gun_suppression_threshold", category = "naval", value = 200, description = "压制敌方火炮所需累计破坏" },
+        { id = "suppressed_retaliation_reduction", category = "naval", value = 8, description = "火炮被压制后敌方反击降低" },
+        { id = "curse_first_volley_bonus", category = "naval", value = 50, description = "接受诅咒后首次攻击加成" },
+        { id = "gunner_mark_bonus", category = "naval", value = 80, description = "炮手标记后的下一次甲板齐射加成" },
+        { id = "navigator_intel_cost", category = "exploration", value = 1, description = "测绘迷雾消耗的补给" },
+        { id = "boarding_wounded_hp", category = "boarding", value = 65, description = "甲板被击毁后的敌方接舷开场状态" },
+        { id = "medic_heal_amount", category = "boarding", value = 28, description = "医师紧急包扎恢复量" },
+        { id = "retry_supply_cost", category = "recovery", value = 1, description = "原地重试战斗消耗的补给" },
+        { id = "port_recovery_gold_cost", category = "recovery", value = 5, description = "返港恢复船只和船员的金币成本" },
+        { id = "hull_upgrade_timber_cost", category = "upgrade", value = 10, description = "首次船体升级木材成本" },
+        { id = "guns_upgrade_iron_cost", category = "upgrade", value = 15, description = "首次火炮升级铁料成本" },
+    },
+    battle_action = {
+        { id = "gunner_mark_deck", stage = "naval", label = "罗克：齐射标记", damage = 0, deck_damage = 0, gun_damage = 0, retaliation = 0, once_flag = "gunner_mark_used", description = "下一次甲板齐射获得额外破坏" },
+        { id = "fire_at_deck", stage = "naval", label = "标记甲板并齐射", damage = 175, deck_damage = 175, gun_damage = 0, retaliation = 14, description = "推进接舷优势但持续承受敌炮反击" },
+        { id = "fire_at_guns", stage = "naval", label = "压制敌方火炮", damage = 130, deck_damage = 0, gun_damage = 130, retaliation = 14, description = "降低后续敌炮反击但不推进甲板破坏" },
+        { id = "boarding_attack", stage = "boarding", label = "稳步推进", damage = 30, deck_damage = 0, gun_damage = 0, retaliation = 18, description = "低风险接舷攻击" },
+        { id = "boarding_rush", stage = "boarding", label = "冒险强攻", damage = 42, deck_damage = 0, gun_damage = 0, retaliation = 34, description = "更高伤害与更高船员损耗" },
+        { id = "sailor_guard", stage = "boarding", label = "米克：甲板守卫", damage = 0, deck_damage = 0, gun_damage = 0, retaliation = 0, once_flag = "sailor_guard_used", description = "抵消下一次接舷反击" },
+        { id = "medic_heal", stage = "boarding", label = "艾琳：紧急包扎", damage = 0, deck_damage = 0, gun_damage = 0, retaliation = 0, once_flag = "medic_used", description = "恢复接舷队状态" },
+    },
 }
 
 data.by_id = {}
@@ -85,6 +117,9 @@ for _, tableName in ipairs({
     "enemy",
     "reward",
     "dialogue",
+    "route",
+    "balance",
+    "battle_action",
 }) do
     data.by_id[tableName] = {}
     for _, row in ipairs(data[tableName]) do

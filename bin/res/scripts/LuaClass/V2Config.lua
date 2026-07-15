@@ -5,9 +5,9 @@
 
 V2Config = {
     VERSION = "2.0",
-    CURRENT_PHASE = 1,
+    CURRENT_PHASE = 2,
     CHAPTER_ID = "chapter_01",
-    SAVE_SCHEMA_VERSION = 1,
+    SAVE_SCHEMA_VERSION = 2,
     SAVE_NAMESPACE = "v2_chapter_01",
     DEFAULT_SAVE_PROFILE = "player",
 

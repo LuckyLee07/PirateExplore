@@ -1,0 +1,8 @@
+id,stage,label,damage,deck_damage,gun_damage,retaliation,once_flag,description
+gunner_mark_deck,naval,罗克：齐射标记,0,0,0,0,gunner_mark_used,下一次甲板齐射获得额外破坏
+fire_at_deck,naval,标记甲板并齐射,175,175,0,14,,推进接舷优势但持续承受敌炮反击
+fire_at_guns,naval,压制敌方火炮,130,0,130,14,,降低后续敌炮反击但不推进甲板破坏
+boarding_attack,boarding,稳步推进,30,0,0,18,,低风险接舷攻击
+boarding_rush,boarding,冒险强攻,42,0,0,34,,更高伤害与更高船员损耗
+sailor_guard,boarding,米克：甲板守卫,0,0,0,0,sailor_guard_used,抵消下一次接舷反击
+medic_heal,boarding,艾琳：紧急包扎,0,0,0,0,medic_used,恢复接舷队状态

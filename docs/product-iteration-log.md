@@ -165,3 +165,36 @@ Result:
 The Chapter 1 graybox is playable as a complete product loop. Phase 2 can now
 deepen exploration and combat decisions without replacing the data, save, or
 chapter-flow foundations.
+
+## 2026-07-16: V2 Phase 2, Exploration And Combat Decisions
+
+Goal:
+
+Turn the complete graybox into an explainable decision prototype with meaningful
+route, target, timing, skill, and recovery tradeoffs.
+
+Implemented:
+
+- Added source-driven route, balance, and battle-action tables.
+- Added navigator intel that trades provisions for exact route risk and reward.
+- Quantified reinforced-hull and heavy-gun module tradeoffs.
+- Added deck targeting, gun suppression, retaliation reduction, and explicit
+  boarding timing.
+- Added one active skill for each Chapter 1 crew role.
+- Preserved one clear ship-to-boarding transfer rule and surfaced its result.
+- Added causal victory reports and explicit retry/port-recovery costs.
+- Upgraded the V2 save schema to 2 with safe profile fallback.
+
+Validation:
+
+- `tools/v2/validate_phase2.sh` passed, including all Phase 0 and Phase 1 tests.
+- 14 source/runtime tables and 72 records passed export and contract checks.
+- Exploration intel, module capacity, naval targets, crew skills, transfer,
+  battle reports, retreat, retry, and recovery costs passed pure Lua tests.
+- arm64 simulator build, `qa_explore`/`qa_combat` runtime layouts, and device
+  compile-only build passed.
+
+Result:
+
+Phase 2 acceptance gates passed. Phase 3 can focus on content, art, dialogue,
+animation, and approved audio without changing the Chapter 1 decision model.

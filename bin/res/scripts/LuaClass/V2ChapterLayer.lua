@@ -41,13 +41,17 @@ end
 local function battleLine(state)
     if state.stage == "naval" then
         return string.format(
-            "我方船体 %d/%d    敌舰 %d/%d    甲板破坏 %d/300%s",
+            "我方船体 %d/%d    敌舰 %d/%d\n甲板 %d/%d%s    敌炮 %d/%d%s",
             state.battle.player_hull,
             state.battle.player_hull_max,
             state.battle.enemy_ship_hp,
             state.battle.enemy_ship_hp_max,
             state.battle.deck_damage,
-            state.battle.deck_broken and "（已击毁）" or ""
+            state.battle.deck_threshold,
+            state.battle.deck_broken and "（已击毁）" or "",
+            state.battle.gun_damage,
+            state.battle.gun_threshold,
+            state.battle.guns_suppressed and "（已压制）" or ""
         )
     elseif state.stage == "boarding" then
         return string.format(
@@ -164,7 +168,8 @@ function V2ChapterLayer:addActionButton(parent, action, x, y)
         self:refresh()
     end)
 
-    local label = createLabel(action.label, 15, COLORS.ink, 116, cc.TEXT_ALIGNMENT_CENTER)
+    local fontSize = string.len(action.label) > 36 and 12 or 15
+    local label = createLabel(action.label, fontSize, COLORS.ink, 116, cc.TEXT_ALIGNMENT_CENTER)
     label:setAnchorPoint(cc.p(0.5, 0.5))
     label:setPosition(cc.p(button:getContentSize().width * 0.5, button:getContentSize().height * 0.5 + 2))
     label:setScale(1 / 1.55)
@@ -183,7 +188,7 @@ function V2ChapterLayer:refresh()
     topBar:setPosition(cc.p(0, height - 122))
     root:addChild(topBar)
 
-    local kicker = createLabel("NEW PIRATE V2  ·  CHAPTER 01  ·  GRAYBOX", 17, COLORS.sea)
+    local kicker = createLabel("NEW PIRATE V2  ·  CHAPTER 01  ·  DECISION PROTOTYPE", 15, COLORS.sea)
     kicker:setAnchorPoint(cc.p(0, 0.5))
     kicker:setPosition(cc.p(30, 92))
     topBar:addChild(kicker)
@@ -259,11 +264,11 @@ function V2ChapterLayer:refresh()
         local column = ((index - 1) % 2) + 1
         local row = math.floor((index - 1) / 2)
         local x = columns[column] or width * 0.5
-        local y = 250 - row * 92
+        local y = 270 - row * 92
         self:addActionButton(menu, action, x, y)
     end
 
-    local footer = createLabel("阶段 1 灰盒：所有选择即时存档；失败可重试或返港。", 15, COLORS.muted, width - 40, cc.TEXT_ALIGNMENT_CENTER)
+    local footer = createLabel("阶段 2 原型：情报、部位目标、船员技能与恢复代价均可解释。", 15, COLORS.muted, width - 40, cc.TEXT_ALIGNMENT_CENTER)
     footer:setAnchorPoint(cc.p(0, 0))
     footer:setPosition(cc.p(20, 18))
     root:addChild(footer)

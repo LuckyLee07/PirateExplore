@@ -25,6 +25,9 @@ TABLES = (
     "enemy",
     "reward",
     "dialogue",
+    "route",
+    "balance",
+    "battle_action",
 )
 
 

@@ -1,0 +1,3 @@
+id,chapter_id,label,supply_cost,risk,reward_id,hull_damage,crew_max_bonus,status_id,intel_hint,outcome_hint
+safe_route,chapter_01,外海安全航线,2,1,,0,10,steady_approach,风险 1；多消耗补给；接舷队状态上限提高,以补给换取接舷容错
+risky_shortcut,chapter_01,暗礁高风险近路,1,3,reward_salvage,10,0,exposed_hull,风险 3；船体受损；获得沉船战利品,以船体风险换取升级资源

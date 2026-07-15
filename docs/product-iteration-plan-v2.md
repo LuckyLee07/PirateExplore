@@ -18,6 +18,8 @@
 - [`v2/phase-0-validation.md`](v2/phase-0-validation.md)：阶段 0 验证结果与证据。
 - [`v2/phase-1-graybox.md`](v2/phase-1-graybox.md)：阶段 1 可玩灰盒实现说明；
 - [`v2/phase-1-validation.md`](v2/phase-1-validation.md)：阶段 1 自动化与真机工程验证。
+- [`v2/phase-2-exploration-combat.md`](v2/phase-2-exploration-combat.md)：阶段 2 探索与战斗决策模型；
+- [`v2/phase-2-validation.md`](v2/phase-2-validation.md)：阶段 2 验收结果与运行证据。
 
 本文件是在完整审阅以下内容后形成的后续迭代基线：
 

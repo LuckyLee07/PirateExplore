@@ -1,3 +1,3 @@
-id,name,slot,effect,tradeoff,chapter_id
-module_reinforced_hull,加固船体,hull,提高船体耐久并降低返航风险,舰炮伤害不变,chapter_01
-module_heavy_guns,重炮甲板,deck,提高舰炮阶段部位破坏效率,补给容量降低,chapter_01
+id,name,slot,effect,tradeoff,hull_bonus,cannon_bonus,supply_capacity_modifier,chapter_id
+module_reinforced_hull,加固船体,hull,提高船体耐久并降低返航风险,舰炮伤害不变,20,0,0,chapter_01
+module_heavy_guns,重炮甲板,deck,提高舰炮阶段部位破坏效率,补给容量降低,0,45,-1,chapter_01
