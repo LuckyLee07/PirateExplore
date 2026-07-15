@@ -198,3 +198,45 @@ Result:
 
 Phase 2 acceptance gates passed. Phase 3 can focus on content, art, dialogue,
 animation, and approved audio without changing the Chapter 1 decision model.
+
+## 2026-07-16: V2 Phase 3, Content And Art Sample
+
+Goal:
+
+Turn the explainable Chapter 1 prototype into a representative product sample
+with authored events, distinct hero compositions, character dialogue, enemy
+presentation, animation, and stable audio cues.
+
+Implemented:
+
+- Expanded Chapter 1 to eight authored events and thirteen source-mapped
+  choices, including route-specific events, black tide, and cursed compass.
+- Added eighteen plot, voyage, naval, boarding, rune, and return-to-port lines.
+- Added fourteen source-driven presentation mappings across harbor, map,
+  combat, and rune hero groups using approved original project art.
+- Added full-screen iOS launch metadata and isolated the legacy mission toast.
+- Added distinct naval enemy, boarding deck/leader, rune reward, and lightweight
+  key-animation presentation.
+- Added six source-mapped audio cues for sailing, cannon, boarding, victory,
+  curse, and sinking.
+- Reproduced the legacy iOS audio termination and replaced V2 effect playback
+  with an AVFoundation bridge exposed to Lua.
+- Upgraded the V2 save schema to 3 and added isolated boarding, rune, and
+  settlement QA profiles.
+
+Validation:
+
+- `tools/v2/validate_phase3.sh` passed, including all earlier phase suites.
+- 16 source/runtime tables and 124 records passed export, reference, asset,
+  event, dialogue, presentation, audio, and animation checks.
+- Map, naval, boarding, and rune hero compositions passed full-screen simulator
+  screenshot review on iOS 26.2.
+- Native cannon-cue smoke test remained stable after the old backend's failure
+  was reproduced.
+- arm64 simulator and compile-only iOS device builds passed.
+
+Result:
+
+Phase 3 implementation and automated acceptance passed. Phase 4 owns real
+device experience records, two external user-test rounds, issue triage,
+performance/save/resource audits, and the final Go/No-Go decision.

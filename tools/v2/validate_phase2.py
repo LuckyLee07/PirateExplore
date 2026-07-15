@@ -97,8 +97,10 @@ for forbidden in ("damage = 175", "deck_damage >= 300", "crew_hp + 28"):
         raise SystemExit(f"core numeric tuning remains hard-coded: {forbidden}")
 
 config = (ROOT / "bin/res/scripts/LuaClass/V2Config.lua").read_text(encoding="utf-8")
-if "CURRENT_PHASE = 2" not in config or "SAVE_SCHEMA_VERSION = 2" not in config:
-    raise SystemExit("V2Config does not identify Phase 2 save/runtime baseline")
+if not any(f"CURRENT_PHASE = {phase}" in config for phase in range(2, 5)):
+    raise SystemExit("V2Config does not identify Phase 2 or a later runtime baseline")
+if not any(f"SAVE_SCHEMA_VERSION = {version}" in config for version in range(2, 6)):
+    raise SystemExit("V2Config save schema predates the Phase 2 runtime baseline")
 
 print(
     "V2 Phase 2 data OK: "

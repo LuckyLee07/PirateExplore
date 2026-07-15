@@ -326,6 +326,39 @@ tolua_lerror:
 }
 #endif //#ifndef TOLUA_DISABLE
 
+/* function: playV2Sound */
+#ifndef TOLUA_DISABLE_tolua_TOLUA_GameBaseUtil_playV2Sound00
+static int tolua_TOLUA_GameBaseUtil_playV2Sound00(lua_State* tolua_S)
+{
+#ifndef TOLUA_RELEASE
+ tolua_Error tolua_err;
+ if (
+     !tolua_isstring(tolua_S,1,0,&tolua_err) ||
+     !tolua_isnumber(tolua_S,2,0,&tolua_err) ||
+     !tolua_isnumber(tolua_S,3,0,&tolua_err) ||
+     !tolua_isnoobj(tolua_S,4,&tolua_err)
+     )
+  goto tolua_lerror;
+ else
+#endif
+ {
+  const char* relativePath = ((const char*) tolua_tostring(tolua_S,1,0));
+  float volume = ((float) tolua_tonumber(tolua_S,2,1.0));
+  int loop = ((int) tolua_tonumber(tolua_S,3,0));
+  {
+   bool tolua_ret = playV2Sound(relativePath, volume, loop);
+   tolua_pushboolean(tolua_S, (bool) tolua_ret);
+  }
+ }
+ return 1;
+#ifndef TOLUA_RELEASE
+tolua_lerror:
+ tolua_error(tolua_S,"#ferror in function 'playV2Sound'.",&tolua_err);
+ return 0;
+#endif
+}
+#endif //#ifndef TOLUA_DISABLE
+
 /* Open function */
 TOLUA_API int tolua_TOLUA_GameBaseUtil_open (lua_State* tolua_S)
 {
@@ -343,6 +376,7 @@ TOLUA_API int tolua_TOLUA_GameBaseUtil_open (lua_State* tolua_S)
 	tolua_function(tolua_S,"showMoreGameCallback",tolua_TOLUA_GameBaseUtil_showMoreGameCallback00);
     tolua_function(tolua_S,"rateIniTunes",tolua_TOLUA_GameBaseUtil_rateIniTunes00);
     tolua_function(tolua_S,"showRateOrAdScene",tolua_TOLUA_GameBaseUtil_showRateOrAdScene00);
+    tolua_function(tolua_S,"playV2Sound",tolua_TOLUA_GameBaseUtil_playV2Sound00);
  tolua_endmodule(tolua_S);
  return 1;
 }
@@ -353,4 +387,3 @@ TOLUA_API int luaopen_TOLUA_GameBaseUtil (lua_State* tolua_S) {
  return tolua_TOLUA_GameBaseUtil_open(tolua_S);
 };
 #endif
-

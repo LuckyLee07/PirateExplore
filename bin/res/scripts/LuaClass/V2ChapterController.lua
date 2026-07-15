@@ -73,6 +73,10 @@ function V2ChapterController:getNarrative()
     return V2ChapterState.getNarrative(self:load())
 end
 
+function V2ChapterController:getPresentation()
+    return V2ChapterState.getPresentation(self:load())
+end
+
 function V2ChapterController:getChapterData()
     return V2ChapterState.getData()
 end

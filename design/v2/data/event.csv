@@ -1,5 +1,9 @@
 id,chapter_id,name,description,required_flag
 event_route_choice,chapter_01,暗礁间的航线,安全航线更远但能恢复补给；近路可能发现沉船战利品,voyage_ready
-event_whisper,chapter_01,瓶中低语,海盗王提出以力量交换服从,route_chosen
 event_safe_cove,chapter_01,避风休整,船员请求在进入危险海域前短暂休整,route_chosen
+event_wreck_survivors,chapter_01,沉船幸存者,残骸上仍有人求救；救人和搜刮会带来不同后果,route_chosen
+event_black_tide,chapter_01,黑潮来袭,异常浪墙逼近船队；消耗补给固定货物或承受船体损伤,route_chosen
+event_whisper,chapter_01,瓶中低语,海盗王提出以力量交换服从,black_tide_crossed
+event_cursed_compass,chapter_01,诅咒罗盘,罗盘指向追猎者的弱点也在侵蚀船员意志,curse_heard
+event_raider_encounter,chapter_01,追猎者拦截,诅咒敌船封锁航道；舰炮结果将直接影响接舷战,compass_resolved
 event_rune_clue,chapter_01,符文回响,战利品中的碎片回应了水晶瓶,raider_defeated

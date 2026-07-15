@@ -47,3 +47,6 @@ The old Cocos simulator launcher previously stored at the repository root under 
 - V2 Phase 2 exploration/combat decisions and validation:
   [`docs/v2/phase-2-exploration-combat.md`](docs/v2/phase-2-exploration-combat.md),
   [`docs/v2/phase-2-validation.md`](docs/v2/phase-2-validation.md)
+- V2 Phase 3 content/art sample and validation:
+  [`docs/v2/phase-3-content-art.md`](docs/v2/phase-3-content-art.md),
+  [`docs/v2/phase-3-validation.md`](docs/v2/phase-3-validation.md)

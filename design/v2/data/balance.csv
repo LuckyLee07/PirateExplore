@@ -10,6 +10,10 @@ suppressed_retaliation_reduction,naval,8,火炮被压制后敌方反击降低
 curse_first_volley_bonus,naval,50,接受诅咒后首次攻击加成
 gunner_mark_bonus,naval,80,炮手标记后的下一次甲板齐射加成
 navigator_intel_cost,exploration,1,测绘迷雾消耗的补给
+black_tide_supply_cost,exploration,1,固定货舱穿过黑潮消耗的补给
+black_tide_hull_damage,exploration,8,强行穿过黑潮承受的船体损伤
+compass_ship_damage,naval,50,跟随诅咒罗盘获得的敌舰开场伤害
+compass_crew_bonus,boarding,10,砸碎诅咒罗盘获得的接舷状态上限
 boarding_wounded_hp,boarding,65,甲板被击毁后的敌方接舷开场状态
 medic_heal_amount,boarding,28,医师紧急包扎恢复量
 retry_supply_cost,recovery,1,原地重试战斗消耗的补给

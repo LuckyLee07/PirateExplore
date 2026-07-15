@@ -23,6 +23,10 @@ public:
     static void purchaseCall(int selIndex);
     // 获取兑换码
     static bool decodeCdkey(const char* codeKey);
+
+    // V2 uses AVAudioPlayer for short cues because the legacy OpenAL backend
+    // terminates on current iOS simulator runtimes.
+    static bool playV2Sound(const char* relativePath, float volume, bool loop);
 };
 
 #endif /* defined(__NewPirate__CppOCBridge__) */

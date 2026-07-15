@@ -817,6 +817,8 @@ P2：
 
 ### 阶段 3：内容与美术定调（第 11～14 周）
 
+实施状态（2026-07-16）：运行时样片与自动验收已完成；真机体验记录和外部用户测试转入阶段 4。详见 [`v2/phase-3-content-art.md`](v2/phase-3-content-art.md) 与 [`v2/phase-3-validation.md`](v2/phase-3-validation.md)。
+
 目标：把灰盒纵切提升为能代表正式产品的样片。
 
 交付：

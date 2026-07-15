@@ -27,9 +27,9 @@ gotoMainUI = function(isFromExp)
         isFromExp = false
     end
 
-    -- The legacy audio backend deadlocks on current iOS simulator runtimes.
-    -- Phase 1 has no approved V2 sound pass yet, so keep it isolated until the
-    -- Chapter 1 audio work lands in Phase 3.
+    -- Keep legacy looping music isolated: it deadlocks on current iOS
+    -- simulator runtimes. Phase 3 owns explicit, source-mapped one-shot cues;
+    -- simulator playback remains opt-in through NEWPIRATE_V2_AUDIO=1.
     if V2Config:isFeatureEnabled("v2.chapter_01") then
         DataManager:getInstance():setMusic_off(1)
         DataManager:getInstance():setSound_off(1)
@@ -192,8 +192,11 @@ function startGame()
     --print("------- 0000000 parser")
     DataManager:getInstance()
     DataManager:getInstance():postEvent(1, "eventData111111")
-    --初始化任务管理者
-    MissionManagers:getInstance()
+    -- Chapter 1 owns its short-form objectives. Legacy missions also enqueue
+    -- a large startup toast, so they remain outside the V2 sample.
+    if V2Config:isFeatureEnabled("legacy.missions") then
+        MissionManagers:getInstance()
+    end
 
     local cur_time = os.time()
     if not DataManager:getInstance():getRoleData(roleFristLoginTime) then

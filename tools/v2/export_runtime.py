@@ -28,6 +28,8 @@ TABLES = (
     "route",
     "balance",
     "battle_action",
+    "presentation",
+    "audio_cue",
 )
 
 

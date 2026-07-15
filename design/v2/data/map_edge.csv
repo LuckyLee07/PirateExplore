@@ -2,7 +2,9 @@ id,chapter_id,from_node,to_node,route,risk,supply_cost,condition
 edge_01,chapter_01,node_port,node_fog_gate,departure,0,1,voyage_ready
 edge_02,chapter_01,node_fog_gate,node_wreck,risky_shortcut,2,1,route_chosen
 edge_03,chapter_01,node_fog_gate,node_safe_cove,safe_route,1,2,route_chosen
-edge_04,chapter_01,node_wreck,node_whisper,risky_shortcut,2,1,salvage_found
-edge_05,chapter_01,node_safe_cove,node_whisper,safe_route,1,1,crew_restored
-edge_06,chapter_01,node_whisper,node_raider,convergence,3,1,curse_heard
-edge_07,chapter_01,node_raider,node_rune_clue,chapter_goal,1,0,raider_defeated
+edge_04,chapter_01,node_wreck,node_black_tide,risky_shortcut,2,0,route_event_resolved
+edge_05,chapter_01,node_safe_cove,node_black_tide,safe_route,1,0,route_event_resolved
+edge_06,chapter_01,node_black_tide,node_whisper,convergence,2,0,black_tide_crossed
+edge_07,chapter_01,node_whisper,node_cursed_compass,curse_path,2,0,curse_heard
+edge_08,chapter_01,node_cursed_compass,node_raider,intercept,3,1,compass_resolved
+edge_09,chapter_01,node_raider,node_rune_clue,chapter_goal,1,0,raider_defeated

@@ -28,3 +28,6 @@ void showRateOrAdScene();
 
 //	兑换码功能
 bool decodeExKey(const char* codeKey);
+
+// Play one V2 source-mapped cue through the modern iOS audio bridge.
+bool playV2Sound(const char* relativePath, float volume, int loop);

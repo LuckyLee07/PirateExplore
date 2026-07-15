@@ -207,3 +207,12 @@ bool decodeExKey(const char* codeKey)
     return false;
 #endif
 }
+
+bool playV2Sound(const char* relativePath, float volume, int loop)
+{
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
+    return CppOCBridge::playV2Sound(relativePath, volume, loop != 0);
+#else
+    return false;
+#endif
+}

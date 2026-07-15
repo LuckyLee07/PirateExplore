@@ -34,13 +34,42 @@ local function battleAction(actionId)
     return row
 end
 
-V2ChapterState.SCHEMA_VERSION = 2
+local function eventChoice(actionId)
+    for _, row in ipairs(ChapterData.event_choice) do
+        if row.action_id == actionId then
+            return row
+        end
+    end
+    error("Unknown V2 event choice action: " .. tostring(actionId))
+end
+
+local function choiceLabel(actionId)
+    return eventChoice(actionId).label
+end
+
+local function dialogueBlock(nodeId, triggers)
+    local accepted = {}
+    for _, trigger in ipairs(triggers or {}) do
+        accepted[trigger] = true
+    end
+    local lines = {}
+    for _, row in ipairs(ChapterData.dialogue) do
+        if row.node_id == nodeId and accepted[row.trigger] then
+            table.insert(lines, row.speaker .. "：" .. row.text)
+        end
+    end
+    return table.concat(lines, "\n")
+end
+
+V2ChapterState.SCHEMA_VERSION = 3
 V2ChapterState.STAGES = {
     opening = true,
     harbor = true,
     route_choice = true,
     route_event = true,
+    black_tide = true,
     whisper = true,
+    curse_choice = true,
     naval = true,
     boarding = true,
     rune_clue = true,
@@ -99,6 +128,15 @@ local function applyReward(state, rewardId)
     state.claimed_rewards[rewardId] = true
 end
 
+local function applyChoiceOutcome(state, action)
+    local choice = eventChoice(action)
+    if choice.reward_id then
+        applyReward(state, choice.reward_id)
+    end
+    grantFlag(state, choice.grants_flag)
+    return choice.result_text
+end
+
 local function calculateHullMax(state)
     return balanceValue("base_hull")
         + (moduleData(state).hull_bonus or 0)
@@ -108,10 +146,17 @@ end
 local function resetBattle(state)
     local enemy = ChapterData.by_id.enemy.enemy_cursed_raider
     local crewBonus = state.route and routeData(state.route).crew_max_bonus or 0
+    if state.flags.compass_broken then
+        crewBonus = crewBonus + balanceValue("compass_crew_bonus")
+    end
     local crewMax = enemy.boarding_power + crewBonus
+    local enemyShipHp = enemy.ship_hp
+    if state.flags.compass_followed then
+        enemyShipHp = enemyShipHp - balanceValue("compass_ship_damage")
+    end
     state.ship.hull_max = calculateHullMax(state)
     state.battle = {
-        enemy_ship_hp = enemy.ship_hp,
+        enemy_ship_hp = enemyShipHp,
         enemy_ship_hp_max = enemy.ship_hp,
         deck_damage = 0,
         deck_threshold = balanceValue("deck_break_threshold"),
@@ -183,6 +228,7 @@ local function baseState(profile)
         failure_reason = nil,
         chapter_complete = false,
         next_voyage_objective = nil,
+        active_event = "event_route_choice",
     }
     resetBattle(state)
     return state
@@ -212,6 +258,47 @@ function V2ChapterState.new(profile)
         resetBattle(state)
         state.objective = "选择击毁甲板或压制火炮，再决定接舷时机"
         state.last_result = "QA 战斗档已定位到诅咒追猎者。"
+    elseif profile == "qa_boarding" then
+        state.stage = "boarding"
+        state.current_node = "node_raider"
+        state.route = "risky_shortcut"
+        state.flags.route_chosen = true
+        state.flags.risky_route = true
+        state.flags.black_tide_crossed = true
+        state.flags.curse_heard = true
+        state.flags.compass_resolved = true
+        resetBattle(state)
+        state.battle.deck_damage = state.battle.deck_threshold
+        state.battle.deck_broken = true
+        state.battle.enemy_boarding_hp = balanceValue("boarding_wounded_hp")
+        state.battle.transfer_summary = string.format(
+            "舰炮阶段击毁敌方甲板：接舷敌人以 %d/%d 状态开场。",
+            state.battle.enemy_boarding_hp,
+            state.battle.enemy_boarding_hp_max
+        )
+        state.objective = "击败敌方接舷队，夺取符文线索"
+        state.last_result = "QA 接舷档已定位到追猎者甲板。"
+    elseif profile == "qa_rune" then
+        state.stage = "rune_clue"
+        state.current_node = "node_rune_clue"
+        state.route = "safe_route"
+        state.flags.raider_defeated = true
+        state.active_event = "event_rune_clue"
+        applyReward(state, "reward_battle")
+        state.battle_report = "QA 符文档：甲板优势已成功传递到接舷战。"
+        state.objective = "检查与水晶瓶共鸣的符文碎片"
+        state.last_result = "QA 符文档已定位到首章目标。"
+    elseif profile == "qa_settlement" then
+        state.stage = "settlement"
+        state.current_node = "node_rune_clue"
+        state.route = "safe_route"
+        state.flags.raider_defeated = true
+        state.flags.chapter_01_complete = true
+        state.chapter_complete = true
+        applyReward(state, "reward_battle")
+        applyReward(state, "reward_rune_clue")
+        state.objective = "确认战利品用途并返回皇家港"
+        state.last_result = "QA 结算档已取得符文碎片和追猎者战利品。"
     end
     return state
 end
@@ -232,12 +319,17 @@ local actionsByStage = {
     opening = {
         { id = "accept_call", label = "握住水晶瓶" },
     },
-    route_event = {
-        { id = "resolve_route_event", label = "处理当前据点" },
+    black_tide = {
+        { id = "lash_cargo", label = choiceLabel("lash_cargo") },
+        { id = "ride_black_tide", label = choiceLabel("ride_black_tide") },
     },
     whisper = {
-        { id = "resist_whisper", label = "拒绝海盗王" },
-        { id = "listen_whisper", label = "借用诅咒力量" },
+        { id = "resist_whisper", label = choiceLabel("resist_whisper") },
+        { id = "listen_whisper", label = choiceLabel("listen_whisper") },
+    },
+    curse_choice = {
+        { id = "follow_cursed_compass", label = choiceLabel("follow_cursed_compass") },
+        { id = "break_cursed_compass", label = choiceLabel("break_cursed_compass") },
     },
     naval = {
         { id = "gunner_mark_deck", label = ChapterData.by_id.battle_action.gunner_mark_deck.label },
@@ -254,7 +346,7 @@ local actionsByStage = {
         { id = "retreat", label = "撤退返航" },
     },
     rune_clue = {
-        { id = "take_rune_clue", label = "收下符文碎片" },
+        { id = "take_rune_clue", label = choiceLabel("take_rune_clue") },
     },
     settlement = {
         { id = "return_to_port", label = "带着战利品返航" },
@@ -307,6 +399,19 @@ function V2ChapterState.getActions(state)
         return result
     end
 
+    if state.stage == "route_event" then
+        if state.route == "risky_shortcut" then
+            return {
+                { id = "rescue_survivors", label = choiceLabel("rescue_survivors") },
+                { id = "salvage_wreck", label = choiceLabel("salvage_wreck") },
+            }
+        end
+        return {
+            { id = "rest_at_cove", label = choiceLabel("rest_at_cove") },
+            { id = "press_through_cove", label = choiceLabel("press_through_cove") },
+        }
+    end
+
     local actions = copy(actionsByStage[state.stage] or {})
     if state.stage == "naval" and state.battle.enemy_ship_hp <= 0 then
         actions = {
@@ -339,13 +444,15 @@ local stageTitles = {
     harbor = "皇家港 · 远航整备",
     route_choice = "瓶中海域 · 迷雾海图",
     route_event = "航线据点",
+    black_tide = "航行事件 · 黑潮浪墙",
     whisper = "诅咒事件 · 海盗王低语",
+    curse_choice = "诅咒事件 · 失控罗盘",
     naval = "战斗 I · 舰炮战",
     boarding = "战斗 II · 接舷战",
     rune_clue = "章节目标 · 符文回响",
     settlement = "首次返航 · 战利品结算",
     upgrade = "皇家港 · 首次升级",
-    complete = "第一章灰盒完成",
+    complete = "第一章样片完成",
     failed = "本次远航失败",
 }
 
@@ -355,7 +462,7 @@ end
 
 function V2ChapterState.getNarrative(state)
     if state.stage == "opening" then
-        return "海盗王：终于有人打开了这只瓶子。\n\n卡特琳娜：想活着离开，就先修好船。迷雾里的东西已经发现我们了。"
+        return dialogueBlock("node_port", { "chapter_start" })
     elseif state.stage == "harbor" then
         return "四名船员已经就位：炮手罗克、水手米克、航海士卡特琳娜、医师艾琳。\n选择一项船只模块；当前配置可直接出航。"
     elseif state.stage == "route_choice" then
@@ -364,33 +471,49 @@ function V2ChapterState.getNarrative(state)
                 .. routeData("safe_route").intel_hint .. "。\n"
                 .. routeData("risky_shortcut").intel_hint .. "。"
         end
-        return "前方两条航线都被迷雾覆盖。可以直接凭方向选择，也可以消耗补给让卡特琳娜测绘风险与收益。"
+        return dialogueBlock("node_fog_gate", { "node_enter" })
+            .. "\n前方两条航线都被迷雾覆盖；可以直接选择，也可以消耗补给测绘。"
     elseif state.stage == "route_event" then
         if state.route == "risky_shortcut" then
-            return "暗礁后露出一艘沉船。搜索可能取得修船材料，但这条航线已经惊动迷雾中的追猎者。"
+            return dialogueBlock("node_wreck", { "node_enter" })
+                .. "\n救人获得信任；搜刮能取得完整升级资源。"
         end
-        return "船驶入避风海湾。船员得到休整，但绕行让补给消耗得更快。"
+        return dialogueBlock("node_safe_cove", { "node_enter" })
+            .. "\n靠岸能提高接舷容错，不停船则维持航行节奏。"
+    elseif state.stage == "black_tide" then
+        return dialogueBlock("node_black_tide", { "node_enter" })
+            .. string.format("\n固定货舱消耗 %d 补给；迎浪穿越承受 %d 船体损伤。",
+                balanceValue("black_tide_supply_cost"), balanceValue("black_tide_hull_damage"))
     elseif state.stage == "whisper" then
-        return "海盗王：借用我的力量，你会更快找到符文。\n这份力量能强化下一轮炮击，也会留下诅咒印记。"
+        return dialogueBlock("node_whisper", { "node_enter", "choice_prompt" })
+            .. "\n接受力量会强化首轮炮击，也会留下诅咒印记。"
+    elseif state.stage == "curse_choice" then
+        return dialogueBlock("node_cursed_compass", { "node_enter", "choice_prompt" })
+            .. string.format("\n利用罗盘使敌舰预损 %d；砸碎罗盘使接舷状态上限提高 %d。",
+                balanceValue("compass_ship_damage"), balanceValue("compass_crew_bonus"))
     elseif state.stage == "naval" then
         local gunStatus = state.battle.guns_suppressed
             and "敌炮已压制，后续反击降低。"
             or "压制敌炮不会推进接舷优势，但能降低后续反击。"
         return string.format(
-            "罗克：击毁甲板再接舷，或先压制火炮减少船体损失。\n甲板阈值 %d；火炮阈值 %d。%s",
+            "%s\n甲板阈值 %d；火炮阈值 %d。%s",
+            dialogueBlock("node_raider", { "battle_start", "naval_hint" }),
             state.battle.deck_threshold,
             state.battle.gun_threshold,
             gunStatus
         )
     elseif state.stage == "boarding" then
         return state.battle.transfer_summary
-            .. "\n米克可抵消下一次反击；艾琳可恢复状态。稳推损耗低，强攻结束更快。"
+            .. "\n" .. dialogueBlock("node_raider", { "boarding_start", "boarding_hint" })
+            .. "\n稳推损耗低，强攻结束更快。"
     elseif state.stage == "rune_clue" then
-        return "敌舰货舱里的碎片正与水晶瓶共鸣。\n战斗复盘：" .. tostring(state.battle_report)
+        return dialogueBlock("node_rune_clue", { "chapter_complete" })
+            .. "\n战斗复盘：" .. tostring(state.battle_report)
     elseif state.stage == "settlement" then
         return "追猎者战利品已经装船。返航后可在船体耐久与火炮效率之间完成一次有效升级。"
     elseif state.stage == "upgrade" then
-        return "船体升级提高下一次远航容错；火炮升级提高舰炮阶段输出。两项资源都来自刚完成的远航。"
+        return dialogueBlock("node_port", { "return_to_port" })
+            .. "\n船体升级提高远航容错；火炮升级提高舰炮输出。"
     elseif state.stage == "complete" then
         return "第一枚符文线索：潮汐墓场。\n下一次远航目标已明确——穿过更深的迷雾，寻找符文守卫。"
     elseif state.stage == "failed" then
@@ -398,6 +521,15 @@ function V2ChapterState.getNarrative(state)
             .. "\n恢复方案：" .. tostring(state.recovery_summary)
     end
     return ""
+end
+
+function V2ChapterState.getPresentation(state)
+    for _, row in ipairs(ChapterData.presentation) do
+        if row.stage == state.stage then
+            return row
+        end
+    end
+    return ChapterData.by_id.presentation.presentation_harbor
 end
 
 local function failBattle(state, reason, action)
@@ -417,6 +549,7 @@ local function winBoarding(state, action)
     applyReward(state, "reward_battle")
     state.stage = "rune_clue"
     state.current_node = "node_rune_clue"
+    state.active_event = "event_rune_clue"
     state.objective = "检查与水晶瓶共鸣的符文碎片"
     local route = routeData(state.route)
     state.battle_report = string.format(
@@ -526,6 +659,7 @@ function V2ChapterState.apply(state, action)
         grantFlag(state, "voyage_ready")
         state.stage = "route_choice"
         state.current_node = "node_fog_gate"
+        state.active_event = "event_route_choice"
         state.objective = "在安全航线与暗礁近路之间做出选择"
         addHistory(state, action, "船离开皇家港，第一片迷雾在海图上展开。")
     elseif action == "reveal_route_intel" and state.stage == "route_choice" then
@@ -552,6 +686,7 @@ function V2ChapterState.apply(state, action)
         grantFlag(state, "safe_route")
         state.stage = "route_event"
         state.current_node = "node_safe_cove"
+        state.active_event = "event_safe_cove"
         state.objective = "在避风海湾完成休整"
         addHistory(state, action, string.format("选择%s：消耗 %d 补给，%s。", route.label, route.supply_cost, route.outcome_hint))
     elseif action == "choose_risky_route" and state.stage == "route_choice" then
@@ -566,40 +701,70 @@ function V2ChapterState.apply(state, action)
         grantFlag(state, "risky_route")
         state.stage = "route_event"
         state.current_node = "node_wreck"
+        state.active_event = "event_wreck_survivors"
         state.objective = "搜索暗礁后的沉船残骸"
         addHistory(state, action, string.format("选择%s：船体预损 %d，%s。", route.label, route.hull_damage, route.outcome_hint))
-    elseif action == "resolve_route_event" and state.stage == "route_event" then
-        if state.route == "risky_shortcut" then
-            local route = routeData(state.route)
-            applyReward(state, route.reward_id)
-            grantFlag(state, "salvage_found")
-            addHistory(state, action, "沉船搜索完成：获得金币、木材、铁料和补给。")
-        else
-            grantFlag(state, "crew_restored")
+    elseif (action == "rest_at_cove" or action == "press_through_cove")
+        and state.stage == "route_event" and state.route == "safe_route" then
+        local result = applyChoiceOutcome(state, action)
+        if action == "rest_at_cove" then
             state.battle.crew_hp = state.battle.crew_hp_max
-            addHistory(state, action, "船员在避风海湾恢复到最佳状态。")
         end
+        grantFlag(state, "route_event_resolved")
+        state.stage = "black_tide"
+        state.current_node = "node_black_tide"
+        state.active_event = "event_black_tide"
+        state.objective = "决定如何穿过异常黑潮"
+        addHistory(state, action, result)
+    elseif (action == "rescue_survivors" or action == "salvage_wreck")
+        and state.stage == "route_event" and state.route == "risky_shortcut" then
+        local result = applyChoiceOutcome(state, action)
+        grantFlag(state, "route_event_resolved")
+        state.stage = "black_tide"
+        state.current_node = "node_black_tide"
+        state.active_event = "event_black_tide"
+        state.objective = "决定如何穿过异常黑潮"
+        addHistory(state, action, result)
+    elseif (action == "lash_cargo" or action == "ride_black_tide") and state.stage == "black_tide" then
+        if action == "lash_cargo" then
+            local tideCost = balanceValue("black_tide_supply_cost")
+            if state.resources.provisions < tideCost then
+                return false, "补给不足，无法固定货舱"
+            end
+            state.resources.provisions = state.resources.provisions - tideCost
+        else
+            state.voyage_hull_damage = state.voyage_hull_damage + balanceValue("black_tide_hull_damage")
+        end
+        local result = applyChoiceOutcome(state, action)
+        grantFlag(state, "black_tide_crossed")
         state.stage = "whisper"
         state.current_node = "node_whisper"
+        state.active_event = "event_whisper"
         state.objective = "回应海盗王提出的诅咒交易"
+        addHistory(state, action, result)
     elseif (action == "resist_whisper" or action == "listen_whisper") and state.stage == "whisper" then
-        local convergenceCost = edgeData("edge_06").supply_cost
+        grantFlag(state, "curse_heard")
+        local result = applyChoiceOutcome(state, action)
+        state.stage = "curse_choice"
+        state.current_node = "node_cursed_compass"
+        state.active_event = "event_cursed_compass"
+        state.objective = "利用或摧毁失控的诅咒罗盘"
+        addHistory(state, action, result)
+    elseif (action == "follow_cursed_compass" or action == "break_cursed_compass")
+        and state.stage == "curse_choice" then
+        local convergenceCost = edgeData("edge_08").supply_cost
         if state.resources.provisions < convergenceCost then
             return false, "剩余补给不足以抵达追猎者"
         end
         state.resources.provisions = state.resources.provisions - convergenceCost
-        grantFlag(state, "curse_heard")
-        if action == "listen_whisper" then
-            grantFlag(state, "curse_marked")
-            addHistory(state, action, "你接受短暂的炮击强化，也留下了诅咒印记。")
-        else
-            grantFlag(state, "curse_resisted")
-            addHistory(state, action, "你拒绝海盗王，船员士气保持稳定。")
-        end
+        local result = applyChoiceOutcome(state, action)
+        grantFlag(state, "compass_resolved")
         resetBattle(state)
         state.stage = "naval"
         state.current_node = "node_raider"
+        state.active_event = "event_raider_encounter"
         state.objective = "选择击毁甲板或压制火炮，再决定接舷时机"
+        addHistory(state, action, result)
     elseif action == "gunner_mark_deck" and state.stage == "naval" then
         if state.battle.gunner_mark_used then
             return false, "齐射标记本场已经使用"
@@ -673,12 +838,11 @@ function V2ChapterState.apply(state, action)
     elseif action == "retreat" and (state.stage == "naval" or state.stage == "boarding") then
         failBattle(state, "船长主动撤退，未取得追猎者战利品", action)
     elseif action == "take_rune_clue" and state.stage == "rune_clue" then
-        applyReward(state, "reward_rune_clue")
-        grantFlag(state, "chapter_01_complete")
+        local result = applyChoiceOutcome(state, action)
         state.chapter_complete = true
         state.stage = "settlement"
         state.objective = "确认战利品用途并返回皇家港"
-        addHistory(state, action, "第一枚符文线索被记录：潮汐墓场。")
+        addHistory(state, action, result .. "：潮汐墓场。")
     elseif action == "return_to_port" and state.stage == "settlement" then
         state.stage = "upgrade"
         state.current_node = "node_port"
@@ -734,6 +898,7 @@ function V2ChapterState.apply(state, action)
         state.failure_reason = nil
         state.stage = "harbor"
         state.current_node = "node_port"
+        state.active_event = "event_route_choice"
         state.objective = "重新整备后再次出航"
         addHistory(state, action, string.format("支付 %d 金币，船只与船员已在皇家港恢复。", recoveryCost))
     elseif action == "restart_chapter" and state.stage == "complete" then

@@ -1,0 +1,15 @@
+id,hero_group,stage,background,foreground,portrait,accent,animation,audio_cue
+presentation_opening,harbor,opening,Images/Plot/juqing_6.png,Images/Plot/juqing_7.png,,gold,bottle_float,curse
+presentation_harbor,harbor,harbor,Images/UI/fm_01.png,Images/Plot/juqing_9.png,,sea,ship_breathe,wave
+presentation_map,map,route_choice,Images/Map/WorldMap/worldMapMid.png,Images/Plot/juqing_8.png,,sea,map_drift,wave
+presentation_route,map,route_event,Images/Map/WorldMap/worldMapMid.png,Images/Plot/juqing_5.png,,gold,map_drift,wave
+presentation_tide,map,black_tide,Images/Background/yuanz.png,Images/Plot/juqing_8.png,,danger,wave_surge,wave
+presentation_whisper,rune,whisper,Images/Plot/juqing_2.png,Images/Plot/juqing_7.png,Images/Boss/g_300.png,purple,curse_pulse,curse
+presentation_compass,rune,curse_choice,Images/Plot/juqing_4.png,Images/Plot/juqing_7.png,Images/Boss/g_300.png,purple,curse_pulse,curse
+presentation_naval,combat,naval,Images/Background/yuanz.png,Images/Plot/juqing_9.png,Images/Boss/g_300.png,danger,enemy_heave,cannon
+presentation_boarding,combat,boarding,Images/Fight/chuan_01.png,,Images/Boss/g_319.png,danger,enemy_heave,boarding
+presentation_rune,rune,rune_clue,Images/Plot/juqing_3.png,Images/Plot/juqing_7.png,Images/Boss/g_300.png,purple,rune_pulse,victory
+presentation_settlement,rune,settlement,Images/Plot/juqing_5.png,Images/Plot/juqing_9.png,,gold,reward_reveal,victory
+presentation_upgrade,harbor,upgrade,Images/UI/fm_01.png,Images/Plot/juqing_9.png,,gold,reward_reveal,victory
+presentation_complete,harbor,complete,Images/Plot/juqing_9.png,Images/Plot/juqing_7.png,,gold,bottle_float,victory
+presentation_failed,combat,failed,Images/Background/yuanz.png,,Images/Boss/g_319.png,danger,damage_shake,sinking

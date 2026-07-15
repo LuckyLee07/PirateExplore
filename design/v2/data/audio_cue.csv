@@ -1,0 +1,7 @@
+id,file,trigger,volume,loop,source_status
+wave,music/walk.mp3,start_voyage,0.70,0,legacy_approved_ship_movement
+cannon,music/paoji.mp3,naval_attack,0.90,0,legacy_approved_cannon
+boarding,music/attack.mp3,board_now,0.85,0,legacy_approved_physical_attack
+victory,music/gold.mp3,battle_victory,0.80,0,legacy_approved_reward
+curse,music/magic.mp3,curse_choice,0.80,0,legacy_approved_magic
+sinking,music/chenchuan.mp3,battle_failure,0.90,0,legacy_approved_sinking

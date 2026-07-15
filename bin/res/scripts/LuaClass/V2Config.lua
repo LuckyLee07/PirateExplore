@@ -5,15 +5,17 @@
 
 V2Config = {
     VERSION = "2.0",
-    CURRENT_PHASE = 2,
+    CURRENT_PHASE = 3,
     CHAPTER_ID = "chapter_01",
-    SAVE_SCHEMA_VERSION = 2,
+    SAVE_SCHEMA_VERSION = 3,
     SAVE_NAMESPACE = "v2_chapter_01",
     DEFAULT_SAVE_PROFILE = "player",
 
     FEATURE_FLAGS = {
         ["v2.chapter_01"] = true,
         ["v2.scoped_save"] = true,
+        ["v2.presentation"] = true,
+        ["v2.audio_cues"] = true,
 
         ["legacy.achievement"] = false,
         ["legacy.ranking"] = false,
@@ -24,6 +26,7 @@ V2Config = {
         ["legacy.eternal_arena"] = false,
         ["legacy.rating_ads"] = false,
         ["legacy.paid_map_unlock"] = false,
+        ["legacy.missions"] = false,
     },
 }
 
@@ -32,7 +35,20 @@ local validSaveProfiles = {
     qa_fresh = true,
     qa_explore = true,
     qa_combat = true,
+    qa_boarding = true,
+    qa_rune = true,
+    qa_settlement = true,
 }
+
+function V2Config:shouldPlayAudioCues()
+    if not self:isFeatureEnabled("v2.audio_cues") then
+        return false
+    end
+    if os ~= nil and os.getenv ~= nil and os.getenv("SIMULATOR_DEVICE_NAME") ~= nil then
+        return os.getenv("NEWPIRATE_V2_AUDIO") == "1"
+    end
+    return true
+end
 
 function V2Config:isFeatureEnabled(featureName)
     return self.FEATURE_FLAGS[featureName] == true

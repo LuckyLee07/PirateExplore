@@ -15,6 +15,7 @@ local disabledLegacyFeatures = {
     "legacy.eternal_arena",
     "legacy.rating_ads",
     "legacy.paid_map_unlock",
+    "legacy.missions",
 }
 
 for _, featureName in ipairs(disabledLegacyFeatures) do
@@ -28,6 +29,12 @@ assert(config:scopedPreferenceKey("isFirstPlotShown") == "v2_chapter_01_player_i
 zqV2SaveProfile = "qa_combat"
 assert(config:getSaveProfile() == "qa_combat")
 assert(config:scopedSaveName("gameRole") == "v2_chapter_01_qa_combat_gameRole")
+
+zqV2SaveProfile = "qa_boarding"
+assert(config:getSaveProfile() == "qa_boarding")
+
+zqV2SaveProfile = "qa_rune"
+assert(config:getSaveProfile() == "qa_rune")
 
 zqV2SaveProfile = "invalid_profile"
 assert(config:getSaveProfile() == "player")
