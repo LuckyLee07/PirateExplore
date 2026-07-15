@@ -1,0 +1,8 @@
+id,chapter_id,type,name,risk,visibility,event_id,enemy_id,reward_id,required_flag,grants_flag
+node_port,chapter_01,port,皇家港,0,visible,,,,,voyage_ready
+node_fog_gate,chapter_01,choice,第一片迷雾,1,visible,event_route_choice,,,,route_chosen
+node_wreck,chapter_01,resource,沉船残骸,1,fogged,,,reward_salvage,route_chosen,salvage_found
+node_whisper,chapter_01,event,海盗王低语,2,fogged,event_whisper,,,,curse_heard
+node_safe_cove,chapter_01,event,避风海湾,1,fogged,event_safe_cove,,,,crew_restored
+node_raider,chapter_01,battle,诅咒追猎者,3,fogged,,enemy_cursed_raider,reward_battle,route_chosen,raider_defeated
+node_rune_clue,chapter_01,chapter_end,符文回响,2,fogged,event_rune_clue,,reward_rune_clue,raider_defeated,chapter_01_complete

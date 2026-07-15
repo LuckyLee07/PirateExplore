@@ -1,0 +1,5 @@
+id,chapter_id,name,description,required_flag
+event_route_choice,chapter_01,暗礁间的航线,安全航线更远但能恢复补给；近路可能发现沉船战利品,voyage_ready
+event_whisper,chapter_01,瓶中低语,海盗王提出以力量交换服从,route_chosen
+event_safe_cove,chapter_01,避风休整,船员请求在进入危险海域前短暂休整,route_chosen
+event_rune_clue,chapter_01,符文回响,战利品中的碎片回应了水晶瓶,raider_defeated

@@ -1,0 +1,2 @@
+id,name,chapter_id,ship_hp,boarding_power,transfer_rule,reward_id
+enemy_cursed_raider,海魂诅咒追猎者,chapter_01,500,100,舰炮击毁甲板后接舷敌人以受伤状态开场,reward_battle

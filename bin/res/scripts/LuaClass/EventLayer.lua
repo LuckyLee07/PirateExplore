@@ -4,6 +4,8 @@ require "LuaClass/FightMode"
 require "LuaClass/EventDetailsLayer"
 require "LuaClass/EventRewardLayer"
 require "LuaClass/WorldMapLayer"
+require "LuaClass/V2Config"
+require "LuaClass/ToastUtil"
 
 
 EventLayer = class("EventLayer",function ()
@@ -380,6 +382,10 @@ end
 
 --检查是否能直接跳入到对应的层
 function EventLayer:checkJumpToEternalArena( costDatas,level )
+	if not V2Config:isFeatureEnabled("legacy.eternal_arena") then
+		ToastUtil:downString(V2Config:getFeatureUnavailableText("legacy.eternal_arena"))
+		return
+	end
 	if not ExploreBagController:getBagController():costGoodsByGoodsIdAndNum(costDatas.id,costDatas.num,true,"对应物品不足，无法直接跳入对应的层数") then
 		return
 	end
@@ -1116,6 +1122,12 @@ end
 
 --改变成永恒竞技场
 function EventLayer:changeToEternalArena( data )
+	if not V2Config:isFeatureEnabled("legacy.eternal_arena") then
+		self.buttons[1]:setVisible(false)
+		self.buttonTips[1]:setVisible(false)
+		self.description:setString(V2Config:getFeatureUnavailableText("legacy.eternal_arena"))
+		return
+	end
 	--若没有开启过，查看是否有对应的道具
 	if not self.controller:checkIsOpen() then		
 		local have = ExploreBagController:getBagController():checkItemsIsHave(self.controller.costTool)
@@ -1138,6 +1150,10 @@ end
 
 --进入永恒竞技场
 function EventLayer:enterToEternalArenaByLevel( level )
+	if not V2Config:isFeatureEnabled("legacy.eternal_arena") then
+		ToastUtil:downString(V2Config:getFeatureUnavailableText("legacy.eternal_arena"))
+		return
+	end
 	print("enterToEternalArenaByLevel",level)
 
 	if level ~= nil then
@@ -1572,4 +1588,3 @@ function EventLayer:leaveToExploreMap( arg )
 	end
 
 end
-

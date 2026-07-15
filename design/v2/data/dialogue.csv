@@ -1,0 +1,7 @@
+id,chapter_id,node_id,speaker,text,trigger
+dialogue_001,chapter_01,node_port,海盗王,终于有人打开了这只瓶子。,chapter_start
+dialogue_002,chapter_01,node_port,卡特琳娜,想活着离开就先修好船。迷雾里的东西已经发现我们了。,chapter_start
+dialogue_003,chapter_01,node_fog_gate,卡特琳娜,近路穿过暗礁，远路能让船员休整。你来决定。,node_enter
+dialogue_004,chapter_01,node_whisper,海盗王,借用我的力量，你会更快找到符文。,node_enter
+dialogue_005,chapter_01,node_raider,罗克,先轰碎它的甲板，再让米克带人登船！,battle_start
+dialogue_006,chapter_01,node_rune_clue,海盗王,第一道封印已经松动。继续吧，船长。,chapter_complete

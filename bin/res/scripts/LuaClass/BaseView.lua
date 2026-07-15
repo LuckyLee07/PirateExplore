@@ -3,6 +3,7 @@ require "LuaClass/DataManager"
 require "LuaClass/EffectUtil"
 require "AudioEngine"
 require "LuaClass/RandomEventMode"
+require "LuaClass/V2Config"
 
 BaseViewLastClickCDTime = 0
 
@@ -150,6 +151,11 @@ function BaseView:init()
     self.topRightBtn:registerScriptTapHandler(function() 
         cclog("点击了钻石商城按钮")
 
+        if not V2Config:isFeatureEnabled("legacy.diamond_store") then
+            ToastUtil:downString(V2Config:getFeatureUnavailableText("legacy.diamond_store"))
+            return
+        end
+
         if DataManager:getInstance():getSound_off() == 0 then
             AudioEngine.playEffect(EFFECT_Button, false)
         end
@@ -163,6 +169,7 @@ function BaseView:init()
     -- self.topRightBtnLabel:enableStroke(cc.c4b(16, 16, 16, 255), 2)
     self.topRightBtnLabel:setPosition(cc.p(self.topRightBtn:getContentSize().width * 0.5, self.topRightBtn:getContentSize().height * 0.5))
     self.topRightBtn:addChild(self.topRightBtnLabel, 1)
+    self.topRightBtn:setVisible(V2Config:isFeatureEnabled("legacy.diamond_store"))
 
     local baseViewButtonGroup = {self.topRightBtn, self.topLeftBtn}
 
@@ -171,7 +178,7 @@ function BaseView:init()
     self:addChild(self.storeMenu, 1)
 
     -- 控制钻石商店红点
-    if DataManager:getInstance():isShowDiamondStoreRedPointer() then
+    if V2Config:isFeatureEnabled("legacy.diamond_store") and DataManager:getInstance():isShowDiamondStoreRedPointer() then
         GuideController:getInstance():addRedPoint(self.topRightBtn)
     else
         GuideController:getInstance():removeRedPoint(self.topRightBtn)
@@ -198,6 +205,12 @@ end
 
 -- 在出征界面修改右侧按钮的函数
 function BaseView:resetTopRightButtonToRank()
+    if not V2Config:isFeatureEnabled("legacy.ranking") then
+        self.topRightBtn:setVisible(false)
+        return
+    end
+
+    self.topRightBtn:setVisible(true)
     self.topRightBtnLabel:setString("排行榜")
     self.topRightBtn:unregisterScriptTapHandler()
     self.topRightBtn:setNormalImage(cc.Sprite:create("Images/btn/ann02_a.png"))
@@ -213,6 +226,7 @@ end
 
 -- 在设置、成就、天赋、钻石商城等界面将右上角按钮改为返回按钮
 function BaseView:resetTopRightButtonToBack()
+    self.topRightBtn:setVisible(true)
     self.topRightBtnLabel:setString("返  回")
     self.topRightBtn:unregisterScriptTapHandler()
     self.topRightBtn:setNormalImage(cc.Sprite:create("Images/btn/ann02_a.png"))
@@ -550,7 +564,7 @@ function BaseView:addInfoNode(leftTitle, leftFunc, rightTitle, rightFunc, middle
         if GuideController:getInstance():getIsHaveStep(8) then
             zqDispatch:moveToTalent()
         else
-            ToastUtil:downString("您需要建造船坞，可激活该功能")
+            ToastUtil:downString("先建造船坞并完成第一次出航，再回来规划天赋")
         end
     end)
     table.insert(btnArr, self.leftBtn)
@@ -585,7 +599,7 @@ function BaseView:addInfoNode(leftTitle, leftFunc, rightTitle, rightFunc, middle
             local view = RandomEventView:create()
             view:show()
         else
-            ToastUtil:downString("您需要建造船坞并出征\n之后方可激活该功能")
+            ToastUtil:downString("先建造船坞并出征一次，之后会解锁海上情报")
         end
     end)
     table.insert(btnArr, self.rightBtn)

@@ -6,6 +6,8 @@ require "LuaClass/Repository"
 require "LuaClass/Resource"
 require "LuaClass/RandomEventMode"
 require "LuaClass/GuideController"
+require "LuaClass/ToastUtil"
+require "LuaClass/V2Config"
 
 
 Dispatch = class("Dispatch", function ()
@@ -714,6 +716,10 @@ end
 
 -- 移动到成就模块
 function Dispatch:gotoAchievement()
+    if not V2Config:isFeatureEnabled("legacy.achievement") then
+        ToastUtil:downString(V2Config:getFeatureUnavailableText("legacy.achievement"))
+        return
+    end
     require "LuaClass/Achievement"
     self:setViewWithDirection(AchievementLayer:create(), true, 1)
 end
@@ -726,12 +732,20 @@ end
 
 -- 移动到排行榜模块
 function Dispatch:gotoRanking()
+    if not V2Config:isFeatureEnabled("legacy.ranking") then
+        ToastUtil:downString(V2Config:getFeatureUnavailableText("legacy.ranking"))
+        return
+    end
     require "LuaClass/Ranking"
     self:setViewWithDirection(RankingLayer:create(), true, 1)
 end
 
 -- 移动到钻石商城模块
 function Dispatch:gotoDiamondStore()
+    if not V2Config:isFeatureEnabled("legacy.diamond_store") then
+        ToastUtil:downString(V2Config:getFeatureUnavailableText("legacy.diamond_store"))
+        return
+    end
     require "LuaClass/DiamondStore"
     self:setViewWithDirection(DiamondStore:create(), true, 1)
 end

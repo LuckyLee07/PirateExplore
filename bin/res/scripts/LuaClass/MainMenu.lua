@@ -2,10 +2,16 @@ require "AudioEngine"
 require "LuaClass/Header"
 require "LuaClass/DataManager"
 require "LuaClass/ToastUtil"
-require "LuaClass/ChargeMode"
 require "LuaClass/GuideController"
-require "LuaClass/DiamondStore"
 require "LuaClass/UIKit"
+require "LuaClass/V2Config"
+
+if V2Config:isFeatureEnabled("legacy.charge") then
+    require "LuaClass/ChargeMode"
+end
+if V2Config:isFeatureEnabled("legacy.diamond_store") or V2Config:isFeatureEnabled("legacy.push_gift") then
+    require "LuaClass/DiamondStore"
+end
 
 
 MainMenuLayer = class("MainMenuLayer", function ()
@@ -129,6 +135,7 @@ function MainMenuLayer:init()
     self.diamondNode:setPosition(cc.p(visibleSize.width * 0.83, TopBg:getPositionY()))
     self.diamondNode:setCascadeOpacityEnabled(true)
     self:addChild(self.diamondNode)
+    self.diamondNode:setVisible(V2Config:isFeatureEnabled("legacy.charge") or V2Config:isFeatureEnabled("legacy.diamond_store"))
 
     -- 添加钻石底条
     local diamondBg = cc.Sprite:create("Images/UI/ditiao_01.png")
@@ -160,6 +167,11 @@ function MainMenuLayer:init()
     -- 添加钻石按钮
     local addDiamondBtn = SDButton:create("Images/UI/AddMoneyBtn.png", "Images/UI/AddMoneyBtn1.png", function() 
         cclog("点击了增加钻石按钮")
+
+        if not V2Config:isFeatureEnabled("legacy.charge") then
+            ToastUtil:downString(V2Config:getFeatureUnavailableText("legacy.charge"))
+            return
+        end
         
         local time = os.time()
         local recommended = {}
@@ -237,7 +249,7 @@ function MainMenuLayer:init()
                 zqDispatch:moveToExpedition()
             end
         else
-            ToastUtil:downString("您需要建造船坞，可激活该功能")
+            ToastUtil:downString("先在建设中建造船坞，准备船员和食物后即可出征")
         end
     end)
     self.expeditionBtn:setPosition(bottomBtnPosX, self.btnHLBg:getPositionY())
@@ -261,7 +273,7 @@ function MainMenuLayer:init()
                 GuideController:getInstance():addStep(3, true)
             end
         else
-            ToastUtil:downString("您需要建造训练营，可激活该功能")
+            ToastUtil:downString("先在建设中建造训练营，之后可以招募出征船员")
         end
     end)
     self.trainBtn:setPosition(bottomBtnPosX, self.expeditionBtn:getPositionY())
@@ -303,7 +315,7 @@ function MainMenuLayer:init()
                 zqDispatch:moveToRepository()
             end
         else
-            ToastUtil:downString("您需要建造仓库，可激活该功能")
+            ToastUtil:downString("先点击炼金获得金币，再在建设中建造仓库")
         end
     end)
     self.repositoryBtn:setPosition(bottomBtnPosX, self.expeditionBtn:getPositionY())
@@ -327,7 +339,7 @@ function MainMenuLayer:init()
                 GuideController:getInstance():addStep(2, true)
             end
         else
-            ToastUtil:downString("您需要建造铁匠铺或船工厂\n可激活该功能")
+            ToastUtil:downString("先在建设中建造铁匠铺或船工厂，之后可以制造装备和船只")
         end
     end)
     self.makeBtn:setPosition(bottomBtnPosX, self.expeditionBtn:getPositionY())
@@ -350,7 +362,7 @@ function MainMenuLayer:init()
                 zqDispatch:moveToResource()
             end
         else
-            ToastUtil:downString("您需要建造仓库，可激活该功能")
+            ToastUtil:downString("先建造仓库解锁采集，采集木头和石头用于继续建设")
         end
     end)
     self.resourceBtn:setPosition(bottomBtnPosX, self.expeditionBtn:getPositionY())
@@ -374,7 +386,7 @@ function MainMenuLayer:init()
                 GuideController:getInstance():addStep(4, true)
             end
         else
-            ToastUtil:downString("您需要建造市场，可激活该功能")
+            ToastUtil:downString("先在建设中建造市场，之后可以购买缺少的材料")
         end
     end)
     self.storeBtn:setPosition(bottomBtnPosX, self.expeditionBtn:getPositionY())
@@ -581,7 +593,7 @@ function MainMenuLayer:init()
                 self.repositoryBtn:runAction(cc.Sequence:create(cc.ScaleTo:create(0.0, 2.0), cc.ScaleTo:create(0.8, 1.0)))
                 self.resourceBtn:runAction(cc.Sequence:create(cc.ScaleTo:create(0.0, 2.0), cc.ScaleTo:create(0.8, 1.0)))
                 -- 播放建设解锁剧情
-                local storyStr = {"它回应了你，一个新的功能被解锁！", "看看它能为你做些什么。"}
+                local storyStr = {"建设功能已解锁。", "下一步：建造仓库，采集木头和石头，为第一次出航做准备。"}
                 self:playStory(storyStr)
                 GuideController:getInstance():addStep(101, true)
             else
@@ -624,24 +636,24 @@ function MainMenuLayer:init()
 
             function playStep4()
                 -- 显示第二句话
-                DataManager:getInstance():sendSystemInfo("现在多使用几次，制造10枚金币吧！")
+                DataManager:getInstance():sendSystemInfo("目标：启动瓶中炼金法阵，修复码头并准备第一次远航。")
             end
 
             function playStep3()
                 -- 显示第一句话，然后延迟显示后两句话
-                DataManager:getInstance():sendSystemInfo("当你缺少金币的时候，可以点击法阵无限获取！")
+                DataManager:getInstance():sendSystemInfo("炼金法阵可以提取金币，用于修复码头和受损船只。")
                 self.MainMenuButtonGroup:runAction(cc.Sequence:create(cc.DelayTime:create(1.0), cc.CallFunc:create(playStep4)))
             end
 
             function playStep2()
                 -- 最后一步，显示文字，然后显示出下方炼金按钮、海盗船以及下方的炼金法阵
-                DataManager:getInstance():sendSystemInfo("以及一个神秘的炼金法阵")
+                DataManager:getInstance():sendSystemInfo("瓶中港口残留着一个仍可运转的炼金法阵。")
                 self.MainMenuButtonGroup:runAction(cc.Sequence:create(cc.DelayTime:create(1.6), cc.FadeIn:create(0.6), cc.CallFunc:create(playStep3)))
             end
 
             function playStep1()
                 -- 第一步，显示文字，然后显示出海盗船图
-                DataManager:getInstance():sendSystemInfo("唯有一艘残破的海盗船")
+                DataManager:getInstance():sendSystemInfo("码头边只剩一艘受损海盗船，它是离开这片海域的唯一希望。")
                 self.coinNode:runAction(cc.Sequence:create(cc.DelayTime:create(3.6), cc.CallFunc:create(playStep2)))
 
                 -- 第二步，显示出金币组和钻石组来
@@ -654,7 +666,7 @@ function MainMenuLayer:init()
 
             function playStep()
                 -- 首先，显示文字，然后显示顶部背景条
-                DataManager:getInstance():sendSystemInfo("你睁开双眼，发现身处荒岛")
+                DataManager:getInstance():sendSystemInfo("你打开水晶瓶后被卷入瓶中世界，海盗王的低语仍在耳边回荡。")
                 -- 显示顶部菜单背景
                 TopBg:runAction(cc.Sequence:create(cc.DelayTime:create(1.0), cc.FadeIn:create(1.6), cc.CallFunc:create(playStep1)))
             end
@@ -681,39 +693,37 @@ function MainMenuLayer:init()
         MainMenuDidGuideChange()
     -- end
 
-    -- 播放船走的动画
-    local boatBtn = nil
-    boatBtn = SDButton:create("Images/DiamondStore/GoldenBoat.png", "Images/DiamondStore/GoldenBoat.png", function()
-        PushGiftView:create():show()
-        -- 移动小船到准备出发的位置
-        self.boatSpr:stopAllActions()
-        self.boatSpr:setPosition(cc.p(visibleSize.width + boatBtn:getContentSize().width, UIBottomHeight + boatBtn:getContentSize().height * 0.5))
-    end)
-    self.boatSpr = cc.Node:create()
-    self.boatSpr:setPosition(cc.p(visibleSize.width + boatBtn:getContentSize().width * 0.5, UIBottomHeight + boatBtn:getContentSize().height * 0.5))
-    self:addChild(self.boatSpr, 9999)
-
-    boatBtn:setPosition(cc.p(0, 0))
-    self.boatSpr:addChild(boatBtn)
-
-    local function playBoatRun()
-        -- body
-        self.boatSpr:setPosition(cc.p(visibleSize.width + boatBtn:getContentSize().width * 0.5, UIBottomHeight + boatBtn:getContentSize().height * 0.5))
-        self.boatSpr:runAction(cc.MoveTo:create(10.0, cc.p(-boatBtn:getContentSize().width * 0.5, self.boatSpr:getPositionY())))
-    end
-
-    -- 没解锁船坞并且没进入过地图的情况下不弹礼包推送 by 杨杰，厉晔的需求
-    if DataManager:getInstance():getRoleData(roleMapInfo) ~= nil and not isEnterMap then
-        local delay = cc.DelayTime:create(0.3)
-        local call = cc.CallFunc:create(function()
+    if V2Config:isFeatureEnabled("legacy.push_gift") then
+        -- 旧礼包船只在 V2 首章中默认隔离，仅在显式开启旧功能时创建。
+        local boatBtn = nil
+        boatBtn = SDButton:create("Images/DiamondStore/GoldenBoat.png", "Images/DiamondStore/GoldenBoat.png", function()
             PushGiftView:create():show()
+            self.boatSpr:stopAllActions()
+            self.boatSpr:setPosition(cc.p(visibleSize.width + boatBtn:getContentSize().width, UIBottomHeight + boatBtn:getContentSize().height * 0.5))
         end)
-        local seq = cc.Sequence:create(delay, call)
-        self:runAction(seq)
-    end
-    -- 出征之后才会显示金船走过 by 杨杰 厉晔的需求
-    if DataManager:getInstance():getRoleData(roleMapInfo) ~= nil then
-        self:runAction(cc.RepeatForever:create(cc.Sequence:create(cc.DelayTime:create(60.0), cc.CallFunc:create(playBoatRun))))
+        self.boatSpr = cc.Node:create()
+        self.boatSpr:setPosition(cc.p(visibleSize.width + boatBtn:getContentSize().width * 0.5, UIBottomHeight + boatBtn:getContentSize().height * 0.5))
+        self:addChild(self.boatSpr, 9999)
+
+        boatBtn:setPosition(cc.p(0, 0))
+        self.boatSpr:addChild(boatBtn)
+
+        local function playBoatRun()
+            self.boatSpr:setPosition(cc.p(visibleSize.width + boatBtn:getContentSize().width * 0.5, UIBottomHeight + boatBtn:getContentSize().height * 0.5))
+            self.boatSpr:runAction(cc.MoveTo:create(10.0, cc.p(-boatBtn:getContentSize().width * 0.5, self.boatSpr:getPositionY())))
+        end
+
+        if DataManager:getInstance():getRoleData(roleMapInfo) ~= nil and not isEnterMap then
+            local delay = cc.DelayTime:create(0.3)
+            local call = cc.CallFunc:create(function()
+                PushGiftView:create():show()
+            end)
+            local seq = cc.Sequence:create(delay, call)
+            self:runAction(seq)
+        end
+        if DataManager:getInstance():getRoleData(roleMapInfo) ~= nil then
+            self:runAction(cc.RepeatForever:create(cc.Sequence:create(cc.DelayTime:create(60.0), cc.CallFunc:create(playBoatRun))))
+        end
     end
 
     -- 刷新跟新手引导解锁有关的内容
@@ -834,4 +844,3 @@ end
 --         self.pointNode:addChild(spr)
 --     end
 -- end
-

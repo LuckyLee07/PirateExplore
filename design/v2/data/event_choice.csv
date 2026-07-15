@@ -1,0 +1,7 @@
+id,event_id,label,result_text,reward_id,grants_flag
+choice_route_risky,event_route_choice,穿过暗礁走近路,节省补给并发现沉船残骸,reward_salvage,risky_route
+choice_route_safe,event_route_choice,沿外海安全航行,消耗更多补给但船员得到休整,,safe_route
+choice_whisper_resist,event_whisper,拒绝低语,船员士气稳定但没有获得额外力量,,curse_resisted
+choice_whisper_listen,event_whisper,聆听低语,获得短暂炮击强化并留下诅咒印记,,curse_marked
+choice_safe_rest,event_safe_cove,靠岸休整,恢复接舷队伍状态,,crew_restored
+choice_rune_take,event_rune_clue,收下符文碎片,第一枚符文线索被记录,reward_rune_clue,chapter_01_complete

@@ -1,5 +1,7 @@
 require "AudioEngine"
 require "LuaClass/Header"
+require "LuaClass/ToastUtil"
+require "LuaClass/V2Config"
 
 
 --根据地图索引获取资料片信息
@@ -282,6 +284,11 @@ function WorldMapLayer:tipMap( index )
 end
 
 function WorldMapLayer:showChargeView( ... )
+    if not V2Config:isFeatureEnabled("legacy.charge") then
+        self.statue = "ready"
+        ToastUtil:downString(V2Config:getFeatureUnavailableText("legacy.charge"))
+        return
+    end
     self.statue = "charging"
 
     local charge = ChargeLayer:create()
@@ -294,6 +301,11 @@ end
 
 --资料片购买界面
 function WorldMapLayer:showBuyView(  )
+    if not V2Config:isFeatureEnabled("legacy.paid_map_unlock") then
+        self.statue = "ready"
+        ToastUtil:downString(V2Config:getFeatureUnavailableText("legacy.paid_map_unlock"))
+        return
+    end
     self.statue = "Buy"
     local price = tonumber(self.lockMapInfo["price"])
 
@@ -468,7 +480,11 @@ function WorldMapLayer:moveToMapByIndex( index )
 
     --若是限制地图，则弹出购买提示
     if not self.owner:enterNextMapEnter(false,index,true) then
-        self:showBuyView()
+        if V2Config:isFeatureEnabled("legacy.paid_map_unlock") then
+            self:showBuyView()
+        else
+            ToastUtil:downString(V2Config:getFeatureUnavailableText("legacy.paid_map_unlock"))
+        end
         return
     end
 
@@ -632,7 +648,7 @@ function WorldMapLayer:clearWorldFogs( )
         -- print("i",i)
 		if tipMapIndex ~= nil and tipMapIndex == i then
             --若提示地图为解锁地图，则需要执行上锁动画
-            if DataManager:getInstance():getRoleData(roleTranslateDoor) + 1 == i then
+            if V2Config:isFeatureEnabled("legacy.paid_map_unlock") and DataManager:getInstance():getRoleData(roleTranslateDoor) + 1 == i then
                 self.willTipLock = true
                 --获取锁的资料片的商场信息
                 self.lockMapInfo = getMapShopInfoByMapIndex(i)
@@ -677,4 +693,3 @@ function WorldMapLayer:enterMapByIndex( index )
         self:removeFromParent(true)
     end
 end
-

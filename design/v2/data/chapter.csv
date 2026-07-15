@@ -1,0 +1,2 @@
+id,name,objective,start_node,end_node,estimated_minutes
+chapter_01,皇家港与瓶中海域,完成第一次远航并取得第一枚符文线索,node_port,node_rune_clue,20

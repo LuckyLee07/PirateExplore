@@ -30,3 +30,14 @@ The old Cocos simulator launcher previously stored at the repository root under 
 ```
 
 `ios-device` performs a compile-only device build with code signing disabled.
+
+## Product Documentation
+
+- Current product and development baseline (Chinese):
+  [`docs/product-iteration-plan-v2.md`](docs/product-iteration-plan-v2.md)
+- Historical management-first plan:
+  [`docs/product-long-term-iteration-plan.md`](docs/product-long-term-iteration-plan.md)
+- Art direction:
+  [`docs/art-direction-app-store.md`](docs/art-direction-app-store.md)
+- Iteration log:
+  [`docs/product-iteration-log.md`](docs/product-iteration-log.md)

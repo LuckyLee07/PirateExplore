@@ -117,7 +117,7 @@ function ResourceLayer:init()
         
         if not GuideController:getInstance():getIsHaveStep(300) then
             DataManager:getInstance():createSuccessCheck(kUnlockBuild, "1")
-            DataManager:getInstance():sendSystemInfo("有了石头和木头，您可以建造这些建筑了。")
+            DataManager:getInstance():sendSystemInfo("获得木头和石头。下一步：回到建设，优先建造船坞和训练营，为第一次出航准备船员与补给。")
             GuideController:getInstance():addStep(300)
         end
     end, "Images/MainMenu/w_caij.png", true, progressTime)

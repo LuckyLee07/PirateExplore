@@ -1,0 +1,4 @@
+id,name,gold,timber,iron,provisions,rune_dust,purpose_hint
+reward_salvage,沉船补给,20,15,5,2,0,可用于修复船体或强化火炮
+reward_battle,追猎者战利品,35,10,15,0,1,返港后选择船体或火炮升级
+reward_rune_clue,第一枚符文线索,0,0,0,0,5,解锁下一次远航目标

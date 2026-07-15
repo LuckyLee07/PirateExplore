@@ -1,8 +1,12 @@
 require "LuaClass/Header"
 require "LuaClass/EventLayer"
 require "LuaClass/DataManager"
-require "LuaClass/EternalArenaController"
 require "LuaClass/PlotLayer"
+require "LuaClass/V2Config"
+
+if V2Config:isFeatureEnabled("legacy.eternal_arena") then
+	require "LuaClass/EternalArenaController"
+end
 
 --悔语录:其实事件管理者已经完全复杂话了，其实只用根据表里的数据，然后生成一个数据结构，根据数据结构的属性，去执行方法，诶(一个星期之后)
 
@@ -57,7 +61,9 @@ function EventManger:init(owner)
     self.csvData = DataManager:getInstance():getCSVByID(csvOfStrongholdAttribute)
 
     --初始化永恒竞技场管理者
-    EternalArenaController:getInstance(self)
+    if V2Config:isFeatureEnabled("legacy.eternal_arena") then
+        EternalArenaController:getInstance(self)
+    end
 
     return true;
 end
@@ -913,5 +919,4 @@ function EventManger:allMembersKilled( )
 
 	self.owner:returnToBase( "Killed" )
 end
-
 

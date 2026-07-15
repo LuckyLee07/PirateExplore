@@ -2620,7 +2620,11 @@ function DataManager:AlchemyButtonDidClick()
 
     -- 走新手引导的时候，第一次要求点击10次炼金按钮，才能触发addStep
     if AlchemyBtnClickCount >= 10 then
+        local isBuildUnlocked = GuideController:getInstance():getIsHaveStep(1)
         GuideController:getInstance():addStep(1)
+        if not isBuildUnlocked then
+            self:sendSystemInfo("建设已解锁：点击底部“建设”，优先建造仓库。仓库会解锁采集，是第一次出航的起点。")
+        end
         if not GuideController:getInstance():getIsHaveStep(2) then
             -- 第一次点击炼金的时候清理掉成就和声望的红点
             GuideController:getInstance():addStep(401, true)

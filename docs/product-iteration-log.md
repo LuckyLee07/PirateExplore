@@ -1,0 +1,130 @@
+# Product Iteration Log
+
+This log records product-facing changes made after the long-term roadmap was
+created.
+
+## 2026-06-18: Batch A, First-Session Clarity
+
+Goal:
+
+Make the first session point more clearly toward the core pirate loop:
+
+```text
+alchemy -> build warehouse -> gather resources -> build shipyard/training camp
+-> assign food and crew -> sail
+```
+
+Changed files:
+
+- `bin/res/scripts/LuaClass/MainMenu.lua`
+- `bin/res/scripts/LuaClass/DataManager.lua`
+- `bin/res/scripts/LuaClass/Resource.lua`
+- `bin/res/scripts/LuaClass/Expedition.lua`
+- `bin/res/scripts/LuaClass/BaseView.lua`
+
+What changed:
+
+- Rewrote the opening system messages to frame the fantasy as rebuilding a
+  stranded pirate crew.
+- Rewrote locked-button tips so they explain the unlock route instead of only
+  saying the feature is unavailable.
+- Added a one-time next-step message when alchemy unlocks construction.
+- Rewrote the first gather message so it points back to building shipyard and
+  training camp.
+- Rewrote first shipyard reward messaging so the player knows to assign crew
+  and food before sailing.
+- Rewrote talent/intel locked tips to point back to the first expedition.
+
+Validation:
+
+- `luac -p bin/res/scripts/LuaClass/MainMenu.lua`
+- `luac -p bin/res/scripts/LuaClass/DataManager.lua`
+- `luac -p bin/res/scripts/LuaClass/Resource.lua`
+- `luac -p bin/res/scripts/LuaClass/Expedition.lua`
+- `luac -p bin/res/scripts/LuaClass/BaseView.lua`
+- iOS simulator build:
+  - `xcodebuild -project projects/ios_mac/NewPirate.xcodeproj -scheme 'NewPirate iOS' -configuration Debug -destination 'platform=iOS Simulator,name=iPhone 12 Pro,OS=26.2' -derivedDataPath build/DerivedData/ios-sim USE_HEADERMAP=NO CODE_SIGNING_ALLOWED=NO ARCHS=arm64 ONLY_ACTIVE_ARCH=NO build`
+- iOS simulator launch:
+  - installed and launched bundle `com.fancyGame.NewPirate`
+- Launch screenshot:
+  - `docs/product-iteration-launch-check.png`
+
+Result:
+
+- All five modified Lua files passed syntax checks.
+- iOS simulator build succeeded.
+- App launched into the current warehouse screen using the original UI art
+  baseline.
+
+Still required:
+
+- Run a fresh-save iOS simulator session.
+- Verify that the first-session message order is not too dense.
+- Verify that locked-button toasts fit on the phone viewport.
+- Verify that the player can reach first expedition without guessing.
+- Tune building/resource pacing if first expedition takes too long.
+
+## 2026-07-16: Product Baseline V2
+
+Goal:
+
+Reassess the product after reviewing the complete original planning, art, and
+development archive under `/Users/lizi/Desktop/Pirate`, then establish one
+authoritative baseline for future iteration.
+
+Documentation changes:
+
+- Added `docs/product-iteration-plan-v2.md` as the current Chinese product and
+  development baseline.
+- Repositioned the game from a management-first RPG to a story-driven dark
+  fantasy pirate exploration RPG.
+- Defined the four product pillars: cursed bottle and sixteen runes, fog-of-war
+  sea exploration, ship-to-boarding combat, and crew/ship identity.
+- Added a keep/rework/defer/archive matrix for legacy systems.
+- Defined a 15-20 minute first-chapter vertical slice and a sixteen-week roadmap.
+- Added product, art, engineering, data, QA, and decision acceptance criteria.
+- Marked `docs/product-long-term-iteration-plan.md` as a historical document.
+- Added the current documentation entry points to `README.md`.
+
+Result:
+
+Future product decisions should use `docs/product-iteration-plan-v2.md` as the
+single current baseline. The next execution step is Phase 0: first-chapter flow,
+map nodes, system isolation, minimal data definitions, and test-save setup.
+
+## 2026-07-16: V2 Phase 0, Design And Engineering Baseline
+
+Goal:
+
+Create an isolated, testable V2 foundation before implementing the first-chapter
+vertical slice.
+
+Implemented:
+
+- Added a central `V2Config` for product phase, feature gates, save namespace,
+  QA profiles, and unavailable-feature messages.
+- Isolated V2 role, map, mission, and first-plot state from legacy saves.
+- Disabled legacy achievement, ranking, diamond store, charging, push gifts,
+  seven-day rewards, eternal arena, rating/ads, and paid map unlock flows.
+- Reframed the first-session system copy around the cursed bottle and damaged
+  ship instead of a generic stranded-island management loop.
+- Added the Chapter 1 flow, node map, system-isolation baseline, and validation
+  report.
+- Added 11 readable V2 source tables for the chapter, five resources, seven map
+  nodes, four crew roles, two ship modules, events, enemies, rewards, and
+  dialogue.
+- Added automatic Lua, config, schema, foreign-key, scope, and runtime-gate
+  validation.
+
+Validation:
+
+- `tools/v2/validate_phase0.sh` passed.
+- 11 content tables and 46 rows passed validation.
+- arm64 iOS simulator build, install, and launch passed on `NewPirate Fresh QA`.
+- Fresh V2 save displayed the water-bottle opening sequence.
+- iOS device compile-only build passed with code signing disabled.
+
+Result:
+
+Phase 0 acceptance gates passed. Phase 1 can implement the playable gray-box
+Chapter 1 slice using the isolated V2 data and save baseline.

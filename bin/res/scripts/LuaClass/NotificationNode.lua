@@ -9,7 +9,11 @@
 require "LuaClass/Header"
 require "LuaClass/SDButton"
 require "LuaClass/HttpSingleton"
-require "LuaClass/SevenDayBonus"
+require "LuaClass/V2Config"
+
+if V2Config:isFeatureEnabled("legacy.seven_day_bonus") then
+    require "LuaClass/SevenDayBonus"
+end
 
 NotificationNode = class("NotificationNode", function ()
     return cc.Layer:create()
@@ -214,7 +218,7 @@ local function HTTPCallback_getLasttime(event)
     end
     print("lasttime = "..basestr)
     -- 走过新手引导之后再弹出登陆礼包
-    if GuideController:getInstance():getIsHaveStep(1) then
+    if V2Config:isFeatureEnabled("legacy.seven_day_bonus") and GuideController:getInstance():getIsHaveStep(1) then
         -- -- 如果系统更新成功，那么现实7日登陆奖励
         local days = math.floor(basestr / 86400) -- 16541
         -- 根据存档判断时间是否合理，合理就弹7日奖励
@@ -506,6 +510,5 @@ function NotificationNode:visit()
     -- 这里不会被调用，暂时没影响
     CCNode:visit()
 end
-
 
 

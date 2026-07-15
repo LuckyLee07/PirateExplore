@@ -1,3 +1,5 @@
+require "LuaClass/V2Config"
+
 if false then
 	require "Cocos.init"
 	cc.Scale9Sprite = ccui.Scale9Sprite

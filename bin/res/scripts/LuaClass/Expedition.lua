@@ -204,11 +204,11 @@ function ExpeditionLayer:init()
         DataManager:getInstance():addPackItemWithId("1005", 100)
         DataManager:getInstance():addSoilderWithId("100", 1)
         -- 然后push系统信息到系统提示中去
-        DataManager:getInstance():sendSystemInfo("有一名船员携带100份食物慕名而来！\n必须有船员携带食物才能出征！\n您可以在采集界面制造食物！\n您可以建造训练营后，招募船员！")
+        DataManager:getInstance():sendSystemInfo("船坞建成：一名船员带着100份食物加入。下一步：在列表中分配船员和食物，然后点击出征，开始第一次航行。")
         -- 然后弹窗提示玩家获得的东西
         local _alert = AlertView:create(1, 0, "提  示", nil, nil, "确 定")
         -- print("_alert inited")
-        local showLabel1 = cc.LabelTTF:create("恭喜您建好船坞，现在可以出征了！\n恭喜您获得船员×1，食物×100", BoldFont, 30)
+        local showLabel1 = cc.LabelTTF:create("船坞建成，现在可以出征了！\n获得船员×1，食物×100\n请分配船员和食物后开始第一次航行。", BoldFont, 30)
         showLabel1:setColor(cc.c3b(255, 255, 255))
         showLabel1:setPosition(cc.p(_alert.s_position.x, _alert.s_position.y))
         _alert:addChild(showLabel1)

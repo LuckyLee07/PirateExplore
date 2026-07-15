@@ -4,6 +4,7 @@ require "LuaClass/DataManager"
 require "LuaClass/ToastUtil"
 require "LuaClass/NotificationNode"
 require "LuaClass/MissionManagers"
+require "LuaClass/V2Config"
 local mapLayer = nil
 
 
@@ -64,7 +65,7 @@ gotoMainUI = function(isFromExp)
     end
 
     --从map回来弹广告评论
-    if isFromExp == true then
+    if isFromExp == true and V2Config:isFeatureEnabled("legacy.rating_ads") then
         showRateOrAdScene()
     end
 end
@@ -212,10 +213,12 @@ function startGame()
     --print("------- 1111111 parser")
 
     -- 注册支付成功的回调事件（必须这么做，否则会导致界面出问题）
-    NotificationNode:getInstance():registerChargeCallBack()
+    if V2Config:isFeatureEnabled("legacy.charge") then
+        NotificationNode:getInstance():registerChargeCallBack()
+    end
 
-
-    if cc.UserDefault:getInstance():getBoolForKey("isFirtPlotShown", false) then
+    local firstPlotKey = V2Config:scopedPreferenceKey("isFirstPlotShown")
+    if cc.UserDefault:getInstance():getBoolForKey(firstPlotKey, false) then
         local statue = DataManager:getInstance():getRoleData(roleStatue)
         --若没有状态，则是第一次进入游戏，将状态置为0
         if statue == nil then
@@ -228,7 +231,7 @@ function startGame()
             gotoMainUI()
         end
     else
-        cc.UserDefault:getInstance():setBoolForKey("isFirtPlotShown", true)
+        cc.UserDefault:getInstance():setBoolForKey(firstPlotKey, true)
         require "LuaClass/PlotMode"
         local plotScene = PlotScene:create({1, 2, 3, 4, 5, 6, 7}, function()
             gotoMainUI()
