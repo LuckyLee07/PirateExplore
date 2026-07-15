@@ -144,9 +144,11 @@ bool GLView::isOpenGLReady()
 bool GLView::setContentScaleFactor(float contentScaleFactor)
 {
     CC_ASSERT(_resolutionPolicy == ResolutionPolicy::UNKNOWN); // cannot enable retina mode
-    _scaleX = _scaleY = contentScaleFactor;
-
     CCEAGLView *eaglview = (CCEAGLView*) _eaglview;
+    [eaglview setContentScaleFactor:contentScaleFactor];
+    _scaleX = _scaleY = contentScaleFactor;
+    _screenSize.width = _designResolutionSize.width = [eaglview getWidth];
+    _screenSize.height = _designResolutionSize.height = [eaglview getHeight];
     [eaglview setNeedsLayout];
 
     return true;
@@ -198,4 +200,3 @@ void GLView::setIMEKeyboardState(bool open)
 NS_CC_END
 
 #endif // CC_PLATFOR_IOS
-

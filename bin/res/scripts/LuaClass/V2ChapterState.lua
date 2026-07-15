@@ -61,7 +61,7 @@ local function dialogueBlock(nodeId, triggers)
     return table.concat(lines, "\n")
 end
 
-V2ChapterState.SCHEMA_VERSION = 3
+V2ChapterState.SCHEMA_VERSION = 4
 V2ChapterState.STAGES = {
     opening = true,
     harbor = true,
@@ -306,10 +306,14 @@ end
 function V2ChapterState.normalize(savedState, profile)
     local state = V2ChapterState.new(profile)
     if type(savedState) == "table"
-        and savedState.schema_version == V2ChapterState.SCHEMA_VERSION
+        and (savedState.schema_version == V2ChapterState.SCHEMA_VERSION
+            or savedState.schema_version == 3)
         and savedState.chapter_id == "chapter_01"
         and V2ChapterState.STAGES[savedState.stage] then
         overwrite(state, savedState)
+        -- Phase 4 only adds local test records. Preserve the complete Phase 3
+        -- chapter state and let V2Telemetry create a fresh session on load.
+        state.schema_version = V2ChapterState.SCHEMA_VERSION
     end
     state.profile = profile or state.profile or "player"
     return state

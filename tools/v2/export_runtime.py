@@ -30,6 +30,8 @@ TABLES = (
     "battle_action",
     "presentation",
     "audio_cue",
+    "telemetry_event",
+    "quality_gate",
 )
 
 

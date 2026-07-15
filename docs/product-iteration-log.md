@@ -240,3 +240,40 @@ Result:
 Phase 3 implementation and automated acceptance passed. Phase 4 owns real
 device experience records, two external user-test rounds, issue triage,
 performance/save/resource audits, and the final Go/No-Go decision.
+
+## 2026-07-16 — V2 Phase 4 internal test and decision baseline
+
+Implementation:
+
+- Added a 17-event local-only telemetry contract, bounded session records,
+  persisted summaries, and a ten-gate decision source table.
+- Added a preserving schema 3 to 4 save migration plus damaged-save fallback.
+- Added a two-round external target-user protocol, empty result template,
+  evidence-backed issue register, internal quality audit, content budget, and
+  commercial-model recommendation.
+- Set the decision sample to 30 FPS, capped 3x iOS framebuffers at 2x, made the
+  simulator build default to the host architecture, and aligned engine targets
+  to iOS 12.
+- Fixed unsafe MD5 string lifetime, temporary XMLHttpRequest header iteration,
+  and 64-bit renderer pointer formatting.
+
+Validation:
+
+- `tools/v2/validate_phase4.sh` passed the complete Phase 0 to 4 chain: 18
+  source/runtime tables, 17 telemetry events, ten gates, both chapter paths,
+  recovery, content, presentation, audio, migration, and record bounds.
+- The arm64 iOS 26.2 simulator build installed and rendered the full-screen
+  `qa_combat` composition correctly; the final candidate remained alive about
+  26 seconds after AVFoundation cannon playback was triggered.
+- The 2x framebuffer candidate measured 102.7 MB physical footprint (103.7 MB
+  peak), down from 139.0 MB before the cap. Simulator CPU remained 88.7% and
+  was localized to the legacy OpenGL/GLEngine software-rendering path.
+- arm64 compile-only iOS device build passed. Real-device experience remains
+  unverified.
+
+Result:
+
+The Phase 4 internal candidate baseline is complete. The product decision is
+HOLD—not Go—until a real device pass and two external rounds satisfy all four
+user gates. No participant results were fabricated or inferred from internal
+automation.

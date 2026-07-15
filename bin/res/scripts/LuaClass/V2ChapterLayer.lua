@@ -417,7 +417,19 @@ function V2ChapterLayer:refresh()
         self:addActionButton(menu, action, x, y)
     end
 
-    local footer = createLabel("阶段 3 样片：8 个事件、正式原画构图、敌船表现、关键动画与声音提示。", 15, COLORS.muted, width - 40, cc.TEXT_ALIGNMENT_CENTER)
+    local footerText = "V2 样片：8 个事件、正式原画构图、双阶段战斗、关键动画与原生声音提示。"
+    if string.sub(state.profile or "", 1, 3) == "qa_" then
+        local report = self.controller:getTelemetrySummary()
+        footerText = string.format(
+            "QA 记录 %d 条｜决策 %d｜舰炮 %d｜接舷 %d｜无效 %d",
+            report.total_events,
+            report.decisions,
+            report.naval_actions,
+            report.boarding_actions,
+            report.invalid_actions
+        )
+    end
+    local footer = createLabel(footerText, 15, COLORS.muted, width - 40, cc.TEXT_ALIGNMENT_CENTER)
     footer:setAnchorPoint(cc.p(0, 0))
     footer:setPosition(cc.p(20, 18))
     root:addChild(footer)

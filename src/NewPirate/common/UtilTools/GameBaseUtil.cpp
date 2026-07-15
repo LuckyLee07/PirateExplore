@@ -109,8 +109,9 @@ Animate* getAnimate(const char* fileName, int startNumber, int endNumber, float 
 const char* getFileMD5(const char* fileName)
 {
     Data data = FileUtils::getInstance()->getDataFromFile(fileName);
-    const char* md5 = MD5((const char*)data.getBytes(), (int)data.getSize()).hexdigest().c_str();
-    return md5;
+    static std::string md5;
+    md5 = MD5((const char*)data.getBytes(), (int)data.getSize()).hexdigest();
+    return md5.c_str();
 }
 
 //	计费

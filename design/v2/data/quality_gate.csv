@@ -1,0 +1,11 @@
+id,category,metric,target,decision_rule,evidence_status
+independent_first_voyage,external_test,无口头指导完成首次远航比例,>=70%,第二轮目标用户结果达到目标才通过,pending_external
+battle_understanding,external_test,能说明舰炮如何影响接舷的比例,>=70%,第二轮目标用户结果达到目标才通过,pending_external
+second_voyage_intent,external_test,完成后愿意继续第二次远航的比例,>=60%,第二轮目标用户结果达到目标才通过,pending_external
+fantasy_recall,external_test,首先提到海图船战符文或船员的比例,>=70%,第二轮目标用户结果达到目标才通过,pending_external
+critical_crash,quality,首章阻断崩溃数量,0,自动回归和两轮外测均无阻断崩溃才通过,internal_pass
+save_recovery,quality,存档升级损坏与失败恢复路径通过率,100%,自动测试全部通过才通过,internal_pass
+mapped_assets,quality,运行时映射资源存在率,100%,所有表现和声音源表路径存在才通过,internal_pass
+simulator_memory,performance,模拟器稳定画面常驻内存,<=256MB,同设备同构建稳定后采样,internal_pass
+target_frame_rate,performance,V2目标帧率,30fps,真机持续航行与战斗无明显掉帧才通过,pending_device
+second_map_pipeline,production,第二张地图复用现有流程的预计开发量,<=8人周,内容预算评审确认后通过,internal_estimate

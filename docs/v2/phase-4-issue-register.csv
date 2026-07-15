@@ -1,0 +1,9 @@
+issue_id,severity,area,found_by,symptom,root_cause,status,verification,evidence,release_effect
+V2-001,P0,audio,internal_runtime_smoke,"触发旧 AudioEngine.playEffect 后应用进程退出","旧 Cocos/OpenAL 音频后端与当前 iOS 运行环境不兼容",fixed,"AVFoundation cue 启动后进程持续存活 8.5 秒","phase-3-validation.md / native cannon-cue smoke",closed
+V2-002,P1,presentation,simulator_review,"V2 样片在现代 iPhone 上出现上下黑边","旧启动图配置使系统采用兼容画布",fixed,"四个英雄画面均按全屏安全区重新截图","phase-3-map.png; phase-3-naval.png; phase-3-boarding.png; phase-3-rune.png",closed
+V2-003,P1,presentation,simulator_review,"旧任务提示覆盖 V2 第一章界面并干扰目标层级","legacy mission toast 未受 V2 feature gate 控制",fixed,"legacy.missions 关闭时不再创建提示","controller.lua feature gate and phase-3 screenshots",closed
+V2-004,P2,performance,internal_process_sample,"60 FPS 稳定画面持续接近单核满载","旧 OpenGL 场景在模拟器中通过 GLEngine 软件渲染",mitigated_pending_device,"30 FPS 与 2x framebuffer 后 physical footprint 102.7 MB；同机 CPU 88.7%；真机帧率仍待确认","AppDelegate.cpp; CCGLView.mm; phase-4-quality-audit.md",blocks_device_gate
+V2-005,P2,build,internal_device_compile,"旧引擎子工程和静态库产生部署版本及平台元数据警告","历史 Cocos2d-x 工程设置和预编译库年代较早",accepted_legacy_debt,"tracked 工程与构建 override 统一 iOS 12 且 simulator/device compile 通过；旧静态库 platform metadata 与 OpenGLES 警告保留","xcode.sh; device build output; phase-4-quality-audit.md",non_blocking
+V2-006,P1,validation,phase4_gate,"尚无两轮真实外部目标用户结果，无法验证理解与继续意愿","外部参与者数据不在代码仓库和自动化环境能力范围内",open_external,"按 phase-4-user-test-protocol.md 完成两轮并填入空模板","quality_gate.csv external rows are pending_external",blocks_go_decision
+V2-007,P1,build,simulator_install,"默认 ios-sim 命令在 Apple Silicon 主机产出 x86_64 应用并无法安装到 arm64 QA 模拟器","构建脚本把模拟器默认架构硬编码为 x86_64",fixed,"默认 ./xcode.sh ios-sim 产物经 file 确认为 arm64 并成功安装","xcode.sh and simulator install smoke",closed
+V2-008,P1,save_migration,internal_automation,"阶段 3 测试档在 schema 4 加入本地记录后会回退到新档","normalize 只接受与当前 schema 完全相等的存档",fixed,"自动测试确认 3→4 保留 stage 与 resources；损坏 stage 安全回退","test_v2_phase4.lua",closed

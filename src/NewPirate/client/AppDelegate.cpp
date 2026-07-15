@@ -59,6 +59,15 @@ bool AppDelegate::applicationDidFinishLaunching() {
         director->setOpenGLView(glview);
     }
 
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
+    // Legacy art was authored around a 640-point canvas. Cap 3x devices at a
+    // 2x framebuffer so the deprecated OpenGL renderer does not redraw 125%
+    // extra pixels with no meaningful gain in source detail.
+    if (glview->getContentScaleFactor() > 2.0f) {
+        glview->setContentScaleFactor(2.0f);
+    }
+#endif
+
     Size frameSize = director->getWinSize();
     
     Size lsSize = Size(640, frameSize.height * (640/frameSize.width));
@@ -72,8 +81,10 @@ bool AppDelegate::applicationDidFinishLaunching() {
     // turn on display FPS
     //director->setDisplayStats(true);
 
-    // set FPS. the default value is 1.0/60 if you don't call this
-    director->setAnimationInterval(1.0 / 60);
+    // The V2 sample is a decision-focused 2D game. A stable 30 FPS target is
+    // sufficient for its lightweight motion and materially reduces sustained
+    // CPU/GPU work on current full-screen devices.
+    director->setAnimationInterval(1.0 / 30);
 
     // register lua engine
     LuaEngine* pEngine = LuaEngine::getInstance();

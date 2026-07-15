@@ -96,8 +96,10 @@ if 'tolua_function(tolua_S,"playV2Sound"' not in binding:
     raise SystemExit("native V2 audio bridge is not exposed to Lua")
 
 config = (ROOT / "bin/res/scripts/LuaClass/V2Config.lua").read_text(encoding="utf-8")
-if "CURRENT_PHASE = 3" not in config or "SAVE_SCHEMA_VERSION = 3" not in config:
-    raise SystemExit("V2Config does not identify the Phase 3 content sample")
+if not any(f"CURRENT_PHASE = {phase}" in config for phase in range(3, 5)):
+    raise SystemExit("V2Config does not identify Phase 3 or a later product sample")
+if not any(f"SAVE_SCHEMA_VERSION = {version}" in config for version in range(3, 6)):
+    raise SystemExit("V2Config save schema predates the Phase 3 content sample")
 
 controller = (ROOT / "bin/res/scripts/LuaClass/controller.lua").read_text(encoding="utf-8")
 if 'isFeatureEnabled("legacy.missions")' not in controller:

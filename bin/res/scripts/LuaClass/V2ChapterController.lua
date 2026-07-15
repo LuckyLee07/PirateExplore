@@ -3,6 +3,7 @@ require "LuaClass/SaveDataManager"
 require "LuaClass/V2Config"
 
 local V2ChapterState = require "LuaClass/V2ChapterState"
+local V2Telemetry = require "LuaClass/V2Telemetry"
 
 V2ChapterController = {}
 V2ChapterController.__index = V2ChapterController
@@ -34,6 +35,7 @@ function V2ChapterController:load()
         end
     end
     self.state = V2ChapterState.normalize(decoded, profile)
+    V2Telemetry.ensureSession(self.state)
     self:save()
     return self.state
 end
@@ -48,15 +50,16 @@ end
 
 function V2ChapterController:dispatch(action)
     local state = self:load()
+    local before = V2Telemetry.snapshot(state)
     local ok, message = V2ChapterState.apply(state, action)
-    if ok then
-        self:save()
-    end
+    V2Telemetry.record(state, action, before, ok, message)
+    self:save()
     return ok, message, state
 end
 
 function V2ChapterController:reset(profile)
     self.state = V2ChapterState.new(profile or V2Config:getSaveProfile())
+    V2Telemetry.ensureSession(self.state)
     self:save()
     return self.state
 end
@@ -75,6 +78,10 @@ end
 
 function V2ChapterController:getPresentation()
     return V2ChapterState.getPresentation(self:load())
+end
+
+function V2ChapterController:getTelemetrySummary()
+    return V2Telemetry.getSummary(self:load())
 end
 
 function V2ChapterController:getChapterData()

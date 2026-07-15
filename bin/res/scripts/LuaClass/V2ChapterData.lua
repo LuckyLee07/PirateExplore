@@ -158,6 +158,37 @@ local data = {
         { id = "curse", file = "music/magic.mp3", trigger = "curse_choice", volume = 0.80, loop = 0, source_status = "legacy_approved_magic" },
         { id = "sinking", file = "music/chenchuan.mp3", trigger = "battle_failure", volume = 0.90, loop = 0, source_status = "legacy_approved_sinking" },
     },
+    telemetry_event = {
+        { id = "session_started", trigger = "session_start", description = "创建一次独立测试会话", required_fields = "session_id|profile|stage_after", decision_metric = "session_count" },
+        { id = "opening_accepted", trigger = "accept_call", description = "接受瓶中召唤并进入整备", required_fields = "stage_before|stage_after", decision_metric = "opening_conversion" },
+        { id = "module_selected", trigger = "select_module", description = "选择船只模块", required_fields = "action|stage_after", decision_metric = "module_preference" },
+        { id = "voyage_started", trigger = "start_voyage", description = "完成整备并首次出航", required_fields = "provisions|stage_after", decision_metric = "first_voyage_start" },
+        { id = "route_intel_revealed", trigger = "reveal_route_intel", description = "消耗补给揭示路线情报", required_fields = "provisions|route_intel", decision_metric = "intel_usage" },
+        { id = "route_selected", trigger = "choose_route", description = "选择安全或风险路线", required_fields = "action|route|provisions", decision_metric = "route_preference" },
+        { id = "voyage_event_choice", trigger = "event_choice", description = "处理航线事件或黑潮", required_fields = "action|stage_before|stage_after", decision_metric = "event_choice_distribution" },
+        { id = "curse_decision", trigger = "curse_choice", description = "回应低语或处理诅咒罗盘", required_fields = "action|stage_before|stage_after", decision_metric = "curse_preference" },
+        { id = "naval_action", trigger = "naval_action", description = "执行舰炮阶段操作", required_fields = "action|enemy_ship_hp|player_hull", decision_metric = "naval_understanding" },
+        { id = "boarding_action", trigger = "boarding_action", description = "执行接舷阶段操作", required_fields = "action|enemy_boarding_hp|crew_hp", decision_metric = "boarding_understanding" },
+        { id = "battle_result", trigger = "battle_result", description = "记录胜利失败或撤退", required_fields = "stage_before|stage_after|result", decision_metric = "battle_completion" },
+        { id = "recovery_choice", trigger = "recovery", description = "失败后选择原地重试或返港恢复", required_fields = "action|stage_before|stage_after", decision_metric = "recovery_preference" },
+        { id = "rune_claimed", trigger = "take_rune_clue", description = "取得第一枚符文线索", required_fields = "stage_after|rune_dust", decision_metric = "chapter_goal_reached" },
+        { id = "return_completed", trigger = "return_to_port", description = "带着战利品返回皇家港", required_fields = "stage_after|resources", decision_metric = "return_loop_completed" },
+        { id = "upgrade_completed", trigger = "upgrade", description = "使用远航资源完成升级", required_fields = "action|stage_after|resources", decision_metric = "upgrade_conversion" },
+        { id = "chapter_restarted", trigger = "restart_chapter", description = "重置首章测试进度并创建新会话", required_fields = "action|stage_after", decision_metric = "repeat_test_count" },
+        { id = "invalid_action", trigger = "invalid_action", description = "记录资源不足或非法操作", required_fields = "action|stage_before|result", decision_metric = "friction_count" },
+    },
+    quality_gate = {
+        { id = "independent_first_voyage", category = "external_test", metric = "无口头指导完成首次远航比例", target = ">=70%", decision_rule = "第二轮目标用户结果达到目标才通过", evidence_status = "pending_external" },
+        { id = "battle_understanding", category = "external_test", metric = "能说明舰炮如何影响接舷的比例", target = ">=70%", decision_rule = "第二轮目标用户结果达到目标才通过", evidence_status = "pending_external" },
+        { id = "second_voyage_intent", category = "external_test", metric = "完成后愿意继续第二次远航的比例", target = ">=60%", decision_rule = "第二轮目标用户结果达到目标才通过", evidence_status = "pending_external" },
+        { id = "fantasy_recall", category = "external_test", metric = "首先提到海图船战符文或船员的比例", target = ">=70%", decision_rule = "第二轮目标用户结果达到目标才通过", evidence_status = "pending_external" },
+        { id = "critical_crash", category = "quality", metric = "首章阻断崩溃数量", target = 0, decision_rule = "自动回归和两轮外测均无阻断崩溃才通过", evidence_status = "internal_pass" },
+        { id = "save_recovery", category = "quality", metric = "存档升级损坏与失败恢复路径通过率", target = "100%", decision_rule = "自动测试全部通过才通过", evidence_status = "internal_pass" },
+        { id = "mapped_assets", category = "quality", metric = "运行时映射资源存在率", target = "100%", decision_rule = "所有表现和声音源表路径存在才通过", evidence_status = "internal_pass" },
+        { id = "simulator_memory", category = "performance", metric = "模拟器稳定画面常驻内存", target = "<=256MB", decision_rule = "同设备同构建稳定后采样", evidence_status = "internal_pass" },
+        { id = "target_frame_rate", category = "performance", metric = "V2目标帧率", target = "30fps", decision_rule = "真机持续航行与战斗无明显掉帧才通过", evidence_status = "pending_device" },
+        { id = "second_map_pipeline", category = "production", metric = "第二张地图复用现有流程的预计开发量", target = "<=8人周", decision_rule = "内容预算评审确认后通过", evidence_status = "internal_estimate" },
+    },
 }
 
 data.by_id = {}
@@ -178,6 +209,8 @@ for _, tableName in ipairs({
     "battle_action",
     "presentation",
     "audio_cue",
+    "telemetry_event",
+    "quality_gate",
 }) do
     data.by_id[tableName] = {}
     for _, row in ipairs(data[tableName]) do

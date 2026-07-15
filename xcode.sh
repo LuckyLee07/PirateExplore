@@ -15,7 +15,7 @@ Usage:
 
 Environment:
   CONFIGURATION=Debug|Release
-  ARCHS=x86_64|arm64
+  ARCHS=x86_64|arm64 (iOS Simulator defaults to the host architecture)
 USAGE
 }
 
@@ -42,7 +42,8 @@ case "$ACTION" in
       -derivedDataPath "$ROOT_DIR/build/DerivedData/ios-sim" \
       USE_HEADERMAP=NO \
       CODE_SIGNING_ALLOWED=NO \
-      ARCHS="${ARCHS:-x86_64}" \
+      IPHONEOS_DEPLOYMENT_TARGET=12.0 \
+      ARCHS="${ARCHS:-$(uname -m)}" \
       ONLY_ACTIVE_ARCH=NO \
       build
     ;;
@@ -56,6 +57,7 @@ case "$ACTION" in
       -derivedDataPath "$ROOT_DIR/build/DerivedData/ios-device" \
       USE_HEADERMAP=NO \
       CODE_SIGNING_ALLOWED=NO \
+      IPHONEOS_DEPLOYMENT_TARGET=12.0 \
       ARCHS="${ARCHS:-arm64}" \
       ONLY_ACTIVE_ARCH=NO \
       build
