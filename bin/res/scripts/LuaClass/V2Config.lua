@@ -65,6 +65,19 @@ function V2Config:getSaveProfile()
     return self.DEFAULT_SAVE_PROFILE
 end
 
+function V2Config:isQAProfile(profile)
+    local selectedProfile = profile or self:getSaveProfile()
+    return validSaveProfiles[selectedProfile] == true
+        and string.sub(selectedProfile, 1, 3) == "qa_"
+end
+
+function V2Config:getPresentationMode(profile)
+    if self:isQAProfile(profile) then
+        return "qa"
+    end
+    return "player"
+end
+
 function V2Config:getSavePrefix()
     return string.format("%s_%s_", self.SAVE_NAMESPACE, self:getSaveProfile())
 end

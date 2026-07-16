@@ -456,7 +456,7 @@ local stageTitles = {
     rune_clue = "章节目标 · 符文回响",
     settlement = "首次返航 · 战利品结算",
     upgrade = "皇家港 · 首次升级",
-    complete = "第一章样片完成",
+    complete = "第一章完成",
     failed = "本次远航失败",
 }
 

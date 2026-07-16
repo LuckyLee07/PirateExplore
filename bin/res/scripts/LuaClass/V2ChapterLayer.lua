@@ -158,7 +158,7 @@ function V2ChapterLayer:playActionFeedback(actionId, previousStage, nextStage)
     end
 end
 
-function V2ChapterLayer:addHeroArt(parent, state)
+function V2ChapterLayer:addHeroArt(parent, state, isQA)
     local presentation = self.controller:getPresentation()
     local width = self.visibleSize.width
     local artHeight = 540
@@ -213,7 +213,11 @@ function V2ChapterLayer:addHeroArt(parent, state)
         end
     end
 
-    local artTag = createLabel("正式样片构图  ·  " .. heroGroupLabel(presentation.hero_group), 15, COLORS.gold)
+    local artTagText = heroGroupLabel(presentation.hero_group)
+    if isQA then
+        artTagText = "QA 构图  ·  " .. artTagText
+    end
+    local artTag = createLabel(artTagText, 15, COLORS.gold)
     artTag:setAnchorPoint(cc.p(0, 1))
     artTag:setPosition(cc.p(28, artHeight - 18))
     frame:addChild(artTag, 5)
@@ -330,14 +334,19 @@ function V2ChapterLayer:refresh()
     local root = self.dynamicNode
     local width = self.visibleSize.width
     local height = self.visibleSize.height
+    local isQA = V2Config:isQAProfile(state.profile)
 
-    self:addHeroArt(root, state)
+    self:addHeroArt(root, state, isQA)
 
     local topBar = cc.LayerColor:create(cc.c4b(13, 29, 37, 238), width, 122)
     topBar:setPosition(cc.p(0, height - 122))
     root:addChild(topBar)
 
-    local kicker = createLabel("NEW PIRATE V2  ·  CHAPTER 01  ·  CONTENT SAMPLE", 15, COLORS.sea)
+    local kickerText = "海上探险家  ·  第一章"
+    if isQA then
+        kickerText = "NEW PIRATE V2  ·  CHAPTER 01  ·  QA"
+    end
+    local kicker = createLabel(kickerText, 15, COLORS.sea)
     kicker:setAnchorPoint(cc.p(0, 0.5))
     kicker:setPosition(cc.p(30, 92))
     topBar:addChild(kicker)
@@ -347,10 +356,12 @@ function V2ChapterLayer:refresh()
     title:setPosition(cc.p(30, 50))
     topBar:addChild(title)
 
-    local profile = createLabel("存档 " .. state.profile, 15, COLORS.muted)
-    profile:setAnchorPoint(cc.p(1, 0.5))
-    profile:setPosition(cc.p(width - 28, 91))
-    topBar:addChild(profile)
+    if isQA then
+        local profile = createLabel("存档 " .. state.profile, 15, COLORS.muted)
+        profile:setAnchorPoint(cc.p(1, 0.5))
+        profile:setPosition(cc.p(width - 28, 91))
+        topBar:addChild(profile)
+    end
 
     local objectiveLabel = createLabel("当前目标｜" .. state.objective, 21, COLORS.gold, width - 60)
     objectiveLabel:setAnchorPoint(cc.p(0, 1))
@@ -417,8 +428,8 @@ function V2ChapterLayer:refresh()
         self:addActionButton(menu, action, x, y)
     end
 
-    local footerText = "V2 样片：8 个事件、正式原画构图、双阶段战斗、关键动画与原生声音提示。"
-    if string.sub(state.profile or "", 1, 3) == "qa_" then
+    local footerText = "迷雾会记住你的每一次选择。"
+    if isQA then
         local report = self.controller:getTelemetrySummary()
         footerText = string.format(
             "QA 记录 %d 条｜决策 %d｜舰炮 %d｜接舷 %d｜无效 %d",
