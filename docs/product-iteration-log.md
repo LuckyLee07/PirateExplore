@@ -256,6 +256,9 @@ Implementation:
   to iOS 12.
 - Fixed unsafe MD5 string lifetime, temporary XMLHttpRequest header iteration,
   and 64-bit renderer pointer formatting.
+- Added a requirement-by-requirement completion audit and an external-test
+  aggregator that validates two rounds, excludes technical failures, and
+  computes the four second-round gates without claiming an overall Go.
 
 Validation:
 
@@ -270,6 +273,8 @@ Validation:
   was localized to the legacy OpenGL/GLEngine software-rendering path.
 - arm64 compile-only iOS device build passed. Real-device experience remains
   unverified.
+- External-test analyzer unit coverage passed for a complete pass, threshold
+  failure, incomplete sample with technical exclusion, and invalid input.
 
 Result:
 

@@ -53,4 +53,5 @@ The old Cocos simulator launcher previously stored at the repository root under 
 - V2 Phase 4 testing, internal quality audit, and provisional decision:
   [`docs/v2/phase-4-user-test-protocol.md`](docs/v2/phase-4-user-test-protocol.md),
   [`docs/v2/phase-4-quality-audit.md`](docs/v2/phase-4-quality-audit.md),
-  [`docs/v2/phase-4-decision.md`](docs/v2/phase-4-decision.md)
+  [`docs/v2/phase-4-decision.md`](docs/v2/phase-4-decision.md),
+  [`docs/v2/phase-4-completion-audit.md`](docs/v2/phase-4-completion-audit.md)

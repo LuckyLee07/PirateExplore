@@ -109,6 +109,7 @@ if xcode_script.count("IPHONEOS_DEPLOYMENT_TARGET=12.0") < 2:
     raise SystemExit("iOS builds do not override ignored legacy engine projects to iOS 12")
 
 required_docs = (
+    "phase-4-completion-audit.md",
     "phase-4-user-test-protocol.md",
     "phase-4-quality-audit.md",
     "phase-4-decision.md",
@@ -119,6 +120,15 @@ for filename in required_docs:
     path = ROOT / "docs" / "v2" / filename
     if not path.is_file() or path.stat().st_size < 200:
         raise SystemExit(f"Phase 4 deliverable is missing or incomplete: {filename}")
+
+analyzer = ROOT / "tools/v2/analyze_user_tests.py"
+analyzer_test = ROOT / "tools/v2/test_analyze_user_tests.py"
+if not analyzer.is_file() or not analyzer_test.is_file():
+    raise SystemExit("Phase 4 external-test aggregation tooling is missing")
+analyzer_source = analyzer.read_text(encoding="utf-8")
+for marker in ("ROUND_IDS =", "technical_failure", "external_gates_pass", "scope_warning"):
+    if marker not in analyzer_source:
+        raise SystemExit(f"external-test analyzer is missing {marker}")
 
 record_rows = list(csv.DictReader((ROOT / "docs/v2/phase-4-test-record-template.csv").open(encoding="utf-8", newline="")))
 if record_rows:
