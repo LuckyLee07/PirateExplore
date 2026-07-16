@@ -68,6 +68,8 @@
 		7C90A00626C0000000000001 /* LZSS.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6A79B2E31FD03DF800582F38 /* LZSS.cpp */; };
 		7C90A00726C0000000000001 /* MD5.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6A79B2E51FD03DF800582F38 /* MD5.cpp */; };
 		7C90A00826C0000000000001 /* Record.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6A79B2E71FD03DF800582F38 /* Record.cpp */; };
+		7C90C00326C0000000000001 /* RecordCodec.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7C90C00126C0000000000001 /* RecordCodec.cpp */; };
+		7C90C00426C0000000000001 /* RecordCodec.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7C90C00126C0000000000001 /* RecordCodec.cpp */; };
 		7C90A00926C0000000000001 /* assets in Resources */ = {isa = PBXBuildFile; fileRef = 6A79B8941FD040EC00582F38 /* assets */; };
 		7C90A00D26C0000000000001 /* scripts in Resources */ = {isa = PBXBuildFile; fileRef = 6A79B8981FD040EC00582F38 /* scripts */; };
 		7C90B00126C0000000000001 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 7C90B00226C0000000000001 /* PrivacyInfo.xcprivacy */; };
@@ -357,6 +359,8 @@
 		6A79B2E61FD03DF800582F38 /* MD5.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MD5.h; sourceTree = "<group>"; };
 		6A79B2E71FD03DF800582F38 /* Record.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Record.cpp; sourceTree = "<group>"; };
 		6A79B2E81FD03DF800582F38 /* Record.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Record.h; sourceTree = "<group>"; };
+		7C90C00126C0000000000001 /* RecordCodec.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RecordCodec.cpp; sourceTree = "<group>"; };
+		7C90C00226C0000000000001 /* RecordCodec.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RecordCodec.h; sourceTree = "<group>"; };
 		6A79B2E91FD03DF800582F38 /* Singleton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Singleton.h; sourceTree = "<group>"; };
 		6A79B3021FD03EE200582F38 /* GLKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GLKit.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS9.1.sdk/System/Library/Frameworks/GLKit.framework; sourceTree = DEVELOPER_DIR; };
 		6A79B3041FD03EEE00582F38 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS9.1.sdk/System/Library/Frameworks/SystemConfiguration.framework; sourceTree = DEVELOPER_DIR; };
@@ -590,6 +594,8 @@
 				6A79B2E61FD03DF800582F38 /* MD5.h */,
 				6A79B2E71FD03DF800582F38 /* Record.cpp */,
 				6A79B2E81FD03DF800582F38 /* Record.h */,
+				7C90C00126C0000000000001 /* RecordCodec.cpp */,
+				7C90C00226C0000000000001 /* RecordCodec.h */,
 				6A79B2E91FD03DF800582F38 /* Singleton.h */,
 			);
 			name = UtilTools;
@@ -957,6 +963,7 @@
 				7C90A00626C0000000000001 /* LZSS.cpp in Sources */,
 				7C90A00726C0000000000001 /* MD5.cpp in Sources */,
 				7C90A00826C0000000000001 /* Record.cpp in Sources */,
+				7C90C00326C0000000000001 /* RecordCodec.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -969,6 +976,7 @@
 				6A79B2F91FD03DF800582F38 /* GameBaseUtil.cpp in Sources */,
 				6A79B3141FD03FBD00582F38 /* CppOCBridge.mm in Sources */,
 				6A79B2FD1FD03DF800582F38 /* Record.cpp in Sources */,
+				7C90C00426C0000000000001 /* RecordCodec.cpp in Sources */,
 				6A79B2F61FD03DF800582F38 /* TOLUA_GameBaseUtil.cpp in Sources */,
 				F293BB9C15EB831F00256477 /* AppDelegate.cpp in Sources */,
 				5023812417EBBCAC00990C9B /* main.m in Sources */,

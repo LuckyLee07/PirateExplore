@@ -107,6 +107,17 @@ def main() -> None:
     for marker in ("height < 1050", "action_button_scale = 1.28", "top_bar_height = 145"):
         require(marker in chapter_layout, f"archive responsive layout missing marker: {marker}")
 
+    save_manager = (app / "scripts/LuaClass/SaveDataManager.lua").read_text(encoding="utf-8")
+    require(
+        "containerLoadFailed" in save_manager and "existedBeforeLoad" in save_manager,
+        "archive does not distinguish a fresh install from a rejected save container",
+    )
+    chapter_controller = (app / "scripts/LuaClass/V2ChapterController.lua").read_text(encoding="utf-8")
+    require(
+        "containerLoadFailed" in chapter_controller and "SAVE_RECOVERY_MESSAGE" in chapter_controller,
+        "archive does not surface native save-container recovery to the player",
+    )
+
     executable = app / info["CFBundleExecutable"]
     require(executable.is_file(), "app executable is missing")
     architecture = command("xcrun", "lipo", "-info", str(executable))
@@ -119,6 +130,8 @@ def main() -> None:
     symbols = command("xcrun", "nm", "-u", str(executable))
     for forbidden in ("ASIdentifierManager", "getIDFA", "GADBanner", "GADRequest", "SKPayment"):
         require(forbidden not in symbols, f"legacy symbol remains in archive: {forbidden}")
+    for required in ("_fsync", "_rename"):
+        require(required in symbols, f"atomic save durability symbol missing from archive: {required}")
 
     all_symbols = command("xcrun", "nm", "-j", str(executable))
     for forbidden in (

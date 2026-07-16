@@ -3,6 +3,7 @@
 ////////////////////////////////////////////////////////////////////////////////////////////////
 
 #include "stdio.h"
+#include <climits>
 #include "LZSS.h"
 
 #define N               4096
@@ -16,17 +17,24 @@ LZSS::LZSS()
     lson=new int[N+1];
     rson=new int[N+257];
     dad=new int[N+1];
+    InType=OutType=0;
+    InData=OutData=NULL;
+    fpIn=fpOut=NULL;
+    InDataSize=InSize=OutSize=0;
+    OutDataCapacity=0;
+    OutputOverflow=false;
 }
 LZSS::~LZSS()
 {
-    delete buffer;
-    delete lson;
-    delete rson;
-    delete dad;
+    delete []buffer;
+    delete []lson;
+    delete []rson;
+    delete []dad;
 }
 int LZSS::GetByte()
 {
-    if(InSize++>=InDataSize)return(EOF);
+    if(InSize>=InDataSize)return(EOF);
+    InSize++;
     switch(InType)
     {
         case inMEM :return(*InData++);
@@ -36,11 +44,21 @@ int LZSS::GetByte()
 }
 void LZSS::PutByte(unsigned char c)
 {
-    OutSize++;
     switch(OutType)
     {
-        case inMEM :*OutData++=c;return;
-        case inFILE:putc(c,fpOut);return;
+        case inMEM :
+            if(OutSize>=OutDataCapacity)
+            {
+                OutputOverflow=true;
+                return;
+            }
+            *OutData++=c;
+            OutSize++;
+            return;
+        case inFILE:
+            putc(c,fpOut);
+            OutSize++;
+            return;
     }
 }
 void LZSS::InitTree()
@@ -187,43 +205,59 @@ void LZSS::Decode()
 }
 unsigned long LZSS::Compress(unsigned char *in,unsigned long insize,unsigned char *out)
 {
+    unsigned long outputSize=0;
+    if(!Compress(in,insize,out,ULONG_MAX,&outputSize))return(0);
+    return(outputSize);
+}
+bool LZSS::Compress(unsigned char *in,unsigned long insize,unsigned char *out,unsigned long outCapacity,unsigned long *outputSize)
+{
+    if(!in||!out||!outputSize)return(false);
     InType=inMEM;InData=in;InDataSize=insize;InSize=0;
-    OutType=inMEM;OutData=out;OutSize=0;
+    OutType=inMEM;OutData=out;OutSize=0;OutDataCapacity=outCapacity;OutputOverflow=false;
     Encode();
-    return(OutSize);
+    *outputSize=OutSize;
+    return(!OutputOverflow);
 }
 unsigned long LZSS::Compress(unsigned char *in,unsigned long insize,FILE *out)
 {
     InType=inMEM;InData=in;InDataSize=insize;InSize=0;
-    OutType=inFILE;fpOut=out;OutSize=0;
+    OutType=inFILE;fpOut=out;OutSize=0;OutDataCapacity=ULONG_MAX;OutputOverflow=false;
     Encode();
     return(OutSize);
 }
 unsigned long LZSS::Compress(FILE *in,unsigned long insize,FILE *out)
 {
     InType=inFILE;fpIn=in;InDataSize=insize;InSize=0;
-    OutType=inFILE;fpOut=out;OutSize=0;
+    OutType=inFILE;fpOut=out;OutSize=0;OutDataCapacity=ULONG_MAX;OutputOverflow=false;
     Encode();
     return(OutSize);
 }
 unsigned long LZSS::UnCompress(unsigned char *in,unsigned long insize,unsigned char *out)
 {
+    unsigned long outputSize=0;
+    if(!UnCompress(in,insize,out,ULONG_MAX,&outputSize))return(0);
+    return(outputSize);
+}
+bool LZSS::UnCompress(unsigned char *in,unsigned long insize,unsigned char *out,unsigned long outCapacity,unsigned long *outputSize)
+{
+    if(!in||!out||!outputSize)return(false);
     InType=inMEM;InData=in;InDataSize=insize;InSize=0;
-    OutType=inMEM;OutData=out;OutSize=0;
+    OutType=inMEM;OutData=out;OutSize=0;OutDataCapacity=outCapacity;OutputOverflow=false;
     Decode();
-    return(OutSize);
+    *outputSize=OutSize;
+    return(!OutputOverflow);
 }
 unsigned long LZSS::UnCompress(FILE *in,unsigned long insize,unsigned char *out)
 {
     InType=inFILE;fpIn=in;InDataSize=insize;InSize=0;
-    OutType=inMEM;OutData=out;OutSize=0;
+    OutType=inMEM;OutData=out;OutSize=0;OutDataCapacity=ULONG_MAX;OutputOverflow=false;
     Decode();
     return(OutSize);
 }
 unsigned long LZSS::UnCompress(FILE *in,unsigned long insize,FILE *out)
 {
     InType=inFILE;fpIn=in;InDataSize=insize;InSize=0;
-    OutType=inFILE;fpOut=out;OutSize=0;
+    OutType=inFILE;fpOut=out;OutSize=0;OutDataCapacity=ULONG_MAX;OutputOverflow=false;
     Decode();
     return(OutSize);
 }

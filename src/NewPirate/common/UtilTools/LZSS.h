@@ -46,6 +46,8 @@
 #ifndef _LZSS_H_
 #define _LZSS_H_
 
+#include <cstdio>
+
 class LZSS
 {
     enum LZSSDATA
@@ -61,6 +63,8 @@ class LZSS
     FILE *fpIn,*fpOut;                                     //输入输出文件指针
     unsigned long InDataSize;                              //输入数据长度
     unsigned long InSize,OutSize;                          //已输入输出数据长度
+    unsigned long OutDataCapacity;                         //内存输出缓冲区容量
+    bool OutputOverflow;                                   //输出超过调用方容量
     int GetByte();                                         //获取一个字节的数据
     void PutByte(unsigned char);                           //写入一个字节的数据
     
@@ -73,9 +77,11 @@ public:
     LZSS();                                                //本类构造函数
     ~LZSS();                                               //本类析构函数
     unsigned long Compress(unsigned char *,unsigned long, unsigned char *);               //内存中的数据压缩
+    bool Compress(unsigned char *,unsigned long,unsigned char *,unsigned long,unsigned long *);
     unsigned long Compress(unsigned char *,unsigned long, FILE *);                        //将内存中的数据压缩后写入文件
     unsigned long Compress(FILE *,unsigned long,FILE *);   //压缩文件
     unsigned long UnCompress(unsigned char *,unsigned long, unsigned char *);             //内存中的数据解压
+    bool UnCompress(unsigned char *,unsigned long,unsigned char *,unsigned long,unsigned long *);
     unsigned long UnCompress(FILE *,unsigned long, unsigned char *);             //将文件中的数据解压后写入内存
     unsigned long UnCompress(FILE *,unsigned long,FILE *); //解压文件
 };

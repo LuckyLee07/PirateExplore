@@ -34,8 +34,13 @@ end
 function SaveDataManager:loadData(FileName)
 	-- cclog("SaveDataManager:loadData======")
 	FileName = self:resolveFileName(FileName)
+	local path = cc.FileUtils:getInstance():getWritablePath() .. FileName
+	local existedBeforeLoad = cc.FileUtils:getInstance():isFileExist(path)
 	local content = Record:GetInstance():loadData(FileName)
-	return content
+	-- A nil result is normal for a fresh install. It is a recovery event only
+	-- when the physical save existed but the native container rejected it.
+	local containerLoadFailed = existedBeforeLoad and content == nil
+	return content, containerLoadFailed
 end
 
 --[[

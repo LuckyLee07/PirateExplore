@@ -1,6 +1,10 @@
 #include "Record.h"
 #include "ZQCSVParse.h"
-#include "LZSS.h"
+#include "RecordCodec.h"
+
+#include <cstring>
+#include <string>
+#include <vector>
 
 Record* Record::m_instance = NULL;
 Record::Record()
@@ -83,46 +87,29 @@ Record::~Record()
 
 void Record::saveData(char*buff, char*fileName)
 {
-//	CCLOG("----------------存档：%s ** buff:%s----------------", fileName, buff);
-	unsigned long len = strlen(buff);
-	unsigned char* lzss_data = new unsigned char[len];
-	memset(lzss_data, 0, len);
-	//	AES aes((unsigned char*)keys.c_str());
-	//	aes.Cipher(buff, miwen_hex);
-	// 先使用lzss压缩
-	LZSS lzssInstance;
-	unsigned long lzss_len = lzssInstance.Compress((unsigned char*)buff, len, lzss_data);
-	// 验证字符串 + 文件长度 + lzss文件长度 + lzss(真实数据)
-	char ulLen = sizeof(unsigned long);
-	// 总体文件长度等于
-	int place = sizeof(char);
-	unsigned long saveLen = place + ulLen * 2 + lzss_len ;
-	unsigned char* pSavaBuf = new unsigned char[saveLen];
-	memset(pSavaBuf, 0, sizeof(unsigned char)*saveLen);
-	
-	// 向数据中加入数据加密平台位数
-	memcpy(pSavaBuf, &ulLen, place);
-	// 加入原始文件长度
-	memcpy(pSavaBuf + place, &len, ulLen);
-	// 再加入lzss数据长度
-	memcpy(pSavaBuf + place + ulLen, &lzss_len, ulLen);
-	// 再加入真实数据
-	memcpy(pSavaBuf + place + ulLen * 2, lzss_data, lzss_len);
-//	CCLOG("--------------数据处理完毕--------------");
-	// 加密之后进行秘钥混淆
-	this->xorEncipherment(pSavaBuf, saveLen, m_keys);
-//	CCLOG("--------------混淆完毕--------------");
-	string path = FileUtils::getInstance()->getWritablePath() + fileName;
-//	CCLOG("--------------路径：%s--------------", path.c_str());
-	FILE *pFile = fopen(path.c_str(),"wb");
-	//	printf("fileName:%s length:%ld", fileName, lzss_len);
-	fwrite(pSavaBuf, sizeof(unsigned char), saveLen, pFile);
-	fclose(pFile);
-//	CCLOG("--------------写入文件完毕--------------");
+	if (buff == NULL || fileName == NULL || buff[0] == '\0' || fileName[0] == '\0')
+	{
+		CCLOG("Record refused an empty save request");
+		return;
+	}
+
+	std::vector<unsigned char> encoded;
+	if (!RecordCodec::encode(std::string(buff), encoded))
+	{
+		CCLOG("Record failed to encode save: %s", fileName);
+		return;
+	}
+
+	const std::string path = FileUtils::getInstance()->getWritablePath() + fileName;
+	if (!RecordCodec::writeFileAtomically(path, encoded))
+	{
+		CCLOG("Record failed to atomically write save: %s", fileName);
+		return;
+	}
+
+	// Invalidate only after the replacement succeeds. On any write failure the
+	// previous file and its cached representation remain usable.
 	deleteBuf(fileName);
-	delete []pSavaBuf;
-	delete []lzss_data;
-//	CCLOG("saveData===%s",miwen_hex);
 }
 
 //void Record::executeEncipherment(char* buff, const char* fileName)
@@ -178,43 +165,27 @@ const char* Record::loadDataFromPackage(const char*fileName)
 const char* Record::getDataWithPath(string path, const char* fileName)
 {
 	const char * bufData = NULL;
-//	CCLOG("读取csv路径：%s", path.c_str());
+	if (fileName == NULL || fileName[0] == '\0')
+	{
+		return NULL;
+	}
 	if (FileUtils::getInstance()->isFileExist(path)) {
 		bufData = getBuf(fileName);
 		if (!bufData) {
-			//			CCLOG("1111111111111111111%s", path.c_str());
-			// string keys = m_keys;
-			// AES aesRead((unsigned char*)keys.c_str());
-			ssize_t size = 0;
-			unsigned char* buff = FileUtils::getInstance()->getFileData(path.c_str(), "rb", &size);
-			CCASSERT(NULL != buff, "文件打开失败鸟。。。返回的是个NULL，请检查！");
-			// aesRead.InvCipher(buff, buffChar);
-			// 秘钥解码
-			this->xorEncipherment(buff, size, m_keys);
-			//			CCLOG("秘钥解码完成");
-			// 去除验证字符串后，读取文件长度
-			int place = sizeof(char);
-			char ulLen = 0;
-			unsigned long retSize = 0;
-			unsigned long lzssLen = 0;
-			memcpy(&ulLen, buff, place);
-			memcpy(&retSize, buff + place, ulLen);
-			memcpy(&lzssLen, buff + place + ulLen, ulLen);
-			
-			unsigned char* pRetBuf = new unsigned char[retSize + 1];
-			memset(pRetBuf, 0, sizeof(unsigned char)*(retSize + 1));
-			//			CCLOG("重新计算长度完成");
-			// 最后解压缩
-			LZSS lzssInstance;
-			unsigned long unlzss_len = lzssInstance.UnCompress(buff + place + ulLen * 2, lzssLen, pRetBuf);
-			free(buff);
-			if (unlzss_len != retSize) {
-				printf("** 解压后的文件长度不对应！ **%s\n", bufData);
+			std::vector<unsigned char> encoded;
+			std::string decoded;
+			if (!RecordCodec::readFile(path, encoded) ||
+				!RecordCodec::decode(&encoded[0], encoded.size(), decoded))
+			{
+				CCLOG("Record rejected a corrupt or truncated save: %s", fileName);
 				return NULL;
 			}
-			this->setBuf(fileName, (char*)pRetBuf);
-			bufData = (const char*)pRetBuf;
-			// printf("data::::%s\n", bufData);
+
+			char* decodedBuffer = new char[decoded.size() + 1u];
+			std::memcpy(decodedBuffer, decoded.data(), decoded.size());
+			decodedBuffer[decoded.size()] = '\0';
+			this->setBuf(fileName, decodedBuffer);
+			bufData = decodedBuffer;
 		}
 	}
 	return bufData;
@@ -236,14 +207,17 @@ void Record::deleteMap()
 
 void Record::setBuf(const char* key, char* buff)
 {
-	if (!m_bufMap.empty())
+	if (key == NULL || buff == NULL)
 	{
-		BufMap::iterator it = m_bufMap.find(key);
-		if(it != m_bufMap.end())
-		{
-			m_bufMap.insert(BufMap::value_type(key, buff));
-		}
+		return;
 	}
+	BufMap::iterator it = m_bufMap.find(key);
+	if (it != m_bufMap.end())
+	{
+		delete []it->second;
+		m_bufMap.erase(it);
+	}
+	m_bufMap.insert(BufMap::value_type(key, buff));
 }
 
 const char* Record::getBuf( const char* key )
@@ -299,14 +273,20 @@ Record* Record::GetInstance()
 
 bool Record::writeData(const char*path,const char*fileName,const char*buf)
 {
-    if (!buf || !path)
+    if (!buf || !path || path[0] == '\0')
     {
         return false;
     }
     FILE*pFile = fopen(path,"wb");
-    fwrite(buf,sizeof(char), strlen(buf),pFile);
-    fclose(pFile);
-    return true;
+    if (pFile == NULL)
+    {
+        return false;
+    }
+    const size_t size = strlen(buf);
+    const bool wroteAll = fwrite(buf,sizeof(char),size,pFile) == size;
+    const bool flushed = fflush(pFile) == 0;
+    const bool closed = fclose(pFile) == 0;
+    return wroteAll && flushed && closed;
 }
 void Record::loadRecourcesCSV(const char * fileName)
 {

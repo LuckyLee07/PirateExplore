@@ -24,9 +24,13 @@ function V2ChapterController:load()
     end
 
     local profile = V2Config:getSaveProfile()
-    local content = SaveDataManager:getInstance():loadData(SAVE_FILE)
+    local content, containerLoadFailed = SaveDataManager:getInstance():loadData(SAVE_FILE)
     local decoded = nil
     local recoveryMessage = nil
+    if containerLoadFailed then
+        cclog("V2 chapter save container was corrupt or truncated; creating a fresh profile")
+        recoveryMessage = V2ChapterState.SAVE_RECOVERY_MESSAGE
+    end
     if content ~= nil and content ~= "" then
         local ok, result = pcall(json.decode, content)
         if ok and type(result) == "table" then

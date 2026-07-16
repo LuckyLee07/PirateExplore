@@ -23,6 +23,15 @@ V2_RELEASE_INFO = ROOT / "bin/res/scripts/LuaClass/V2ReleaseInfo.lua"
 V2_CHAPTER_LAYER = ROOT / "bin/res/scripts/LuaClass/V2ChapterLayer.lua"
 NOTIFICATION_NODE = ROOT / "bin/res/scripts/LuaClass/NotificationNode.lua"
 UPDATE_LAYER = ROOT / "bin/res/scripts/LuaClass/Update.lua"
+SAVE_MANAGER = ROOT / "bin/res/scripts/LuaClass/SaveDataManager.lua"
+V2_CHAPTER_CONTROLLER = ROOT / "bin/res/scripts/LuaClass/V2ChapterController.lua"
+RECORD = ROOT / "src/NewPirate/common/UtilTools/Record.cpp"
+RECORD_CODEC = ROOT / "src/NewPirate/common/UtilTools/RecordCodec.cpp"
+RECORD_CODEC_HEADER = ROOT / "src/NewPirate/common/UtilTools/RecordCodec.h"
+LZSS = ROOT / "src/NewPirate/common/UtilTools/LZSS.cpp"
+RECORD_CODEC_TEST = ROOT / "tools/release/test_record_codec.sh"
+SAVE_DURABILITY_DOC = ROOT / "docs/release/save-durability-iteration-1.md"
+SAVE_RECOVERY_SCREENSHOT = ROOT / "docs/release/save-container-recovery-player.png"
 
 
 def require(condition: bool, message: str) -> None:
@@ -127,6 +136,7 @@ def validate_project() -> None:
         require(forbidden not in frameworks, f"legacy framework remains in iOS target: {forbidden}")
 
     sources = object_block(project, "F293B3C415EB7BE500256477")
+    require("RecordCodec.cpp in Sources" in sources, "bounds-checked save codec is not in the iOS target")
     for forbidden in (
         "IapManager",
         "SBJSON",
@@ -155,6 +165,9 @@ def validate_project() -> None:
 
     for scheme in ("NewPirate iOS.xcscheme", "NewPirate Mac.xcscheme"):
         require((PROJECT.parent / "xcshareddata/xcschemes" / scheme).is_file(), f"missing shared scheme: {scheme}")
+
+    mac_sources = object_block(project, "5023813117EBBCE400990C9B")
+    require("RecordCodec.cpp in Sources" in mac_sources, "bounds-checked save codec is not in the macOS target")
 
     require(ENGINE_PROJECT.is_file(), "referenced cocos2d Xcode project is missing")
     engine = ENGINE_PROJECT.read_text(encoding="utf-8")
@@ -228,6 +241,58 @@ def validate_native_surface() -> None:
     require("finishSize >= totalSize and not didFinish" in update_layer, "loading completion must remain one-shot")
 
 
+def validate_save_durability() -> None:
+    for path in (
+        RECORD, RECORD_CODEC, RECORD_CODEC_HEADER, LZSS, SAVE_MANAGER,
+        V2_CHAPTER_CONTROLLER, RECORD_CODEC_TEST, SAVE_DURABILITY_DOC,
+        SAVE_RECOVERY_SCREENSHOT,
+    ):
+        require(path.is_file(), f"save-durability component is missing: {path.relative_to(ROOT)}")
+
+    record = RECORD.read_text(encoding="utf-8")
+    for marker in (
+        "RecordCodec::encode",
+        "RecordCodec::writeFileAtomically",
+        "RecordCodec::readFile",
+        "RecordCodec::decode",
+        "Record rejected a corrupt or truncated save",
+        "Invalidate only after the replacement succeeds",
+    ):
+        require(marker in record, f"native save persistence is missing: {marker}")
+
+    codec = RECORD_CODEC.read_text(encoding="utf-8")
+    for marker in (
+        "kMaxDecodedBytes",
+        "compressionBound",
+        "lengthWidth != 4u && lengthWidth != 8u",
+        "compressedLength != container.size() - headerSize",
+        "writeFileAtomically",
+        "fsync",
+        "std::rename",
+    ):
+        require(marker in codec, f"save codec guard is missing: {marker}")
+
+    lzss = LZSS.read_text(encoding="utf-8")
+    for marker in ("delete []buffer", "OutDataCapacity", "OutputOverflow", "outCapacity"):
+        require(marker in lzss or marker in RECORD_CODEC_HEADER.read_text(encoding="utf-8"), f"bounded LZSS guard is missing: {marker}")
+
+    save_manager = SAVE_MANAGER.read_text(encoding="utf-8")
+    require("containerLoadFailed" in save_manager and "existedBeforeLoad" in save_manager, "Lua save manager does not distinguish fresh install from corrupt container")
+    controller = V2_CHAPTER_CONTROLLER.read_text(encoding="utf-8")
+    require("containerLoadFailed" in controller and "SAVE_RECOVERY_MESSAGE" in controller, "V2 controller does not surface native container recovery")
+
+    test_script = RECORD_CODEC_TEST.read_text(encoding="utf-8")
+    for marker in ("-fsanitize=address,undefined", "test_record_codec.cpp", "RecordCodec.cpp"):
+        require(marker in test_script, f"native save durability test is missing: {marker}")
+
+    width, height, _ = png_metadata(SAVE_RECOVERY_SCREENSHOT)
+    require((width, height) == (1170, 2532), "save-recovery runtime screenshot dimensions drifted")
+    require(SAVE_RECOVERY_SCREENSHOT.stat().st_size > 500_000, "save-recovery runtime screenshot appears incomplete")
+    durability_doc = SAVE_DURABILITY_DOC.read_text(encoding="utf-8")
+    for marker in ("V2-020 / P0", "截断为 7 字节", "995 字节合法容器", "ASan/UBSan"):
+        require(marker in durability_doc, f"save-durability evidence is missing: {marker}")
+
+
 def validate_toolchain_and_repository() -> None:
     output = subprocess.run(
         ["xcodebuild", "-version"],
@@ -253,6 +318,7 @@ def main() -> None:
     validate_app_icons()
     validate_project()
     validate_native_surface()
+    validate_save_durability()
     validate_toolchain_and_repository()
     print("iOS release static validation passed")
 
