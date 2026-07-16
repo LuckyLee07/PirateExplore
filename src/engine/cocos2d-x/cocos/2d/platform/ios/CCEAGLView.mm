@@ -137,6 +137,7 @@ Copyright (C) 2008 Apple Inc. All Rights Reserved.
         requestedSamples_ = nSamples;
         preserveBackbuffer_ = retained;
         markedText_ = nil;
+        markedTextStyle_ = nil;
         if( ! [self setupSurfaceWithSharegroup:sharegroup] ) {
             [self release];
             return nil;
@@ -167,6 +168,7 @@ Copyright (C) 2008 Apple Inc. All Rights Reserved.
         requestedSamples_ = 0;
         size_ = [eaglLayer bounds].size;
         markedText_ = nil;
+        markedTextStyle_ = nil;
         
         if( ! [self setupSurfaceWithSharegroup:nil] ) {
             [self release];
@@ -243,8 +245,13 @@ Copyright (C) 2008 Apple Inc. All Rights Reserved.
 
 - (void) dealloc
 {
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+    [markedText_ release];
+    markedText_ = nil;
+    [markedTextStyle_ release];
+    markedTextStyle_ = nil;
     [renderer_ release];
-    self.keyboardShowNotification = nullptr; // implicit release
+    self.keyboardShowNotification = nil; // implicit release
     [super dealloc];
 }
 
@@ -548,7 +555,7 @@ Copyright (C) 2008 Apple Inc. All Rights Reserved.
 @synthesize endOfDocument;
 @synthesize inputDelegate;
 @synthesize markedTextRange;
-@synthesize markedTextStyle;
+@synthesize markedTextStyle = markedTextStyle_;
 // @synthesize selectedTextRange;       // must implement
 @synthesize tokenizer;
 
@@ -600,12 +607,16 @@ Copyright (C) 2008 Apple Inc. All Rights Reserved.
 - (void)setMarkedTextStyle:(NSDictionary *)markedTextStyle;
 {
     CCLOG("setMarkedTextStyle");
-    
+    if (markedTextStyle_ != markedTextStyle)
+    {
+        [markedTextStyle_ release];
+        markedTextStyle_ = [markedTextStyle copy];
+    }
 }
 - (NSDictionary *)markedTextStyle;
 {
     CCLOG("markedTextStyle");
-    return nil;
+    return markedTextStyle_;
 }
 - (void)setMarkedText:(NSString *)markedText selectedRange:(NSRange)selectedRange;
 {
@@ -721,7 +732,7 @@ Copyright (C) 2008 Apple Inc. All Rights Reserved.
 - (NSArray *)selectionRectsForRange:(UITextRange *)range
 {
     CCLOG("selectionRectsForRange");
-    return nil;
+    return [NSArray array];
 }
 
 #pragma mark - UIKeyboard notification

@@ -53,6 +53,11 @@ TEXTURE_ATLAS_TEST = ROOT / "tools/release/test_texture_atlas_allocation.sh"
 TEXTURE_ATLAS_TEST_SOURCE = ROOT / "tools/release/test_texture_atlas_allocation.cpp"
 TEXTURE_ATLAS_DOC = ROOT / "docs/release/texture-atlas-allocation-iteration-1.md"
 TEXTURE_ATLAS_SCREENSHOT = ROOT / "docs/release/texture-atlas-render-player.png"
+EAGLVIEW_HEADER = ROOT / "src/engine/cocos2d-x/cocos/2d/platform/ios/CCEAGLView.h"
+EAGLVIEW = ROOT / "src/engine/cocos2d-x/cocos/2d/platform/ios/CCEAGLView.mm"
+EAGLVIEW_TEST = ROOT / "tools/release/test_eaglview_contract.py"
+EAGLVIEW_DOC = ROOT / "docs/release/eaglview-ime-contract-iteration-1.md"
+EAGLVIEW_SCREENSHOT = ROOT / "docs/release/eaglview-lifecycle-player.png"
 
 
 def require(condition: bool, message: str) -> None:
@@ -500,6 +505,51 @@ def validate_texture_atlas_allocation() -> None:
     require(TEXTURE_ATLAS_SCREENSHOT.stat().st_size > 500_000, "TextureAtlas runtime screenshot appears incomplete")
 
 
+def validate_eaglview_contract() -> None:
+    paths = (
+        EAGLVIEW_HEADER,
+        EAGLVIEW,
+        EAGLVIEW_TEST,
+        EAGLVIEW_DOC,
+        EAGLVIEW_SCREENSHOT,
+    )
+    for path in paths:
+        require(path.is_file(), f"CCEAGLView contract component is missing: {path.relative_to(ROOT)}")
+
+    header = EAGLVIEW_HEADER.read_text(encoding="utf-8")
+    for marker in (
+        "NSDictionary *          markedTextStyle_;",
+        "@property (nonatomic, copy) NSDictionary *markedTextStyle;",
+    ):
+        require(marker in header, f"CCEAGLView header contract is missing: {marker}")
+
+    view = EAGLVIEW.read_text(encoding="utf-8")
+    for marker in (
+        "@synthesize markedTextStyle = markedTextStyle_;",
+        "[[NSNotificationCenter defaultCenter] removeObserver:self]",
+        "[markedText_ release]",
+        "[markedTextStyle_ release]",
+        "markedTextStyle_ = [markedTextStyle copy]",
+        "return [NSArray array];",
+    ):
+        require(marker in view, f"CCEAGLView implementation contract is missing: {marker}")
+
+    test = EAGLVIEW_TEST.read_text(encoding="utf-8")
+    for marker in (
+        "dealloc ownership cleanup is missing",
+        "style replacement must honor the copy property",
+        "UITextInput selection rect contract must return a non-null array",
+    ):
+        require(marker in test, f"CCEAGLView source regression is missing: {marker}")
+
+    evidence = EAGLVIEW_DOC.read_text(encoding="utf-8")
+    for marker in ("V2-025 / P1", "CCEAGLView.plist", "diagnostics", "UITextInput"):
+        require(marker in evidence, f"CCEAGLView evidence is missing: {marker}")
+    width, height, _ = png_metadata(EAGLVIEW_SCREENSHOT)
+    require((width, height) == (1170, 2532), "CCEAGLView runtime screenshot dimensions drifted")
+    require(EAGLVIEW_SCREENSHOT.stat().st_size > 500_000, "CCEAGLView runtime screenshot appears incomplete")
+
+
 def validate_toolchain_and_repository() -> None:
     output = subprocess.run(
         ["xcodebuild", "-version"],
@@ -530,6 +580,7 @@ def main() -> None:
     validate_file_read_safety()
     validate_userdefault_xml_ownership()
     validate_texture_atlas_allocation()
+    validate_eaglview_contract()
     validate_toolchain_and_repository()
     print("iOS release static validation passed")
 

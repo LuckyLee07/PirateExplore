@@ -98,6 +98,7 @@ Copyright (C) 2008 Apple Inc. All Rights Reserved.
     BOOL                    isUseUITextField;
 @private
     NSString *              markedText_;
+    NSDictionary *          markedTextStyle_;
     CGRect                  caretRect_;
     CGRect                  originalRect_;
     NSNotification*         keyboardShowNotification_;

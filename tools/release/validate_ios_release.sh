@@ -10,6 +10,7 @@ tools/release/test_ccdata_ownership.sh
 tools/release/test_fileutils_read.sh
 tools/release/test_userdefault_xml.sh
 tools/release/test_texture_atlas_allocation.sh
+python3 tools/release/test_eaglview_contract.py
 python3 tools/release/validate_ios_release.py
 python3 tools/release/validate_app_store_assets.py
 python3 tools/release/validate_public_release_pages.py

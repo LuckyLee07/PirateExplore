@@ -41,6 +41,8 @@ Release 静态分析进一步在引擎核心 `Data` 缓冲类定位到复制自�
 
 核心标签、精灵批次和图集节点使用的 `TextureAtlas` 还允许以 0 容量初始化后按需扩容；旧实现会把 `malloc(0)` 可能返回的空地址传给 `memset`，而 Release 下负容量、字节乘法和 16 位索引范围只依赖断言或没有保护。`V2-024` 已将 CPU 侧 quad/index 建立统一为受限分配：0 容量无分配成功，拒绝负值、溢出与超过 16,384 个 quad，第二段分配失败会释放第一段。ASan/UBSan 专项与 `CCTextureAtlas.plist` 零诊断复查通过。完整证据见 [`../release/texture-atlas-allocation-iteration-1.md`](../release/texture-atlas-allocation-iteration-1.md)。
 
+iOS 启动必经的 `CCEAGLView` 仍采用手动引用计数；旧实现没有在销毁时释放组合文本和 `markedTextStyle` 复制属性，也没有注销键盘通知观察者，`UITextInput.selectionRectsForRange` 还返回了协议不接受的 `nil`。`V2-025` 已显式绑定复制属性的 ivar，在 `dealloc` 前完成所有权和观察者清理，并用空数组表示“无选区矩形”；源契约回归及 `CCEAGLView.plist` 零诊断复查通过。完整证据见 [`../release/eaglview-ime-contract-iteration-1.md`](../release/eaglview-ime-contract-iteration-1.md)。
+
 本地行为记录与 V2 scoped save 同步保存；单会话最多 240 条，避免长期 QA 重玩导致存档无限增长。记录不联网，不含个人身份信息。
 
 ## 4. 崩溃与音频
@@ -81,6 +83,7 @@ iOS 使用 `UILaunchScreen`；应用 target 不再启用弃用的 LaunchImage �
 - 本地文件安全读取：通过；空/文本/二进制、上限、分配失败和缺失文件的 ASan/UBSan 回归通过，`CCFileUtils` Release 静态分析零诊断；
 - 旧配置 XML 迁移：通过；无效、空根、缺键、成功迁移及 20,000 次压力循环通过 ASan/UBSan，两条 `CCUserDefault` Release 静态分析泄漏诊断归零；
 - 纹理图集缓冲：通过；0/负容量、正常清零、16 位索引上限和两段分配失败通过 ASan/UBSan，两条 `CCTextureAtlas` Release 静态分析空指针诊断归零；
+- iOS 主视图输入契约：通过；组合文本/复制属性释放、通知观察者清理、copy setter 和非空选区数组均由源契约测试锁定，`CCEAGLView` Release 静态分析诊断归零；
 - arm64 iOS 模拟器构建：通过；构建脚本默认使用主机架构，产物确认为 arm64 并成功安装；
 - 模拟器多尺寸运行：通过；iPhone SE 3 / iOS 17.2 的 `qa_combat`、iPhone 12 Pro / iOS 26.2 基线和 iPad A16 / iOS 26.2 的 `qa_explore` 均全屏且操作完整；
 - iPhone 13 mini / Xcode 26.2：测试环境缺陷，显示 `rdar:45025538` 与错误逻辑尺寸，已从产品验收样本中剔除并以 SE 3 替代；
