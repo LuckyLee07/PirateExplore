@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import plistlib
+import struct
 import subprocess
 from pathlib import Path
 
@@ -16,6 +17,14 @@ def require(condition: bool, message: str) -> None:
 
 def command(*args: str) -> str:
     return subprocess.run(args, check=True, text=True, capture_output=True).stdout
+
+
+def png_metadata(path: Path) -> tuple[int, int, int]:
+    with path.open("rb") as handle:
+        header = handle.read(26)
+    require(header[:8] == b"\x89PNG\r\n\x1a\n", f"not a PNG: {path}")
+    width, height = struct.unpack(">II", header[16:24])
+    return width, height, header[25]
 
 
 def main() -> None:
@@ -37,6 +46,16 @@ def main() -> None:
     require(info.get("MinimumOSVersion") == "12.0", "unexpected minimum iOS version")
     require(info.get("UIDeviceFamily") == [1, 2], "archive must support iPhone and iPad")
     require(info.get("ITSAppUsesNonExemptEncryption") is False, "offline archive must declare no non-exempt encryption")
+
+    for filename, expected in (
+        ("AppIcon60x60@2x.png", (120, 120)),
+        ("AppIcon76x76@2x~ipad.png", (152, 152)),
+    ):
+        path = app / filename
+        require(path.is_file(), f"compiled archive icon missing: {filename}")
+        width, height, color_type = png_metadata(path)
+        require((width, height) == expected, f"compiled archive icon has wrong size: {filename}")
+        require(color_type in {0, 2, 3}, f"compiled archive icon contains alpha: {filename}")
 
     privacy_path = app / "PrivacyInfo.xcprivacy"
     require(privacy_path.is_file(), "privacy manifest missing from app root")
@@ -73,6 +92,20 @@ def main() -> None:
         notification.count('V2Config:isFeatureEnabled("legacy.network_time")') >= 2,
         "archive startup and foreground server-clock paths are not guarded",
     )
+
+    chapter_state = (app / "scripts/LuaClass/V2ChapterState.lua").read_text(encoding="utf-8")
+    for retired_copy in (
+        "QA 探索档已定位",
+        "QA 战斗档已定位",
+        "QA 接舷档已定位",
+        "QA 符文档",
+        "QA 结算档",
+        "QA 完成档",
+    ):
+        require(retired_copy not in chapter_state, f"archive contains player-visible QA seed copy: {retired_copy}")
+    chapter_layout = (app / "scripts/LuaClass/V2ChapterLayout.lua").read_text(encoding="utf-8")
+    for marker in ("height < 1050", "action_button_scale = 1.28", "top_bar_height = 145"):
+        require(marker in chapter_layout, f"archive responsive layout missing marker: {marker}")
 
     executable = app / info["CFBundleExecutable"]
     require(executable.is_file(), "app executable is missing")

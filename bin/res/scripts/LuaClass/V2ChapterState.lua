@@ -243,7 +243,7 @@ function V2ChapterState.new(profile)
         state.current_node = "node_fog_gate"
         state.flags.voyage_ready = true
         state.objective = "在安全航线与暗礁近路之间做出选择"
-        state.last_result = "QA 探索档已定位到第一片迷雾。"
+        state.last_result = "第一片迷雾已经在羊皮海图上显现。"
         state.resources.provisions = balanceValue("initial_provisions") - 1
     elseif profile == "qa_combat" then
         state.stage = "naval"
@@ -259,7 +259,7 @@ function V2ChapterState.new(profile)
         state.resources.provisions = 5
         resetBattle(state)
         state.objective = "选择击毁甲板或压制火炮，再决定接舷时机"
-        state.last_result = "QA 战斗档已定位到诅咒追猎者。"
+        state.last_result = "诅咒追猎者已进入我方舰炮射程。"
     elseif profile == "qa_boarding" then
         state.stage = "boarding"
         state.current_node = "node_raider"
@@ -279,7 +279,7 @@ function V2ChapterState.new(profile)
             state.battle.enemy_boarding_hp_max
         )
         state.objective = "击败敌方接舷队，夺取符文线索"
-        state.last_result = "QA 接舷档已定位到追猎者甲板。"
+        state.last_result = "敌方甲板已被击破，接舷队正在压上。"
     elseif profile == "qa_rune" then
         state.stage = "rune_clue"
         state.current_node = "node_rune_clue"
@@ -287,9 +287,9 @@ function V2ChapterState.new(profile)
         state.flags.raider_defeated = true
         state.active_event = "event_rune_clue"
         applyReward(state, "reward_battle")
-        state.battle_report = "QA 符文档：甲板优势已成功传递到接舷战。"
+        state.battle_report = "舰炮阶段取得的甲板优势已成功传递到接舷战。"
         state.objective = "检查与水晶瓶共鸣的符文碎片"
-        state.last_result = "QA 符文档已定位到首章目标。"
+        state.last_result = "追猎者残骸中浮现出与水晶瓶共鸣的符文碎片。"
     elseif profile == "qa_settlement" then
         state.stage = "settlement"
         state.current_node = "node_rune_clue"
@@ -300,7 +300,7 @@ function V2ChapterState.new(profile)
         applyReward(state, "reward_battle")
         applyReward(state, "reward_rune_clue")
         state.objective = "确认战利品用途并返回皇家港"
-        state.last_result = "QA 结算档已取得符文碎片和追猎者战利品。"
+        state.last_result = "符文碎片和追猎者战利品已经清点完毕。"
     elseif profile == "qa_complete" then
         state.stage = "complete"
         state.current_node = "node_port"
@@ -317,7 +317,7 @@ function V2ChapterState.new(profile)
         state.upgrades.hull = true
         state.next_voyage_objective = "前往潮汐墓场寻找符文守卫"
         state.objective = "查看下一次远航目标"
-        state.last_result = "QA 完成档已完成返航与船体升级。"
+        state.last_result = "首航已经完成，船体强化也已安装完毕。"
     end
     return state
 end

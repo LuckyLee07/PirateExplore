@@ -39,7 +39,7 @@ iOS Release archive 的发行工程基线。本轮不把无签名归档、模拟
 
 - 使用现代 `UILaunchScreen` 声明，保持纵向全屏、iPhone/iPad 和 iOS 12 最低版本；
 - 补齐 App Icon catalog 的 20pt iPad 槽位并验证所有像素尺寸；
-- 1024 图标已满足 RGB、无 Alpha 的技术要求，但视觉定稿仍由 `V2-015` 阻塞；
+- 本轮结束时 1024 图标只满足 RGB、无 Alpha；后续商店素材迭代已完成视觉定稿并关闭 `V2-015`，见 `app-store-assets-iteration-1.md`；
 - 建立中文 App Store 元数据草案和上线就绪清单。
 
 ## 3. 运行回归发现与修复

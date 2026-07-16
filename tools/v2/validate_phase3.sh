@@ -6,6 +6,7 @@ cd "$ROOT"
 
 tools/v2/validate_phase2.sh
 lua tools/v2/test_v2_phase3.lua
+lua tools/v2/test_v2_chapter_layout.lua
 python3 tools/v2/validate_phase3.py
 
 echo "V2 Phase 3 validation passed"

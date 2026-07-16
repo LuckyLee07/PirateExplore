@@ -85,18 +85,26 @@ def validate_privacy_manifest() -> None:
 def validate_app_icons() -> None:
     catalog = json.loads((APPICON / "Contents.json").read_text(encoding="utf-8"))
     require(catalog.get("images"), "AppIcon catalog is empty")
+    referenced_files: set[str] = set()
     for entry in catalog["images"]:
         filename = entry.get("filename")
         require(bool(filename), f"AppIcon slot has no file: {entry}")
+        referenced_files.add(filename)
         size = float(entry["size"].split("x", 1)[0])
         scale = int(entry["scale"].removesuffix("x"))
         expected = round(size * scale)
         path = APPICON / filename
         require(path.is_file(), f"missing AppIcon image: {filename}")
-        width, height, _ = png_metadata(path)
+        width, height, color_type = png_metadata(path)
         require((width, height) == (expected, expected), f"wrong AppIcon dimensions for {filename}: {width}x{height}, expected {expected}x{expected}")
+        require(color_type in {0, 2, 3}, f"AppIcon must not contain alpha: {filename}")
 
-    marketing = APPICON / "Icon-1024.png"
+    actual_files = {path.name for path in APPICON.glob("*.png")}
+    require(actual_files == referenced_files, "AppIcon catalog contains missing or unassigned PNG files")
+
+    marketing_entries = [entry for entry in catalog["images"] if entry.get("idiom") == "ios-marketing"]
+    require(len(marketing_entries) == 1, "AppIcon catalog must contain exactly one iOS marketing slot")
+    marketing = APPICON / marketing_entries[0]["filename"]
     width, height, color_type = png_metadata(marketing)
     require((width, height) == (1024, 1024), "marketing icon must be 1024x1024")
     require(color_type in {0, 2, 3}, "marketing icon must not contain an alpha channel")

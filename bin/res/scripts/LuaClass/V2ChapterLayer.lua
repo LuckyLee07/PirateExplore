@@ -2,6 +2,8 @@ require "LuaClass/Header"
 require "LuaClass/ToastUtil"
 require "LuaClass/V2ChapterController"
 
+local V2ChapterLayout = require "LuaClass/V2ChapterLayout"
+
 V2ChapterLayer = class("V2ChapterLayer", function()
     return cc.Layer:create()
 end)
@@ -158,11 +160,11 @@ function V2ChapterLayer:playActionFeedback(actionId, previousStage, nextStage)
     end
 end
 
-function V2ChapterLayer:addHeroArt(parent, state, isQA)
+function V2ChapterLayer:addHeroArt(parent, state, isQA, layout)
     local presentation = self.controller:getPresentation()
     local width = self.visibleSize.width
-    local artHeight = 540
-    local artY = self.visibleSize.height - 840
+    local artHeight = layout.art_height
+    local artY = layout.art_y
 
     local frame = cc.LayerColor:create(cc.c4b(6, 14, 20, 235), width, artHeight)
     frame:setPosition(cc.p(0, artY))
@@ -184,10 +186,11 @@ function V2ChapterLayer:addHeroArt(parent, state, isQA)
     if presentation.foreground ~= nil then
         local foreground = cc.Sprite:create(presentation.foreground)
         if foreground ~= nil then
-            foreground:setPosition(cc.p(width * 0.73, artHeight * 0.53))
+            foreground:setPosition(cc.p(width * 0.73, artHeight * (layout.compact and 0.46 or 0.53)))
             local size = foreground:getContentSize()
             if size.width > 0 then
-                foreground:setScale(math.min(1.0, 250 / size.width))
+                local targetWidth = layout.compact and 180 or 250
+                foreground:setScale(math.min(layout.compact and 0.75 or 1.0, targetWidth / size.width))
             end
             foreground:setOpacity(210)
             frame:addChild(foreground, 3)
@@ -201,9 +204,12 @@ function V2ChapterLayer:addHeroArt(parent, state, isQA)
     if presentation.portrait ~= nil then
         local portrait = cc.Sprite:create(presentation.portrait)
         if portrait ~= nil then
-            portrait:setPosition(cc.p(width - 92, artHeight - 102))
+            portrait:setPosition(cc.p(width - 92, artHeight - (layout.compact and 72 or 102)))
             local size = portrait:getContentSize()
-            if size.width > 0 then portrait:setScale(math.min(0.72, 142 / size.width)) end
+            if size.width > 0 then
+                local targetWidth = layout.compact and 108 or 142
+                portrait:setScale(math.min(layout.compact and 0.52 or 0.72, targetWidth / size.width))
+            end
             portrait:setOpacity(240)
             frame:addChild(portrait, 4)
             portrait:runAction(cc.RepeatForever:create(cc.Sequence:create(
@@ -217,21 +223,21 @@ function V2ChapterLayer:addHeroArt(parent, state, isQA)
     if isQA then
         artTagText = "QA 构图  ·  " .. artTagText
     end
-    local artTag = createLabel(artTagText, 15, COLORS.gold)
+    local artTag = createLabel(artTagText, layout.compact and 13 or 15, COLORS.gold)
     artTag:setAnchorPoint(cc.p(0, 1))
-    artTag:setPosition(cc.p(28, artHeight - 18))
+    artTag:setPosition(cc.p(28, artHeight - (layout.compact and 14 or 18)))
     frame:addChild(artTag, 5)
 
     if state.stage == "rune_clue" or state.stage == "settlement"
         or state.stage == "upgrade" or state.stage == "complete" then
         local rewardIcon = cc.Sprite:create("Images/UI/CoinBg.png")
-        rewardIcon:setPosition(cc.p(48, 55))
-        rewardIcon:setScale(0.82)
+        rewardIcon:setPosition(cc.p(layout.compact and 40 or 48, layout.compact and 40 or 55))
+        rewardIcon:setScale(layout.compact and 0.62 or 0.82)
         frame:addChild(rewardIcon, 5)
         rewardIcon:runAction(cc.RepeatForever:create(cc.RotateBy:create(3.5, 360)))
-        local rewardLabel = createLabel("首章奖励已入库", 17, COLORS.gold)
+        local rewardLabel = createLabel("首章奖励已入库", layout.compact and 14 or 17, COLORS.gold)
         rewardLabel:setAnchorPoint(cc.p(0, 0.5))
-        rewardLabel:setPosition(cc.p(76, 55))
+        rewardLabel:setPosition(cc.p(layout.compact and 62 or 76, layout.compact and 40 or 55))
         frame:addChild(rewardLabel, 5)
     end
 end
@@ -304,9 +310,9 @@ function V2ChapterLayer:addMapStrip(parent, state, y)
     end
 end
 
-function V2ChapterLayer:addActionButton(parent, action, x, y)
+function V2ChapterLayer:addActionButton(parent, action, x, y, layout)
     local button = cc.MenuItemImage:create("Images/btn/ann01_a.png", "Images/btn/ann01_b.png")
-    button:setScale(1.55)
+    button:setScale(layout.action_button_scale)
     button:setPosition(cc.p(x, y))
     button:registerScriptTapHandler(function()
         local previousStage = self.controller:load().stage
@@ -319,11 +325,11 @@ function V2ChapterLayer:addActionButton(parent, action, x, y)
         self:refresh()
     end)
 
-    local fontSize = string.len(action.label) > 36 and 12 or 15
+    local fontSize = string.len(action.label) > 36 and 12 or layout.action_font_size
     local label = createLabel(action.label, fontSize, COLORS.ink, 116, cc.TEXT_ALIGNMENT_CENTER)
     label:setAnchorPoint(cc.p(0.5, 0.5))
     label:setPosition(cc.p(button:getContentSize().width * 0.5, button:getContentSize().height * 0.5 + 2))
-    label:setScale(1 / 1.55)
+    label:setScale(1 / layout.action_button_scale)
     button:addChild(label, 2)
     parent:addChild(button)
 end
@@ -334,12 +340,13 @@ function V2ChapterLayer:refresh()
     local root = self.dynamicNode
     local width = self.visibleSize.width
     local height = self.visibleSize.height
+    local layout = V2ChapterLayout.build(width, height)
     local isQA = V2Config:isQAProfile(state.profile)
 
-    self:addHeroArt(root, state, isQA)
+    self:addHeroArt(root, state, isQA, layout)
 
-    local topBar = cc.LayerColor:create(cc.c4b(13, 29, 37, 238), width, 122)
-    topBar:setPosition(cc.p(0, height - 122))
+    local topBar = cc.LayerColor:create(cc.c4b(13, 29, 37, 238), width, layout.top_bar_height)
+    topBar:setPosition(cc.p(0, height - layout.top_bar_height))
     root:addChild(topBar)
 
     local kickerText = "海上探险家  ·  第一章"
@@ -348,41 +355,41 @@ function V2ChapterLayer:refresh()
     end
     local kicker = createLabel(kickerText, 15, COLORS.sea)
     kicker:setAnchorPoint(cc.p(0, 0.5))
-    kicker:setPosition(cc.p(30, 92))
+    kicker:setPosition(cc.p(30, layout.kicker_y))
     topBar:addChild(kicker)
 
-    local title = createLabel(self.controller:getStageTitle(), 34, COLORS.ink)
+    local title = createLabel(self.controller:getStageTitle(), layout.title_size, COLORS.ink)
     title:setAnchorPoint(cc.p(0, 0.5))
-    title:setPosition(cc.p(30, 50))
+    title:setPosition(cc.p(30, layout.title_y))
     topBar:addChild(title)
 
     if isQA then
         local profile = createLabel("存档 " .. state.profile, 15, COLORS.muted)
         profile:setAnchorPoint(cc.p(1, 0.5))
-        profile:setPosition(cc.p(width - 28, 91))
+        profile:setPosition(cc.p(width - 28, layout.profile_y))
         topBar:addChild(profile)
     end
 
-    local objectiveLabel = createLabel("当前目标｜" .. state.objective, 21, COLORS.gold, width - 60)
+    local objectiveLabel = createLabel("当前目标｜" .. state.objective, layout.objective_size, COLORS.gold, width - 60)
     objectiveLabel:setAnchorPoint(cc.p(0, 1))
-    objectiveLabel:setPosition(cc.p(30, height - 145))
+    objectiveLabel:setPosition(cc.p(30, layout.objective_y))
     root:addChild(objectiveLabel)
 
-    local resourceLabel = createLabel(resourceLine(state.resources), 18, COLORS.ink, width - 60, cc.TEXT_ALIGNMENT_CENTER)
+    local resourceLabel = createLabel(resourceLine(state.resources), layout.resource_size, COLORS.ink, width - 60, cc.TEXT_ALIGNMENT_CENTER)
     resourceLabel:setAnchorPoint(cc.p(0, 1))
-    resourceLabel:setPosition(cc.p(30, height - 202))
+    resourceLabel:setPosition(cc.p(30, layout.resource_y))
     root:addChild(resourceLabel)
 
-    self:addMapStrip(root, state, height - 276)
+    self:addMapStrip(root, state, layout.map_y)
 
-    local cardHeight = 470
+    local cardHeight = layout.card_height
     local card = cc.LayerColor:create(cc.c4b(10, 25, 32, 208), width - 52, cardHeight)
-    card:setPosition(cc.p(26, height - 815))
+    card:setPosition(cc.p(26, layout.card_y))
     root:addChild(card)
 
-    local stageLabel = createLabel(self.controller:getStageTitle(), 28, COLORS.gold)
+    local stageLabel = createLabel(self.controller:getStageTitle(), layout.card_title_size, COLORS.gold)
     stageLabel:setAnchorPoint(cc.p(0, 1))
-    stageLabel:setPosition(cc.p(24, cardHeight - 24))
+    stageLabel:setPosition(cc.p(24, layout.card_title_y))
     card:addChild(stageLabel)
 
     local moduleData = self.controller:getChapterData().by_id.ship_module[state.selected_module]
@@ -392,27 +399,27 @@ function V2ChapterLayer:refresh()
         state.route == "safe_route" and "安全外海" or (state.route == "risky_shortcut" and "暗礁近路" or "未选择"),
         moduleData.name
     )
-    local metaLabel = createLabel(meta, 17, COLORS.muted, width - 100)
+    local metaLabel = createLabel(meta, layout.card_meta_size, COLORS.muted, width - 100)
     metaLabel:setAnchorPoint(cc.p(0, 1))
-    metaLabel:setPosition(cc.p(24, cardHeight - 68))
+    metaLabel:setPosition(cc.p(24, layout.card_meta_y))
     card:addChild(metaLabel)
 
-    local narrative = createLabel(self.controller:getNarrative(), 19, COLORS.ink, width - 100)
+    local narrative = createLabel(self.controller:getNarrative(), layout.card_narrative_size, COLORS.ink, width - 100)
     narrative:setAnchorPoint(cc.p(0, 1))
-    narrative:setPosition(cc.p(24, cardHeight - 112))
+    narrative:setPosition(cc.p(24, layout.card_narrative_y))
     card:addChild(narrative)
 
     local battle = battleLine(state)
     if battle then
-        local battleLabel = createLabel(battle, 19, state.stage == "naval" and COLORS.sea or COLORS.danger, width - 100)
+        local battleLabel = createLabel(battle, layout.card_battle_size, state.stage == "naval" and COLORS.sea or COLORS.danger, width - 100)
         battleLabel:setAnchorPoint(cc.p(0, 1))
-        battleLabel:setPosition(cc.p(24, 126))
+        battleLabel:setPosition(cc.p(24, layout.card_battle_y))
         card:addChild(battleLabel)
     end
 
-    local resultLabel = createLabel("最近结果｜" .. state.last_result, 17, COLORS.muted, width - 100)
+    local resultLabel = createLabel("最近结果｜" .. state.last_result, layout.card_result_size, COLORS.muted, width - 100)
     resultLabel:setAnchorPoint(cc.p(0, 0))
-    resultLabel:setPosition(cc.p(24, 22))
+    resultLabel:setPosition(cc.p(24, layout.card_result_y))
     card:addChild(resultLabel)
 
     local actions = self.controller:getActions()
@@ -424,8 +431,8 @@ function V2ChapterLayer:refresh()
         local column = ((index - 1) % 2) + 1
         local row = math.floor((index - 1) / 2)
         local x = columns[column] or width * 0.5
-        local y = 270 - row * 92
-        self:addActionButton(menu, action, x, y)
+        local y = layout.action_base_y - row * layout.action_row_gap
+        self:addActionButton(menu, action, x, y, layout)
     end
 
     local footerText = "迷雾会记住你的每一次选择。"
@@ -440,9 +447,9 @@ function V2ChapterLayer:refresh()
             report.invalid_actions
         )
     end
-    local footer = createLabel(footerText, 15, COLORS.muted, width - 40, cc.TEXT_ALIGNMENT_CENTER)
+    local footer = createLabel(footerText, layout.footer_size, COLORS.muted, width - 40, cc.TEXT_ALIGNMENT_CENTER)
     footer:setAnchorPoint(cc.p(0, 0))
-    footer:setPosition(cc.p(20, 18))
+    footer:setPosition(cc.p(20, layout.footer_y))
     root:addChild(footer)
 end
 

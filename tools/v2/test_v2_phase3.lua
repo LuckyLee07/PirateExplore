@@ -13,6 +13,15 @@ local function truthy(value, message)
     if not value then error(message) end
 end
 
+local function presentationCopyHasNoQAMarker(state, profile)
+    for _, field in ipairs({ "objective", "last_result", "battle_report" }) do
+        local value = state[field]
+        if type(value) == "string" and string.find(value, "QA", 1, true) then
+            error(string.format("%s embeds a QA marker in player-visible %s", profile, field))
+        end
+    end
+end
+
 local function apply(state, action)
     local ok, message = State.apply(state, action)
     if not ok then error(string.format("%s failed: %s", action, tostring(message))) end
@@ -58,5 +67,15 @@ equal(State.getPresentation(State.new("qa_explore")).hero_group, "map", "explora
 equal(State.getPresentation(State.new("qa_combat")).hero_group, "combat", "naval maps to the combat hero composition")
 equal(State.getPresentation(State.new("qa_boarding")).stage, "boarding", "boarding has distinct deck art")
 equal(State.getPresentation(State.new("qa_rune")).hero_group, "rune", "rune clue maps to the rune hero composition")
+for _, profile in ipairs({
+    "qa_explore",
+    "qa_combat",
+    "qa_boarding",
+    "qa_rune",
+    "qa_settlement",
+    "qa_complete",
+}) do
+    presentationCopyHasNoQAMarker(State.new(profile), profile)
+end
 
 print("V2 Phase 3 content OK: 8 events, voyage dialogue, hero art, enemy presentation, audio and animation mappings")

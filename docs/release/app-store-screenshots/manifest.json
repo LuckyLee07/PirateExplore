@@ -1,0 +1,62 @@
+{
+  "locale": "zh-CN",
+  "source_build": {
+    "bundle_id": "com.fancyGame.NewPirate",
+    "marketing_version": "2.0.0",
+    "build_number": "1",
+    "configuration": "Release"
+  },
+  "capture": {
+    "date": "2026-07-16",
+    "runtime": "iOS 26.2 Simulator",
+    "method": "xcrun simctl io screenshot",
+    "presentation_profile": "player",
+    "alpha_removed_losslessly": true
+  },
+  "groups": [
+    {
+      "id": "iphone-6.9",
+      "device": "iPhone 17 Pro Max",
+      "udid": "3C371FD2-8B66-40D4-BAB1-C7CD2AF94BA0",
+      "pixel_width": 1320,
+      "pixel_height": 2868
+    },
+    {
+      "id": "ipad-13",
+      "device": "iPad Pro 13-inch (M5)",
+      "udid": "40E2ABA5-3F00-4BB7-AF2B-B5CC26FA60C4",
+      "pixel_width": 2064,
+      "pixel_height": 2752
+    }
+  ],
+  "images": [
+    {
+      "order": 1,
+      "scene": "exploration",
+      "player_value": "在迷雾海图上选择安全外海或暗礁近路"
+    },
+    {
+      "order": 2,
+      "scene": "naval-combat",
+      "player_value": "选择舰炮目标，并把战果传递到接舷阶段"
+    },
+    {
+      "order": 3,
+      "scene": "return-and-upgrade",
+      "player_value": "完成首航、安装船体强化并看到下一次远航目标"
+    },
+    {
+      "order": 4,
+      "scene": "rune-clue",
+      "player_value": "取得与水晶瓶共鸣的第一枚符文线索"
+    }
+  ],
+  "visual_review": {
+    "status": "passed",
+    "qa_markers_visible": false,
+    "iphone_title_clears_dynamic_island": true,
+    "ipad_controls_overlap": false,
+    "reviewed_at_full_resolution": true
+  },
+  "apple_specification": "https://developer.apple.com/help/app-store-connect/reference/app-information/screenshot-specifications/"
+}

@@ -39,6 +39,8 @@
 | Required Reason API | 通过 | `NSUserDefaults` 使用 `CA92.1`；应用内音频文件时间戳使用 `C617.1` |
 | 出口合规清理 | 通过 | iOS 目标移除应用 AES、2012 年 libcurl/OpenSSL、WebSocket、XMLHttpRequest 和 LuaSocket；Info 声明不使用非豁免加密 |
 | App Icon 技术规格 | 通过 | 所有 catalog 槽位都有正确像素文件；1024 图标为 RGB 且无 Alpha |
+| 商店视觉素材 | 通过 | `V2-015` 已关闭；V2 瓶中黑帆图标定稿，iPhone 6.9 英寸与 iPad 13 英寸各 4 张玩家截图均为 RGB、无 Alpha |
+| 商店画面适配 | 通过 | `V2-017` 已关闭；iPhone 标题避开 Dynamic Island，iPad 紧凑布局无数值/按钮重叠 |
 | 离线启动入口 | 通过 | `V2-016` 已关闭；干净安装 5 秒内进入第一章，再次唤起保持同一进程；启动与回前台不访问旧服务器时钟 |
 | Release 自动验收 | 通过 | 阶段 0～4、发行静态、Release arm64 模拟器、无签名 device archive 与 archive 内容检查通过；详见 `ios-release-engineering-iteration-1.md` |
 
@@ -56,7 +58,6 @@ App Store Connect 隐私问卷。
 | P0 | 年龄分级与合规问卷 | 按奇幻战斗、恐怖元素等真实内容完成新版年龄分级和出口合规问卷 | 待 App Store Connect 操作 |
 | P1 | 真机矩阵 | 至少一台低端 iPhone、一台现代 iPhone 和一台 iPad 验收触控、音量、发热、帧率和恢复 | 尚未完成 |
 | P1 | 两轮目标用户外测 | 按阶段 4 协议完成两轮并达到理解率、继续意愿和核心幻想回忆阈值 | `V2-006` 未关闭 |
-| P1 | 商店图标与截图 | 图标升级为“精致卡通 2.5D 海盗冒险”；提交所需尺寸截图无 QA 文案 | `V2-015`，美术待制作/评审 |
 | P1 | 商店文案与本地化 | 名称可用性、描述、关键词、支持 URL、审核备注全部在后台校验 | 已有草案，待账号侧定稿 |
 
 以上 P0 未完成时不得上传；P1 未完成时不得把版本标记为可上线。模拟器和无签名
@@ -83,6 +84,8 @@ archive 只能证明工程可构建，不能替代真机、签名或 App Review 
 - [App information reference](https://developer.apple.com/help/app-store-connect/reference/app-information/app-information)
 - [Overview of export compliance](https://developer.apple.com/help/app-store-connect/manage-app-information/overview-of-export-compliance)
 - [`ITSAppUsesNonExemptEncryption`](https://developer.apple.com/documentation/bundleresources/information-property-list/itsappusesnonexemptencryption)
+- [Screenshot specifications](https://developer.apple.com/help/app-store-connect/reference/app-information/screenshot-specifications/)
+- [Upload app previews and screenshots](https://developer.apple.com/help/app-store-connect/manage-app-information/upload-app-previews-and-screenshots)
 
 ## 6. 每次候选版本的验收命令
 
@@ -116,6 +119,6 @@ python3 tools/release/validate_ios_archive.py build/archives/NewPirate.xcarchive
 - [ ] 程序：完整回归、Release 模拟器、设备编译、archive 验证通过；
 - [ ] 测试：真机矩阵无 P0/P1，存档升级与重装路径通过；
 - [ ] 用户研究：两轮外测阈值通过，原始匿名证据归档；
-- [ ] 美术：图标、三类核心截图和各设备尺寸通过商店评审；
+- [x] 美术：图标、三类核心叙事和两个最高分辨率设备组已完成内部商店评审；
 - [ ] 运营/法务：隐私政策、支持 URL、年龄分级、出口合规和版权确认；
 - [ ] 账号负责人：Bundle ID、签名、App 记录和上传校验通过。
