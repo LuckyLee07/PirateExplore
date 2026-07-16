@@ -6,6 +6,7 @@ cd "$ROOT"
 
 tools/v2/validate_phase3.sh
 lua tools/v2/test_v2_phase4.lua
+lua tools/v2/test_v2_release_info.lua
 python3 tools/v2/test_analyze_user_tests.py
 python3 tools/v2/validate_phase4.py
 python3 tools/v2/validate_player_presentation.py

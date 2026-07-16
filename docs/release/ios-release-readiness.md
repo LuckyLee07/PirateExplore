@@ -42,6 +42,7 @@
 | 商店视觉素材 | 通过 | `V2-015` 已关闭；V2 瓶中黑帆图标定稿，iPhone 6.9 英寸与 iPad 13 英寸各 4 张玩家截图均为 RGB、无 Alpha |
 | 商店画面适配 | 通过 | `V2-017` 已关闭；iPhone 标题避开 Dynamic Island，iPad 紧凑布局无数值/按钮重叠 |
 | 离线启动入口 | 通过 | `V2-016` 已关闭；干净安装 5 秒内进入第一章，再次唤起保持同一进程；启动与回前台不访问旧服务器时钟 |
+| 隐私/支持内部准备 | 通过 | V2 顶栏入口、本地说明、公开页面模板、渲染和分层校验工具完成；真实 URL 仍由 `V2-018` 阻塞 |
 | Release 自动验收 | 通过 | 阶段 0～4、发行静态、Release arm64 模拟器、无签名 device archive 与 archive 内容检查通过；详见 `ios-release-engineering-iteration-1.md` |
 
 隐私结论只对应当前提交候选。签名包进入 TestFlight 后仍需做一次网络流量复核；
@@ -54,7 +55,7 @@ App Store Connect 隐私问卷。
 | --- | --- | --- | --- |
 | P0 | 开发者账号与 Bundle ID | 在正确团队中确认 `com.fancyGame.NewPirate` 可用并创建 App 记录 | `V2-014`，待外部账号操作 |
 | P0 | 签名与上传 | 选择 Distribution 证书/描述文件，生成签名 archive，并通过 App Store Connect 上传校验 | `V2-014`，待外部账号操作 |
-| P0 | 隐私政策与隐私问卷 | 提供可公开访问的隐私政策 URL；按最终二进制回答 App Privacy | URL 待提供 |
+| P0 | 隐私政策、支持页与隐私问卷 | 验证真实主体/支持邮箱，部署两个公开 HTTPS 页面，配置 App 内与后台 URL；按最终二进制回答 App Privacy | `V2-018`；模板已完成，外部值与上线证据待提供 |
 | P0 | 年龄分级与合规问卷 | 按奇幻战斗、恐怖元素等真实内容完成新版年龄分级和出口合规问卷 | 待 App Store Connect 操作 |
 | P1 | 真机矩阵 | 至少一台低端 iPhone、一台现代 iPhone 和一台 iPad 验收触控、音量、发热、帧率和恢复 | 尚未完成 |
 | P1 | 两轮目标用户外测 | 按阶段 4 协议完成两轮并达到理解率、继续意愿和核心幻想回忆阈值 | `V2-006` 未关闭 |
@@ -82,6 +83,8 @@ archive 只能证明工程可构建，不能替代真机、签名或 App Review 
 - [Manage App Privacy](https://developer.apple.com/help/app-store-connect/manage-app-information/manage-app-privacy)
 - [Upload builds](https://developer.apple.com/help/app-store-connect/manage-builds/upload-builds)
 - [App information reference](https://developer.apple.com/help/app-store-connect/reference/app-information/app-information)
+- [Platform version information](https://developer.apple.com/help/app-store-connect/reference/app-information/platform-version-information)
+- [App Review Guidelines](https://developer.apple.com/app-store/review/guidelines/)
 - [Overview of export compliance](https://developer.apple.com/help/app-store-connect/manage-app-information/overview-of-export-compliance)
 - [`ITSAppUsesNonExemptEncryption`](https://developer.apple.com/documentation/bundleresources/information-property-list/itsappusesnonexemptencryption)
 - [Screenshot specifications](https://developer.apple.com/help/app-store-connect/reference/app-information/screenshot-specifications/)
@@ -104,6 +107,10 @@ CONFIGURATION=Release ./xcode.sh ios-device
 
 # 检查 archive 的版本、架构、隐私清单、动态库和遗留符号
 python3 tools/release/validate_ios_archive.py build/archives/NewPirate.xcarchive
+
+# 最终提交前：要求 App 已配置真实页面，并从公网验证内容
+python3 tools/release/validate_public_release_pages.py \
+  --require-app-links --check-live-urls
 ```
 
 账号准备完成后，另用 `CODE_SIGNING_ALLOWED=YES` 和已选定的团队生成分发 archive。

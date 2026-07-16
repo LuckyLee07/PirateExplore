@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <meta name="description" content="{{APP_NAME}} {{APP_VERSION}} 玩家支持">
+  <link rel="canonical" href="{{SUPPORT_URL}}">
+  <link rel="stylesheet" href="../assets/release.css">
+  <title>玩家支持｜{{APP_NAME}}</title>
+</head>
+<body>
+  <a class="skip-link" href="#content">跳到正文</a>
+  <header class="site-header">
+    <div class="shell header-row">
+      <div>
+        <p class="eyebrow">{{APP_NAME}} · iOS {{APP_VERSION}}</p>
+        <h1>玩家支持</h1>
+      </div>
+      <nav aria-label="发行页面">
+        <a href="{{PRIVACY_URL}}">隐私政策</a>
+        <a aria-current="page" href="{{SUPPORT_URL}}">支持</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="content" class="shell document">
+    <p class="lead">以下说明适用于《{{APP_NAME}}》iOS {{APP_VERSION}}。页面更新日期：{{EFFECTIVE_DATE}}。</p>
+
+    <div class="card-grid">
+      <section class="card">
+        <h2>无法进入第一章</h2>
+        <p>先彻底退出应用后重新打开。若仍停留在加载页，请记录设备型号、iOS 版本、发生时间和可复现步骤后联系支持。</p>
+      </section>
+      <section class="card">
+        <h2>进度与重装</h2>
+        <p>进度只保存在本机。删除并重装应用会清除章节存档；章节完成页的“重新开始第一章”只重置当前章节进度。</p>
+      </section>
+      <section class="card">
+        <h2>声音问题</h2>
+        <p>请检查设备音量、静音状态和应用内声音设置。联系支持时请说明哪些场景没有声音，以及问题是否能稳定复现。</p>
+      </section>
+      <section class="card">
+        <h2>隐私</h2>
+        <p>当前版本无需账号，不收集或上传个人数据。完整说明请查看<a href="{{PRIVACY_URL}}">隐私政策</a>。</p>
+      </section>
+    </div>
+
+    <section class="contact-panel">
+      <h2>联系支持</h2>
+      <p>请发送邮件至 <a class="button" href="mailto:{{SUPPORT_EMAIL}}">{{SUPPORT_EMAIL}}</a></p>
+      <p>邮件建议包含：问题摘要、设备型号、iOS 版本、应用版本、复现步骤和不含敏感信息的截图。请勿发送密码、身份证件、付款凭证或其他与问题无关的个人信息。</p>
+      <p>运营主体：{{LEGAL_NAME}}</p>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="shell">© {{COPYRIGHT_YEAR}} {{LEGAL_NAME}} · <a href="{{PRIVACY_URL}}">隐私政策</a></div>
+  </footer>
+</body>
+</html>

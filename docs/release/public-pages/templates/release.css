@@ -1,0 +1,97 @@
+:root {
+  color-scheme: dark;
+  --bg: #071218;
+  --panel: #0d1d25;
+  --line: #27404a;
+  --ink: #ebe2c7;
+  --muted: #a9aaa0;
+  --gold: #deae4c;
+  --sea: #5c9da6;
+}
+
+* { box-sizing: border-box; }
+
+html { font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Noto Sans CJK SC", sans-serif; }
+
+body {
+  margin: 0;
+  background: radial-gradient(circle at 75% 0%, #12303b 0, var(--bg) 38rem);
+  color: var(--ink);
+  font-size: 17px;
+  line-height: 1.75;
+}
+
+a { color: #8fc9cf; }
+a:hover { color: var(--gold); }
+a:focus-visible { outline: 3px solid var(--gold); outline-offset: 4px; }
+
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 12px;
+  z-index: 10;
+  padding: 8px 12px;
+  background: var(--gold);
+  color: #071218;
+}
+
+.skip-link:focus { left: 12px; }
+
+.shell { width: min(calc(100% - 40px), 880px); margin-inline: auto; }
+
+.site-header {
+  border-bottom: 1px solid var(--line);
+  background: rgba(7, 18, 24, .88);
+  backdrop-filter: blur(16px);
+}
+
+.header-row {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 24px;
+  padding-block: 28px 22px;
+}
+
+.eyebrow { margin: 0 0 2px; color: var(--sea); font-size: 14px; letter-spacing: .08em; }
+h1 { margin: 0; font-size: clamp(32px, 7vw, 48px); line-height: 1.15; }
+h2 { margin: 0 0 8px; color: var(--gold); font-size: 23px; line-height: 1.35; }
+
+nav { display: flex; flex-wrap: wrap; gap: 16px; }
+nav a { text-decoration: none; }
+nav a[aria-current="page"] { color: var(--gold); }
+
+.document { padding-block: 42px 64px; }
+.lead { margin: 0 0 38px; color: #c5c8be; font-size: 20px; }
+.document > section { padding-block: 24px; border-top: 1px solid var(--line); }
+.document p { margin: 8px 0 0; }
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.card, .contact-panel {
+  padding: 24px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: rgba(13, 29, 37, .88);
+}
+
+.contact-panel { margin-top: 24px; }
+.button { display: inline-block; padding: 7px 12px; border: 1px solid var(--sea); border-radius: 9px; text-decoration: none; }
+
+.site-footer { border-top: 1px solid var(--line); color: var(--muted); font-size: 14px; }
+.site-footer .shell { padding-block: 22px 36px; }
+
+@media (max-width: 680px) {
+  body { font-size: 16px; }
+  .header-row { align-items: flex-start; flex-direction: column; }
+  .card-grid { grid-template-columns: 1fr; }
+  .document { padding-top: 30px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { scroll-behavior: auto !important; }
+}

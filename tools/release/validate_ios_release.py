@@ -19,6 +19,8 @@ LUA_STACK = ROOT / "src/engine/cocos2d-x/cocos/scripting/lua-bindings/manual/CCL
 ASSETS_MANAGER = ROOT / "src/engine/cocos2d-x/extensions/assets-manager/AssetsManager.cpp"
 APPICON = IOS / "Images.xcassets/AppIcon.appiconset"
 V2_CONFIG = ROOT / "bin/res/scripts/LuaClass/V2Config.lua"
+V2_RELEASE_INFO = ROOT / "bin/res/scripts/LuaClass/V2ReleaseInfo.lua"
+V2_CHAPTER_LAYER = ROOT / "bin/res/scripts/LuaClass/V2ChapterLayer.lua"
 NOTIFICATION_NODE = ROOT / "bin/res/scripts/LuaClass/NotificationNode.lua"
 UPDATE_LAYER = ROOT / "bin/res/scripts/LuaClass/Update.lua"
 
@@ -185,6 +187,24 @@ def validate_native_surface() -> None:
         source = path.read_text(encoding="utf-8")
         for token in forbidden[name]:
             require(token not in source, f"legacy native surface remains in {name}: {token}")
+
+    open_url = files["OpenUrl"].read_text(encoding="utf-8")
+    require('isEqualToString:@"https"' in open_url, "iOS external links must reject non-HTTPS URLs")
+    require("openURL:target options:@{} completionHandler:nil" in open_url, "iOS external links must use the modern system API")
+
+    release_info = V2_RELEASE_INFO.read_text(encoding="utf-8")
+    for marker in ("PRIVACY_POLICY_URL", "SUPPORT_URL", "getCombinedText", "isPublishableHttpsUrl"):
+        require(marker in release_info, f"V2 release information is missing {marker}")
+    for forbidden in ("探险科技有限公司", "106134362", "1976428305@qq.com", "example.com"):
+        require(forbidden not in release_info, f"unverified legacy or example contact leaked into V2 release information: {forbidden}")
+
+    chapter_layer = V2_CHAPTER_LAYER.read_text(encoding="utf-8")
+    for marker in (
+        "隐私与支持", "隐私说明", "支持说明", "showReleaseInfo", "openReleaseUrl",
+        "body:setDimensions(cc.size(panelWidth - 48, panelHeight - 150))",
+        "NEWPIRATE_V2_RELEASE_INFO",
+    ):
+        require(marker in chapter_layer, f"V2 player privacy/support entry is missing {marker}")
 
     lua_stack = LUA_STACK.read_text(encoding="utf-8")
     require("#if (CC_TARGET_PLATFORM != CC_PLATFORM_IOS)\n    register_xml_http_request(_state);" in lua_stack, "iOS XMLHttpRequest registration must remain disabled")

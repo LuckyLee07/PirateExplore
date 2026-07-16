@@ -3,6 +3,7 @@ require "LuaClass/ToastUtil"
 require "LuaClass/V2ChapterController"
 
 local V2ChapterLayout = require "LuaClass/V2ChapterLayout"
+local V2ReleaseInfo = require "LuaClass/V2ReleaseInfo"
 
 V2ChapterLayer = class("V2ChapterLayer", function()
     return cc.Layer:create()
@@ -120,8 +121,131 @@ function V2ChapterLayer:init()
                 cc.CallFunc:create(function() self:playCue(qaCue) end)
             ))
         end
+        local releaseInfoSection = os.getenv("NEWPIRATE_V2_RELEASE_INFO")
+        if releaseInfoSection == "1" or releaseInfoSection == "privacy" or releaseInfoSection == "support" then
+            self:runAction(cc.Sequence:create(
+                cc.DelayTime:create(0.8),
+                cc.CallFunc:create(function() self:showReleaseInfo(releaseInfoSection) end)
+            ))
+        end
     end
     return true
+end
+
+function V2ChapterLayer:openReleaseUrl(kind)
+    local url = V2ReleaseInfo:getPublicUrl(kind)
+    if url == nil then
+        ToastUtil:downString("公开页面尚未配置，请从 App Store 产品页联系支持")
+        return
+    end
+    if type(openUrlFunc) ~= "function" then
+        ToastUtil:downString("当前设备无法打开该页面")
+        return
+    end
+    openUrlFunc(url)
+end
+
+function V2ChapterLayer:showReleaseInfo(initialKind)
+    if self.releaseInfoOverlay ~= nil then
+        return
+    end
+
+    local width = self.visibleSize.width
+    local height = self.visibleSize.height
+    local overlay = cc.LayerColor:create(cc.c4b(2, 8, 12, 238), width, height)
+    overlay:setPosition(self.origin)
+    self:addChild(overlay, 2000)
+    self.releaseInfoOverlay = overlay
+
+    local listener = cc.EventListenerTouchOneByOne:create()
+    listener:setSwallowTouches(true)
+    listener:registerScriptHandler(function() return true end, cc.Handler.EVENT_TOUCH_BEGAN)
+    self:getEventDispatcher():addEventListenerWithSceneGraphPriority(listener, overlay)
+
+    local panelWidth = math.min(width - 36, 604)
+    local panelHeight = math.min(height - 48, 900)
+    local panel = cc.LayerColor:create(cc.c4b(13, 29, 37, 255), panelWidth, panelHeight)
+    panel:setPosition(cc.p((width - panelWidth) * 0.5, (height - panelHeight) * 0.5))
+    overlay:addChild(panel)
+
+    local heading = createLabel("隐私与支持", 25, COLORS.gold)
+    heading:setAnchorPoint(cc.p(0, 1))
+    heading:setPosition(cc.p(24, panelHeight - 22))
+    panel:addChild(heading)
+
+    local version = createLabel("版本 2.0.0", 13, COLORS.muted)
+    version:setAnchorPoint(cc.p(1, 1))
+    version:setPosition(cc.p(panelWidth - 24, panelHeight - 28))
+    panel:addChild(version)
+
+    local section = createLabel("隐私说明", 14, COLORS.sea)
+    section:setAnchorPoint(cc.p(0, 1))
+    section:setPosition(cc.p(24, panelHeight - 62))
+    panel:addChild(section)
+
+    local body = createLabel(
+        V2ReleaseInfo.PRIVACY_TEXT,
+        panelHeight < 780 and 14 or 16,
+        COLORS.ink,
+        panelWidth - 48,
+        cc.TEXT_ALIGNMENT_LEFT
+    )
+    body:setDimensions(cc.size(panelWidth - 48, panelHeight - 150))
+    body:setAnchorPoint(cc.p(0, 1))
+    body:setPosition(cc.p(24, panelHeight - 90))
+    panel:addChild(body)
+
+    local menu = cc.Menu:create()
+    menu:setPosition(cc.p(0, 0))
+    panel:addChild(menu)
+
+    local currentKind = "privacy"
+    local webLabel = nil
+    local function selectSection(kind)
+        currentKind = kind
+        if kind == "privacy" then
+            section:setString("隐私说明")
+            body:setString(V2ReleaseInfo.PRIVACY_TEXT)
+        else
+            section:setString("支持说明")
+            body:setString(V2ReleaseInfo.SUPPORT_TEXT)
+        end
+        if webLabel ~= nil then
+            webLabel:setString(kind == "privacy" and "打开隐私网页" or "打开支持网页")
+        end
+    end
+    selectSection(initialKind == "support" and "support" or "privacy")
+
+    local buttons = {
+        { label = "隐私说明", action = function() selectSection("privacy") end },
+        { label = "支持说明", action = function() selectSection("support") end },
+    }
+    if V2ReleaseInfo:hasConfiguredPublicLinks() then
+        table.insert(buttons, {
+            label = "打开隐私网页",
+            action = function() self:openReleaseUrl(currentKind) end,
+            isWeb = true,
+        })
+    end
+    table.insert(buttons, {
+        label = "关闭",
+        action = function()
+            self.releaseInfoOverlay = nil
+            overlay:removeFromParent()
+        end,
+    })
+
+    local spacing = panelWidth / (#buttons + 1)
+    for index, descriptor in ipairs(buttons) do
+        local label = createLabel(descriptor.label, 17, COLORS.gold)
+        if descriptor.isWeb then
+            webLabel = label
+        end
+        local item = cc.MenuItemLabel:create(label)
+        item:setPosition(cc.p(spacing * index, 30))
+        item:registerScriptTapHandler(descriptor.action)
+        menu:addChild(item)
+    end
 end
 
 function V2ChapterLayer:playCue(cueId)
@@ -369,6 +493,14 @@ function V2ChapterLayer:refresh()
         profile:setPosition(cc.p(width - 28, layout.profile_y))
         topBar:addChild(profile)
     end
+
+    local releaseInfoLabel = createLabel("隐私与支持", 14, COLORS.gold)
+    local releaseInfoItem = cc.MenuItemLabel:create(releaseInfoLabel)
+    releaseInfoItem:setPosition(cc.p(width - 62, layout.title_y))
+    releaseInfoItem:registerScriptTapHandler(function() self:showReleaseInfo() end)
+    local releaseInfoMenu = cc.Menu:create(releaseInfoItem)
+    releaseInfoMenu:setPosition(cc.p(0, 0))
+    topBar:addChild(releaseInfoMenu)
 
     local objectiveLabel = createLabel("当前目标｜" .. state.objective, layout.objective_size, COLORS.gold, width - 60)
     objectiveLabel:setAnchorPoint(cc.p(0, 1))

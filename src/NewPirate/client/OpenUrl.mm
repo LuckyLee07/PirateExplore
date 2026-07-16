@@ -20,7 +20,14 @@ OpenUrl* OpenUrl::sharedOpenUrl()
 
 void OpenUrl::openUrl(const char* url)
 {
-    //大家可能会问：为什么要创建.mm文件，原因就在这
-    NSString *str = [NSString stringWithUTF8String:url];
-    [[UIApplication sharedApplication] openURL:[NSURL URLWithString:str]];
+    if (url == nullptr) {
+        return;
+    }
+    NSString *string = [NSString stringWithUTF8String:url];
+    NSURL *target = [NSURL URLWithString:string];
+    if (target == nil || ![[target.scheme lowercaseString] isEqualToString:@"https"]) {
+        NSLog(@"V2 release refused a non-HTTPS external URL");
+        return;
+    }
+    [[UIApplication sharedApplication] openURL:target options:@{} completionHandler:nil];
 }

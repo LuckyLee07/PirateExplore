@@ -7,5 +7,6 @@ cd "$ROOT"
 tools/v2/validate_phase4.sh
 python3 tools/release/validate_ios_release.py
 python3 tools/release/validate_app_store_assets.py
+python3 tools/release/validate_public_release_pages.py
 
 echo "iOS V2 release regression and static validation passed"
