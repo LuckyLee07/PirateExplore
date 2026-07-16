@@ -82,5 +82,16 @@ local provisionsBeforeRetry = retry.resources.provisions
 apply(retry, "retry_battle")
 equal(retry.resources.provisions, provisionsBeforeRetry - Data.by_id.balance.retry_supply_cost.value, "battle retry has an explicit supply cost")
 equal(retry.stage, "naval", "paid retry returns to naval battle")
+truthy(string.find(retry.objective, "削弱接舷敌军", 1, true), "retry guidance uses player-facing causal language")
+
+local completedPlayer = State.new("player")
+completedPlayer.stage = "complete"
+local completedActions = State.getActions(completedPlayer)
+equal(completedActions[1].label, "再次体验第一章", "player completion action has no test terminology")
+
+local completedQA = State.new("qa_fresh")
+completedQA.stage = "complete"
+local qaActions = State.getActions(completedQA)
+equal(qaActions[1].label, "重置首章（QA）", "QA completion keeps a diagnostic reset label")
 
 print("V2 Phase 2 decisions OK: intel, route tradeoff, target choice, crew skills, report, recovery")

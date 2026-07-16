@@ -78,7 +78,7 @@ local function heroGroupLabel(group)
     local labels = {
         harbor = "皇家港 / 船员整备",
         map = "羊皮海图 / 迷雾航行",
-        combat = "敌船 / 双阶段战斗",
+        combat = "敌船 / 舰炮与接舷",
         rune = "诅咒 / 符文线索",
     }
     return labels[group] or "瓶中海域"

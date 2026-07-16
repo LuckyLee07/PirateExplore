@@ -98,4 +98,10 @@ equal(migrated.telemetry, nil, "migration leaves telemetry initialization to the
 local damaged = State.normalize({ schema_version = 4, chapter_id = "chapter_01", stage = "broken" }, "qa_fresh")
 equal(damaged.stage, "opening", "damaged save falls back to a valid fresh state")
 
+local malformed = State.new("qa_fresh")
+malformed.ship = { hull_level = "broken" }
+local recovered, recoveryMessage = State.normalize(malformed, "qa_fresh")
+equal(recovered.stage, "opening", "malformed nested save falls back before runtime access")
+equal(recoveryMessage, State.SAVE_RECOVERY_MESSAGE, "malformed nested save explains the recovery")
+
 print("V2 Phase 4 telemetry OK: contract, classification, completion summary, friction, cap and save migration")

@@ -9,5 +9,6 @@ lua tools/v2/test_v2_phase4.lua
 python3 tools/v2/test_analyze_user_tests.py
 python3 tools/v2/validate_phase4.py
 python3 tools/v2/validate_player_presentation.py
+python3 tools/v2/validate_internal_sample_2.py
 
 echo "V2 Phase 4 internal validation passed; external gates remain pending"

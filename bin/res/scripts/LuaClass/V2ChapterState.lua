@@ -3,6 +3,7 @@
 -- and every recovery path can be tested from the command line.
 
 local ChapterData = require "LuaClass/V2ChapterData"
+local V2Config = require "LuaClass/V2Config"
 
 local V2ChapterState = {}
 
@@ -62,6 +63,7 @@ local function dialogueBlock(nodeId, triggers)
 end
 
 V2ChapterState.SCHEMA_VERSION = 4
+V2ChapterState.SAVE_RECOVERY_MESSAGE = "检测到损坏或不兼容的存档，已安全创建新的首章航程。"
 V2ChapterState.STAGES = {
     opening = true,
     harbor = true,
@@ -299,24 +301,148 @@ function V2ChapterState.new(profile)
         applyReward(state, "reward_rune_clue")
         state.objective = "确认战利品用途并返回皇家港"
         state.last_result = "QA 结算档已取得符文碎片和追猎者战利品。"
+    elseif profile == "qa_complete" then
+        state.stage = "complete"
+        state.current_node = "node_port"
+        state.route = "safe_route"
+        state.flags.raider_defeated = true
+        state.flags.chapter_01_complete = true
+        state.chapter_complete = true
+        state.voyage_count = 1
+        applyReward(state, "reward_battle")
+        applyReward(state, "reward_rune_clue")
+        state.resources.timber = state.resources.timber - balanceValue("hull_upgrade_timber_cost")
+        state.ship.hull_level = 1
+        state.ship.hull_max = calculateHullMax(state)
+        state.upgrades.hull = true
+        state.next_voyage_objective = "前往潮汐墓场寻找符文守卫"
+        state.objective = "查看下一次远航目标"
+        state.last_result = "QA 完成档已完成返航与船体升级。"
     end
     return state
 end
 
+local function isSafeNumber(value)
+    return type(value) == "number"
+        and value == value
+        and value > -math.huge
+        and value < math.huge
+end
+
+local function hasNumberFields(value, fields)
+    if type(value) ~= "table" then
+        return false
+    end
+    for _, field in ipairs(fields) do
+        if not isSafeNumber(value[field]) then
+            return false
+        end
+    end
+    return true
+end
+
+local function hasBooleanFields(value, fields)
+    if type(value) ~= "table" then
+        return false
+    end
+    for _, field in ipairs(fields) do
+        if type(value[field]) ~= "boolean" then
+            return false
+        end
+    end
+    return true
+end
+
+local routeRequiredStages = {
+    route_event = true,
+    black_tide = true,
+    whisper = true,
+    curse_choice = true,
+    naval = true,
+    boarding = true,
+    rune_clue = true,
+    settlement = true,
+    upgrade = true,
+    complete = true,
+    failed = true,
+}
+
+local function isRestorableState(state)
+    if type(state) ~= "table"
+        or not V2ChapterState.STAGES[state.stage]
+        or state.chapter_id ~= "chapter_01"
+        or type(state.profile) ~= "string"
+        or type(state.objective) ~= "string"
+        or type(state.last_result) ~= "string"
+        or type(state.current_node) ~= "string"
+        or ChapterData.by_id.map_node[state.current_node] == nil
+        or type(state.active_event) ~= "string"
+        or ChapterData.by_id.event[state.active_event] == nil
+        or ChapterData.by_id.ship_module[state.selected_module] == nil
+        or type(state.crew) ~= "table"
+        or type(state.flags) ~= "table"
+        or type(state.claimed_rewards) ~= "table"
+        or type(state.upgrades) ~= "table"
+        or type(state.history) ~= "table"
+        or type(state.chapter_complete) ~= "boolean"
+        or not isSafeNumber(state.turn)
+        or not isSafeNumber(state.voyage_count)
+        or not isSafeNumber(state.voyage_hull_damage) then
+        return false
+    end
+
+    if state.route ~= nil and ChapterData.by_id.route[state.route] == nil then
+        return false
+    end
+    if routeRequiredStages[state.stage] and state.route == nil then
+        return false
+    end
+    if not hasNumberFields(state.resources, {
+        "gold", "timber", "iron", "provisions", "rune_dust",
+    }) or not hasNumberFields(state.ship, {
+        "hull_level", "gun_level", "hull_max",
+    }) or not hasNumberFields(state.battle, {
+        "enemy_ship_hp", "enemy_ship_hp_max", "deck_damage", "deck_threshold",
+        "gun_damage", "gun_threshold", "player_hull", "player_hull_max",
+        "enemy_boarding_hp", "enemy_boarding_hp_max", "crew_hp", "crew_hp_max",
+        "volley_count", "total_hull_damage", "naval_action_count", "boarding_action_count",
+    }) or not hasBooleanFields(state.battle, {
+        "deck_broken", "guns_suppressed", "medic_used", "sailor_guard_used",
+        "sailor_guarded", "gunner_mark_used", "gunner_marked",
+    }) or type(state.battle.actions_log) ~= "table"
+        or type(state.battle.transfer_summary) ~= "string" then
+        return false
+    end
+    if state.stage == "failed"
+        and (type(state.failure_reason) ~= "string" or type(state.recovery_summary) ~= "string") then
+        return false
+    end
+    return true
+end
+
 function V2ChapterState.normalize(savedState, profile)
-    local state = V2ChapterState.new(profile)
+    local freshState = V2ChapterState.new(profile)
+    if savedState == nil then
+        return freshState, nil
+    end
+
     if type(savedState) == "table"
         and (savedState.schema_version == V2ChapterState.SCHEMA_VERSION
             or savedState.schema_version == 3)
         and savedState.chapter_id == "chapter_01"
         and V2ChapterState.STAGES[savedState.stage] then
-        overwrite(state, savedState)
-        -- Phase 4 only adds local test records. Preserve the complete Phase 3
-        -- chapter state and let V2Telemetry create a fresh session on load.
-        state.schema_version = V2ChapterState.SCHEMA_VERSION
+        local candidate = V2ChapterState.new(profile)
+        overwrite(candidate, savedState)
+        candidate.profile = profile or candidate.profile or "player"
+        if isRestorableState(candidate) then
+            -- Phase 4 only adds local test records. Preserve the complete Phase 3
+            -- chapter state and let V2Telemetry create a fresh session on load.
+            candidate.schema_version = V2ChapterState.SCHEMA_VERSION
+            return candidate, nil
+        end
     end
-    state.profile = profile or state.profile or "player"
-    return state
+
+    return freshState, V2ChapterState.SAVE_RECOVERY_MESSAGE
 end
 
 local actionsByStage = {
@@ -359,9 +485,6 @@ local actionsByStage = {
         { id = "upgrade_hull", label = "升级船体（" .. balanceValue("hull_upgrade_timber_cost") .. " 木材）" },
         { id = "upgrade_guns", label = "升级火炮（" .. balanceValue("guns_upgrade_iron_cost") .. " 铁料）" },
     },
-    complete = {
-        { id = "restart_chapter", label = "重玩首章（测试）" },
-    },
     failed = {
         { id = "retry_battle", label = "重试（" .. balanceValue("retry_supply_cost") .. " 补给）" },
         { id = "recover_at_port", label = "返港恢复（" .. balanceValue("port_recovery_gold_cost") .. " 金币）" },
@@ -369,6 +492,14 @@ local actionsByStage = {
 }
 
 function V2ChapterState.getActions(state)
+    if state.stage == "complete" then
+        local label = V2Config:isQAProfile(state.profile)
+            and "重置首章（QA）" or "再次体验第一章"
+        return {
+            { id = "restart_chapter", label = label },
+        }
+    end
+
     if state.stage == "harbor" then
         local hullLabel = state.selected_module == "module_reinforced_hull"
             and "✓ 加固船体" or "选择加固船体"
@@ -887,7 +1018,7 @@ function V2ChapterState.apply(state, action)
         state.failure_reason = nil
         state.stage = "naval"
         state.current_node = "node_raider"
-        state.objective = "重新进行舰炮战并理解甲板破坏传递"
+        state.objective = "重新进行舰炮战；先破坏甲板可削弱接舷敌军"
         addHistory(state, action, string.format("消耗 %d 补给，战斗状态重置到舰炮战开始前。", retryCost))
     elseif action == "recover_at_port" and state.stage == "failed" then
         local recoveryCost = balanceValue("port_recovery_gold_cost")
@@ -911,7 +1042,10 @@ function V2ChapterState.apply(state, action)
             state[key] = nil
         end
         overwrite(state, restarted)
-        addHistory(state, action, "首章测试进度已重置。")
+        local restartText = V2Config:isQAProfile(state.profile)
+            and "QA 首章进度已重置。"
+            or "迷雾重新聚拢，新的首章航程已经开始。"
+        addHistory(state, action, restartText)
     else
         return false, "当前阶段不能执行操作：" .. tostring(action)
     end

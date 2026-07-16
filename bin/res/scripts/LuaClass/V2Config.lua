@@ -38,6 +38,7 @@ local validSaveProfiles = {
     qa_boarding = true,
     qa_rune = true,
     qa_settlement = true,
+    qa_complete = true,
 }
 
 function V2Config:shouldPlayAudioCues()

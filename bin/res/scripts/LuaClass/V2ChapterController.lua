@@ -26,15 +26,23 @@ function V2ChapterController:load()
     local profile = V2Config:getSaveProfile()
     local content = SaveDataManager:getInstance():loadData(SAVE_FILE)
     local decoded = nil
+    local recoveryMessage = nil
     if content ~= nil and content ~= "" then
         local ok, result = pcall(json.decode, content)
         if ok and type(result) == "table" then
             decoded = result
         else
             cclog("V2 chapter save decode failed; creating a fresh profile")
+            recoveryMessage = V2ChapterState.SAVE_RECOVERY_MESSAGE
         end
     end
-    self.state = V2ChapterState.normalize(decoded, profile)
+    local normalized, validationMessage = V2ChapterState.normalize(decoded, profile)
+    self.state = normalized
+    recoveryMessage = recoveryMessage or validationMessage
+    if recoveryMessage ~= nil then
+        self.state.objective = "存档已安全恢复，可以重新开始第一章"
+        self.state.last_result = recoveryMessage
+    end
     V2Telemetry.ensureSession(self.state)
     self:save()
     return self.state

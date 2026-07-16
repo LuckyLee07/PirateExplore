@@ -42,6 +42,10 @@ assert(config:getSaveProfile() == "qa_boarding")
 zqV2SaveProfile = "qa_rune"
 assert(config:getSaveProfile() == "qa_rune")
 
+zqV2SaveProfile = "qa_complete"
+assert(config:getSaveProfile() == "qa_complete")
+assert(config:isQAProfile())
+
 zqV2SaveProfile = "invalid_profile"
 assert(config:getSaveProfile() == "player")
 assert(not config:isQAProfile())

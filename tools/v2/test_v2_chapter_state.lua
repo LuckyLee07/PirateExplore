@@ -85,7 +85,27 @@ local ok = State.apply(invalid, "upgrade_hull")
 equal(ok, false, "invalid stage action is rejected")
 equal(invalid.stage, "opening", "invalid action does not advance state")
 
-local normalized = State.normalize({ schema_version = 999, stage = "complete" }, "qa_explore")
+local normalized, invalidSchemaMessage = State.normalize({ schema_version = 999, stage = "complete" }, "qa_explore")
 equal(normalized.stage, "route_choice", "invalid save falls back to requested QA profile")
+equal(invalidSchemaMessage, State.SAVE_RECOVERY_MESSAGE, "invalid schema reports a visible recovery")
+
+local brokenResources = State.new("qa_fresh")
+brokenResources.resources = "corrupted"
+local recoveredResources, resourcesMessage = State.normalize(brokenResources, "qa_fresh")
+equal(recoveredResources.stage, "opening", "corrupted resources fall back to a fresh state")
+equal(recoveredResources.resources.gold, 40, "resource recovery restores a valid economy")
+equal(resourcesMessage, State.SAVE_RECOVERY_MESSAGE, "resource corruption reports recovery")
+
+local brokenBattle = State.new("qa_combat")
+brokenBattle.battle.crew_hp = "unknown"
+brokenBattle.battle.actions_log = "missing"
+local recoveredBattle, battleMessage = State.normalize(brokenBattle, "qa_combat")
+equal(recoveredBattle.stage, "naval", "corrupted battle falls back to the requested QA baseline")
+truthy(type(recoveredBattle.battle.crew_hp) == "number", "battle recovery restores numeric state")
+equal(battleMessage, State.SAVE_RECOVERY_MESSAGE, "battle corruption reports recovery")
+
+local validRestore, validMessage = State.normalize(safe, "qa_fresh")
+equal(validRestore.stage, "complete", "valid current save remains restorable")
+equal(validMessage, nil, "valid current save does not report recovery")
 
 print("V2 Chapter 1 state machine OK: safe, risky, transfer, failure, recovery, upgrade")

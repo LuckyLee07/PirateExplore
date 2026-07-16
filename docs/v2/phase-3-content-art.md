@@ -157,6 +157,7 @@ SIMCTL_CHILD_NEWPIRATE_V2_PROFILE=qa_combat
 | `qa_boarding` | 接舷战 |
 | `qa_rune` | 符文线索 |
 | `qa_settlement` | 战利品结算 |
+| `qa_complete` | 返航升级后的章节完成页 |
 
 这些入口使用独立存档命名空间，不会污染玩家存档。
 
