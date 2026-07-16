@@ -1,0 +1,83 @@
+{
+  "schema_version": 1,
+  "candidate": {
+    "platform": "iOS",
+    "locale": "zh-CN",
+    "app_name": "海上探险家",
+    "bundle_id": "com.fancyGame.NewPirate",
+    "marketing_version": "2.0.0",
+    "build_number": "1"
+  },
+  "app_record": {
+    "apple_id": null,
+    "sku": null,
+    "bundle_id_verified_in_team": false,
+    "name_available_in_storefront": false
+  },
+  "product_page": {
+    "name": "海上探险家",
+    "subtitle": "航海探索与船队成长",
+    "promotional_text_file": "docs/release/metadata/zh-CN/promotional-text.txt",
+    "description_file": "docs/release/metadata/zh-CN/description.txt",
+    "keywords_file": "docs/release/metadata/zh-CN/keywords.txt",
+    "privacy_policy_url": null,
+    "support_url": null,
+    "marketing_url": null,
+    "copyright": null,
+    "primary_category": "Games",
+    "primary_category_confirmed": false,
+    "game_subcategories": [],
+    "price": null
+  },
+  "review": {
+    "contact_name": null,
+    "contact_email": null,
+    "contact_phone": null,
+    "sign_in_required": false,
+    "demo_account": null,
+    "notes_file": "docs/release/metadata/review-notes.zh-CN.txt",
+    "build_selected_in_version": false
+  },
+  "privacy": {
+    "tracking": false,
+    "data_collected": false,
+    "questionnaire_status": "prepared_not_submitted",
+    "testflight_network_review": "pending_external"
+  },
+  "age_rating": {
+    "inventory_file": "docs/release/age-rating-content-inventory.json",
+    "questionnaire_status": "prepared_not_submitted",
+    "expected_minimum_on_ios_26": "13+",
+    "calculated_rating": null,
+    "content_inventory_confirmed_by_owner": false,
+    "made_for_kids_selected": null,
+    "age_suitability_url": null
+  },
+  "export_compliance": {
+    "its_app_uses_non_exempt_encryption": false,
+    "backend_questionnaire_status": "prepared_not_submitted"
+  },
+  "assets": {
+    "screenshot_manifest": "docs/release/app-store-screenshots/manifest.json",
+    "screenshot_groups": [
+      "iphone-6.9",
+      "ipad-13"
+    ],
+    "app_icon_catalog": "src/NewPirate/runtime/ios/Images.xcassets/AppIcon.appiconset/Contents.json"
+  },
+  "distribution": {
+    "developer_team_id": null,
+    "distribution_identity": null,
+    "app_store_profile": null,
+    "signed_archive": null,
+    "upload_build_id": null,
+    "upload_validation_status": "pending_external"
+  },
+  "availability": {
+    "territories": null,
+    "territories_confirmed": false,
+    "mainland_china_compliance": null,
+    "korea_compliance": null,
+    "release_option": null
+  }
+}

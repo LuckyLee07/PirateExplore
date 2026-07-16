@@ -240,7 +240,7 @@ tools/release/validate_ios_release.sh
 
 ### 13.3 自动化与严格门禁
 
-- `tools/release/validate_ios_release.sh`：阶段 0～4、18 项问题登记、发行静态、商店素材和公共页面模板全部通过；
+- `tools/release/validate_ios_release.sh`：阶段 0～4、当前 19 项问题登记、发行静态、商店素材、公共页面模板和 App Store 提交准备校验全部通过；
 - `CONFIGURATION=Release ./xcode.sh ios-sim`：arm64 Release 模拟器构建通过；
 - `NewPirate-privacy-support-final.xcarchive`：Release arm64 无签名归档已生成，版本、build、隐私清单、动态库、网络/广告/内购遗留符号检查通过；
 - `python3 tools/release/validate_public_release_pages.py --require-app-links`：当前按预期失败于两个 URL 尚未配置，证明外部 P0 没有被误关闭；

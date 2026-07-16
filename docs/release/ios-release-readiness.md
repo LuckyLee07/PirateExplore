@@ -43,6 +43,7 @@
 | 商店画面适配 | 通过 | `V2-017` 已关闭；iPhone 标题避开 Dynamic Island，iPad 紧凑布局无数值/按钮重叠 |
 | 离线启动入口 | 通过 | `V2-016` 已关闭；干净安装 5 秒内进入第一章，再次唤起保持同一进程；启动与回前台不访问旧服务器时钟 |
 | 隐私/支持内部准备 | 通过 | V2 顶栏入口、本地说明、公开页面模板、渲染和分层校验工具完成；真实 URL 仍由 `V2-018` 阻塞 |
+| App Store Connect 内部准备 | 通过 | 提交 manifest、纯文本元数据、审核路径、年龄分级事实盘点和准备/严格双层校验完成；账号侧填写仍由 `V2-019` 阻塞 |
 | Release 自动验收 | 通过 | 阶段 0～4、发行静态、Release arm64 模拟器、无签名 device archive 与 archive 内容检查通过；详见 `ios-release-engineering-iteration-1.md` |
 
 隐私结论只对应当前提交候选。签名包进入 TestFlight 后仍需做一次网络流量复核；
@@ -57,12 +58,15 @@ App Store Connect 隐私问卷。
 | P0 | 签名与上传 | 选择 Distribution 证书/描述文件，生成签名 archive，并通过 App Store Connect 上传校验 | `V2-014`，待外部账号操作 |
 | P0 | 隐私政策、支持页与隐私问卷 | 验证真实主体/支持邮箱，部署两个公开 HTTPS 页面，配置 App 内与后台 URL；按最终二进制回答 App Privacy | `V2-018`；模板已完成，外部值与上线证据待提供 |
 | P0 | 年龄分级与合规问卷 | 按奇幻战斗、恐怖元素等真实内容完成新版年龄分级和出口合规问卷 | 待 App Store Connect 操作 |
+| P0 | App Store Connect 提交一致性 | 确认 App 记录、分类、价格、地区、审核联系人、所有问卷和上传构建；严格提交校验通过 | `V2-019`；仓库准备包完成，30 个外部门槛待关闭 |
 | P1 | 真机矩阵 | 至少一台低端 iPhone、一台现代 iPhone 和一台 iPad 验收触控、音量、发热、帧率和恢复 | 尚未完成 |
 | P1 | 两轮目标用户外测 | 按阶段 4 协议完成两轮并达到理解率、继续意愿和核心幻想回忆阈值 | `V2-006` 未关闭 |
 | P1 | 商店文案与本地化 | 名称可用性、描述、关键词、支持 URL、审核备注全部在后台校验 | 已有草案，待账号侧定稿 |
 
 以上 P0 未完成时不得上传；P1 未完成时不得把版本标记为可上线。模拟器和无签名
 archive 只能证明工程可构建，不能替代真机、签名或 App Review 结果。
+
+本轮只读签名预检还确认：本机发现的 `Apple Development` 证书已于 2023-10-05 过期，现有 profiles 面向其他 Bundle ID，没有可用于 NewPirate 的当前 Distribution/profile 组合；已配对 iPhone 也已转为 unavailable。详细证据和账号操作顺序见 [`app-store-connect-compliance-iteration-1.md`](app-store-connect-compliance-iteration-1.md)。
 
 ## 5. Apple 当前要求基线
 
@@ -85,6 +89,8 @@ archive 只能证明工程可构建，不能替代真机、签名或 App Review 
 - [App information reference](https://developer.apple.com/help/app-store-connect/reference/app-information/app-information)
 - [Platform version information](https://developer.apple.com/help/app-store-connect/reference/app-information/platform-version-information)
 - [App Review Guidelines](https://developer.apple.com/app-store/review/guidelines/)
+- [Set an app age rating](https://developer.apple.com/help/app-store-connect/manage-app-information/set-an-app-age-rating)
+- [Age ratings values and definitions](https://developer.apple.com/help/app-store-connect/reference/app-information/age-ratings-values-and-definitions/)
 - [Overview of export compliance](https://developer.apple.com/help/app-store-connect/manage-app-information/overview-of-export-compliance)
 - [`ITSAppUsesNonExemptEncryption`](https://developer.apple.com/documentation/bundleresources/information-property-list/itsappusesnonexemptencryption)
 - [Screenshot specifications](https://developer.apple.com/help/app-store-connect/reference/app-information/screenshot-specifications/)
@@ -108,9 +114,15 @@ CONFIGURATION=Release ./xcode.sh ios-device
 # 检查 archive 的版本、架构、隐私清单、动态库和遗留符号
 python3 tools/release/validate_ios_archive.py build/archives/NewPirate.xcarchive
 
+# App Store Connect 准备态：允许外部字段待办，但校验文本、隐私、分级与构建一致性
+python3 tools/release/validate_app_store_submission.py
+
 # 最终提交前：要求 App 已配置真实页面，并从公网验证内容
 python3 tools/release/validate_public_release_pages.py \
   --require-app-links --check-live-urls
+
+# 最终提交前：账号、签名、上传、问卷、价格和地区全部必须有证据
+python3 tools/release/validate_app_store_submission.py --strict
 ```
 
 账号准备完成后，另用 `CODE_SIGNING_ALLOWED=YES` 和已选定的团队生成分发 archive。

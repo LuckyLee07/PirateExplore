@@ -1,0 +1,130 @@
+{
+  "schema_version": 1,
+  "candidate_version": "2.0.0",
+  "audit_date": "2026-07-16",
+  "scope": "iOS V2 第一章可达流程、商店截图与发行二进制",
+  "frequency_scale": [
+    "none",
+    "infrequent",
+    "frequent"
+  ],
+  "descriptors": {
+    "parental_controls": {
+      "frequency": "none",
+      "owner_confirmation_required": false,
+      "evidence": "当前版本没有家长控制功能。"
+    },
+    "age_assurance": {
+      "frequency": "none",
+      "owner_confirmation_required": false,
+      "evidence": "当前版本没有账号或年龄验证流程。"
+    },
+    "unrestricted_web_access": {
+      "frequency": "none",
+      "owner_confirmation_required": false,
+      "evidence": "App 不含内嵌网页浏览器；只允许玩家主动打开两个固定、已验证的 HTTPS 隐私/支持页面。"
+    },
+    "user_generated_content": {
+      "frequency": "none",
+      "owner_confirmation_required": false,
+      "evidence": "当前版本没有上传、分享或浏览用户内容的功能。"
+    },
+    "messaging_or_chat": {
+      "frequency": "none",
+      "owner_confirmation_required": false,
+      "evidence": "当前版本没有聊天或消息功能。"
+    },
+    "social_media": {
+      "frequency": "none",
+      "owner_confirmation_required": false,
+      "evidence": "当前版本没有社交网络或玩家关系功能。"
+    },
+    "advertising": {
+      "frequency": "none",
+      "owner_confirmation_required": false,
+      "evidence": "iOS target、隐私清单和 archive 审计均不含广告 SDK 或广告展示。"
+    },
+    "profanity_or_crude_humor": {
+      "frequency": "none",
+      "owner_confirmation_required": true,
+      "evidence": "第一章数据表未发现粗俗语言或低俗幽默；提交前由内容负责人复读最终显示文本。"
+    },
+    "horror_or_fear_themes": {
+      "frequency": "frequent",
+      "owner_confirmation_required": true,
+      "evidence": "水晶瓶诅咒、黑潮低语、诅咒罗盘、海魂追猎者和亡魂氛围贯穿第一章，按保守口径记录为频繁。"
+    },
+    "alcohol_tobacco_or_drug_use": {
+      "frequency": "none",
+      "owner_confirmation_required": true,
+      "evidence": "V2 第一章可达数据与截图未发现饮酒、烟草或药物描写；旧版不可达内容不计入，提交前仍需复核最终包。"
+    },
+    "medical_or_wellness_topics": {
+      "frequency": "none",
+      "owner_confirmation_required": true,
+      "evidence": "船员技能“紧急包扎”是战斗数值恢复，不提供医疗、健康或治疗建议。"
+    },
+    "mature_or_suggestive_themes": {
+      "frequency": "none",
+      "owner_confirmation_required": true,
+      "evidence": "当前第一章没有成人或性暗示主题。"
+    },
+    "sexual_content_or_nudity": {
+      "frequency": "none",
+      "owner_confirmation_required": true,
+      "evidence": "当前第一章没有性内容或裸露。"
+    },
+    "graphic_sexual_content_or_nudity": {
+      "frequency": "none",
+      "owner_confirmation_required": true,
+      "evidence": "当前第一章没有露骨性内容或裸露。"
+    },
+    "cartoon_or_fantasy_violence": {
+      "frequency": "frequent",
+      "owner_confirmation_required": true,
+      "evidence": "舰炮战和接舷战是首章反复执行的核心玩法，敌我伤害以卡通/奇幻数值与船只状态表达，按保守口径记录为频繁。"
+    },
+    "realistic_violence": {
+      "frequency": "none",
+      "owner_confirmation_required": true,
+      "evidence": "当前战斗没有写实伤口、血液或真实人物伤害表现。"
+    },
+    "prolonged_graphic_or_sadistic_realistic_violence": {
+      "frequency": "none",
+      "owner_confirmation_required": true,
+      "evidence": "当前版本没有长时间、血腥或施虐式写实暴力。"
+    },
+    "guns_or_other_weapons": {
+      "frequency": "frequent",
+      "owner_confirmation_required": true,
+      "evidence": "舰炮、重炮甲板和接舷武器是首章核心战斗表现，按保守口径记录为频繁。"
+    },
+    "simulated_gambling": {
+      "frequency": "none",
+      "owner_confirmation_required": false,
+      "evidence": "当前 V2 feature gate 关闭旧抽卡、赌博和付费内容，候选可达流程没有模拟赌博。"
+    },
+    "contests": {
+      "frequency": "none",
+      "owner_confirmation_required": false,
+      "evidence": "当前版本没有竞赛、抽奖或奖品活动。"
+    },
+    "gambling": {
+      "frequency": "none",
+      "owner_confirmation_required": false,
+      "evidence": "当前版本没有真钱或可兑换价值的赌博。"
+    },
+    "loot_boxes": {
+      "frequency": "none",
+      "owner_confirmation_required": false,
+      "evidence": "当前版本没有付费随机物品、抽卡或战利品箱。"
+    }
+  },
+  "rating_inference": {
+    "expected_minimum_on_ios_26": "13+",
+    "basis": "Apple 当前定义中，频繁的卡通/奇幻暴力、武器或恐惧主题可落入 13+；本结论是提交准备推断，不是 App Store Connect 的最终计算结果。",
+    "final_authority": "App Store Connect age-rating questionnaire",
+    "made_for_kids_selected": null,
+    "owner_content_confirmation": false
+  }
+}

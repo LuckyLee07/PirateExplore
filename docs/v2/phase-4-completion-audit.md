@@ -31,7 +31,7 @@
 - physical footprint 102.7 MB、峰值 103.7 MB，低于 256 MB 内部门槛；
 - 最终候选触发原生 cannon cue 后约 26 秒仍存活；
 - iPhone SE 3、iPhone 12 Pro 与 iPad A16 三档稳定模拟器比例全屏、操作完整；Xcode 26.2 的 iPhone 13 mini 错误尺寸缺陷已隔离；
-- 18 个已登记问题覆盖 P0/P1/P2；内部可完成的 P0/P1 已修复，外测、账号以及公开隐私/支持页面证据缺口保持开启；
+- 19 个已登记问题覆盖 P0/P1/P2；内部可完成的 P0/P1 已修复，外测、账号、公开隐私/支持页面与 App Store Connect 后台证据缺口保持开启；
 - 第二张地图 7.5 人周、前三海域 22 人周的限额预算，以及首章试玩后一次解锁的商业建议；
 - 外测模板保持空白，没有用内部自动化生成参与者结果。
 
@@ -43,9 +43,9 @@
 
 需要把签名候选安装到真实 iPhone，逐项记录：启动与安全区、所有按钮触控、字号、30 FPS 航行/舰炮/接舷体验、横竖屏约束、静音键、系统音频混合和响度。compile-only 不能证明这些项目。
 
-当前只读预检发现一台 iOS 18.7.8 的 iPhone 12 Pro：设备已配对、已启动开发者模式，但 Developer Disk Image 未能挂载，DDI 服务不可用。继续前需要通过 USB 连接并解锁设备，在 Xcode Devices and Simulators 中完成一次设备准备。
+2026-07-16 的只读复核中，已配对的 iPhone 12 Pro 曾短暂显示 available，随后转为 unavailable，当前无法作为安装和触控证据。本机发现的 `Apple Development` 证书有效期为 2022-10-05 至 2023-10-05，已经过期；现有 provisioning profiles 面向其他 Bundle ID，也没有当前 NewPirate 可用的 Distribution/profile 组合。
 
-本机存在有效 Apple Development 身份，但证书 Team ID 与项目中的旧 Team ID 不一致，且没有当前项目可用的 provisioning profile。为避免覆盖设备上的既有 `com.fancyGame.NewPirate` 及其数据，后续应在用户明确授权后，使用证书所属团队、自动 provisioning 和独立 QA Bundle ID 构建并安装；该操作会联系开发者服务并改变设备/开发者账号状态，不能在只读预检中代办。
+后续需要通过 USB 连接并解锁设备，在正确开发者团队下准备有效签名材料，再用独立 QA 安装方案避免覆盖既有 App 与数据。证书申请、自动 provisioning、App 记录创建和设备安装会改变开发者账号或设备状态，必须由账号负责人明确授权和执行，不能由只读预检代办。
 
 ### 2. 两轮外部目标用户测试
 
