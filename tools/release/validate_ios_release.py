@@ -35,6 +35,11 @@ SAVE_RECOVERY_SCREENSHOT = ROOT / "docs/release/save-container-recovery-player.p
 CCDATA = ROOT / "src/engine/cocos2d-x/cocos/base/CCData.cpp"
 CCDATA_TEST = ROOT / "tools/release/test_ccdata_ownership.sh"
 NATIVE_MEMORY_DOC = ROOT / "docs/release/native-memory-safety-iteration-1.md"
+FILEUTILS = ROOT / "src/engine/cocos2d-x/cocos/2d/platform/CCFileUtils.cpp"
+FILEUTILS_READER = ROOT / "src/engine/cocos2d-x/cocos/2d/platform/CCFileUtilsRead.h"
+FILEUTILS_TEST = ROOT / "tools/release/test_fileutils_read.sh"
+FILEUTILS_TEST_SOURCE = ROOT / "tools/release/test_fileutils_read.cpp"
+FILEUTILS_DOC = ROOT / "docs/release/fileutils-read-safety-iteration-1.md"
 
 
 def require(condition: bool, message: str) -> None:
@@ -330,6 +335,51 @@ def validate_native_memory_safety() -> None:
         require(marker in memory_doc, f"native-memory evidence is missing: {marker}")
 
 
+def validate_file_read_safety() -> None:
+    for path in (FILEUTILS, FILEUTILS_READER, FILEUTILS_TEST, FILEUTILS_TEST_SOURCE, FILEUTILS_DOC):
+        require(path.is_file(), f"file-read component is missing: {path.relative_to(ROOT)}")
+
+    fileutils = FILEUTILS.read_text(encoding="utf-8")
+    for marker in (
+        '#include "CCFileUtilsRead.h"',
+        "fileutils_detail::readFile(",
+        "std::numeric_limits<ssize_t>::max()",
+        "if (!succeeded)",
+        "buffer != nullptr && size > 0",
+    ):
+        require(marker in fileutils, f"FileUtils safe-read integration is missing: {marker}")
+
+    reader = FILEUTILS_READER.read_text(encoding="utf-8")
+    for marker in (
+        "endPosition < 0",
+        "fileSize > maximumSize",
+        "fileSize == 0",
+        "buffer == nullptr",
+        "std::fread(buffer, 1, fileSize, file) != fileSize",
+        "std::free(buffer)",
+        "std::fclose(file)",
+    ):
+        require(marker in reader, f"bounded file reader guard is missing: {marker}")
+
+    test_script = FILEUTILS_TEST.read_text(encoding="utf-8")
+    for marker in ("-fsanitize=address,undefined", "-Werror", "test_fileutils_read.cpp"):
+        require(marker in test_script, f"FileUtils sanitizer test is missing: {marker}")
+    test_source = FILEUTILS_TEST_SOURCE.read_text(encoding="utf-8")
+    for marker in (
+        "empty file must be a valid empty result",
+        "text result must be null terminated",
+        "maximum size must reject oversized input before allocation",
+        "allocation failure must be reported safely",
+        "missing input must fail",
+        "directory input must not be treated as an empty regular file",
+    ):
+        require(marker in test_source, f"FileUtils regression case is missing: {marker}")
+
+    read_doc = FILEUTILS_DOC.read_text(encoding="utf-8")
+    for marker in ("V2-022 / P1", "CCFileUtils.plist", "ASan/UBSan", "ftell"):
+        require(marker in read_doc, f"file-read evidence is missing: {marker}")
+
+
 def validate_toolchain_and_repository() -> None:
     output = subprocess.run(
         ["xcodebuild", "-version"],
@@ -357,6 +407,7 @@ def main() -> None:
     validate_native_surface()
     validate_save_durability()
     validate_native_memory_safety()
+    validate_file_read_safety()
     validate_toolchain_and_repository()
     print("iOS release static validation passed")
 

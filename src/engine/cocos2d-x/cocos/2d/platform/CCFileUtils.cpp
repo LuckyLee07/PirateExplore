@@ -24,6 +24,7 @@ THE SOFTWARE.
 ****************************************************************************/
 
 #include "CCFileUtils.h"
+#include "CCFileUtilsRead.h"
 #include "CCData.h"
 #include "ccMacros.h"
 #include "CCDirector.h"
@@ -32,6 +33,7 @@ THE SOFTWARE.
 #include "unzip.h"
 #include "ZQCSVParse.h"
 #include "LZSS.h"
+#include <limits>
 #include <stack>
 
 using namespace std;
@@ -509,78 +511,27 @@ static Data getData(const std::string& filename, bool forString)
     }
 //	CCLOG("fileName:%s", filename.c_str());
     Data ret;
+    const std::string fullPath = FileUtils::getInstance()->fullPathForFilename(filename);
+    const char* mode = forString ? "rt" : "rb";
     unsigned char* buffer = nullptr;
-    ssize_t size = 0;
-    const char* mode = nullptr;
-    if (forString)
-        mode = "rt";
-    else
-        mode = "rb";
-    
-    do
-    {
-//		if (filename.find("LuaClass/") == 0) {
-//			CCLOG("发现lua文件，单独解密处理,文件名：%s 类型：%s", filename.c_str(), mode);
-//			unsigned char* buff = FileUtils::getInstance()->getFileData(filename, "rb", &size);
-//			CCASSERT(NULL != buff, "文件打开失败鸟。。。返回的是个NULL，请检查！");
-//			// aesRead.InvCipher(buff, buffChar);
-//			// 秘钥解码
-//			FileUtils::getInstance()->xorEncipherment(buff, size, "jhG8i8ekb23sd438");
-//			//			CCLOG("秘钥解码完成");
-//			// 去除验证字符串后，读取文件长度
-//			int place = sizeof(char);
-//			char ulLen = 0;
-//			unsigned long retSize = 0;
-//			unsigned long lzssLen = 0;
-//			memcpy(&ulLen, buff, place);
-//			memcpy(&retSize, buff + place, ulLen);
-//			memcpy(&lzssLen, buff + place + ulLen, ulLen);
-//			
-//			buffer = (unsigned char*)malloc(sizeof(unsigned char) * (retSize + 1));
-//			memset(buffer, 0, sizeof(unsigned char)*(retSize + 1));
-//			buffer[retSize] = '\0';
-//			//			CCLOG("重新计算长度完成");
-//			// 最后解压缩
-//			LZSS lzssInstance;
-//			size = lzssInstance.UnCompress(buff + place + ulLen * 2, lzssLen, buffer);
-//			free(buff);
-//			if (size != retSize) {
-//				printf("** 解压后的文件长度不对应！ **%s\n", buffer);
-//				return Data::Null;
-//			}
-////			CCLOG("loadData:::\n%s",buffer);
-//		} else {
-        // Read the file from hardware
-        std::string fullPath = FileUtils::getInstance()->fullPathForFilename(filename);
-        FILE *fp = fopen(fullPath.c_str(), mode);
-        CC_BREAK_IF(!fp);
-        fseek(fp,0,SEEK_END);
-        size = ftell(fp);
-        fseek(fp,0,SEEK_SET);
-        
-        if (forString)
-        {
-            buffer = (unsigned char*)malloc(sizeof(unsigned char) * (size + 1));
-            buffer[size] = '\0';
-        }
-        else
-        {
-            buffer = (unsigned char*)malloc(sizeof(unsigned char) * size);
-        }
-        size = fread(buffer, sizeof(unsigned char), size, fp);
-        fclose(fp);
-//		}
-    } while (0);
-    
-    if (nullptr == buffer || 0 == size)
+    std::size_t size = 0;
+    const bool succeeded = fileutils_detail::readFile(
+        fullPath,
+        mode,
+        forString,
+        static_cast<std::size_t>(std::numeric_limits<ssize_t>::max()),
+        &buffer,
+        &size);
+
+    if (!succeeded)
     {
         std::string msg = "Get data from file(";
         msg.append(filename).append(") failed!");
         CCLOG("%s", msg.c_str());
     }
-    else
+    else if (buffer != nullptr && size > 0)
     {
-        ret.fastSet(buffer, size);
+        ret.fastSet(buffer, static_cast<ssize_t>(size));
     }
     
     return ret;
@@ -603,30 +554,32 @@ Data FileUtils::getDataFromFile(const std::string& filename)
 
 unsigned char* FileUtils::getFileData(const std::string& filename, const char* mode, ssize_t *size)
 {
-    unsigned char * buffer = nullptr;
     CCASSERT(!filename.empty() && size != nullptr && mode != nullptr, "Invalid parameters.");
-    *size = 0;
-    do
+    if (filename.empty() || size == nullptr || mode == nullptr)
     {
-        // read the file from hardware
-        const std::string fullPath = fullPathForFilename(filename);
-        FILE *fp = fopen(fullPath.c_str(), mode);
-        CC_BREAK_IF(!fp);
-        
-        fseek(fp,0,SEEK_END);
-        *size = ftell(fp);
-        fseek(fp,0,SEEK_SET);
-        buffer = (unsigned char*)malloc(*size);
-        *size = fread(buffer,sizeof(unsigned char), *size,fp);
-        fclose(fp);
-    } while (0);
-    
-    if (! buffer)
+        return nullptr;
+    }
+
+    unsigned char* buffer = nullptr;
+    *size = 0;
+    std::size_t readSize = 0;
+    const bool succeeded = fileutils_detail::readFile(
+        fullPathForFilename(filename),
+        mode,
+        false,
+        static_cast<std::size_t>(std::numeric_limits<ssize_t>::max()),
+        &buffer,
+        &readSize);
+
+    if (!succeeded)
     {
         std::string msg = "Get data from file(";
         msg.append(filename).append(") failed!");
-        
         CCLOG("%s", msg.c_str());
+    }
+    else
+    {
+        *size = static_cast<ssize_t>(readSize);
     }
     return buffer;
 }
@@ -1003,4 +956,3 @@ void FileUtils::xorEncipherment(unsigned char* pData, unsigned long size, const 
 }
 
 NS_CC_END
-
