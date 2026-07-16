@@ -42,7 +42,9 @@
 
 需要把签名候选安装到真实 iPhone，逐项记录：启动与安全区、所有按钮触控、字号、30 FPS 航行/舰炮/接舷体验、横竖屏约束、静音键、系统音频混合和响度。compile-only 不能证明这些项目。
 
-当前有一台已配对的 iPhone 12 Pro，但使用自动签名和安装独立 QA Bundle ID 会改变开发者账号/设备状态，需要用户授权。
+当前只读预检发现一台 iOS 18.7.8 的 iPhone 12 Pro：设备已配对、已启动开发者模式，但 Developer Disk Image 未能挂载，DDI 服务不可用。继续前需要通过 USB 连接并解锁设备，在 Xcode Devices and Simulators 中完成一次设备准备。
+
+本机存在有效 Apple Development 身份，但证书 Team ID 与项目中的旧 Team ID 不一致，且没有当前项目可用的 provisioning profile。为避免覆盖设备上的既有 `com.fancyGame.NewPirate` 及其数据，后续应在用户明确授权后，使用证书所属团队、自动 provisioning 和独立 QA Bundle ID 构建并安装；该操作会联系开发者服务并改变设备/开发者账号状态，不能在只读预检中代办。
 
 ### 2. 两轮外部目标用户测试
 
