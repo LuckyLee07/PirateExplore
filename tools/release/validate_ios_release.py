@@ -40,6 +40,13 @@ FILEUTILS_READER = ROOT / "src/engine/cocos2d-x/cocos/2d/platform/CCFileUtilsRea
 FILEUTILS_TEST = ROOT / "tools/release/test_fileutils_read.sh"
 FILEUTILS_TEST_SOURCE = ROOT / "tools/release/test_fileutils_read.cpp"
 FILEUTILS_DOC = ROOT / "docs/release/fileutils-read-safety-iteration-1.md"
+USERDEFAULT = ROOT / "src/engine/cocos2d-x/cocos/2d/CCUserDefault.mm"
+USERDEFAULT_XML = ROOT / "src/engine/cocos2d-x/cocos/2d/CCUserDefaultXML.h"
+USERDEFAULT_XML_TEST = ROOT / "tools/release/test_userdefault_xml.sh"
+USERDEFAULT_XML_TEST_SOURCE = ROOT / "tools/release/test_userdefault_xml.cpp"
+USERDEFAULT_XML_FIXTURE = ROOT / "tools/release/fixtures/userdefault-legacy-migration.xml"
+USERDEFAULT_XML_DOC = ROOT / "docs/release/userdefault-xml-ownership-iteration-1.md"
+USERDEFAULT_XML_SCREENSHOT = ROOT / "docs/release/userdefault-xml-migration-player.png"
 
 
 def require(condition: bool, message: str) -> None:
@@ -380,6 +387,62 @@ def validate_file_read_safety() -> None:
         require(marker in read_doc, f"file-read evidence is missing: {marker}")
 
 
+def validate_userdefault_xml_ownership() -> None:
+    paths = (
+        USERDEFAULT,
+        USERDEFAULT_XML,
+        USERDEFAULT_XML_TEST,
+        USERDEFAULT_XML_TEST_SOURCE,
+        USERDEFAULT_XML_FIXTURE,
+        USERDEFAULT_XML_DOC,
+        USERDEFAULT_XML_SCREENSHOT,
+    )
+    for path in paths:
+        require(path.is_file(), f"UserDefault XML component is missing: {path.relative_to(ROOT)}")
+
+    userdefault = USERDEFAULT.read_text(encoding="utf-8")
+    for marker in (
+        '#import "CCUserDefaultXML.h"',
+        "LegacyXMLLookup lookup = getXMLNodeForKey(pKey)",
+        "unsigned char * decodedData = nullptr",
+        "deleteNode(lookup)",
+    ):
+        require(marker in userdefault, f"UserDefault XML integration is missing: {marker}")
+
+    ownership = USERDEFAULT_XML.read_text(encoding="utf-8")
+    for marker in (
+        "std::unique_ptr<tinyxml2::XMLDocument>",
+        "LegacyXMLStatus::KeyNotFound",
+        "LegacyXMLLookup(const LegacyXMLLookup&) = delete",
+        "static LegacyXMLLookup parse",
+        "removeNodeAndSave",
+    ):
+        require(marker in ownership, f"UserDefault XML ownership guard is missing: {marker}")
+
+    test_script = USERDEFAULT_XML_TEST.read_text(encoding="utf-8")
+    for marker in ("-fsanitize=address,undefined", "-Werror", "test_userdefault_xml.cpp"):
+        require(marker in test_script, f"UserDefault XML sanitizer test is missing: {marker}")
+    test_source = USERDEFAULT_XML_TEST_SOURCE.read_text(encoding="utf-8")
+    for marker in (
+        "missing key must not retain the parsed document",
+        "migrated key must be removed from legacy XML",
+        "unrelated legacy keys must remain",
+        "index < 20000",
+    ):
+        require(marker in test_source, f"UserDefault XML regression case is missing: {marker}")
+
+    fixture = USERDEFAULT_XML_FIXTURE.read_text(encoding="utf-8")
+    require("<kItWasChangeData>true</kItWasChangeData>" in fixture, "legacy migration fixture lost its startup key")
+    require("<unrelatedKey>kept</unrelatedKey>" in fixture, "legacy migration fixture lost its preserved key")
+
+    ownership_doc = USERDEFAULT_XML_DOC.read_text(encoding="utf-8")
+    for marker in ("V2-023 / P1", "CCUserDefault", "ASan/UBSan", "20,000", "userdefault-xml-migration-player.png"):
+        require(marker in ownership_doc, f"UserDefault XML evidence is missing: {marker}")
+    width, height, _ = png_metadata(USERDEFAULT_XML_SCREENSHOT)
+    require((width, height) == (1170, 2532), "UserDefault migration screenshot dimensions drifted")
+    require(USERDEFAULT_XML_SCREENSHOT.stat().st_size > 500_000, "UserDefault migration screenshot appears incomplete")
+
+
 def validate_toolchain_and_repository() -> None:
     output = subprocess.run(
         ["xcodebuild", "-version"],
@@ -408,6 +471,7 @@ def main() -> None:
     validate_save_durability()
     validate_native_memory_safety()
     validate_file_read_safety()
+    validate_userdefault_xml_ownership()
     validate_toolchain_and_repository()
     print("iOS release static validation passed")
 

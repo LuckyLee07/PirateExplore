@@ -24,6 +24,7 @@
  ****************************************************************************/
 
 #import "CCUserDefault.h"
+#import "CCUserDefaultXML.h"
 #import <string>
 #import "platform/CCFileUtils.h"
 #import "tinyxml2.h"
@@ -54,84 +55,48 @@ string UserDefault::_filePath = string("");
 bool UserDefault::_isFilePathInitialized = false;
 
 #ifdef KEEP_COMPATABILITY
-static tinyxml2::XMLElement* getXMLNodeForKey(const char* pKey, tinyxml2::XMLDocument **doc)
+static userdefault_detail::LegacyXMLLookup getXMLNodeForKey(const char* pKey)
 {
-    tinyxml2::XMLElement* curNode = nullptr;
-    tinyxml2::XMLElement* rootNode = nullptr;
-    
     if (! UserDefault::isXMLFileExist())
     {
-        return nullptr;
+        return userdefault_detail::LegacyXMLLookup();
     }
-    
-    // check the key value
+
     if (! pKey)
     {
-        return nullptr;
+        return userdefault_detail::LegacyXMLLookup();
     }
-    
-    do
+
+    std::string xmlBuffer = FileUtils::getInstance()->getStringFromFile(
+        UserDefault::getInstance()->getXMLFilePath());
+    if (xmlBuffer.empty())
     {
- 		tinyxml2::XMLDocument* xmlDoc = new tinyxml2::XMLDocument();
-		*doc = xmlDoc;
+        NSLog(@"can not read xml file");
+        return userdefault_detail::LegacyXMLLookup();
+    }
 
-        std::string xmlBuffer = FileUtils::getInstance()->getStringFromFile(UserDefault::getInstance()->getXMLFilePath());
-
-		if (xmlBuffer.empty())
-		{
-            NSLog(@"can not read xml file");
-			break;
-		}
-		xmlDoc->Parse(xmlBuffer.c_str(), xmlBuffer.size());
-
-		// get root node
-		rootNode = xmlDoc->RootElement();
-		if (nullptr == rootNode)
-		{
-            NSLog(@"read root node error");
-			break;
-		}
-		// find the node
-		curNode = rootNode->FirstChildElement();
-        if (!curNode)
-        {
-            // There is not xml node, delete xml file.
-            remove(UserDefault::getInstance()->getXMLFilePath().c_str());
-            
-            return nullptr;
-        }
-        
-		while (nullptr != curNode)
-		{
-			const char* nodeName = curNode->Value();
-			if (!strcmp(nodeName, pKey))
-			{
-                // delete the node
-				break;
-			}
-            
-			curNode = curNode->NextSiblingElement();
-		}
-	} while (0);
-    
-	return curNode;
+    userdefault_detail::LegacyXMLLookup lookup =
+        userdefault_detail::LegacyXMLLookup::parse(xmlBuffer, pKey);
+    if (lookup.status() == userdefault_detail::LegacyXMLStatus::EmptyRoot)
+    {
+        remove(UserDefault::getInstance()->getXMLFilePath().c_str());
+    }
+    else if (lookup.status() == userdefault_detail::LegacyXMLStatus::Invalid)
+    {
+        NSLog(@"read root node error");
+    }
+    return lookup;
 }
 
-static void deleteNode(tinyxml2::XMLDocument* doc, tinyxml2::XMLElement* node)
+static void deleteNode(userdefault_detail::LegacyXMLLookup& lookup)
 {
-    if (node)
-    {
-        doc->DeleteNode(node);
-        doc->SaveFile(UserDefault::getInstance()->getXMLFilePath().c_str());
-        delete doc;
-    }
+    lookup.removeNodeAndSave(UserDefault::getInstance()->getXMLFilePath());
 }
 
 static void deleteNodeByKey(const char *pKey)
 {
-    tinyxml2::XMLDocument* doc = nullptr;
-    tinyxml2::XMLElement* node = getXMLNodeForKey(pKey, &doc);
-    deleteNode(doc, node);
+    userdefault_detail::LegacyXMLLookup lookup = getXMLNodeForKey(pKey);
+    deleteNode(lookup);
 }
 #endif
 
@@ -151,8 +116,8 @@ bool UserDefault::getBoolForKey(const char* pKey)
 bool UserDefault::getBoolForKey(const char* pKey, bool defaultValue)
 {
 #ifdef KEEP_COMPATABILITY
-    tinyxml2::XMLDocument* doc = nullptr;
-    tinyxml2::XMLElement* node = getXMLNodeForKey(pKey, &doc);
+    userdefault_detail::LegacyXMLLookup lookup = getXMLNodeForKey(pKey);
+    tinyxml2::XMLElement* node = lookup.node();
     if (node)
     {
         if (node->FirstChild())
@@ -165,14 +130,14 @@ bool UserDefault::getBoolForKey(const char* pKey, bool defaultValue)
             flush();
             
             // delete xmle node
-            deleteNode(doc, node);
+            deleteNode(lookup);
             
             return ret;
         }
         else
         {
             // delete xmle node
-            deleteNode(doc, node);
+            deleteNode(lookup);
         }
     }
 #endif
@@ -196,8 +161,8 @@ int UserDefault::getIntegerForKey(const char* pKey)
 int UserDefault::getIntegerForKey(const char* pKey, int defaultValue)
 {
 #ifdef KEEP_COMPATABILITY
-    tinyxml2::XMLDocument* doc = nullptr;
-    tinyxml2::XMLElement* node = getXMLNodeForKey(pKey, &doc);
+    userdefault_detail::LegacyXMLLookup lookup = getXMLNodeForKey(pKey);
+    tinyxml2::XMLElement* node = lookup.node();
     if (node)
     {
         if (node->FirstChild())
@@ -209,14 +174,14 @@ int UserDefault::getIntegerForKey(const char* pKey, int defaultValue)
             flush();
             
             // delete xmle node
-            deleteNode(doc, node);
+            deleteNode(lookup);
             
             return ret;
         }
         else
         {
             // delete xmle node
-            deleteNode(doc, node);
+            deleteNode(lookup);
         }
     }
 #endif
@@ -240,8 +205,8 @@ float UserDefault::getFloatForKey(const char* pKey)
 float UserDefault::getFloatForKey(const char* pKey, float defaultValue)
 {
 #ifdef KEEP_COMPATABILITY
-    tinyxml2::XMLDocument* doc = nullptr;
-    tinyxml2::XMLElement* node = getXMLNodeForKey(pKey, &doc);
+    userdefault_detail::LegacyXMLLookup lookup = getXMLNodeForKey(pKey);
+    tinyxml2::XMLElement* node = lookup.node();
     if (node)
     {
         if (node->FirstChild())
@@ -253,14 +218,14 @@ float UserDefault::getFloatForKey(const char* pKey, float defaultValue)
             flush();
             
             // delete xmle node
-            deleteNode(doc, node);
+            deleteNode(lookup);
             
             return ret;
         }
         else
         {
             // delete xmle node
-            deleteNode(doc, node);
+            deleteNode(lookup);
         }
     }
 #endif
@@ -284,8 +249,8 @@ double  UserDefault::getDoubleForKey(const char* pKey)
 double UserDefault::getDoubleForKey(const char* pKey, double defaultValue)
 {
 #ifdef KEEP_COMPATABILITY
-    tinyxml2::XMLDocument* doc = nullptr;
-    tinyxml2::XMLElement* node = getXMLNodeForKey(pKey, &doc);
+    userdefault_detail::LegacyXMLLookup lookup = getXMLNodeForKey(pKey);
+    tinyxml2::XMLElement* node = lookup.node();
     if (node)
     {
         if (node->FirstChild())
@@ -297,14 +262,14 @@ double UserDefault::getDoubleForKey(const char* pKey, double defaultValue)
             flush();
             
             // delete xmle node
-            deleteNode(doc, node);
+            deleteNode(lookup);
             
             return ret;
         }
         else
         {
             // delete xmle node
-            deleteNode(doc, node);
+            deleteNode(lookup);
         }
     }
 #endif
@@ -328,8 +293,8 @@ std::string UserDefault::getStringForKey(const char* pKey)
 string UserDefault::getStringForKey(const char* pKey, const std::string & defaultValue)
 {
 #ifdef KEEP_COMPATABILITY
-    tinyxml2::XMLDocument* doc = nullptr;
-    tinyxml2::XMLElement* node = getXMLNodeForKey(pKey, &doc);
+    userdefault_detail::LegacyXMLLookup lookup = getXMLNodeForKey(pKey);
+    tinyxml2::XMLElement* node = lookup.node();
     if (node)
     {
         if (node->FirstChild())
@@ -341,14 +306,14 @@ string UserDefault::getStringForKey(const char* pKey, const std::string & defaul
             flush();
             
             // delete xmle node
-            deleteNode(doc, node);
+            deleteNode(lookup);
             
             return ret;
         }
         else
         {
             // delete xmle node
-            deleteNode(doc, node);
+            deleteNode(lookup);
         }
     }
 #endif
@@ -372,14 +337,14 @@ Data UserDefault::getDataForKey(const char* pKey)
 Data UserDefault::getDataForKey(const char* pKey, const Data& defaultValue)
 {
 #ifdef KEEP_COMPATABILITY
-    tinyxml2::XMLDocument* doc = nullptr;
-    tinyxml2::XMLElement* node = getXMLNodeForKey(pKey, &doc);
+    userdefault_detail::LegacyXMLLookup lookup = getXMLNodeForKey(pKey);
+    tinyxml2::XMLElement* node = lookup.node();
     if (node)
     {
         if (node->FirstChild())
         {
             const char * encodedData = node->FirstChild()->Value();
-            unsigned char * decodedData;
+            unsigned char * decodedData = nullptr;
             int decodedDataLen = base64Decode((unsigned char*)encodedData, (unsigned int)strlen(encodedData), &decodedData);
 
             if (decodedData) {
@@ -392,15 +357,16 @@ Data UserDefault::getDataForKey(const char* pKey, const Data& defaultValue)
                 flush();
                 
                 // delete xmle node
-                deleteNode(doc, node);
+                deleteNode(lookup);
                 
                 return ret;
             }
+            deleteNode(lookup);
         }
         else
         {
             // delete xmle node
-            deleteNode(doc, node);
+            deleteNode(lookup);
         }
     }
 #endif

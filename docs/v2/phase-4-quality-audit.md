@@ -37,6 +37,8 @@ Release 静态分析进一步在引擎核心 `Data` 缓冲类定位到复制自�
 
 同一轮可达性筛选还确认，启动、旧档迁移、图片、字体、脚本和用户配置共用的 `FileUtils` 忽略定位/长度/分配失败，空文件会产生未移交缓冲。`V2-022` 已统一为受限、完整读取后才移交所有权的实现；ASan/UBSan 覆盖空文件、文本终止、二进制、大小上限、分配失败和缺失文件，Release 静态分析的 `CCFileUtils.plist` 已为零诊断。完整证据见 [`../release/fileutils-read-safety-iteration-1.md`](../release/fileutils-read-safety-iteration-1.md)。
 
+设置兼容层的 `UserDefault.xml` 迁移同样位于启动和设置可达路径。旧实现只在成功找到并迁移节点时释放 `XMLDocument`，无效 XML、空根、缺失键和无效 base64 会在重复读取时泄漏。`V2-023` 已用 move-only RAII 查询对象统一文档与节点生命周期；ASan/UBSan 覆盖正常迁移及 20,000 次缺键/损坏压力循环，Release 静态分析的两条原始 `CCUserDefault` 泄漏诊断归零。完整证据见 [`../release/userdefault-xml-ownership-iteration-1.md`](../release/userdefault-xml-ownership-iteration-1.md)。
+
 本地行为记录与 V2 scoped save 同步保存；单会话最多 240 条，避免长期 QA 重玩导致存档无限增长。记录不联网，不含个人身份信息。
 
 ## 4. 崩溃与音频
@@ -75,6 +77,7 @@ iOS 使用 `UILaunchScreen`；应用 target 不再启用弃用的 LaunchImage �
 - 原生存档耐久性：通过；ASan/UBSan、32 位旧头、全部截断前缀、1500 组变异、解压越界和原子失败保留旧档全部通过；
 - Cocos 核心缓冲所有权：通过；复制/移动自赋值、公开别名复制、`fastSet` 与移动替换的 ASan/UBSan 回归通过；
 - 本地文件安全读取：通过；空/文本/二进制、上限、分配失败和缺失文件的 ASan/UBSan 回归通过，`CCFileUtils` Release 静态分析零诊断；
+- 旧配置 XML 迁移：通过；无效、空根、缺键、成功迁移及 20,000 次压力循环通过 ASan/UBSan，两条 `CCUserDefault` Release 静态分析泄漏诊断归零；
 - arm64 iOS 模拟器构建：通过；构建脚本默认使用主机架构，产物确认为 arm64 并成功安装；
 - 模拟器多尺寸运行：通过；iPhone SE 3 / iOS 17.2 的 `qa_combat`、iPhone 12 Pro / iOS 26.2 基线和 iPad A16 / iOS 26.2 的 `qa_explore` 均全屏且操作完整；
 - iPhone 13 mini / Xcode 26.2：测试环境缺陷，显示 `rdar:45025538` 与错误逻辑尺寸，已从产品验收样本中剔除并以 SE 3 替代；
