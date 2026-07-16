@@ -65,14 +65,21 @@ Data::~Data()
 Data& Data::operator= (const Data& other)
 {
     CCLOGINFO("In the copy assignment of Data.");
-    copy(other._bytes, other._size);
+    if (this != &other)
+    {
+        copy(other._bytes, other._size);
+    }
     return *this;
 }
 
 Data& Data::operator= (Data&& other)
 {
     CCLOGINFO("In the move assignment of Data.");
-    move(other);
+    if (this != &other)
+    {
+        clear();
+        move(other);
+    }
     return *this;
 }
 
@@ -102,18 +109,38 @@ ssize_t Data::getSize() const
 
 void Data::copy(unsigned char* bytes, const ssize_t size)
 {
-    clear();
-    
-    if (size > 0)
+    if (bytes == nullptr || size <= 0)
     {
-        _size = size;
-        _bytes = (unsigned char*)malloc(sizeof(unsigned char) * _size);
-        memcpy(_bytes, bytes, _size);
+        clear();
+        return;
     }
+
+    // Allocate and copy before releasing the current buffer. Public callers
+    // are allowed to pass getBytes() back into copy(), and copy assignment can
+    // otherwise turn an alias into a use-after-free.
+    unsigned char* copiedBytes = (unsigned char*)malloc(sizeof(unsigned char) * size);
+    if (copiedBytes == nullptr)
+    {
+        return;
+    }
+    memcpy(copiedBytes, bytes, size);
+
+    clear();
+    _bytes = copiedBytes;
+    _size = size;
 }
 
 void Data::fastSet(unsigned char* bytes, const ssize_t size)
 {
+    if (bytes == _bytes)
+    {
+        _size = size;
+        return;
+    }
+
+    // fastSet transfers ownership. Replacing an existing buffer must release
+    // that buffer first, just like move assignment.
+    clear();
     _bytes = bytes;
     _size = size;
 }

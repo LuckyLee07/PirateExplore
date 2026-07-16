@@ -43,6 +43,7 @@
 | 商店画面适配 | 通过 | `V2-017` 已关闭；iPhone 标题避开 Dynamic Island，iPad 紧凑布局无数值/按钮重叠 |
 | 离线启动入口 | 通过 | `V2-016` 已关闭；干净安装 5 秒内进入第一章，再次唤起保持同一进程；启动与回前台不访问旧服务器时钟 |
 | 本地存档耐久性 | 通过 | `V2-020` 已关闭；底层容器边界、LZSS 容量、原子写入、32 位旧档与物理截断恢复通过 ASan/UBSan 和 iOS Release 运行验收 |
+| 原生缓冲所有权 | 通过 | `V2-021` 已关闭；Cocos `Data` 的复制/移动自赋值、别名复制及 `fastSet`/移动替换通过静态分析和 ASan/UBSan 回归 |
 | 隐私/支持内部准备 | 通过 | V2 顶栏入口、本地说明、公开页面模板、渲染和分层校验工具完成；真实 URL 仍由 `V2-018` 阻塞 |
 | App Store Connect 内部准备 | 通过 | 提交 manifest、纯文本元数据、审核路径、年龄分级事实盘点和准备/严格双层校验完成；账号侧填写仍由 `V2-019` 阻塞 |
 | Release 自动验收 | 通过 | 阶段 0～4、发行静态、Release arm64 模拟器、无签名 device archive 与 archive 内容检查通过；详见 `ios-release-engineering-iteration-1.md` |

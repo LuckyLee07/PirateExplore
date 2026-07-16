@@ -32,6 +32,9 @@ LZSS = ROOT / "src/NewPirate/common/UtilTools/LZSS.cpp"
 RECORD_CODEC_TEST = ROOT / "tools/release/test_record_codec.sh"
 SAVE_DURABILITY_DOC = ROOT / "docs/release/save-durability-iteration-1.md"
 SAVE_RECOVERY_SCREENSHOT = ROOT / "docs/release/save-container-recovery-player.png"
+CCDATA = ROOT / "src/engine/cocos2d-x/cocos/base/CCData.cpp"
+CCDATA_TEST = ROOT / "tools/release/test_ccdata_ownership.sh"
+NATIVE_MEMORY_DOC = ROOT / "docs/release/native-memory-safety-iteration-1.md"
 
 
 def require(condition: bool, message: str) -> None:
@@ -293,6 +296,40 @@ def validate_save_durability() -> None:
         require(marker in durability_doc, f"save-durability evidence is missing: {marker}")
 
 
+def validate_native_memory_safety() -> None:
+    for path in (CCDATA, CCDATA_TEST, NATIVE_MEMORY_DOC):
+        require(path.is_file(), f"native-memory component is missing: {path.relative_to(ROOT)}")
+
+    ccdata = CCDATA.read_text(encoding="utf-8")
+    for marker in (
+        "if (this != &other)",
+        "clear();\n        move(other);",
+        "Allocate and copy before releasing the current buffer",
+        "unsigned char* copiedBytes",
+        "if (bytes == _bytes)",
+        "fastSet transfers ownership",
+    ):
+        require(marker in ccdata, f"CCData ownership guard is missing: {marker}")
+
+    test_script = CCDATA_TEST.read_text(encoding="utf-8")
+    for marker in ("-fsanitize=address,undefined", "test_ccdata_ownership.cpp", "CCData.cpp"):
+        require(marker in test_script, f"CCData ownership sanitizer test is missing: {marker}")
+    test_source = (ROOT / "tools/release/test_ccdata_ownership.cpp").read_text(encoding="utf-8")
+    for marker in (
+        "data = data",
+        "data.copy(data.getBytes(), data.getSize())",
+        "data.fastSet(data.getBytes(), data.getSize())",
+        "target = std::move(data)",
+        "target = std::move(target)",
+        "__asan_address_is_poisoned",
+    ):
+        require(marker in test_source, f"CCData ownership regression case is missing: {marker}")
+
+    memory_doc = NATIVE_MEMORY_DOC.read_text(encoding="utf-8")
+    for marker in ("V2-021 / P1", "xcodebuild", "Use of memory after it is freed", "ASan/UBSan"):
+        require(marker in memory_doc, f"native-memory evidence is missing: {marker}")
+
+
 def validate_toolchain_and_repository() -> None:
     output = subprocess.run(
         ["xcodebuild", "-version"],
@@ -319,6 +356,7 @@ def main() -> None:
     validate_project()
     validate_native_surface()
     validate_save_durability()
+    validate_native_memory_safety()
     validate_toolchain_and_repository()
     print("iOS release static validation passed")
 
