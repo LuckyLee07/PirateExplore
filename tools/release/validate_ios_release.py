@@ -61,6 +61,7 @@ EAGLVIEW_SCREENSHOT = ROOT / "docs/release/eaglview-lifecycle-player.png"
 APPLE_SIGNING_AUDIT = ROOT / "tools/release/apple_signing_readiness.py"
 APPLE_SIGNING_AUDIT_TEST = ROOT / "tools/release/test_apple_signing_readiness.py"
 APPLE_SIGNING_AUDIT_DOC = ROOT / "docs/release/apple-signing-readiness-iteration-2.md"
+APPLE_DEVICE_STABILITY_DOC = ROOT / "docs/release/apple-device-stability-iteration-1.md"
 
 
 def require(condition: bool, message: str) -> None:
@@ -554,7 +555,12 @@ def validate_eaglview_contract() -> None:
 
 
 def validate_apple_signing_readiness_audit() -> None:
-    for path in (APPLE_SIGNING_AUDIT, APPLE_SIGNING_AUDIT_TEST, APPLE_SIGNING_AUDIT_DOC):
+    for path in (
+        APPLE_SIGNING_AUDIT,
+        APPLE_SIGNING_AUDIT_TEST,
+        APPLE_SIGNING_AUDIT_DOC,
+        APPLE_DEVICE_STABILITY_DOC,
+    ):
         require(path.is_file(), f"Apple signing readiness component is missing: {path.relative_to(ROOT)}")
 
     audit = APPLE_SIGNING_AUDIT.read_text(encoding="utf-8")
@@ -562,11 +568,16 @@ def validate_apple_signing_readiness_audit() -> None:
         '"security", "find-identity"',
         '"security", "find-certificate"',
         '"security", "cms"',
-        '"xcrun", "devicectl"',
+        '"xcrun",\n                "devicectl"',
         "DEVELOPMENT_TEAM",
         "certificate_fingerprints",
         "--require-development",
         "--require-distribution",
+        '"--json-output"',
+        "TemporaryDirectory",
+        "minimum_samples = 3",
+        "audit_key",
+        "ddiServicesAvailable",
     ):
         require(marker in audit, f"Apple signing readiness audit is missing: {marker}")
 
@@ -576,6 +587,9 @@ def validate_apple_signing_readiness_audit() -> None:
         "expired identity must not pass development",
         "profile certificate without private key matched",
         "blocked chain must explain all four gaps",
+        "flapping device passed stability",
+        "raw CoreDevice identifier leaked into report",
+        "duplicate rows passed consecutive samples",
     ):
         require(marker in regression, f"Apple signing readiness regression is missing: {marker}")
 
@@ -588,6 +602,16 @@ def validate_apple_signing_readiness_audit() -> None:
         "distribution_ready: false",
     ):
         require(marker in evidence, f"Apple signing readiness evidence is missing: {marker}")
+
+    stability_evidence = APPLE_DEVICE_STABILITY_DOC.read_text(encoding="utf-8")
+    for marker in (
+        "V2-027 / P1",
+        "jsonVersion",
+        "device_sample_count: 3",
+        "serialNumber",
+        "退出码 2",
+    ):
+        require(marker in stability_evidence, f"Apple device stability evidence is missing: {marker}")
 
 
 def validate_toolchain_and_repository() -> None:

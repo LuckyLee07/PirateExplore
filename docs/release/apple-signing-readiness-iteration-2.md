@@ -101,6 +101,8 @@ distribution_ready: false
 
 `available_device_count` 是实时值，连续采样出现 0 和 1，不能固化为仓库事实。严格门禁实测均以退出码 2 失败：
 
+> 后续 `V2-027` 已把设备判断升级为 devicectl 官方 JSON 和同一设备连续至少 3 次就绪；当前权威设备语义见 [`apple-device-stability-iteration-1.md`](apple-device-stability-iteration-1.md)。本节保留 V2-026 当时的单点采样证据，不再作为最终严格设备规则。
+
 ```bash
 python3 -B tools/release/apple_signing_readiness.py \
   --team-id 24U7H6TL68 --require-development

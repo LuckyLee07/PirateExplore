@@ -12,6 +12,8 @@ import re
 import ssl
 import subprocess
 import sys
+import tempfile
+import time
 from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -54,6 +56,34 @@ class Profile:
     @property
     def unexpired(self) -> bool:
         return self.expires_at is not None and self.expires_at > datetime.now(timezone.utc)
+
+
+@dataclass(frozen=True)
+class Device:
+    identifier: str
+    marketing_name: str
+    product_type: str
+    platform: str
+    reality: str
+    pairing_state: str
+    tunnel_state: str
+    developer_mode: str
+    ddi_services_available: bool
+
+    @property
+    def development_ready(self) -> bool:
+        return (
+            self.platform == "iOS"
+            and self.reality == "physical"
+            and self.pairing_state == "paired"
+            and self.tunnel_state in {"available", "connected"}
+            and self.developer_mode == "enabled"
+            and self.ddi_services_available
+        )
+
+    @property
+    def audit_key(self) -> str:
+        return hashlib.sha256(self.identifier.encode("utf-8")).hexdigest()[:12]
 
 
 def run(command: list[str], *, input_bytes: bytes | None = None) -> subprocess.CompletedProcess[bytes]:
@@ -211,16 +241,116 @@ def project_team_ids(project: Path) -> tuple[str, ...]:
     return tuple(sorted(set(re.findall(r"DEVELOPMENT_TEAM\s*=\s*([A-Z0-9]+)\s*;", source))))
 
 
-def available_device_count(output: str) -> int:
-    return sum(1 for line in output.splitlines() if re.search(r"\savailable\s", line) and "unavailable" not in line)
+def devices_from_payload(payload: dict) -> list[Device]:
+    raw_devices = payload.get("result", {}).get("devices", [])
+    if not isinstance(raw_devices, list):
+        return []
+
+    devices: list[Device] = []
+    for item in raw_devices:
+        if not isinstance(item, dict):
+            continue
+        connection = item.get("connectionProperties", {})
+        properties = item.get("deviceProperties", {})
+        hardware = item.get("hardwareProperties", {})
+        identifier = item.get("identifier")
+        if not isinstance(identifier, str) or not identifier:
+            continue
+        devices.append(
+            Device(
+                identifier=identifier,
+                marketing_name=str(hardware.get("marketingName", "Unknown Apple device")),
+                product_type=str(hardware.get("productType", "")),
+                platform=str(hardware.get("platform", "")),
+                reality=str(hardware.get("reality", "")),
+                pairing_state=str(connection.get("pairingState", "")),
+                tunnel_state=str(connection.get("tunnelState", "")),
+                developer_mode=str(properties.get("developerModeStatus", "")),
+                ddi_services_available=properties.get("ddiServicesAvailable") is True,
+            )
+        )
+    return devices
 
 
-def collect_available_devices(errors: list[str]) -> int:
-    result = run(["xcrun", "devicectl", "list", "devices"])
-    if result.returncode != 0:
-        errors.append("xcrun devicectl list devices failed")
-        return 0
-    return available_device_count(result.stdout.decode("utf-8", errors="replace"))
+def collect_device_sample(errors: list[str]) -> list[Device]:
+    with tempfile.TemporaryDirectory(prefix="newpirate-devicectl-") as directory:
+        output = Path(directory) / "devices.json"
+        result = run(
+            [
+                "xcrun",
+                "devicectl",
+                "list",
+                "devices",
+                "--quiet",
+                "--json-output",
+                str(output),
+            ]
+        )
+        if result.returncode != 0 or not output.is_file():
+            errors.append("xcrun devicectl JSON device audit failed")
+            return []
+        try:
+            payload = json.loads(output.read_text(encoding="utf-8"))
+        except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+            errors.append("xcrun devicectl returned invalid JSON")
+            return []
+        if payload.get("info", {}).get("outcome") != "success":
+            errors.append("xcrun devicectl reported an unsuccessful outcome")
+            return []
+        return devices_from_payload(payload)
+
+
+def collect_device_samples(errors: list[str], count: int, interval: float) -> list[list[Device]]:
+    samples: list[list[Device]] = []
+    for index in range(count):
+        samples.append(collect_device_sample(errors))
+        if index + 1 < count and interval > 0:
+            time.sleep(interval)
+    return samples
+
+
+def summarize_device_samples(samples: list[list[Device]]) -> dict:
+    observations: dict[str, dict] = {}
+    for sample in samples:
+        unique_devices = {device.identifier: device for device in sample}
+        for device in unique_devices.values():
+            entry = observations.setdefault(
+                device.identifier,
+                {
+                    "device": device,
+                    "seen_samples": 0,
+                    "ready_samples": 0,
+                },
+            )
+            entry["device"] = device
+            entry["seen_samples"] += 1
+            entry["ready_samples"] += int(device.development_ready)
+
+    sample_count = len(samples)
+    serialized: list[dict] = []
+    for entry in observations.values():
+        device = entry["device"]
+        ready_samples = entry["ready_samples"]
+        serialized.append(
+            {
+                "device_key": device.audit_key,
+                "marketing_name": device.marketing_name,
+                "product_type": device.product_type,
+                "pairing_state": device.pairing_state,
+                "last_tunnel_state": device.tunnel_state,
+                "developer_mode": device.developer_mode,
+                "last_ddi_services_available": device.ddi_services_available,
+                "seen_samples": entry["seen_samples"],
+                "ready_samples": ready_samples,
+                "stable_ready": sample_count > 0 and ready_samples == sample_count,
+            }
+        )
+    serialized.sort(key=lambda item: (item["marketing_name"], item["device_key"]))
+    return {
+        "device_sample_count": sample_count,
+        "consecutive_ready_device_count": sum(item["stable_ready"] for item in serialized),
+        "device_observations": serialized,
+    }
 
 
 def matching_profiles(profiles: Iterable[Profile], bundle_id: str, team_id: str | None, kind: str) -> list[Profile]:
@@ -268,7 +398,7 @@ def evaluate(
     if not usable_development:
         blockers.append("no unexpired development identity/profile chain matches the Bundle ID")
     if devices_available == 0:
-        blockers.append("no paired physical Apple device is currently available")
+        blockers.append("no physical Apple device remained development-ready across all samples")
     if not usable_distribution:
         blockers.append("no unexpired App Store distribution identity/profile chain matches the Bundle ID")
 
@@ -285,6 +415,7 @@ def evaluate(
         "matching_distribution_profile_count": len(distribution_profiles),
         "usable_distribution_profile_count": len(usable_distribution),
         "available_device_count": devices_available,
+        "consecutive_ready_device_count": devices_available,
         "development_ready": development_ready,
         "distribution_ready": distribution_ready,
         "blockers": blockers,
@@ -315,7 +446,8 @@ def print_human(report: dict) -> None:
         "development: "
         f"{report['matching_development_profile_count']} matching profiles, "
         f"{report['usable_development_profile_count']} usable chains, "
-        f"{report['available_device_count']} available devices"
+        f"{report['consecutive_ready_device_count']} devices ready across "
+        f"{report['device_sample_count']} samples"
     )
     print(
         "distribution: "
@@ -338,12 +470,28 @@ def main() -> int:
     parser.add_argument("--json", action="store_true", help="Print machine-readable JSON")
     parser.add_argument("--require-development", action="store_true")
     parser.add_argument("--require-distribution", action="store_true")
+    parser.add_argument(
+        "--device-samples",
+        type=int,
+        help="Consecutive CoreDevice JSON samples (development strict mode enforces at least 3)",
+    )
+    parser.add_argument("--device-sample-interval", type=float, default=1.0)
     args = parser.parse_args()
+
+    if args.device_samples is not None and args.device_samples < 1:
+        parser.error("--device-samples must be at least 1")
+    if args.device_sample_interval < 0:
+        parser.error("--device-sample-interval must not be negative")
+    minimum_samples = 3 if args.require_development else 1
+    requested_samples = args.device_samples if args.device_samples is not None else minimum_samples
+    device_sample_count = max(requested_samples, minimum_samples)
 
     errors: list[str] = []
     identities = collect_identities(errors)
     profiles = collect_profiles(errors)
-    devices_available = collect_available_devices(errors)
+    device_samples = collect_device_samples(errors, device_sample_count, args.device_sample_interval)
+    device_report = summarize_device_samples(device_samples)
+    devices_available = device_report["consecutive_ready_device_count"]
     configured_team_ids = project_team_ids(args.project)
     report = evaluate(
         identities,
@@ -354,6 +502,7 @@ def main() -> int:
         devices_available,
     )
     report["audit_errors"] = errors
+    report.update(device_report)
     report["identities"] = [serializable_identity(identity) for identity in identities]
     report["matching_profiles"] = [
         serializable_profile(profile)

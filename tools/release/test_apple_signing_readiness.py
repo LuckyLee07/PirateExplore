@@ -12,12 +12,14 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "tools/release"))
 
 from apple_signing_readiness import (  # noqa: E402
+    Device,
     Identity,
     Profile,
-    available_device_count,
+    devices_from_payload,
     evaluate,
     parse_identities,
     profile_matches_bundle,
+    summarize_device_samples,
 )
 
 
@@ -44,6 +46,20 @@ def profile(kind: str, app_identifier: str, fingerprint: str, expires_at: dateti
     )
 
 
+def device(identifier: str, *, state: str = "connected", developer_mode: str = "enabled", ddi: bool = True) -> Device:
+    return Device(
+        identifier=identifier,
+        marketing_name="iPhone Fixture",
+        product_type="iPhone99,1",
+        platform="iOS",
+        reality="physical",
+        pairing_state="paired",
+        tunnel_state=state,
+        developer_mode=developer_mode,
+        ddi_services_available=ddi,
+    )
+
+
 def main() -> None:
     parsed = parse_identities('  1) AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA "Apple Development: QA"\n')
     require(parsed == [("A" * 40, "Apple Development: QA")], "identity parser drifted")
@@ -55,8 +71,51 @@ def main() -> None:
     require(profile_matches_bundle(exact, "com.fancyGame.NewPirate"), "exact profile must match")
     require(not profile_matches_bundle(wrong, "com.fancyGame.NewPirate"), "wrong Bundle ID matched")
 
-    device_table = "Phone host UUID available iPhone\nTablet host UUID unavailable iPad\n"
-    require(available_device_count(device_table) == 1, "available device parser drifted")
+    payload = {
+        "result": {
+            "devices": [
+                {
+                    "identifier": "private-coredevice-id",
+                    "connectionProperties": {"pairingState": "paired", "tunnelState": "connected"},
+                    "deviceProperties": {"developerModeStatus": "enabled", "ddiServicesAvailable": True},
+                    "hardwareProperties": {
+                        "marketingName": "iPhone Fixture",
+                        "productType": "iPhone99,1",
+                        "platform": "iOS",
+                        "reality": "physical",
+                        "serialNumber": "must-not-leak",
+                        "udid": "must-not-leak",
+                    },
+                }
+            ]
+        }
+    }
+    parsed_devices = devices_from_payload(payload)
+    require(len(parsed_devices) == 1 and parsed_devices[0].development_ready, "CoreDevice JSON parser drifted")
+    sanitized_payload = str(summarize_device_samples([parsed_devices, parsed_devices, parsed_devices]))
+    require("private-coredevice-id" not in sanitized_payload, "CoreDevice identifier was not hashed")
+    require("must-not-leak" not in sanitized_payload, "serial number or UDID leaked into report")
+
+    stable = summarize_device_samples([[device("same")], [device("same")], [device("same")]])
+    require(stable["consecutive_ready_device_count"] == 1, "same ready device must pass stability")
+    require(stable["device_observations"][0]["ready_samples"] == 3, "ready sample count drifted")
+    require("same" not in str(stable), "raw CoreDevice identifier leaked into report")
+
+    flapping = summarize_device_samples(
+        [[device("same")], [device("same", state="unavailable", ddi=False)], [device("same")]]
+    )
+    require(flapping["consecutive_ready_device_count"] == 0, "flapping device passed stability")
+
+    swapped = summarize_device_samples([[device("first")], [device("second")], [device("first")]])
+    require(swapped["consecutive_ready_device_count"] == 0, "different transient devices passed stability")
+
+    duplicated = summarize_device_samples([[device("same"), device("same"), device("same")], [], []])
+    require(duplicated["consecutive_ready_device_count"] == 0, "duplicate rows passed consecutive samples")
+
+    disabled = summarize_device_samples(
+        [[device("same", developer_mode="disabled")], [device("same")], [device("same")]]
+    )
+    require(disabled["consecutive_ready_device_count"] == 0, "disabled developer mode passed stability")
 
     identities = [
         Identity("A" * 40, "Apple Development: QA", "development", "TEAM123", FUTURE),
@@ -100,7 +159,7 @@ def main() -> None:
     )
     require(not mismatch["distribution_ready"], "profile certificate without private key matched")
 
-    print("Apple signing readiness OK: wildcard, expiry, private-key match, team and device gates")
+    print("Apple signing readiness OK: identity chain, official device JSON and stability gates")
 
 
 if __name__ == "__main__":

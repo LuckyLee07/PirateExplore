@@ -31,7 +31,7 @@
 - physical footprint 102.7 MB、峰值 103.7 MB，低于 256 MB 内部门槛；
 - 最终候选触发原生 cannon cue 后约 26 秒仍存活；
 - iPhone SE 3、iPhone 12 Pro 与 iPad A16 三档稳定模拟器比例全屏、操作完整；Xcode 26.2 的 iPhone 13 mini 错误尺寸缺陷已隔离；
-- 26 个已登记问题覆盖 P0/P1/P2；内部可完成的 P0/P1 已修复，外测、账号、公开隐私/支持页面与 App Store Connect 后台证据缺口保持开启；
+- 27 个已登记问题覆盖 P0/P1/P2；内部可完成的 P0/P1 已修复，外测、账号、公开隐私/支持页面与 App Store Connect 后台证据缺口保持开启；
 - 第二张地图 7.5 人周、前三海域 22 人周的限额预算，以及首章试玩后一次解锁的商业建议；
 - 外测模板保持空白，没有用内部自动化生成参与者结果。
 
@@ -45,7 +45,7 @@
 
 2026-07-17 的指纹关联预检纠正了旧人工记录：本机当前 `Apple Development` 私钥身份有效至 2027-04-19，并与有效至 2027-05-12、覆盖 `24U7H6TL68.*` 的开发 Profile 匹配。此前按显示名称读取命中过期证书，不能代表当前 codesigning identity。工程仍未确认 `DEVELOPMENT_TEAM`，也没有匹配 `com.fancyGame.NewPirate` 的 Distribution identity/App Store Profile。
 
-已配对的 iPhone 12 Pro 与 iPad mini 在连续预检间出现 `unavailable → available → unavailable` 波动，最终复核均离线，当前仍无法作为安装和触控证据。可重复审计与纠偏证据见 [`../release/apple-signing-readiness-iteration-2.md`](../release/apple-signing-readiness-iteration-2.md)。
+已配对的 iPhone 12 Pro 与 iPad mini 在连续预检间出现 `unavailable → available → unavailable` 波动。`V2-027` 已改用 devicectl 官方 JSON，并要求同一物理设备至少三次连续满足配对、连接、开发者模式和 DDI 条件；本机三连复核为 0 台，当前仍无法作为安装和触控证据。签名纠偏与设备稳定性证据分别见 [`../release/apple-signing-readiness-iteration-2.md`](../release/apple-signing-readiness-iteration-2.md) 和 [`../release/apple-device-stability-iteration-1.md`](../release/apple-device-stability-iteration-1.md)。
 
 后续需要先由账号负责人确认团队与 Bundle ID 归属，补齐 NewPirate 分发签名链，再通过 USB 连接、解锁设备，并用独立 QA 安装方案避免覆盖既有 App 与数据。证书申请、自动 provisioning、App 记录创建和设备安装会改变开发者账号或设备状态，必须由账号负责人明确授权和执行，不能由只读预检代办。
 

@@ -147,7 +147,7 @@ Apple 当前 iOS 26 分级定义中，频繁的卡通/奇幻暴力、枪械或�
 - 已配对 iPhone 12 Pro 与 iPad mini 状态在连续采样间波动，最终复核均 unavailable，没有实际签名安装或真机体验证据；
 - 因此仍只能使用无签名 archive 做工程内容验证，不能上传 App Store Connect，也不能关闭真机或 TestFlight 门槛。
 
-权威详情及可复跑命令见 [`apple-signing-readiness-iteration-2.md`](apple-signing-readiness-iteration-2.md)。
+签名链详情见 [`apple-signing-readiness-iteration-2.md`](apple-signing-readiness-iteration-2.md)；瞬时在线误判已由 [`apple-device-stability-iteration-1.md`](apple-device-stability-iteration-1.md) 的官方 JSON 三连采样门禁修复。
 
 任何证书申请、自动 provisioning、App 记录创建或设备安装都会改变外部账号/设备状态，需由账号负责人在明确授权和正确团队下执行。
 

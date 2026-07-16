@@ -45,6 +45,8 @@ iOS 启动必经的 `CCEAGLView` 仍采用手动引用计数；旧实现没有�
 
 发布签名状态原先依靠证书名称和 Profile 文件人工摘录，同名旧证书会造成误判，也没有验证 Profile 内嵌证书是否对应本机私钥身份。`V2-026` 已增加只读关联审计，以指纹、有效期、团队、Bundle ID、工程 `DEVELOPMENT_TEAM` 和 CoreDevice 状态共同判定；实测确认当前开发身份/Profile 链有效，同时准确保留工程团队、设备稳定性和 NewPirate 分发链缺口。完整证据见 [`../release/apple-signing-readiness-iteration-2.md`](../release/apple-signing-readiness-iteration-2.md)。
 
+同一审计中，配对设备曾在连续命令间出现 0→1→0 台 available，暴露单次终端表格采样不适合作为开发安装门槛。`V2-027` 已改用 devicectl 官方 JSON，开发严格模式强制同一物理设备连续三次满足配对、隧道、开发者模式和 DDI 条件；输出只保留哈希设备键和标准机型。完整证据见 [`../release/apple-device-stability-iteration-1.md`](../release/apple-device-stability-iteration-1.md)。
+
 本地行为记录与 V2 scoped save 同步保存；单会话最多 240 条，避免长期 QA 重玩导致存档无限增长。记录不联网，不含个人身份信息。
 
 ## 4. 崩溃与音频
@@ -95,6 +97,7 @@ iOS 使用 `UILaunchScreen`；应用 target 不再启用弃用的 LaunchImage �
 - iOS device arm64 免签名编译：通过；
 - 旧 iOS 8 部署版本警告：已清理；旧静态库 platform metadata 与 OpenGLES 弃用警告保留为 P2；
 - Apple 签名只读预检：通过；当前开发私钥身份与通配开发 Profile 指纹匹配且未过期，旧“2023 年过期”结论已纠正；工程团队未确认，且没有 NewPirate 可用的 Distribution/App Store Profile 组合；
+- Apple 设备稳定性预检：通过；使用官方 JSON，同一设备三连就绪才允许开发严格门禁通过；本机 iPhone/iPad 三连采样均未就绪且退出码 2，未泄露设备标识；
 - 真实设备触控、安全区、帧率、静音键和响度：待设备体验执行；iPhone 12 Pro 与 iPad mini 状态连续波动并在最终复核时 unavailable，不能作为实际真机证据；
 - 两轮目标用户测试：待执行，所有外测 gate 仍为 `pending_external`。
 
