@@ -27,6 +27,7 @@ THE SOFTWARE.
 
 // cocos2d
 #include "CCTextureAtlas.h"
+#include "CCTextureAtlasAllocation.h"
 #include "CCTextureCache.h"
 #include "ccMacros.h"
 #include "CCGLProgram.h"
@@ -172,23 +173,13 @@ bool TextureAtlas::initWithTexture(Texture2D *texture, ssize_t capacity)
     // Re-initialization is not allowed
     CCASSERT(_quads == nullptr && _indices == nullptr, "");
 
-    _quads = (V3F_C4B_T2F_Quad*)malloc( _capacity * sizeof(V3F_C4B_T2F_Quad) );
-    _indices = (GLushort *)malloc( _capacity * 6 * sizeof(GLushort) );
-    
-    if( ! ( _quads && _indices) && _capacity > 0) 
+    if (!textureatlas_detail::allocateAtlasBuffers(_capacity, &_quads, &_indices))
     {
-        //CCLOG("cocos2d: TextureAtlas: not enough memory");
-        CC_SAFE_FREE(_quads);
-        CC_SAFE_FREE(_indices);
-
         // release texture, should set it to null, because the destruction will
         // release it too. see cocos2d-x issue #484
         CC_SAFE_RELEASE_NULL(_texture);
         return false;
     }
-
-    memset( _quads, 0, _capacity * sizeof(V3F_C4B_T2F_Quad) );
-    memset( _indices, 0, _capacity * 6 * sizeof(GLushort) );
     
 #if CC_ENABLE_CACHE_TEXTURE_DATA
     // listen the event when app go to background
@@ -690,4 +681,3 @@ void TextureAtlas::drawNumberOfQuads(ssize_t numberOfQuads, ssize_t start)
 
 
 NS_CC_END
-

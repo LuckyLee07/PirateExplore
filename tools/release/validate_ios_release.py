@@ -47,6 +47,12 @@ USERDEFAULT_XML_TEST_SOURCE = ROOT / "tools/release/test_userdefault_xml.cpp"
 USERDEFAULT_XML_FIXTURE = ROOT / "tools/release/fixtures/userdefault-legacy-migration.xml"
 USERDEFAULT_XML_DOC = ROOT / "docs/release/userdefault-xml-ownership-iteration-1.md"
 USERDEFAULT_XML_SCREENSHOT = ROOT / "docs/release/userdefault-xml-migration-player.png"
+TEXTURE_ATLAS = ROOT / "src/engine/cocos2d-x/cocos/2d/CCTextureAtlas.cpp"
+TEXTURE_ATLAS_ALLOCATION = ROOT / "src/engine/cocos2d-x/cocos/2d/CCTextureAtlasAllocation.h"
+TEXTURE_ATLAS_TEST = ROOT / "tools/release/test_texture_atlas_allocation.sh"
+TEXTURE_ATLAS_TEST_SOURCE = ROOT / "tools/release/test_texture_atlas_allocation.cpp"
+TEXTURE_ATLAS_DOC = ROOT / "docs/release/texture-atlas-allocation-iteration-1.md"
+TEXTURE_ATLAS_SCREENSHOT = ROOT / "docs/release/texture-atlas-render-player.png"
 
 
 def require(condition: bool, message: str) -> None:
@@ -443,6 +449,57 @@ def validate_userdefault_xml_ownership() -> None:
     require(USERDEFAULT_XML_SCREENSHOT.stat().st_size > 500_000, "UserDefault migration screenshot appears incomplete")
 
 
+def validate_texture_atlas_allocation() -> None:
+    paths = (
+        TEXTURE_ATLAS,
+        TEXTURE_ATLAS_ALLOCATION,
+        TEXTURE_ATLAS_TEST,
+        TEXTURE_ATLAS_TEST_SOURCE,
+        TEXTURE_ATLAS_DOC,
+        TEXTURE_ATLAS_SCREENSHOT,
+    )
+    for path in paths:
+        require(path.is_file(), f"TextureAtlas allocation component is missing: {path.relative_to(ROOT)}")
+
+    atlas = TEXTURE_ATLAS.read_text(encoding="utf-8")
+    for marker in (
+        '#include "CCTextureAtlasAllocation.h"',
+        "textureatlas_detail::allocateAtlasBuffers(_capacity, &_quads, &_indices)",
+        "CC_SAFE_RELEASE_NULL(_texture)",
+    ):
+        require(marker in atlas, f"TextureAtlas bounded allocation integration is missing: {marker}")
+
+    allocation = TEXTURE_ATLAS_ALLOCATION.read_text(encoding="utf-8")
+    for marker in (
+        "capacity < 0",
+        "count == 0",
+        "maximumQuads",
+        "checkedMultiply",
+        "std::free(allocatedQuads)",
+        "std::memset(allocatedQuads, 0, quadBytes)",
+    ):
+        require(marker in allocation, f"TextureAtlas allocation guard is missing: {marker}")
+
+    test_script = TEXTURE_ATLAS_TEST.read_text(encoding="utf-8")
+    for marker in ("-fsanitize=address,undefined", "-Werror", "test_texture_atlas_allocation.cpp"):
+        require(marker in test_script, f"TextureAtlas sanitizer test is missing: {marker}")
+    test_source = TEXTURE_ATLAS_TEST_SOURCE.read_text(encoding="utf-8")
+    for marker in (
+        "zero capacity must not call malloc(0)",
+        "negative capacity must be rejected in release builds",
+        "partial allocation must release the first buffer",
+        "capacity beyond 16-bit vertex indices must be rejected",
+    ):
+        require(marker in test_source, f"TextureAtlas regression case is missing: {marker}")
+
+    atlas_doc = TEXTURE_ATLAS_DOC.read_text(encoding="utf-8")
+    for marker in ("V2-024 / P1", "CCTextureAtlas.plist", "ASan/UBSan", "16,384"):
+        require(marker in atlas_doc, f"TextureAtlas allocation evidence is missing: {marker}")
+    width, height, _ = png_metadata(TEXTURE_ATLAS_SCREENSHOT)
+    require((width, height) == (1170, 2532), "TextureAtlas runtime screenshot dimensions drifted")
+    require(TEXTURE_ATLAS_SCREENSHOT.stat().st_size > 500_000, "TextureAtlas runtime screenshot appears incomplete")
+
+
 def validate_toolchain_and_repository() -> None:
     output = subprocess.run(
         ["xcodebuild", "-version"],
@@ -472,6 +529,7 @@ def main() -> None:
     validate_native_memory_safety()
     validate_file_read_safety()
     validate_userdefault_xml_ownership()
+    validate_texture_atlas_allocation()
     validate_toolchain_and_repository()
     print("iOS release static validation passed")
 
