@@ -139,13 +139,15 @@ Apple 当前 iOS 26 分级定义中，频繁的卡通/奇幻暴力、枪械或�
 
 ## 7. 账号、设备与签名预检
 
-本轮只做了只读审计，没有创建证书、描述文件、App 记录或修改开发者账号：
+本轮只做了只读审计，没有创建证书、描述文件、App 记录或修改开发者账号。2026-07-17 的 `V2-026` 指纹关联复核更新了本节旧快照：
 
-- 本机发现一个 `Apple Development` 身份，证书有效期为 2022-10-05 至 2023-10-05，已经过期，不能用于 2026 年签名；
-- 现有 provisioning profiles 面向其他 Bundle ID，没有发现可证明适用于 `com.fancyGame.NewPirate` 的当前开发/分发组合；
-- 没有可用的 `Apple Distribution` 身份和 NewPirate App Store profile；
-- 已配对的 iPhone 12 Pro 曾短暂显示可用，随后变为 unavailable，当前不能作为真机签名、安装或触控验收证据；
-- 因此只能继续使用无签名 archive 做工程内容验证，不能上传 App Store Connect，也不能关闭真机或 TestFlight 门槛。
+- 当前 `Apple Development` 私钥身份有效至 2027-04-19，并与覆盖 `24U7H6TL68.*`、有效至 2027-05-12 的开发 Profile 指纹匹配；原“2023 年过期”结论来自按同名证书人工取值，已经废止；
+- 工程没有已确认的 `DEVELOPMENT_TEAM`，团队候选 `24U7H6TL68` 仍需账号负责人确认；
+- 没有匹配 `com.fancyGame.NewPirate` 的 `Apple Distribution` 私钥身份和 App Store Profile；
+- 已配对 iPhone 12 Pro 与 iPad mini 状态在连续采样间波动，最终复核均 unavailable，没有实际签名安装或真机体验证据；
+- 因此仍只能使用无签名 archive 做工程内容验证，不能上传 App Store Connect，也不能关闭真机或 TestFlight 门槛。
+
+权威详情及可复跑命令见 [`apple-signing-readiness-iteration-2.md`](apple-signing-readiness-iteration-2.md)。
 
 任何证书申请、自动 provisioning、App 记录创建或设备安装都会改变外部账号/设备状态，需由账号负责人在明确授权和正确团队下执行。
 

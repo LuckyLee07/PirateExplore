@@ -43,6 +43,8 @@ Release 静态分析进一步在引擎核心 `Data` 缓冲类定位到复制自�
 
 iOS 启动必经的 `CCEAGLView` 仍采用手动引用计数；旧实现没有在销毁时释放组合文本和 `markedTextStyle` 复制属性，也没有注销键盘通知观察者，`UITextInput.selectionRectsForRange` 还返回了协议不接受的 `nil`。`V2-025` 已显式绑定复制属性的 ivar，在 `dealloc` 前完成所有权和观察者清理，并用空数组表示“无选区矩形”；源契约回归及 `CCEAGLView.plist` 零诊断复查通过。完整证据见 [`../release/eaglview-ime-contract-iteration-1.md`](../release/eaglview-ime-contract-iteration-1.md)。
 
+发布签名状态原先依靠证书名称和 Profile 文件人工摘录，同名旧证书会造成误判，也没有验证 Profile 内嵌证书是否对应本机私钥身份。`V2-026` 已增加只读关联审计，以指纹、有效期、团队、Bundle ID、工程 `DEVELOPMENT_TEAM` 和 CoreDevice 状态共同判定；实测确认当前开发身份/Profile 链有效，同时准确保留工程团队、设备稳定性和 NewPirate 分发链缺口。完整证据见 [`../release/apple-signing-readiness-iteration-2.md`](../release/apple-signing-readiness-iteration-2.md)。
+
 本地行为记录与 V2 scoped save 同步保存；单会话最多 240 条，避免长期 QA 重玩导致存档无限增长。记录不联网，不含个人身份信息。
 
 ## 4. 崩溃与音频
@@ -92,7 +94,8 @@ iOS 使用 `UILaunchScreen`；应用 target 不再启用弃用的 LaunchImage �
 - AVFoundation cannon cue 生存 smoke：通过；最终候选 PID 37720 在 cue 启动约 26 秒后仍存活；
 - iOS device arm64 免签名编译：通过；
 - 旧 iOS 8 部署版本警告：已清理；旧静态库 platform metadata 与 OpenGLES 弃用警告保留为 P2；
-- 真实设备触控、安全区、帧率、静音键和响度：待设备体验执行；只读复核中 iPhone 12 Pro 后续变为 unavailable，本机开发证书已过期且没有 NewPirate 可用的 Distribution/profile 组合；
+- Apple 签名只读预检：通过；当前开发私钥身份与通配开发 Profile 指纹匹配且未过期，旧“2023 年过期”结论已纠正；工程团队未确认，且没有 NewPirate 可用的 Distribution/App Store Profile 组合；
+- 真实设备触控、安全区、帧率、静音键和响度：待设备体验执行；iPhone 12 Pro 与 iPad mini 状态连续波动并在最终复核时 unavailable，不能作为实际真机证据；
 - 两轮目标用户测试：待执行，所有外测 gate 仍为 `pending_external`。
 
 阶段 4 内部候选基线可以提交；真实设备和外测项补齐前不得把 V2 总体目标标记完成或把 HOLD 改成 GO。

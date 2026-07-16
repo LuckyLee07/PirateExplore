@@ -1,6 +1,6 @@
 # 海上探险家 V2：iOS 发行就绪基线
 
-日期：2026-07-16
+日期：2026-07-17
 
 工程版本：2.0.0（build 1）
 
@@ -48,6 +48,7 @@
 | 旧配置迁移所有权 | 通过 | `V2-023` 已关闭；旧 `UserDefault.xml` 的无效、空根、缺键和迁移路径由 RAII 统一释放，专项压力回归与 Release 静态分析通过 |
 | 纹理图集缓冲边界 | 通过 | `V2-024` 已关闭；0 容量不分配、不向空地址清零，负值、乘法溢出、16 位索引上限和部分分配失败均有运行时保护与 ASan/UBSan 回归 |
 | iOS 主视图输入契约 | 通过 | `V2-025` 已关闭；MRC 组合文本和复制属性在视图销毁时释放并移除通知观察者，`UITextInput` 选区接口保持非空返回，Release 静态分析归零 |
+| Apple 签名就绪预检 | 通过 | `V2-026` 已关闭；以身份/Profile 证书指纹联合校验有效期、团队、Bundle ID、工程团队和真机状态，并提供开发/分发严格失败门禁 |
 | 隐私/支持内部准备 | 通过 | V2 顶栏入口、本地说明、公开页面模板、渲染和分层校验工具完成；真实 URL 仍由 `V2-018` 阻塞 |
 | App Store Connect 内部准备 | 通过 | 提交 manifest、纯文本元数据、审核路径、年龄分级事实盘点和准备/严格双层校验完成；账号侧填写仍由 `V2-019` 阻塞 |
 | Release 自动验收 | 通过 | 阶段 0～4、发行静态、Release arm64 模拟器、无签名 device archive 与 archive 内容检查通过；详见 `ios-release-engineering-iteration-1.md` |
@@ -72,7 +73,7 @@ App Store Connect 隐私问卷。
 以上 P0 未完成时不得上传；P1 未完成时不得把版本标记为可上线。模拟器和无签名
 archive 只能证明工程可构建，不能替代真机、签名或 App Review 结果。
 
-本轮只读签名预检还确认：本机发现的 `Apple Development` 证书已于 2023-10-05 过期，现有 profiles 面向其他 Bundle ID，没有可用于 NewPirate 的当前 Distribution/profile 组合；已配对 iPhone 也已转为 unavailable。详细证据和账号操作顺序见 [`app-store-connect-compliance-iteration-1.md`](app-store-connect-compliance-iteration-1.md)。
+2026-07-17 的指纹关联预检纠正了旧结论：当前 `Apple Development` 私钥身份有效至 2027-04-19，并与覆盖目标 Bundle ID 的未过期开发 Profile 相连。上线仍受工程团队未确认、真机状态波动，以及 NewPirate Distribution identity/App Store Profile 完全缺失阻塞。详细机器证据和账号操作顺序见 [`apple-signing-readiness-iteration-2.md`](apple-signing-readiness-iteration-2.md)。
 
 ## 5. Apple 当前要求基线
 
@@ -114,6 +115,10 @@ CONFIGURATION=Release ./xcode.sh ios-sim
 # Release arm64 通用设备编译（默认不签名）
 CONFIGURATION=Release ./xcode.sh ios-device
 
+# 只读查看本机开发/分发签名关联状态；不修改 Apple 账号
+python3 -B tools/release/apple_signing_readiness.py \
+  --team-id 24U7H6TL68 --json
+
 # Release 无签名 archive
 ./xcode.sh ios-archive
 
@@ -128,6 +133,9 @@ python3 tools/release/validate_public_release_pages.py \
   --require-app-links --check-live-urls
 
 # 最终提交前：账号、签名、上传、问卷、价格和地区全部必须有证据
+python3 -B tools/release/apple_signing_readiness.py \
+  --team-id <已确认团队> --require-development --require-distribution
+
 python3 tools/release/validate_app_store_submission.py --strict
 ```
 

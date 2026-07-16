@@ -58,6 +58,9 @@ EAGLVIEW = ROOT / "src/engine/cocos2d-x/cocos/2d/platform/ios/CCEAGLView.mm"
 EAGLVIEW_TEST = ROOT / "tools/release/test_eaglview_contract.py"
 EAGLVIEW_DOC = ROOT / "docs/release/eaglview-ime-contract-iteration-1.md"
 EAGLVIEW_SCREENSHOT = ROOT / "docs/release/eaglview-lifecycle-player.png"
+APPLE_SIGNING_AUDIT = ROOT / "tools/release/apple_signing_readiness.py"
+APPLE_SIGNING_AUDIT_TEST = ROOT / "tools/release/test_apple_signing_readiness.py"
+APPLE_SIGNING_AUDIT_DOC = ROOT / "docs/release/apple-signing-readiness-iteration-2.md"
 
 
 def require(condition: bool, message: str) -> None:
@@ -550,6 +553,43 @@ def validate_eaglview_contract() -> None:
     require(EAGLVIEW_SCREENSHOT.stat().st_size > 500_000, "CCEAGLView runtime screenshot appears incomplete")
 
 
+def validate_apple_signing_readiness_audit() -> None:
+    for path in (APPLE_SIGNING_AUDIT, APPLE_SIGNING_AUDIT_TEST, APPLE_SIGNING_AUDIT_DOC):
+        require(path.is_file(), f"Apple signing readiness component is missing: {path.relative_to(ROOT)}")
+
+    audit = APPLE_SIGNING_AUDIT.read_text(encoding="utf-8")
+    for marker in (
+        '"security", "find-identity"',
+        '"security", "find-certificate"',
+        '"security", "cms"',
+        '"xcrun", "devicectl"',
+        "DEVELOPMENT_TEAM",
+        "certificate_fingerprints",
+        "--require-development",
+        "--require-distribution",
+    ):
+        require(marker in audit, f"Apple signing readiness audit is missing: {marker}")
+
+    regression = APPLE_SIGNING_AUDIT_TEST.read_text(encoding="utf-8")
+    for marker in (
+        "wildcard profile must match",
+        "expired identity must not pass development",
+        "profile certificate without private key matched",
+        "blocked chain must explain all four gaps",
+    ):
+        require(marker in regression, f"Apple signing readiness regression is missing: {marker}")
+
+    evidence = APPLE_SIGNING_AUDIT_DOC.read_text(encoding="utf-8")
+    for marker in (
+        "V2-026 / P1",
+        "find-identity",
+        "2027-04-19",
+        "24U7H6TL68",
+        "distribution_ready: false",
+    ):
+        require(marker in evidence, f"Apple signing readiness evidence is missing: {marker}")
+
+
 def validate_toolchain_and_repository() -> None:
     output = subprocess.run(
         ["xcodebuild", "-version"],
@@ -581,6 +621,7 @@ def main() -> None:
     validate_userdefault_xml_ownership()
     validate_texture_atlas_allocation()
     validate_eaglview_contract()
+    validate_apple_signing_readiness_audit()
     validate_toolchain_and_repository()
     print("iOS release static validation passed")
 
