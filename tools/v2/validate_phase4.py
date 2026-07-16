@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import csv
+import struct
 from pathlib import Path
 
 
@@ -112,6 +113,7 @@ required_docs = (
     "phase-4-completion-audit.md",
     "phase-4-user-test-protocol.md",
     "phase-4-quality-audit.md",
+    "phase-4-simulator-matrix.md",
     "phase-4-decision.md",
     "phase-4-test-record-template.csv",
     "phase-4-issue-register.csv",
@@ -120,6 +122,29 @@ for filename in required_docs:
     path = ROOT / "docs" / "v2" / filename
     if not path.is_file() or path.stat().st_size < 200:
         raise SystemExit(f"Phase 4 deliverable is missing or incomplete: {filename}")
+
+
+def png_dimensions(path: Path) -> tuple[int, int]:
+    with path.open("rb") as handle:
+        header = handle.read(24)
+    if len(header) != 24 or header[:8] != b"\x89PNG\r\n\x1a\n" or header[12:16] != b"IHDR":
+        raise SystemExit(f"Phase 4 screenshot is not a valid PNG: {path.name}")
+    return struct.unpack(">II", header[16:24])
+
+
+expected_screenshots = {
+    "phase-4-sim-se3-combat.png": (750, 1334),
+    "phase-4-sim-ipad-a16-explore.png": (1640, 2360),
+}
+for filename, expected_size in expected_screenshots.items():
+    path = ROOT / "docs" / "v2" / filename
+    if not path.is_file() or png_dimensions(path) != expected_size:
+        raise SystemExit(f"Phase 4 simulator evidence is missing or has unexpected dimensions: {filename}")
+
+matrix = (ROOT / "docs/v2/phase-4-simulator-matrix.md").read_text(encoding="utf-8")
+for marker in ("iPhone SE（第 3 代）", "iPad（A16）", "rdar:45025538", "pending_external"):
+    if marker not in matrix:
+        raise SystemExit(f"Phase 4 simulator matrix is missing {marker}")
 
 analyzer = ROOT / "tools/v2/analyze_user_tests.py"
 analyzer_test = ROOT / "tools/v2/test_analyze_user_tests.py"

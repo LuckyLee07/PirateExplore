@@ -2,7 +2,7 @@
 
 日期：2026-07-16
 
-范围：第一章 V2 样片、阶段 4 本地测试记录、iOS 模拟器/设备编译
+范围：第一章 V2 样片、阶段 4 本地测试记录、iOS 模拟器多尺寸矩阵/设备编译
 
 结论状态：内部候选基线；真机体验与两轮外测尚未完成
 
@@ -51,6 +51,10 @@
 
 表现和音频全部从 CSV 源表映射；验证器逐项确认背景、前景、头像和声音文件存在，并拒绝路径中包含 `generated` 或 `placeholder` 的临时资源。四个英雄画面已完成全屏模拟器截图检查。
 
+补充的 [`phase-4-simulator-matrix.md`](phase-4-simulator-matrix.md) 覆盖 iPhone SE 3、iPhone 12 Pro 和 iPad A16：短屏战斗的五个操作与平板探索的三个操作均完整可见，候选进程分别持续存活至少 8 分 58 秒和 5 分 59 秒。
+
+iPhone 13 mini / iOS 26.2 出现红色 `rdar:45025538` 条、错误的 360×780 屏幕模型和 360×640 兼容画布。该现象与 Apple 已记录的 Xcode 26.2 mini 模拟器缺陷一致，不计为产品回归；当前可靠小屏基线改用 iPhone SE 3，mini 刘海组合留给更新后的模拟器或真机复核。
+
 iOS 使用 `UILaunchScreen`；应用 target 不再启用弃用的 LaunchImage 名称。旧任务提示受 `legacy.missions` gate 控制，不覆盖 V2。原项目 `tools/art_refresh/` 是用户既有未跟踪目录，不属于本阶段交付或资源审计。
 
 ## 7. 构建与遗留技术债
@@ -63,7 +67,8 @@ iOS 使用 `UILaunchScreen`；应用 target 不再启用弃用的 LaunchImage �
 
 - 阶段 0～4 静态/Lua 回归：通过；18 张源表，17 类行为事件，10 个质量门槛，阶段 0～4 全链通过；
 - arm64 iOS 模拟器构建：通过；构建脚本默认使用主机架构，产物确认为 arm64 并成功安装；
-- iOS 26.2 模拟器运行：通过；`qa_combat` 全屏画面和操作布局复核正常；
+- 模拟器多尺寸运行：通过；iPhone SE 3 / iOS 17.2 的 `qa_combat`、iPhone 12 Pro / iOS 26.2 基线和 iPad A16 / iOS 26.2 的 `qa_explore` 均全屏且操作完整；
+- iPhone 13 mini / Xcode 26.2：测试环境缺陷，显示 `rdar:45025538` 与错误逻辑尺寸，已从产品验收样本中剔除并以 SE 3 替代；
 - 30 FPS / 2x framebuffer 内存：通过；physical footprint 102.7 MB，峰值 103.7 MB；
 - 模拟器 CPU：改善但仍高；同机 88.7%，采样定位为旧 OpenGL/GLEngine 软件渲染，保留真机门槛；
 - AVFoundation cannon cue 生存 smoke：通过；最终候选 PID 37720 在 cue 启动约 26 秒后仍存活；

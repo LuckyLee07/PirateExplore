@@ -282,3 +282,32 @@ The Phase 4 internal candidate baseline is complete. The product decision is
 HOLD—not Go—until a real device pass and two external rounds satisfy all four
 user gates. No participant results were fabricated or inferred from internal
 automation.
+
+## 2026-07-16 — V2 Phase 4 simulator size matrix
+
+Implemented:
+
+- Added a stable three-size simulator matrix covering iPhone SE 3, iPhone 12
+  Pro, and iPad A16 portrait layouts.
+- Captured source-controlled `qa_combat` and `qa_explore` evidence for the
+  short-screen phone and iPad extremes.
+- Isolated the Xcode 26.2 iPhone 12/13 mini `rdar:45025538` wrong-screen-model
+  defect as a test-environment limitation instead of changing product layout.
+- Extended Phase 4 validation to require the matrix document and exact PNG
+  dimensions.
+
+Validation:
+
+- iPhone SE 3 rendered the complete five-action `qa_combat` screen at
+  750×1334 and remained alive for at least 8 minutes 58 seconds.
+- iPad A16 rendered the complete three-action `qa_explore` screen at
+  1640×2360 and remained alive for at least 5 minutes 59 seconds.
+- The existing iPhone 12 Pro full-screen baseline remained the modern-phone
+  reference. Simulator build succeeded after restoring the formal project
+  state.
+
+Result:
+
+Internal simulator layout coverage is complete without claiming real-device or
+external-user evidence. The Phase 4 decision remains HOLD until those deferred
+gates are executed.
