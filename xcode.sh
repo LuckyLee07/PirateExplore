@@ -11,11 +11,14 @@ Usage:
   ./xcode.sh mac
   ./xcode.sh ios-sim
   ./xcode.sh ios-device
+  ./xcode.sh ios-archive
   ./xcode.sh open
 
 Environment:
   CONFIGURATION=Debug|Release
   ARCHS=x86_64|arm64 (iOS Simulator defaults to the host architecture)
+  ARCHIVE_PATH=/path/to/NewPirate.xcarchive
+  CODE_SIGNING_ALLOWED=NO|YES (ios-archive defaults to NO)
 USAGE
 }
 
@@ -61,6 +64,28 @@ case "$ACTION" in
       ARCHS="${ARCHS:-arm64}" \
       ONLY_ACTIVE_ARCH=NO \
       build
+    ;;
+  ios-archive)
+    ARCHIVE_PATH="${ARCHIVE_PATH:-$ROOT_DIR/build/archives/NewPirate.xcarchive}"
+    if [[ -e "$ARCHIVE_PATH" ]]; then
+      echo "Archive already exists: $ARCHIVE_PATH" >&2
+      echo "Remove it or set ARCHIVE_PATH to a new location before retrying." >&2
+      exit 2
+    fi
+    xcodebuild -quiet \
+      -project "$PROJECT_PATH" \
+      -scheme "NewPirate iOS" \
+      -configuration Release \
+      -sdk iphoneos \
+      -destination generic/platform=iOS \
+      -archivePath "$ARCHIVE_PATH" \
+      -derivedDataPath "$ROOT_DIR/build/DerivedData/ios-device" \
+      USE_HEADERMAP=NO \
+      CODE_SIGNING_ALLOWED="${CODE_SIGNING_ALLOWED:-NO}" \
+      IPHONEOS_DEPLOYMENT_TARGET=12.0 \
+      ARCHS="${ARCHS:-arm64}" \
+      ONLY_ACTIVE_ARCH=NO \
+      archive
     ;;
   open)
     open "$PROJECT_PATH"

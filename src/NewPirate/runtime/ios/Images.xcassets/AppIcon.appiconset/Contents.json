@@ -69,11 +69,13 @@
     {
       "idiom" : "ipad",
       "size" : "20x20",
+      "filename" : "Icon-20.png",
       "scale" : "1x"
     },
     {
       "idiom" : "ipad",
       "size" : "20x20",
+      "filename" : "Icon-40.png",
       "scale" : "2x"
     },
     {

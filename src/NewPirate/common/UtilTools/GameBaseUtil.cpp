@@ -17,10 +17,7 @@ std::string getonlyID()
     std::string strMac="";
     //利用预编译区分不同平台
 #if CC_TARGET_PLATFORM == CC_PLATFORM_IOS //ios平台下
-    
-    //调用OpenUrl类中的方法,完成ios访问url
-    strMac = OpenUrl::sharedOpenUrl()->getIDFA();
-    
+    // V2 发行版不采集广告标识符或持久设备标识符。
 #elif CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID  //Android平台下,别忘导入Android平台下所用的头文件。
     
     JniMethodInfo methodInfo; //用于获取函数体
@@ -49,9 +46,7 @@ void openUrlFunc(const char* url)
 //    openUrlBase();
     //利用预编译区分不同平台
 #if CC_TARGET_PLATFORM == CC_PLATFORM_IOS //ios平台下
-    if (url == NULL) {
-        CppOCBridge::showCcRateScene();
-    } else {
+    if (url != NULL) {
         //调用OpenUrl类中的方法,完成ios访问url
         OpenUrl::sharedOpenUrl()->openUrl(url);
     }
@@ -118,8 +113,8 @@ const char* getFileMD5(const char* fileName)
 void purchase(const char* parm)
 {
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
-    int type = atoi(parm);
-    CppOCBridge::purchaseCall(type);
+    (void)parm;
+    CCLOG("V2 iOS release: purchase is disabled");
 #elif (CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID)
 
     CCLOG("发起计费请求");
@@ -145,12 +140,7 @@ std::string getEnableInterface()
 {
 	std::string returnStr = "{\"UserCenter\":\"Disabled\"}";
 	CCLOG("获得SDK返回的开启与关闭的参数");
-#if (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
-    bool result = CppOCBridge::enableToSDK();
-    if (result) { // 已开启
-        returnStr = "{\"UserCenter\":\"Enabled\"}";
-    }
-#elif (CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID)
+	#if (CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID)
 	JniMethodInfo methodInfo; //用于获取函数体
 	bool isHave = JniHelper::getStaticMethodInfo(methodInfo,"org/cocos2dx/cpp/gamesdk", "getEnableInterface", "()Ljava/lang/String;");
 	
@@ -170,8 +160,8 @@ std::string getEnableInterface()
 void showMoreGameCallback()
 {
 	CCLOG("点开更多游戏之后的回调");
-#if (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
-    CppOCBridge::showCcMoreScene();
+	#if (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
+    CCLOG("V2 iOS release: more games is disabled");
 #elif (CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID)
 	JniMethodInfo methodInfo; //用于获取函数体
 	bool isHave = JniHelper::getStaticMethodInfo(methodInfo,"org/cocos2dx/cpp/gamesdk", "showMoreGameCallback", "()V");
@@ -188,8 +178,7 @@ void showMoreGameCallback()
 void showRateOrAdScene()
 {
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
-    // 显示评论
-    CppOCBridge::showCcRateScene();
+    CCLOG("V2 iOS release: legacy rating scene is disabled");
 #endif
 }
 
@@ -201,12 +190,8 @@ void rateIniTunes()
 // 兑换码功能
 bool decodeExKey(const char* codeKey)
 {
-#if (CC_TARGET_PLATFORM == CC_PLATFORM_IOS)
-    bool result = CppOCBridge::decodeCdkey(codeKey);
-    return result;
-#else
+    (void)codeKey;
     return false;
-#endif
 }
 
 bool playV2Sound(const char* relativePath, float volume, int loop)

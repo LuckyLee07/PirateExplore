@@ -321,7 +321,7 @@ function Update:init()
     self.ship:runAction(cc.Sequence:create(cc.FadeOut:create(0.0),cc.EaseExponentialOut:create(cc.FadeIn:create(1.0))))
 
     -- 添加提示文字内容
-    local updateTip = cc.LabelTTF:create("联网游戏可以获取离线资源，占用流量极少", "Arial-BoldMT", 26.0)
+    local updateTip = cc.LabelTTF:create("正在准备本地航海资源，请稍候", "Arial-BoldMT", 26.0)
     updateTip:setPosition(cc.p(bg:getPositionX(),waves:getPositionY() + waves:getContentSize().height / 2 + self.ship:getContentSize().height + updateTip:getContentSize().height))
     self:addChild(updateTip)
 
@@ -331,6 +331,7 @@ function Update:init()
     local rate = 0
     local finishSize  = 0
     local totalSize = 100
+    local didFinish = false
     
     function update()
         rate = rate + 5
@@ -342,9 +343,9 @@ function Update:init()
         local newRect = cc.rect(0, 0, 0.01*rate*self.progressBarWidth, self.progressBar:getContentSize().height)
         self.progressBar:setTextureRect(newRect)
 
-        if finishSize >= totalSize then
-            self:stopAllActions()
-            self:runAction(cc.Sequence:create(cc.DelayTime:create(0.05), cc.CallFunc:create(jumpToController)))
+        if finishSize >= totalSize and not didFinish then
+            didFinish = true
+            jumpToController()
         end
     end
     schedule(self, update, 0.0)

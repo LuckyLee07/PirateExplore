@@ -137,6 +137,10 @@ static size_t getVersionCode(void *ptr, size_t size, size_t nmemb, void *userdat
 
 bool AssetsManager::checkUpdate()
 {
+#if CC_TARGET_PLATFORM == CC_PLATFORM_IOS
+    CCLOG("V2 iOS release: legacy remote AssetsManager is disabled");
+    return false;
+#else
     if (_versionFileUrl.size() == 0) return false;
     
     _curl = curl_easy_init();
@@ -187,6 +191,7 @@ bool AssetsManager::checkUpdate()
     CCLOG("there is a new version: %s", _version.c_str());
     
     return true;
+#endif
 }
 
 void AssetsManager::downloadAndUncompress()
@@ -500,6 +505,10 @@ int assetsManagerProgressFunc(void *ptr, double totalToDownload, double nowDownl
 
 bool AssetsManager::downLoad()
 {
+#if CC_TARGET_PLATFORM == CC_PLATFORM_IOS
+    CCLOG("V2 iOS release: legacy remote AssetsManager download is disabled");
+    return false;
+#else
     // Create a file to save package.
     const string outFileName = _storagePath + TEMP_PACKAGE_FILE_NAME;
     FILE *fp = fopen(outFileName.c_str(), "wb");
@@ -542,6 +551,7 @@ bool AssetsManager::downLoad()
     
     fclose(fp);
     return true;
+#endif
 }
 
 const char* AssetsManager::getPackageUrl() const

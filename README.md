@@ -26,10 +26,13 @@ The old Cocos simulator launcher previously stored at the repository root under 
 ./xcode.sh mac
 ./xcode.sh ios-sim
 ./xcode.sh ios-device
+./xcode.sh ios-archive
 ./xcode.sh open
 ```
 
-`ios-device` performs a compile-only device build with code signing disabled.
+`ios-device` performs a compile-only device build with code signing disabled. `ios-archive`
+creates a deterministic unsigned Release archive at `build/archives/NewPirate.xcarchive`;
+set `CODE_SIGNING_ALLOWED=YES` only after selecting the App Store Connect team and signing assets.
 
 ## Product Documentation
 
@@ -55,3 +58,7 @@ The old Cocos simulator launcher previously stored at the repository root under 
   [`docs/v2/phase-4-quality-audit.md`](docs/v2/phase-4-quality-audit.md),
   [`docs/v2/phase-4-decision.md`](docs/v2/phase-4-decision.md),
   [`docs/v2/phase-4-completion-audit.md`](docs/v2/phase-4-completion-audit.md)
+- iOS release engineering baseline and App Store metadata draft:
+  [`docs/release/ios-release-readiness.md`](docs/release/ios-release-readiness.md),
+  [`docs/release/app-store-metadata-zh-CN.md`](docs/release/app-store-metadata-zh-CN.md),
+  [`docs/release/ios-release-engineering-iteration-1.md`](docs/release/ios-release-engineering-iteration-1.md)

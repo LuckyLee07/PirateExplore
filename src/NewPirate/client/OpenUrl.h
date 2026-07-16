@@ -18,6 +18,5 @@ class OpenUrl
 public:
     static OpenUrl* sharedOpenUrl();
     void openUrl(const char* url);
-    char* getIDFA();
 };
 #endif /* defined(__OpenUrl__OpenUrl__) */

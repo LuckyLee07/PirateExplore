@@ -1,6 +1,17 @@
 /build/*
 /projects/*
+!/projects/ios_mac/
+!/projects/ios_mac/NewPirate.xcodeproj/
+!/projects/ios_mac/NewPirate.xcodeproj/project.pbxproj
+!/projects/ios_mac/NewPirate.xcodeproj/xcshareddata/
+!/projects/ios_mac/NewPirate.xcodeproj/xcshareddata/xcschemes/
+!/projects/ios_mac/NewPirate.xcodeproj/xcshareddata/xcschemes/*.xcscheme
+/projects/ios_mac/NewPirate.xcodeproj/project.xcworkspace/
+/projects/ios_mac/NewPirate.xcodeproj/xcuserdata/
 
 /src/engine/cocos2d-x/build/*
+!/src/engine/cocos2d-x/build/cocos2d_libs.xcodeproj/
+!/src/engine/cocos2d-x/build/cocos2d_libs.xcodeproj/project.pbxproj
+/src/engine/cocos2d-x/build/cocos2d_libs.xcodeproj/xcuserdata/
 /src/engine/cocos2d-x/plugin/*
 /src/engine/cocos2d-x/tools/*

@@ -27,6 +27,7 @@ V2Config = {
         ["legacy.rating_ads"] = false,
         ["legacy.paid_map_unlock"] = false,
         ["legacy.missions"] = false,
+        ["legacy.network_time"] = false,
     },
 }
 

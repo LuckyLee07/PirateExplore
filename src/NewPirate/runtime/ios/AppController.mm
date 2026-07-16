@@ -27,8 +27,6 @@
 #import "cocos2d.h"
 #import "AppDelegate.h"
 #import "RootViewController.h"
-#import "AdmobManager.h"
-#import "ToolConfig.h"
 
 @implementation AppController
 
@@ -81,9 +79,6 @@ static AppDelegate s_sharedApplication;
     cocos2d::GLView *glview = cocos2d::GLView::createWithEAGLView(eaglView);
     cocos2d::Director::getInstance()->setOpenGLView(glview);
 
-    // 初始化游戏数值
-    [[AdmobManager sharedInstance] preInit];
-    
     cocos2d::Application::getInstance()->run();
     
     return YES;
@@ -105,13 +100,7 @@ static AppDelegate s_sharedApplication;
      //We don't need to call this method any more. It will interupt user defined game pause&resume logic
     /* cocos2d::Director::getInstance()->resume(); */
     
-    if ([[AdmobManager sharedInstance] hasRated]) { // 关闭评论及广告
-        NSUserDefaults *userDefault = [NSUserDefaults standardUserDefaults];
-        [userDefault setObject:[NSNumber numberWithInt:1] forKey:kSceneCount];
-        [userDefault synchronize];
-        
-        [[AdmobManager sharedInstance] doAddJewels:kJewelCount];
-    }
+    // V2 release does not run the legacy rating/ad reward lifecycle.
 }
 
 - (void)applicationDidEnterBackground:(UIApplication *)application {

@@ -181,19 +181,23 @@ bool LuaStack::init(void)
     LuaJavaBridge::luaopen_luaj(_state);
 #endif
 
-#if (CC_TARGET_PLATFORM == CC_PLATFORM_IOS || CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID || CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID || CC_TARGET_PLATFORM == CC_PLATFORM_WIN32)
     tolua_web_socket_open(_state);
     register_web_socket_manual(_state);
 #endif
-    
+
+#if (CC_TARGET_PLATFORM != CC_PLATFORM_IOS)
     register_xml_http_request(_state);
+#endif
     
     tolua_script_handler_mgr_open(_state);
 
     // add cocos2dx loader
     addLuaLoader(cocos2dx_lua_loader);
 
+#if (CC_TARGET_PLATFORM != CC_PLATFORM_IOS)
     luaopen_socket_core(_state);
+#endif
     
     return true;
 }

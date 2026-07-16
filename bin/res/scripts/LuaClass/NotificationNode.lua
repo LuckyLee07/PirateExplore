@@ -287,9 +287,12 @@ function NotificationNode:init()
     NotificationNode.lastUpdateTime = os.time()
     -- print("nowtime = ", self.lastUpdateTime)
     NotificationNode.schduler = cc.Director:getInstance():getScheduler():scheduleScriptFunc(update, 1.0, false)
-    -- 优先调用一下更新系统时间
-    updateLasttime()
-    cc.Director:getInstance():getScheduler():scheduleScriptFunc(updateLasttime, 180, false)
+    -- V2 iOS ships as a self-contained offline chapter. Keep the retired
+    -- server-clock path available only to explicitly enabled legacy builds.
+    if V2Config:isFeatureEnabled("legacy.network_time") then
+        updateLasttime()
+        cc.Director:getInstance():getScheduler():scheduleScriptFunc(updateLasttime, 180, false)
+    end
 
     -- requestLastTime()
     return true
@@ -490,7 +493,9 @@ function NotificationNode:registeventDispatcher()
     cc.Director:getInstance():getNotificationNode():getEventDispatcher():addEventListenerWithFixedPriority(listener1, 6)
 
     local listener2 = cc.EventListenerCustom:create("backtobefor",function()
-        requestLastTime()
+        if V2Config:isFeatureEnabled("legacy.network_time") then
+            requestLastTime()
+        end
         -- 再次发送通知，告知其他界面系统返回了
         DataManager:getInstance():postEvent("kSystemBackToForward", nil)
     end)
@@ -510,5 +515,4 @@ function NotificationNode:visit()
     -- 这里不会被调用，暂时没影响
     CCNode:visit()
 end
-
 
