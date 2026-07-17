@@ -53,6 +53,7 @@
 | iOS 签名产物完整性 | 通过 | `V2-028` 已关闭；联合验证 strict codesign、Info/signature/entitlements/Profile、leaf 证书指纹、有效期、arm64 与开发/分发模式；当前只证明 Development App |
 | App Store 最终聚合门禁 | 通过 | `V2-029` 已关闭；30 个外部字段零 pending 后强制运行 strict manifest、公网页面、archive 内容和 Distribution App；空/skipped/failed 均 HOLD |
 | 真机体验证据门禁 | 通过 | `V2-031` 已关闭内部工具缺口；三类设备必须同候选完成 14 项检查和最低时长，最终只接受同一个 TestFlight build；当前零记录，体验门槛仍未通过 |
+| 总体产品上线聚合门禁 | 通过 | `V2-032` 已关闭内部工具缺口；联合完整发行、外测、TestFlight 真机、App Store 和候选一致性；当前 47 项 pending，总体仍 HOLD |
 | 隐私/支持内部准备 | 通过 | V2 顶栏入口、本地说明、公开页面模板、渲染和分层校验工具完成；真实 URL 仍由 `V2-018` 阻塞 |
 | App Store Connect 内部准备 | 通过 | 提交 manifest、纯文本元数据、审核路径、年龄分级事实盘点和准备/严格双层校验完成；账号侧填写仍由 `V2-019` 阻塞 |
 | Release 自动验收 | 通过 | 阶段 0～4、发行静态、Release arm64 模拟器、无签名 device archive 与 archive 内容检查通过；详见 `ios-release-engineering-iteration-1.md` |
@@ -145,12 +146,15 @@ python3 -B tools/release/validate_ios_signed_app.py /path/to/exported/App.app \
 
 python3 tools/release/validate_app_store_submission.py --strict
 
-# 唯一最终 GO 入口；上面任一门禁不能用人工口头结论替代
+# App Store 提交 GO 入口；不代表产品总体可上线
 python3 -B tools/release/final_app_store_gate.py --json
 
 # 真机开发排障；最终上线必须追加 --require-testflight
 python3 -B tools/release/validate_device_acceptance.py \
   /path/to/device-acceptance-records.csv --require-testflight --json
+
+# 唯一产品总体 GO 入口；聚合完整发行、外测、真机、App Store 和同候选证据
+python3 -B tools/release/final_product_launch_gate.py --json
 ```
 
 账号准备完成后，另用 `CODE_SIGNING_ALLOWED=YES` 和已选定的团队生成分发 archive。

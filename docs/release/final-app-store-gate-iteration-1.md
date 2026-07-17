@@ -2,7 +2,7 @@
 
 日期：2026-07-17
 
-本轮结论：**`V2-029 / P1` 已在仓库内关闭。项目现在只有一个最终 App Store GO 入口，它会先要求 30 个外部 manifest 门槛全部有真实值，再连续执行元数据严格校验、隐私/支持公网内容、archive 内容与 Distribution 签名产物校验；任何 pending、skipped 或 failed 都保持 HOLD。当前实测 `pending_gate_count: 30`、`ready_for_submission: false`、退出码 2，没有联网、没有读取不存在的分发包，也没有伪填外部证据。**
+本轮结论：**`V2-029 / P1` 已在仓库内关闭。项目现在只有一个最终 App Store 提交 GO 入口，它会先要求 30 个外部 manifest 门槛全部有真实值，再连续执行元数据严格校验、隐私/支持公网内容、archive 内容与 Distribution 签名产物校验；任何 pending、skipped 或 failed 都保持 HOLD。当前实测 `pending_gate_count: 30`、`ready_for_submission: false`、退出码 2，没有联网、没有读取不存在的分发包，也没有伪填外部证据。该入口不替代 V2-032 的产品总体上线门禁。**
 
 ## 1. 原有流程的漏项风险
 

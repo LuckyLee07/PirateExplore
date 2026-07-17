@@ -31,7 +31,7 @@
 - physical footprint 102.7 MB、峰值 103.7 MB，低于 256 MB 内部门槛；
 - 最终候选触发原生 cannon cue 后约 26 秒仍存活；
 - iPhone SE 3、iPhone 12 Pro 与 iPad A16 三档稳定模拟器比例全屏、操作完整；Xcode 26.2 的 iPhone 13 mini 错误尺寸缺陷已隔离；
-- 31 个已登记问题覆盖 P0/P1/P2；内部可完成的 P0/P1 已修复，外测、真机、账号、公开隐私/支持页面与 App Store Connect 后台证据缺口保持开启；
+- 32 个已登记问题覆盖 P0/P1/P2；内部可完成的 P0/P1 已修复，外测、真机、账号、公开隐私/支持页面与 App Store Connect 后台证据缺口保持开启；
 - 第二张地图 7.5 人周、前三海域 22 人周的限额预算，以及首章试玩后一次解锁的商业建议；
 - 外测模板保持空白，没有用内部自动化生成参与者结果。
 
@@ -73,6 +73,8 @@ python3 tools/v2/analyze_user_tests.py /path/to/phase-4-test-records.csv \
 3. 将 [`phase-4-decision.md`](phase-4-decision.md) 从 provisional HOLD 更新为最终 Go/No-Go；
 4. 再跑阶段 0～4、simulator、device 和关键运行 smoke；
 5. 提交外测修复与最终决策，确认工作区没有遗漏的本阶段文件。
+
+上述证据全部补齐后，以 [`../release/final-product-launch-gate-iteration-1.md`](../release/final-product-launch-gate-iteration-1.md) 定义的唯一总体命令复判；App Store 提交门禁、外测或真机任一单项通过都不能独立把总体结论改为 GO。
 
 ## 当前结论
 

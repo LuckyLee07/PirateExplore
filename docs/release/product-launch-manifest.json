@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "candidate": {
+    "candidate_id": "2.0.0-1",
+    "release_commit": null
+  },
+  "evidence": {
+    "external_test_records": null,
+    "device_acceptance_records": null
+  },
+  "decision": {
+    "phase4_status": "HOLD",
+    "product_scope_approved": false,
+    "second_map_budget_approved": false,
+    "approved_by": null,
+    "approved_date": null
+  }
+}

@@ -73,6 +73,10 @@ DEVICE_ACCEPTANCE_VALIDATOR = ROOT / "tools/release/validate_device_acceptance.p
 DEVICE_ACCEPTANCE_TEST = ROOT / "tools/release/test_validate_device_acceptance.py"
 DEVICE_ACCEPTANCE_TEMPLATE = ROOT / "docs/release/device-acceptance-template.csv"
 DEVICE_ACCEPTANCE_DOC = ROOT / "docs/release/device-acceptance-evidence-iteration-1.md"
+FINAL_PRODUCT_LAUNCH_GATE = ROOT / "tools/release/final_product_launch_gate.py"
+FINAL_PRODUCT_LAUNCH_GATE_TEST = ROOT / "tools/release/test_final_product_launch_gate.py"
+PRODUCT_LAUNCH_MANIFEST = ROOT / "docs/release/product-launch-manifest.json"
+FINAL_PRODUCT_LAUNCH_DOC = ROOT / "docs/release/final-product-launch-gate-iteration-1.md"
 
 
 def require(condition: bool, message: str) -> None:
@@ -761,6 +765,59 @@ def validate_device_acceptance_gate() -> None:
         require(marker in evidence, f"device acceptance evidence is missing: {marker}")
 
 
+def validate_final_product_launch_gate() -> None:
+    for path in (
+        FINAL_PRODUCT_LAUNCH_GATE,
+        FINAL_PRODUCT_LAUNCH_GATE_TEST,
+        PRODUCT_LAUNCH_MANIFEST,
+        FINAL_PRODUCT_LAUNCH_DOC,
+    ):
+        require(path.is_file(), f"final product launch component is missing: {path.relative_to(ROOT)}")
+
+    gate = FINAL_PRODUCT_LAUNCH_GATE.read_text(encoding="utf-8")
+    for marker in (
+        "pending_release_gates",
+        "internal_release_regression",
+        "external_user_evidence",
+        "device_acceptance_testflight",
+        "app_store_submission",
+        "candidate_consistency",
+        "release_commit does not include the frozen external R2 build",
+        "product_launch_ready",
+    ):
+        require(marker in gate, f"final product launch gate is missing: {marker}")
+
+    regression = FINAL_PRODUCT_LAUNCH_GATE_TEST.read_text(encoding="utf-8")
+    for marker in (
+        "47 grouped blockers",
+        "an empty overall check list passed",
+        "a missing overall check still produced GO",
+        "one failed overall check still produced GO",
+        "one skipped overall check still produced GO",
+    ):
+        require(marker in regression, f"final product launch regression is missing: {marker}")
+
+    manifest = json.loads(PRODUCT_LAUNCH_MANIFEST.read_text(encoding="utf-8"))
+    require(manifest.get("schema_version") == 1, "product launch manifest schema drifted")
+    require(manifest.get("candidate", {}).get("release_commit") is None, "release commit was filled without final evidence")
+    require(
+        manifest.get("evidence", {}).get("external_test_records") is None
+        and manifest.get("evidence", {}).get("device_acceptance_records") is None,
+        "product launch evidence paths were filled without real records",
+    )
+    require(manifest.get("decision", {}).get("phase4_status") == "HOLD", "product launch decision is not HOLD")
+
+    evidence = FINAL_PRODUCT_LAUNCH_DOC.read_text(encoding="utf-8")
+    for marker in (
+        "V2-032 / P1",
+        "pending_gate_count: 47",
+        "product_launch_ready: false",
+        "issue_register: 4",
+        "退出码 2",
+    ):
+        require(marker in evidence, f"final product launch evidence is missing: {marker}")
+
+
 def validate_toolchain_and_repository() -> None:
     output = subprocess.run(
         ["xcodebuild", "-version"],
@@ -796,6 +853,7 @@ def main() -> None:
     validate_signed_app_validator()
     validate_final_app_store_gate()
     validate_device_acceptance_gate()
+    validate_final_product_launch_gate()
     validate_toolchain_and_repository()
     print("iOS release static validation passed")
 
