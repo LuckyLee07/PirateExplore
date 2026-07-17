@@ -55,6 +55,7 @@
 | 真机体验证据门禁 | 通过 | `V2-031` 已关闭内部工具缺口；三类设备必须同候选完成 14 项检查和最低时长，最终只接受同一个 TestFlight build；当前零记录，体验门槛仍未通过 |
 | 总体产品上线聚合门禁 | 通过 | `V2-032` 已关闭内部工具缺口；联合完整发行、外测、TestFlight 真机、App Store 和候选一致性；当前 47 项 pending，总体仍 HOLD |
 | archive 产物溯源 | 通过 | `V2-037` 已关闭；App 内嵌候选 ID、源码提交与 dirty 状态，clean 候选同时校验 HEAD、App/dSYM UUID 与二进制 SHA-256 |
+| 内部冻结候选 | 通过 | `V2-038` 已关闭；`2.0.0-1-internal` 固定到干净 `e6dc27f`，App/dSYM UUID 与 SHA-256 记录可反向复验；不等于最终 release commit |
 | 隐私/支持内部准备 | 通过 | V2 顶栏入口、本地说明、公开页面模板、渲染和分层校验工具完成；真实 URL 仍由 `V2-018` 阻塞 |
 | App Store Connect 内部准备 | 通过 | 提交 manifest、纯文本元数据、审核路径、年龄分级事实盘点和准备/严格双层校验完成；账号侧填写仍由 `V2-019` 阻塞 |
 | Release 自动验收 | 通过 | 阶段 0～4、发行静态、Release arm64 模拟器、无签名 device archive 与 archive 内容检查通过；详见 `ios-release-engineering-iteration-1.md` |

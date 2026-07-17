@@ -428,7 +428,7 @@ gates are executed.
 结论：
 
 - 六轮内部精修及 10 张 iPhone SE 小屏证据全部通过；
-- 37 个问题中没有尚可由内部继续修复的开放 P0/P1；
+- 38 个问题中没有尚可由内部继续修复的开放 P0/P1；
 - 阶段 0–4、发行级回归、Release 模拟器、device compile 和最终 archive
   已形成可重复证据链；
 - 第一章内部样片状态改为 `FROZEN`，停止无外部证据驱动的功能扩张；
@@ -459,3 +459,19 @@ gates are executed.
 
 本轮没有改变冻结样片内容。下一轮从干净提交生成 `2.0.0-1-internal`
 候选并登记二进制指纹；外测、真机和 App Store 状态继续 HOLD。
+
+## 2026-07-17 — 冻结后发行工程第 2 轮：内部候选固化
+
+实现与验收：
+
+- 从干净提交 `e6dc27f` 生成 `2.0.0-1-internal` 无签名 archive；
+- 内嵌 source commit 精确匹配且不带 `-dirty`；
+- 记录 App/dSYM 的 SHA-256、大小与共同 Mach-O UUID，以及 Info.plist 哈希；
+- 新增候选记录 schema 与 `--verify-record` 反向复验，篡改哈希、UUID、字段
+  或身份均失败；
+- `V2-038 / P1` 登记并关闭，阶段 0–4 与发行级回归通过。
+
+结论：
+
+内部候选身份与字节基线已经固化；`product-launch-manifest` 仍保持 HOLD/null，
+不把内部无签名候选冒充最终 TestFlight 或 App Store release commit。

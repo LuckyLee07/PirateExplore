@@ -46,10 +46,10 @@ for name in screenshot_names:
 
 with (DOCS / "phase-4-issue-register.csv").open(encoding="utf-8", newline="") as handle:
     issues = {row["issue_id"]: row for row in csv.DictReader(handle)}
-if len(issues) != 37:
-    raise SystemExit(f"freeze audit expects 37 classified issues, got {len(issues)}")
+if len(issues) != 38:
+    raise SystemExit(f"freeze audit expects 38 classified issues, got {len(issues)}")
 
-for issue_id in ("V2-010", "V2-033", "V2-034", "V2-035", "V2-036", "V2-037"):
+for issue_id in ("V2-010", "V2-033", "V2-034", "V2-035", "V2-036", "V2-037", "V2-038"):
     issue = issues.get(issue_id)
     if issue is None or issue["status"] != "fixed" or issue["release_effect"] != "closed":
         raise SystemExit(f"internal sample blocker is not closed: {issue_id}")
@@ -106,7 +106,7 @@ for marker in (
     "内部样片：FROZEN",
     "产品立项：HOLD",
     "不得扩建第二海域",
-    "37 个问题",
+    "38 个问题",
     "10 张",
     "外部目标用户",
     "真实设备",

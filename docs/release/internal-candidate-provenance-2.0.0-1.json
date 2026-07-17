@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "candidate_id": "2.0.0-1-internal",
+  "source_commit": "e6dc27f2d03681d45582c88ad8dd70628f55a650",
+  "bundle_id": "com.fancyGame.NewPirate",
+  "marketing_version": "2.0.0",
+  "build_number": "1",
+  "archive_path": "build/archives/NewPirate-internal-candidate-2.0.0-1.xcarchive",
+  "captured_at_utc": "2026-07-17T15:15:48+00:00",
+  "executable": {
+    "sha256": "1ccf65120976af304204bc0889081ea2259cba364178cc44bb3ba2c6ffc95beb",
+    "bytes": 3793192,
+    "macho_uuids": [
+      "609B891E-7C3C-3FA8-97E6-2A697E6BB57E"
+    ]
+  },
+  "dsym": {
+    "sha256": "6b3bafae2b37d307b9e347c3402330a08dd3734907fa43b8d3be1f2951c8048f",
+    "bytes": 5382486,
+    "macho_uuids": [
+      "609B891E-7C3C-3FA8-97E6-2A697E6BB57E"
+    ]
+  },
+  "info_plist_sha256": "b89473342911fa121bae186810b5e5a5569104d395843303b21bb55f44f67e75"
+}

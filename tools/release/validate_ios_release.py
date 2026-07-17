@@ -9,7 +9,12 @@ import plistlib
 import re
 import struct
 import subprocess
+import sys
 from pathlib import Path
+
+sys.dont_write_bytecode = True
+
+from archive_provenance import ProvenanceError, validate_record_shape
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -82,6 +87,8 @@ ARCHIVE_PROVENANCE = ROOT / "tools/release/archive_provenance.py"
 ARCHIVE_PROVENANCE_TEST = ROOT / "tools/release/test_archive_provenance.py"
 ARCHIVE_VALIDATOR = ROOT / "tools/release/validate_ios_archive.py"
 ARCHIVE_PROVENANCE_DOC = ROOT / "docs/release/archive-provenance-iteration-1.md"
+INTERNAL_CANDIDATE_RECORD = ROOT / "docs/release/internal-candidate-provenance-2.0.0-1.json"
+INTERNAL_CANDIDATE_DOC = ROOT / "docs/release/internal-candidate-freeze-iteration-1.md"
 
 
 def require(condition: bool, message: str) -> None:
@@ -832,6 +839,8 @@ def validate_archive_provenance() -> None:
         ARCHIVE_PROVENANCE_TEST,
         ARCHIVE_VALIDATOR,
         ARCHIVE_PROVENANCE_DOC,
+        INTERNAL_CANDIDATE_RECORD,
+        INTERNAL_CANDIDATE_DOC,
     ):
         require(path.is_file(), f"archive provenance component is missing: {path.relative_to(ROOT)}")
 
@@ -887,6 +896,36 @@ def validate_archive_provenance() -> None:
         "30 项外部字段",
     ):
         require(marker in evidence, f"archive provenance evidence is missing: {marker}")
+
+    try:
+        record = validate_record_shape(
+            json.loads(INTERNAL_CANDIDATE_RECORD.read_text(encoding="utf-8"))
+        )
+    except (OSError, UnicodeError, json.JSONDecodeError, ProvenanceError) as error:
+        raise AssertionError(f"internal candidate record is invalid: {error}") from error
+    require(record["candidate_id"] == "2.0.0-1-internal", "internal candidate ID drifted")
+    require(
+        record["source_commit"] == "e6dc27f2d03681d45582c88ad8dd70628f55a650",
+        "internal candidate source commit drifted",
+    )
+    ancestry = subprocess.run(
+        ["git", "merge-base", "--is-ancestor", record["source_commit"], "HEAD"],
+        cwd=ROOT,
+        check=False,
+    )
+    require(ancestry.returncode == 0, "internal candidate source commit is not in current history")
+
+    candidate_evidence = INTERNAL_CANDIDATE_DOC.read_text(encoding="utf-8")
+    for marker in (
+        "V2-038 / P1",
+        "2.0.0-1-internal",
+        "e6dc27f2d03681d45582c88ad8dd70628f55a650",
+        "1ccf65120976af304204bc0889081ea2259cba364178cc44bb3ba2c6ffc95beb",
+        "609B891E-7C3C-3FA8-97E6-2A697E6BB57E",
+        "--verify-record",
+        "release_commit` 继续保持 `null",
+    ):
+        require(marker in candidate_evidence, f"internal candidate evidence is missing: {marker}")
 
 
 def validate_toolchain_and_repository() -> None:
