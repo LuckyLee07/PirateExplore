@@ -849,11 +849,13 @@ P2：
 
 内部样片精修第 6 轮（2026-07-17）：收口失败后的恢复决策，在玩家选择前明确原地重试与返港恢复的成本、保留项、清除项和返回阶段，并用状态机回归锁定已确认战利品不会被隐藏回滚。详见 [`v2/internal-sample-polish-6.md`](v2/internal-sample-polish-6.md)。
 
-内部样片冻结审计（2026-07-17）：六轮精修、10 张小屏运行证据、38 个问题分类、阶段 0–4/发行级回归和最终 archive 已形成闭环，第一章内部样片状态改为 **FROZEN**。这只冻结内部功能范围，不改变阶段 4 的 **HOLD**：真实设备与两轮外部目标用户证据补齐前，不扩建第二海域。详见 [`v2/internal-sample-freeze-audit.md`](v2/internal-sample-freeze-audit.md)。
+内部样片冻结审计（2026-07-17）：六轮精修、10 张小屏运行证据、39 个问题分类、阶段 0–4/发行级回归和最终 archive 已形成闭环，第一章内部样片状态改为 **FROZEN**。这只冻结内部功能范围，不改变阶段 4 的 **HOLD**：真实设备与两轮外部目标用户证据补齐前，不扩建第二海域。详见 [`v2/internal-sample-freeze-audit.md`](v2/internal-sample-freeze-audit.md)。
 
 冻结后发行工程第 1 轮（2026-07-17）：archive 内嵌候选 ID、源码 Git 提交与 dirty 状态，校验器拒绝未知提交、候选不一致和脏构建冒充冻结候选，并可记录可执行文件/dSYM 指纹。详见 [`release/archive-provenance-iteration-1.md`](release/archive-provenance-iteration-1.md)。
 
 冻结后发行工程第 2 轮（2026-07-17）：从干净 `e6dc27f` 生成 `2.0.0-1-internal` 无签名候选，固化 App/dSYM UUID、SHA-256 与 archive 身份，并提供记录反向复验。详见 [`release/internal-candidate-freeze-iteration-1.md`](release/internal-candidate-freeze-iteration-1.md)。
+
+冻结后发行工程第 3 轮（2026-07-17）：把候选记录升级为全 archive 规范树摘要，覆盖 Lua、图片、音频等 769 个条目的内容、路径、权限和符号链接，关闭局部资源替换绕过。详见 [`release/archive-tree-integrity-iteration-1.md`](release/archive-tree-integrity-iteration-1.md)。
 
 目标：判断是否值得进入前三海域和正式发行开发。
 

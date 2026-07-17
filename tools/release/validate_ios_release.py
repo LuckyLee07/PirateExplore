@@ -89,6 +89,7 @@ ARCHIVE_VALIDATOR = ROOT / "tools/release/validate_ios_archive.py"
 ARCHIVE_PROVENANCE_DOC = ROOT / "docs/release/archive-provenance-iteration-1.md"
 INTERNAL_CANDIDATE_RECORD = ROOT / "docs/release/internal-candidate-provenance-2.0.0-1.json"
 INTERNAL_CANDIDATE_DOC = ROOT / "docs/release/internal-candidate-freeze-iteration-1.md"
+ARCHIVE_TREE_DOC = ROOT / "docs/release/archive-tree-integrity-iteration-1.md"
 
 
 def require(condition: bool, message: str) -> None:
@@ -841,6 +842,7 @@ def validate_archive_provenance() -> None:
         ARCHIVE_PROVENANCE_DOC,
         INTERNAL_CANDIDATE_RECORD,
         INTERNAL_CANDIDATE_DOC,
+        ARCHIVE_TREE_DOC,
     ):
         require(path.is_file(), f"archive provenance component is missing: {path.relative_to(ROOT)}")
 
@@ -863,6 +865,7 @@ def validate_archive_provenance() -> None:
         "tracked worktree must be clean",
         "executable",
         "info_plist_sha256",
+        "archive_tree_fingerprint",
     ):
         require(marker in provenance, f"archive provenance validator is missing: {marker}")
 
@@ -904,6 +907,7 @@ def validate_archive_provenance() -> None:
     except (OSError, UnicodeError, json.JSONDecodeError, ProvenanceError) as error:
         raise AssertionError(f"internal candidate record is invalid: {error}") from error
     require(record["candidate_id"] == "2.0.0-1-internal", "internal candidate ID drifted")
+    require(record["schema_version"] == 2, "internal candidate record is not schema 2")
     require(
         record["source_commit"] == "e6dc27f2d03681d45582c88ad8dd70628f55a650",
         "internal candidate source commit drifted",
@@ -922,10 +926,23 @@ def validate_archive_provenance() -> None:
         "e6dc27f2d03681d45582c88ad8dd70628f55a650",
         "1ccf65120976af304204bc0889081ea2259cba364178cc44bb3ba2c6ffc95beb",
         "609B891E-7C3C-3FA8-97E6-2A697E6BB57E",
+        "2567ec162874654cca62122427176737fe8c51e3d430484c7f1cb6f0c486bc32",
         "--verify-record",
         "release_commit` 继续保持 `null",
     ):
         require(marker in candidate_evidence, f"internal candidate evidence is missing: {marker}")
+
+    tree_evidence = ARCHIVE_TREE_DOC.read_text(encoding="utf-8")
+    for marker in (
+        "V2-039 / P1",
+        "schema 2",
+        "archive_tree_fingerprint()",
+        "2567ec162874654cca62122427176737fe8c51e3d430484c7f1cb6f0c486bc32",
+        "769",
+        "22039977",
+        "符号链接目标变化",
+    ):
+        require(marker in tree_evidence, f"archive tree integrity evidence is missing: {marker}")
 
 
 def validate_toolchain_and_repository() -> None:

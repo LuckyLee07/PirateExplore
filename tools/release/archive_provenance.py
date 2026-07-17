@@ -6,8 +6,10 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import plistlib
 import re
+import stat
 import subprocess
 from datetime import datetime, timezone
 from pathlib import Path
@@ -118,6 +120,48 @@ def sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
+def archive_tree_fingerprint(archive: Path) -> dict:
+    digest = hashlib.sha256()
+    entry_count = 0
+    file_bytes = 0
+    paths = sorted(archive.rglob("*"), key=lambda path: path.relative_to(archive).as_posix())
+    for path in paths:
+        relative = path.relative_to(archive).as_posix().encode("utf-8")
+        metadata = path.lstat()
+        mode = stat.S_IMODE(metadata.st_mode)
+        if path.is_symlink():
+            kind = b"L"
+            payload = os.readlink(path).encode("utf-8")
+            entry_size = len(payload)
+        elif path.is_file():
+            kind = b"F"
+            file_bytes += metadata.st_size
+            payload = bytes.fromhex(sha256(path))
+            entry_size = metadata.st_size
+        elif path.is_dir():
+            kind = b"D"
+            payload = b""
+            entry_size = 0
+        else:
+            raise ProvenanceError(f"unsupported archive entry type: {path}")
+        digest.update(kind)
+        digest.update(b"\0")
+        digest.update(relative)
+        digest.update(b"\0")
+        digest.update(f"{mode:o}".encode("ascii"))
+        digest.update(b"\0")
+        digest.update(str(entry_size).encode("ascii"))
+        digest.update(b"\0")
+        digest.update(payload)
+        digest.update(b"\0")
+        entry_count += 1
+    return {
+        "sha256": digest.hexdigest(),
+        "entries": entry_count,
+        "file_bytes": file_bytes,
+    }
+
+
 def macho_uuids(path: Path) -> list[str]:
     result = subprocess.run(
         ["xcrun", "dwarfdump", "--uuid", str(path)],
@@ -155,7 +199,7 @@ def build_record(archive: Path, *, require_head: bool = True, root: Path = ROOT)
     except ValueError as error:
         raise ProvenanceError("candidate archive must be inside the repository workspace") from error
     return {
-        "schema_version": 1,
+        "schema_version": 2,
         "candidate_id": candidate,
         "source_commit": source,
         "bundle_id": info.get("CFBundleIdentifier"),
@@ -174,6 +218,7 @@ def build_record(archive: Path, *, require_head: bool = True, root: Path = ROOT)
             "macho_uuids": dsym_uuids,
         },
         "info_plist_sha256": sha256(app / "Info.plist"),
+        "archive_tree": archive_tree_fingerprint(archive),
     }
 
 
@@ -192,11 +237,12 @@ def validate_record_shape(record: object, *, root: Path = ROOT) -> dict:
         "executable",
         "dsym",
         "info_plist_sha256",
+        "archive_tree",
     }
     if set(record) != expected_keys:
-        raise ProvenanceError("candidate record fields do not match schema 1")
-    if record.get("schema_version") != 1:
-        raise ProvenanceError("candidate record schema version is not 1")
+        raise ProvenanceError("candidate record fields do not match schema 2")
+    if record.get("schema_version") != 2:
+        raise ProvenanceError("candidate record schema version is not 2")
     candidate = record.get("candidate_id")
     source = record.get("source_commit")
     if not isinstance(candidate, str) or not CANDIDATE_PATTERN.fullmatch(candidate):
@@ -252,6 +298,14 @@ def validate_record_shape(record: object, *, root: Path = ROOT) -> dict:
     info_hash = record.get("info_plist_sha256")
     if not isinstance(info_hash, str) or not SHA256_PATTERN.fullmatch(info_hash):
         raise ProvenanceError("candidate record Info.plist SHA-256 is invalid")
+    tree = record.get("archive_tree")
+    if not isinstance(tree, dict) or set(tree) != {"sha256", "entries", "file_bytes"}:
+        raise ProvenanceError("candidate record archive tree fields are invalid")
+    if not isinstance(tree.get("sha256"), str) or not SHA256_PATTERN.fullmatch(tree["sha256"]):
+        raise ProvenanceError("candidate record archive tree SHA-256 is invalid")
+    for key in ("entries", "file_bytes"):
+        if not isinstance(tree.get(key), int) or isinstance(tree[key], bool) or tree[key] <= 0:
+            raise ProvenanceError(f"candidate record archive tree {key} is invalid")
     return record
 
 

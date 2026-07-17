@@ -64,7 +64,7 @@
 - 运行时正式映射拒绝 generated/placeholder 资源冒充成品；
 - iPhone SE 3、iPhone 12 Pro、iPad A16 三档稳定模拟器比例已有布局证据；
 - 最新 Release 模拟器、device compile、无签名 archive 和 archive 内容验证通过；
-- 38 个问题均已分类，内部可修复的 P0/P1 为零；
+- 39 个问题均已分类，内部可修复的 P0/P1 为零；
 - 发行级内存、文件、存档、纹理分配、输入法生命周期与最终门禁契约回归通过。
 
 ### 4.2 明确保留在外部阶段
@@ -124,7 +124,7 @@
 
 - 六轮验收文档均为通过；
 - 10 张小屏 PNG 均存在且为 750×1334；
-- 38 个问题的 closed/外部边界没有漂移；
+- 39 个问题的 closed/外部边界没有漂移；
 - 内部质量项保持 pass，外测与真机项保持 pending；
 - 阶段 4 决策和总体上线 manifest 仍为 HOLD；
 - 冻结结论已接入 `tools/v2/validate_phase4.sh`。

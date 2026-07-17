@@ -28,7 +28,7 @@
 | dSYM DWARF | `6b3bafae2b37d307b9e347c3402330a08dd3734907fa43b8d3be1f2951c8048f` | 5,382,486 | `609B891E-7C3C-3FA8-97E6-2A697E6BB57E` |
 | App Info.plist | `b89473342911fa121bae186810b5e5a5569104d395843303b21bb55f44f67e75` | — | — |
 
-App 与 dSYM UUID 完全一致，可用于崩溃符号文件关联。archive 目录属于本地忽略构建产物；JSON 指纹与本文纳入版本控制，使缺少 archive 的环境仍能审查候选身份，但不能伪称已经复验本地字节。
+完整 archive 树摘要为 `2567ec162874654cca62122427176737fe8c51e3d430484c7f1cb6f0c486bc32`，覆盖 769 个路径条目和 22,039,977 个普通文件字节；文件内容、相对路径、权限和符号链接目标均进入摘要。App 与 dSYM UUID 完全一致，可用于崩溃符号文件关联。archive 目录属于本地忽略构建产物；JSON 指纹与本文纳入版本控制，使缺少 archive 的环境仍能审查候选身份，但不能伪称已经复验本地字节。
 
 ## 3. 生成与复验
 
@@ -61,7 +61,7 @@ python3 tools/release/archive_provenance.py \
   --verify-record docs/release/internal-candidate-provenance-2.0.0-1.json
 ```
 
-它会从 JSON 解析 archive 路径，重新读取 App 内嵌身份，重新计算可执行文件、dSYM 和 Info.plist 哈希，并拒绝任一字节、UUID、候选 ID 或提交不一致。
+它会从 JSON 解析 archive 路径，重新读取 App 内嵌身份，重新计算可执行文件、dSYM、Info.plist 和完整 archive 规范树摘要，并拒绝任一功能文件字节、路径、权限、符号链接、UUID、候选 ID 或提交不一致。
 
 ## 4. 验收结果
 
@@ -70,6 +70,7 @@ python3 tools/release/archive_provenance.py \
 - 候选身份：`2.0.0-1-internal` 与 archive 内嵌值一致；
 - App/dSYM：Mach-O UUID 一致；
 - 指纹记录：生成后反向复验通过；
+- 完整资源树：schema 2 覆盖 769 个 archive 条目，Lua/图片/音频等资源替换不再能绕过记录；
 - 篡改回归：dirty commit、错误提交、错误候选、非法/未知提交、错误 SHA-256、App/dSYM UUID 不一致和多余字段均被拒绝；
 - 阶段 0–4 与发行级完整回归：通过；
 - App Store 外部字段仍为 30 项 pending，总体产品门禁仍为 47 项 pending；

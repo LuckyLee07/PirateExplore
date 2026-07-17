@@ -3,8 +3,13 @@
 
 from __future__ import annotations
 
+import os
+import tempfile
+from pathlib import Path
+
 from archive_provenance import (
     ProvenanceError,
+    archive_tree_fingerprint,
     current_head,
     validate_identity,
     validate_record_match,
@@ -46,7 +51,7 @@ expect_error(dict(clean, NewPirateSourceCommit="f" * 40), "does not identify")
 expect_error(dict(clean, NewPirateCandidateID="bad candidate"), "missing or malformed")
 
 record = {
-    "schema_version": 1,
+    "schema_version": 2,
     "candidate_id": "2.0.0-1-internal",
     "source_commit": HEAD,
     "bundle_id": "com.fancyGame.NewPirate",
@@ -65,6 +70,11 @@ record = {
         "macho_uuids": ["609B891E-7C3C-3FA8-97E6-2A697E6BB57E"],
     },
     "info_plist_sha256": "3" * 64,
+    "archive_tree": {
+        "sha256": "4" * 64,
+        "entries": 10,
+        "file_bytes": 300,
+    },
 }
 validate_record_shape(record)
 
@@ -84,7 +94,10 @@ def expect_record_error(mutator, expected: str) -> None:
 
 
 expect_record_error(lambda value: value.update(source_commit=f"{HEAD}-dirty"), "clean full SHA")
+expect_record_error(lambda value: value.update(schema_version=1), "schema version is not 2")
 expect_record_error(lambda value: value["executable"].update(sha256="bad"), "SHA-256")
+expect_record_error(lambda value: value["archive_tree"].update(sha256="bad"), "tree SHA-256")
+expect_record_error(lambda value: value["archive_tree"].update(entries=True), "tree entries")
 expect_record_error(
     lambda value: value["dsym"].update(macho_uuids=["AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE"]),
     "UUIDs do not match",
@@ -103,5 +116,42 @@ except ProvenanceError as error:
     assert "does not match archive bytes" in str(error)
 else:
     raise AssertionError("valid-looking but changed archive bytes passed record comparison")
+
+with tempfile.TemporaryDirectory() as temporary:
+    tree = Path(temporary)
+    (tree / "Payload").mkdir()
+    resource = tree / "Payload/content.lua"
+    resource.write_text("return 'first'\n", encoding="utf-8")
+    os.chmod(resource, 0o644)
+    baseline = archive_tree_fingerprint(tree)
+
+    resource.write_text("return 'second'\n", encoding="utf-8")
+    changed_content = archive_tree_fingerprint(tree)
+    assert baseline["sha256"] != changed_content["sha256"], "resource replacement did not change tree digest"
+    resource.write_text("return 'first'\n", encoding="utf-8")
+    assert baseline == archive_tree_fingerprint(tree), "restored resource did not restore tree digest"
+
+    os.chmod(resource, 0o600)
+    changed_mode = archive_tree_fingerprint(tree)
+    assert baseline["sha256"] != changed_mode["sha256"], "permission replacement did not change tree digest"
+    os.chmod(resource, 0o644)
+    assert baseline == archive_tree_fingerprint(tree), "restored permission did not restore tree digest"
+
+    os.utime(resource, (1_000_000_000, 1_000_000_000))
+    assert baseline == archive_tree_fingerprint(tree), "mtime changed canonical tree digest"
+
+    link = tree / "Payload/current.lua"
+    link.symlink_to("content.lua")
+    linked = archive_tree_fingerprint(tree)
+    link.unlink()
+    link.symlink_to("other.lua")
+    relinked = archive_tree_fingerprint(tree)
+    assert linked["sha256"] != relinked["sha256"], "symlink replacement did not change tree digest"
+    link.unlink()
+    assert baseline == archive_tree_fingerprint(tree), "removed symlink did not restore tree digest"
+
+    resource.rename(tree / "Payload/renamed.lua")
+    changed_path = archive_tree_fingerprint(tree)
+    assert baseline["sha256"] != changed_path["sha256"], "path replacement did not change tree digest"
 
 print("Archive provenance OK: identity, clean/dirty, mismatch and candidate-record contracts")
