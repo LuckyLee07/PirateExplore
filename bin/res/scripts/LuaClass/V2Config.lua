@@ -39,6 +39,7 @@ local validSaveProfiles = {
     qa_explore_intel = true,
     qa_combat = true,
     qa_boarding = true,
+    qa_failed = true,
     qa_rune = true,
     qa_settlement = true,
     qa_upgrade = true,

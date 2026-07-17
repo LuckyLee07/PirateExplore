@@ -295,6 +295,27 @@ function V2ChapterState.new(profile)
         )
         state.objective = "击败敌方接舷队，夺取符文线索"
         state.last_result = "敌方甲板已被击破，接舷队正在压上。"
+    elseif profile == "qa_failed" then
+        state.stage = "failed"
+        state.current_node = "node_raider"
+        state.route = "risky_shortcut"
+        state.flags.voyage_ready = true
+        state.flags.route_chosen = true
+        state.flags.risky_route = true
+        state.flags.salvage_found = true
+        state.flags.curse_heard = true
+        state.voyage_hull_damage = routeData("risky_shortcut").hull_damage
+        applyReward(state, "reward_salvage")
+        state.resources.provisions = 4
+        resetBattle(state)
+        state.battle.player_hull = 0
+        state.failure_reason = "船体在舰炮交火中沉没"
+        state.recovery_summary = string.format(
+            "原地重试消耗 %d 补给；返港恢复消耗 %d 金币。",
+            balanceValue("retry_supply_cost"), balanceValue("port_recovery_gold_cost")
+        )
+        state.objective = "选择原地重试或带着已确认收获返港"
+        state.last_result = "船体失去战斗力，但已确认的沉船战利品仍在货舱中。"
     elseif profile == "qa_rune" then
         state.stage = "rune_clue"
         state.current_node = "node_rune_clue"
@@ -515,8 +536,8 @@ local actionsByStage = {
             .. "｜齐射+" .. balanceValue("gun_level_bonus") },
     },
     failed = {
-        { id = "retry_battle", label = "重试（" .. balanceValue("retry_supply_cost") .. " 补给）" },
-        { id = "recover_at_port", label = "返港恢复（" .. balanceValue("port_recovery_gold_cost") .. " 金币）" },
+        { id = "retry_battle", label = "原地重试\n补给-" .. balanceValue("retry_supply_cost") .. "｜保留航线" },
+        { id = "recover_at_port", label = "返港恢复\n金币-" .. balanceValue("port_recovery_gold_cost") .. "｜重新整备" },
     },
 }
 
@@ -739,7 +760,10 @@ function V2ChapterState.getNarrative(state)
             .. "\n下一航程｜" .. nextObjective .. "；" .. nextAdvantage
     elseif state.stage == "failed" then
         return "失败原因：" .. tostring(state.failure_reason)
-            .. "\n恢复方案：" .. tostring(state.recovery_summary)
+            .. string.format("\n原地重试｜补给 -%d；保留当前航线与已确认战利品，从舰炮战重新开始。",
+                balanceValue("retry_supply_cost"))
+            .. string.format("\n返港恢复｜金币 -%d；保留已确认战利品，清除航线损伤并重新整备。",
+                balanceValue("port_recovery_gold_cost"))
     end
     return ""
 end
@@ -806,7 +830,7 @@ local function failBattle(state, reason, action)
         balanceValue("port_recovery_gold_cost")
     )
     state.stage = "failed"
-    state.objective = "选择重试战斗或返回皇家港"
+    state.objective = "选择原地重试或带着已确认收获返港"
     addHistory(state, action, reason)
 end
 
