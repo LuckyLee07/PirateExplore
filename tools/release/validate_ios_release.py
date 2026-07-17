@@ -62,6 +62,9 @@ APPLE_SIGNING_AUDIT = ROOT / "tools/release/apple_signing_readiness.py"
 APPLE_SIGNING_AUDIT_TEST = ROOT / "tools/release/test_apple_signing_readiness.py"
 APPLE_SIGNING_AUDIT_DOC = ROOT / "docs/release/apple-signing-readiness-iteration-2.md"
 APPLE_DEVICE_STABILITY_DOC = ROOT / "docs/release/apple-device-stability-iteration-1.md"
+SIGNED_APP_VALIDATOR = ROOT / "tools/release/validate_ios_signed_app.py"
+SIGNED_APP_VALIDATOR_TEST = ROOT / "tools/release/test_validate_ios_signed_app.py"
+SIGNED_APP_VALIDATOR_DOC = ROOT / "docs/release/signed-app-integrity-iteration-1.md"
 
 
 def require(condition: bool, message: str) -> None:
@@ -614,6 +617,46 @@ def validate_apple_signing_readiness_audit() -> None:
         require(marker in stability_evidence, f"Apple device stability evidence is missing: {marker}")
 
 
+def validate_signed_app_validator() -> None:
+    for path in (SIGNED_APP_VALIDATOR, SIGNED_APP_VALIDATOR_TEST, SIGNED_APP_VALIDATOR_DOC):
+        require(path.is_file(), f"signed-app validator component is missing: {path.relative_to(ROOT)}")
+
+    validator = SIGNED_APP_VALIDATOR.read_text(encoding="utf-8")
+    for marker in (
+        "codesign",
+        "--verify",
+        "--extract-certificates=",
+        "certificate_expiration",
+        "embedded.mobileprovision",
+        "get-task-allow",
+        "App Store profile must not contain provisioned devices",
+        "signing leaf certificate is not embedded in the profile",
+        'choices=("development", "distribution")',
+    ):
+        require(marker in validator, f"signed-app validator is missing: {marker}")
+
+    regression = SIGNED_APP_VALIDATOR_TEST.read_text(encoding="utf-8")
+    for marker in (
+        "valid development app failed",
+        "valid App Store app failed",
+        "wrong signing team passed",
+        "leaf certificate outside profile passed",
+        "expired signing leaf certificate passed",
+        "development payload passed App Store mode",
+    ):
+        require(marker in regression, f"signed-app regression is missing: {marker}")
+
+    evidence = SIGNED_APP_VALIDATOR_DOC.read_text(encoding="utf-8")
+    for marker in (
+        "V2-028 / P1",
+        "551AA974D457F137BFEE66838213D36FB327AF47",
+        "passed: true",
+        "退出码 2",
+        "get-task-allow",
+    ):
+        require(marker in evidence, f"signed-app evidence is missing: {marker}")
+
+
 def validate_toolchain_and_repository() -> None:
     output = subprocess.run(
         ["xcodebuild", "-version"],
@@ -646,6 +689,7 @@ def main() -> None:
     validate_texture_atlas_allocation()
     validate_eaglview_contract()
     validate_apple_signing_readiness_audit()
+    validate_signed_app_validator()
     validate_toolchain_and_repository()
     print("iOS release static validation passed")
 

@@ -149,6 +149,8 @@ Apple 当前 iOS 26 分级定义中，频繁的卡通/奇幻暴力、枪械或�
 
 签名链详情见 [`apple-signing-readiness-iteration-2.md`](apple-signing-readiness-iteration-2.md)；瞬时在线误判已由 [`apple-device-stability-iteration-1.md`](apple-device-stability-iteration-1.md) 的官方 JSON 三连采样门禁修复。
 
+签名后的最终 App 还必须通过 [`signed-app-integrity-iteration-1.md`](signed-app-integrity-iteration-1.md) 的产物级校验；当前 Development App 已通过，但用 App Store 模式检查会按预期失败，不能作为上传证据。
+
 任何证书申请、自动 provisioning、App 记录创建或设备安装都会改变外部账号/设备状态，需由账号负责人在明确授权和正确团队下执行。
 
 ## 8. 双层校验策略

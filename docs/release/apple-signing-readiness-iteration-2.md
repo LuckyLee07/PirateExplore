@@ -126,6 +126,8 @@ architecture=arm64
 
 这证明本机现有开发身份/Profile 链确实能签出本地开发产物，也验证了预检没有误报。但临时团队 override、未安装到真机的开发签名 App 仍不能替代账号归属确认、稳定设备验收或 App Store 分发链，所以两类 readiness 结论不变。
 
+> `V2-028` 已进一步对该 Development App 的实际 codesign、entitlements、embedded Profile 和 leaf 证书做产物级验证；详见 [`signed-app-integrity-iteration-1.md`](signed-app-integrity-iteration-1.md)。签前材料预检与签后产物校验必须同时保留。
+
 ## 5. 本轮关闭与未关闭范围
 
 `V2-026` 的完成定义已经满足：
