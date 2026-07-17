@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import hashlib
+import subprocess
 import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -21,6 +22,13 @@ LEAF_CERTIFICATE = b"fixture signing certificate"
 LEAF_FINGERPRINT = hashlib.sha1(LEAF_CERTIFICATE).hexdigest().upper()
 FUTURE = datetime.now(timezone.utc) + timedelta(days=30)
 PAST = datetime.now(timezone.utc) - timedelta(days=30)
+HEAD = subprocess.run(
+    ["git", "rev-parse", "HEAD"],
+    cwd=ROOT,
+    check=True,
+    capture_output=True,
+    text=True,
+).stdout.strip()
 
 
 def require(condition: bool, message: str) -> None:
@@ -69,9 +77,18 @@ def evaluate(
     profile_payload: dict,
     fingerprint: str = LEAF_FINGERPRINT,
     leaf_expires_at: datetime = FUTURE,
+    source_commit: str = HEAD,
+    candidate_id: str = "2.0.0-1",
+    expected_source_commit: str | None = None,
+    expected_candidate_id: str | None = None,
+    require_clean_provenance: bool = False,
 ) -> dict:
     return evaluate_payload(
-        info={"CFBundleIdentifier": BUNDLE_ID},
+        info={
+            "CFBundleIdentifier": BUNDLE_ID,
+            "NewPirateSourceCommit": source_commit,
+            "NewPirateCandidateID": candidate_id,
+        },
         codesign=codesign_payload,
         entitlements=entitlement_payload,
         profile=profile_payload,
@@ -82,6 +99,9 @@ def evaluate(
         expected_team_id=TEAM_ID,
         mode=mode,
         signature_verified=True,
+        expected_source_commit=expected_source_commit,
+        expected_candidate_id=expected_candidate_id,
+        require_clean_provenance=require_clean_provenance,
     )
 
 
@@ -112,6 +132,51 @@ def main() -> None:
         profile_payload=distribution_profile,
     )
     require(distribution["passed"], f"valid App Store app failed: {distribution['failures']}")
+
+    frozen_distribution = evaluate(
+        "distribution",
+        codesign_payload=codesign("Apple Distribution: QA"),
+        entitlement_payload=entitlements(debuggable=False),
+        profile_payload=distribution_profile,
+        expected_source_commit=HEAD,
+        expected_candidate_id="2.0.0-1",
+        require_clean_provenance=True,
+    )
+    require(frozen_distribution["passed"], "valid frozen Distribution provenance failed")
+
+    wrong_source = evaluate(
+        "distribution",
+        codesign_payload=codesign("Apple Distribution: QA"),
+        entitlement_payload=entitlements(debuggable=False),
+        profile_payload=distribution_profile,
+        expected_source_commit="0" * 40,
+        expected_candidate_id="2.0.0-1",
+        require_clean_provenance=True,
+    )
+    require(not wrong_source["passed"], "wrong source commit passed signed-app provenance")
+
+    wrong_candidate = evaluate(
+        "distribution",
+        codesign_payload=codesign("Apple Distribution: QA"),
+        entitlement_payload=entitlements(debuggable=False),
+        profile_payload=distribution_profile,
+        expected_source_commit=HEAD,
+        expected_candidate_id="2.0.0-2",
+        require_clean_provenance=True,
+    )
+    require(not wrong_candidate["passed"], "wrong candidate ID passed signed-app provenance")
+
+    dirty_source = evaluate(
+        "distribution",
+        codesign_payload=codesign("Apple Distribution: QA"),
+        entitlement_payload=entitlements(debuggable=False),
+        profile_payload=distribution_profile,
+        source_commit=f"{HEAD}-dirty",
+        expected_source_commit=f"{HEAD}-dirty",
+        expected_candidate_id="2.0.0-1",
+        require_clean_provenance=True,
+    )
+    require(not dirty_source["passed"], "dirty source passed signed-app provenance")
 
     wrong_team = evaluate(
         "development",
@@ -157,7 +222,10 @@ def main() -> None:
     require(any("get-task-allow" in value for value in development_as_distribution["failures"]), "debug entitlement failure missing")
     require(any("provisioned devices" in value for value in development_as_distribution["failures"]), "device profile failure missing")
 
-    print("iOS signed app validator OK: identity, profile, entitlement, mode and expiry contracts")
+    print(
+        "iOS signed app validator OK: signature, profile, mode, expiry and "
+        "embedded candidate provenance contracts"
+    )
 
 
 if __name__ == "__main__":

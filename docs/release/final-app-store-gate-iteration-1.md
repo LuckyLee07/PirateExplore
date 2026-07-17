@@ -4,6 +4,8 @@
 
 本轮结论：**`V2-029 / P1` 已在仓库内关闭。项目现在只有一个最终 App Store 提交 GO 入口，它会先要求 30 个外部 manifest 门槛全部有真实值，再连续执行元数据严格校验、隐私/支持公网内容、archive 内容与 Distribution 签名产物校验；任何 pending、skipped 或 failed 都保持 HOLD。当前实测 `pending_gate_count: 30`、`ready_for_submission: false`、退出码 2，没有联网、没有读取不存在的分发包，也没有伪填外部证据。该入口不替代 V2-032 的产品总体上线门禁。**
 
+> 后续 `V2-040` 已把 archive 内容和 Distribution App 进一步绑定到总体 `release_commit`、提交版本/build 与 clean provenance；见 [`final-candidate-identity-iteration-1.md`](final-candidate-identity-iteration-1.md)。本文件保留 V2-029 建立聚合入口时的历史验收。
+
 ## 1. 原有流程的漏项风险
 
 此前发行文档要求人工依次运行多条命令：
@@ -60,8 +62,8 @@ exit: 0
 | --- | --- | --- |
 | `submission_manifest_strict` | `validate_app_store_submission.py --strict` | 账号/产品页/审核/问卷/价格/地区/上传字段一致；archive 存在且其 App 为 Distribution 模式 |
 | `public_pages_live` | `validate_public_release_pages.py --require-app-links --check-live-urls` | App 内两条 HTTPS URL 与 manifest 一致，公网返回 200 HTML 且含预期中文内容 |
-| `archive_content` | `validate_ios_archive.py` | 版本、build、arm64、隐私清单、图标、离线代码、动态库和遗留符号符合候选 |
-| `signed_app_distribution` | `validate_ios_signed_app.py --mode distribution` | strict codesign、Distribution Authority、Team/Bundle ID、leaf/Profile、有效期、entitlements 与 App Store Profile 模式一致 |
+| `archive_content` | `validate_ios_archive.py` | 版本、build、arm64、隐私清单、图标、离线代码、动态库、遗留符号，并精确匹配最终源码提交/候选 ID |
+| `signed_app_distribution` | `validate_ios_signed_app.py --mode distribution` | strict codesign、Distribution Authority、Team/Bundle ID、leaf/Profile、有效期、entitlements、App Store Profile 模式及 clean 包内 provenance 一致 |
 
 每项都在独立进程运行并记录退出码；最终报告不会因为前一项通过而隐藏后一项失败。
 

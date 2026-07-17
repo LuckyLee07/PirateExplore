@@ -36,6 +36,8 @@ python3 -B tools/release/validate_ios_signed_app.py /path/to/App.app \
 
 工具不访问开发者账号、不更新 Profile、不重签 App，也不把任何构建产物写入版本控制。
 
+后续 `V2-040` 为同一工具增加 `--expected-source-commit`、`--expected-candidate-id` 和 `--require-clean-provenance`；最终 Distribution 门禁会强制使用三者，把签名产物绑定到产品总体 `release_commit`，详见 [`final-candidate-identity-iteration-1.md`](final-candidate-identity-iteration-1.md)。
+
 ## 3. 共同门槛
 
 无论开发还是分发模式，都必须同时满足：

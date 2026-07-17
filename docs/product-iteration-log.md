@@ -428,7 +428,7 @@ gates are executed.
 结论：
 
 - 六轮内部精修及 10 张 iPhone SE 小屏证据全部通过；
-- 39 个问题中没有尚可由内部继续修复的开放 P0/P1；
+- 40 个问题中没有尚可由内部继续修复的开放 P0/P1；
 - 阶段 0–4、发行级回归、Release 模拟器、device compile 和最终 archive
   已形成可重复证据链；
 - 第一章内部样片状态改为 `FROZEN`，停止无外部证据驱动的功能扩张；
@@ -491,3 +491,21 @@ gates are executed.
 
 专项证明内容、权限、路径与符号链接目标变化均改变摘要；真实
 `2.0.0-1-internal` 记录反向复验、archive 内容检查和完整发行回归通过。
+
+## 2026-07-17 — 冻结后发行工程第 4 轮：最终候选身份闭环
+
+修正：
+
+- 发现最终 App Store 门禁只验证合法 archive/签名，没有把包内源码身份精确
+  绑定到总体 `release_commit`；
+- 签名 App 校验新增期望源码提交、候选 ID 和 clean provenance 门禁；
+- archive 内容与 Distribution App 两条最终检查都从同一产品/提交 manifest 派生
+  `release_commit` 与 `version-build`；
+- archive 的 ApplicationPath 必须指向唯一产品 App，避免内容与签名检查分裂；
+- `V2-040 / P1` 登记并关闭。
+
+验收：
+
+专项拒绝错误提交、错误候选、dirty provenance、缺失 release commit 和候选
+manifest 不一致；当前最终 App Store 门禁仍按预期报告 30 pending，总体仍为
+47 pending，完整发行回归通过且没有执行外部签名、上传或真机操作。

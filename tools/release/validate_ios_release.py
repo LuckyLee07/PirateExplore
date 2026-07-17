@@ -74,6 +74,7 @@ SIGNED_APP_VALIDATOR_DOC = ROOT / "docs/release/signed-app-integrity-iteration-1
 FINAL_APP_STORE_GATE = ROOT / "tools/release/final_app_store_gate.py"
 FINAL_APP_STORE_GATE_TEST = ROOT / "tools/release/test_final_app_store_gate.py"
 FINAL_APP_STORE_GATE_DOC = ROOT / "docs/release/final-app-store-gate-iteration-1.md"
+FINAL_CANDIDATE_IDENTITY_DOC = ROOT / "docs/release/final-candidate-identity-iteration-1.md"
 DEVICE_ACCEPTANCE_VALIDATOR = ROOT / "tools/release/validate_device_acceptance.py"
 DEVICE_ACCEPTANCE_TEST = ROOT / "tools/release/test_validate_device_acceptance.py"
 DEVICE_ACCEPTANCE_TEMPLATE = ROOT / "docs/release/device-acceptance-template.csv"
@@ -659,6 +660,10 @@ def validate_signed_app_validator() -> None:
         "App Store profile must not contain provisioned devices",
         "signing leaf certificate is not embedded in the profile",
         'choices=("development", "distribution")',
+        "--expected-source-commit",
+        "--expected-candidate-id",
+        "--require-clean-provenance",
+        "embedded provenance validation failed",
     ):
         require(marker in validator, f"signed-app validator is missing: {marker}")
 
@@ -670,6 +675,9 @@ def validate_signed_app_validator() -> None:
         "leaf certificate outside profile passed",
         "expired signing leaf certificate passed",
         "development payload passed App Store mode",
+        "wrong source commit passed signed-app provenance",
+        "wrong candidate ID passed signed-app provenance",
+        "dirty source passed signed-app provenance",
     ):
         require(marker in regression, f"signed-app regression is missing: {marker}")
 
@@ -685,7 +693,12 @@ def validate_signed_app_validator() -> None:
 
 
 def validate_final_app_store_gate() -> None:
-    for path in (FINAL_APP_STORE_GATE, FINAL_APP_STORE_GATE_TEST, FINAL_APP_STORE_GATE_DOC):
+    for path in (
+        FINAL_APP_STORE_GATE,
+        FINAL_APP_STORE_GATE_TEST,
+        FINAL_APP_STORE_GATE_DOC,
+        FINAL_CANDIDATE_IDENTITY_DOC,
+    ):
         require(path.is_file(), f"final App Store gate component is missing: {path.relative_to(ROOT)}")
 
     gate = FINAL_APP_STORE_GATE.read_text(encoding="utf-8")
@@ -697,6 +710,12 @@ def validate_final_app_store_gate() -> None:
         "signed_app_distribution",
         "ready_for_submission",
         "external manifest gates must be complete before final checks run",
+        "PRODUCT_LAUNCH_MANIFEST",
+        "expected_archive_identity",
+        "--expected-source-commit",
+        "--expected-candidate-id",
+        "--require-clean-provenance",
+        "ApplicationPath must identify its only product app",
     ):
         require(marker in gate, f"final App Store gate is missing: {marker}")
 
@@ -706,6 +725,9 @@ def validate_final_app_store_gate() -> None:
         "an empty final check list passed",
         "one failed final check still produced GO",
         "one skipped final check still produced GO",
+        "wrong product launch candidate passed",
+        "lacks source identity",
+        "accepts dirty provenance",
     ):
         require(marker in regression, f"final App Store gate regression is missing: {marker}")
 
@@ -726,6 +748,18 @@ def validate_final_app_store_gate() -> None:
         "退出码 2",
     ):
         require(marker in evidence, f"final App Store gate evidence is missing: {marker}")
+
+    identity_evidence = FINAL_CANDIDATE_IDENTITY_DOC.read_text(encoding="utf-8")
+    for marker in (
+        "V2-040 / P1",
+        "candidate.release_commit",
+        "--expected-source-commit",
+        "--expected-candidate-id",
+        "--require-clean-provenance",
+        "30 项 pending",
+        "47 项 pending",
+    ):
+        require(marker in identity_evidence, f"final candidate identity evidence is missing: {marker}")
 
 
 def validate_device_acceptance_gate() -> None:

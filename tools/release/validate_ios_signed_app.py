@@ -15,6 +15,8 @@ import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
 
+from archive_provenance import ProvenanceError, validate_identity
+
 
 DEFAULT_BUNDLE_ID = "com.fancyGame.NewPirate"
 
@@ -87,6 +89,9 @@ def evaluate_payload(
     expected_team_id: str,
     mode: str,
     signature_verified: bool,
+    expected_source_commit: str | None = None,
+    expected_candidate_id: str | None = None,
+    require_clean_provenance: bool = False,
 ) -> dict:
     failures: list[str] = []
 
@@ -123,6 +128,17 @@ def evaluate_payload(
     check(profile_expiration is not None and profile_expiration > datetime.now(timezone.utc), "embedded profile is expired")
     check("arm64" in architecture_output.split(), "signed app executable is not arm64")
 
+    if expected_source_commit is not None or expected_candidate_id is not None or require_clean_provenance:
+        try:
+            validate_identity(
+                info,
+                expected_source_commit=expected_source_commit,
+                expected_candidate_id=expected_candidate_id,
+                require_clean=require_clean_provenance,
+            )
+        except ProvenanceError as error:
+            failures.append(f"embedded provenance validation failed: {error}")
+
     signed_debuggable = entitlements.get("get-task-allow") is True
     profile_debuggable = profile_entitlements.get("get-task-allow") is True
     provisioned_devices = profile.get("ProvisionedDevices", [])
@@ -158,6 +174,8 @@ def evaluate_payload(
         "get_task_allow": signed_debuggable,
         "signature_verified": signature_verified,
         "architecture": architecture_output.strip(),
+        "source_commit": info.get("NewPirateSourceCommit"),
+        "candidate_id": info.get("NewPirateCandidateID"),
         "failures": failures,
     }
 
@@ -173,7 +191,16 @@ def load_plist_result(result: subprocess.CompletedProcess[bytes], label: str, er
         return {}
 
 
-def inspect_app(app: Path, bundle_id: str, team_id: str, mode: str) -> tuple[dict, list[str]]:
+def inspect_app(
+    app: Path,
+    bundle_id: str,
+    team_id: str,
+    mode: str,
+    *,
+    expected_source_commit: str | None = None,
+    expected_candidate_id: str | None = None,
+    require_clean_provenance: bool = False,
+) -> tuple[dict, list[str]]:
     errors: list[str] = []
     info_path = app / "Info.plist"
     profile_path = app / "embedded.mobileprovision"
@@ -240,6 +267,9 @@ def inspect_app(app: Path, bundle_id: str, team_id: str, mode: str) -> tuple[dic
             expected_team_id=team_id,
             mode=mode,
             signature_verified=verify.returncode == 0,
+            expected_source_commit=expected_source_commit,
+            expected_candidate_id=expected_candidate_id,
+            require_clean_provenance=require_clean_provenance,
         ),
         errors,
     )
@@ -267,10 +297,21 @@ def main() -> int:
     parser.add_argument("--bundle-id", default=DEFAULT_BUNDLE_ID)
     parser.add_argument("--team-id", required=True)
     parser.add_argument("--mode", choices=("development", "distribution"), required=True)
+    parser.add_argument("--expected-source-commit")
+    parser.add_argument("--expected-candidate-id")
+    parser.add_argument("--require-clean-provenance", action="store_true")
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args()
 
-    report, errors = inspect_app(args.app.resolve(), args.bundle_id, args.team_id, args.mode)
+    report, errors = inspect_app(
+        args.app.resolve(),
+        args.bundle_id,
+        args.team_id,
+        args.mode,
+        expected_source_commit=args.expected_source_commit,
+        expected_candidate_id=args.expected_candidate_id,
+        require_clean_provenance=args.require_clean_provenance,
+    )
     if args.json:
         print(json.dumps({"audit_errors": errors, **report}, ensure_ascii=False, indent=2, sort_keys=True))
     else:

@@ -94,6 +94,8 @@ exit: 2
 | `app_store_submission` | `final_app_store_gate.py --json` | 真实公网页面、Distribution archive、上传/后台字段和 App Store 提交证据全部通过 |
 | `candidate_consistency` | 顶层内置联合校验 | 外测 R2 → release commit 祖先关系、真机 commit/build ID、上传 build、版本和最终决策一致 |
 
+后续 `V2-040` 已把 `app_store_submission` 子门禁中的 archive 内容与 Distribution App 也反向绑定到同一个 `release_commit` 和版本/build；因此跨证据字段一致之外，最终包内嵌身份也必须一致。
+
 五项都会执行；某一项失败不会因为其他四项通过而得到总体 GO。
 
 ## 6. 跨证据候选一致性
