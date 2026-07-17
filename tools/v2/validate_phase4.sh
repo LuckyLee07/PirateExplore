@@ -19,5 +19,6 @@ lua tools/v2/test_v2_internal_sample_5.lua
 python3 tools/v2/validate_internal_sample_5.py
 lua tools/v2/test_v2_internal_sample_6.lua
 python3 tools/v2/validate_internal_sample_6.py
+python3 tools/v2/validate_internal_sample_freeze.py
 
 echo "V2 Phase 4 internal validation passed; external gates remain pending"
