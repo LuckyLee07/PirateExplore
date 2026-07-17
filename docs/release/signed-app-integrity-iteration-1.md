@@ -133,6 +133,8 @@ architecture: arm64
 
 最终提交前必须对导出的真实 App Store `.app` 再运行 `--mode distribution` 并通过；不能复用本轮 Development 结果。
 
+`V2-029` 已将该 Distribution 检查纳入唯一最终 GO 入口，见 [`final-app-store-gate-iteration-1.md`](final-app-store-gate-iteration-1.md)。
+
 ## 9. 回归验收
 
 | 验收项 | 结果 |

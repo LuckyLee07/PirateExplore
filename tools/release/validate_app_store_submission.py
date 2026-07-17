@@ -326,6 +326,25 @@ def validate_strict(manifest: dict) -> None:
         capture_output=True,
     )
     require(signature.returncode == 0, "xcarchive code signature verification failed: " + signature.stderr.strip())
+    signed_app = subprocess.run(
+        [
+            sys.executable,
+            str(ROOT / "tools/release/validate_ios_signed_app.py"),
+            str(app),
+            "--team-id",
+            distribution["developer_team_id"],
+            "--mode",
+            "distribution",
+            "--json",
+        ],
+        text=True,
+        capture_output=True,
+    )
+    require(
+        signed_app.returncode == 0,
+        "xcarchive app is not a valid App Store distribution payload: "
+        + (signed_app.stdout.strip() or signed_app.stderr.strip()),
+    )
 
     territories = set(manifest["availability"]["territories"])
     if territories.intersection({"CN", "CHN", "China mainland", "中国大陆"}):

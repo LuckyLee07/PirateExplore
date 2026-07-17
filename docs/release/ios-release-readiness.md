@@ -51,6 +51,7 @@
 | Apple 签名就绪预检 | 通过 | `V2-026` 已关闭；以身份/Profile 证书指纹联合校验有效期、团队、Bundle ID、工程团队和真机状态，并提供开发/分发严格失败门禁 |
 | Apple 真机稳定性预检 | 通过 | `V2-027` 已关闭；改用 devicectl 官方 JSON，开发严格模式要求同一物理设备至少三次连续满足配对、连接、开发者模式和 DDI 条件，设备标识脱敏 |
 | iOS 签名产物完整性 | 通过 | `V2-028` 已关闭；联合验证 strict codesign、Info/signature/entitlements/Profile、leaf 证书指纹、有效期、arm64 与开发/分发模式；当前只证明 Development App |
+| App Store 最终聚合门禁 | 通过 | `V2-029` 已关闭；30 个外部字段零 pending 后强制运行 strict manifest、公网页面、archive 内容和 Distribution App；空/skipped/failed 均 HOLD |
 | 隐私/支持内部准备 | 通过 | V2 顶栏入口、本地说明、公开页面模板、渲染和分层校验工具完成；真实 URL 仍由 `V2-018` 阻塞 |
 | App Store Connect 内部准备 | 通过 | 提交 manifest、纯文本元数据、审核路径、年龄分级事实盘点和准备/严格双层校验完成；账号侧填写仍由 `V2-019` 阻塞 |
 | Release 自动验收 | 通过 | 阶段 0～4、发行静态、Release arm64 模拟器、无签名 device archive 与 archive 内容检查通过；详见 `ios-release-engineering-iteration-1.md` |
@@ -142,6 +143,9 @@ python3 -B tools/release/validate_ios_signed_app.py /path/to/exported/App.app \
   --team-id <已确认团队> --mode distribution
 
 python3 tools/release/validate_app_store_submission.py --strict
+
+# 唯一最终 GO 入口；上面任一门禁不能用人工口头结论替代
+python3 -B tools/release/final_app_store_gate.py --json
 ```
 
 账号准备完成后，另用 `CODE_SIGNING_ALLOWED=YES` 和已选定的团队生成分发 archive。

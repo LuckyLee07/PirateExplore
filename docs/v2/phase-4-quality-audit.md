@@ -49,6 +49,8 @@ iOS 启动必经的 `CCEAGLView` 仍采用手动引用计数；旧实现没有�
 
 签名前材料就绪仍不能证明签名后 App 的真实 Team、证书、Profile 和 entitlements。`V2-028` 已增加产物级联合验证：strict codesign、Info/signature/application-identifier、embedded Profile、leaf 证书指纹、有效期和 arm64 必须一致，并严格区分 Development 与 App Store 模式。真实开发 App 通过，同一产物冒充分发时四项失败。完整证据见 [`../release/signed-app-integrity-iteration-1.md`](../release/signed-app-integrity-iteration-1.md)。
 
+最终提交原先还依赖人工分别执行元数据 strict、公网页面、archive 内容和 Distribution 产物检查，且旧 strict 仅验证 codesign 结构。`V2-029` 已建立唯一最终 App Store 门禁，30 个外部字段零 pending 后才运行四项完整证据；空、skipped 或 failed 均 HOLD，独立 strict 也会拒绝 Development archive。完整证据见 [`../release/final-app-store-gate-iteration-1.md`](../release/final-app-store-gate-iteration-1.md)。
+
 本地行为记录与 V2 scoped save 同步保存；单会话最多 240 条，避免长期 QA 重玩导致存档无限增长。记录不联网，不含个人身份信息。
 
 ## 4. 崩溃与音频
@@ -101,6 +103,7 @@ iOS 使用 `UILaunchScreen`；应用 target 不再启用弃用的 LaunchImage �
 - Apple 签名只读预检：通过；当前开发私钥身份与通配开发 Profile 指纹匹配且未过期，旧“2023 年过期”结论已纠正；工程团队未确认，且没有 NewPirate 可用的 Distribution/App Store Profile 组合；
 - Apple 设备稳定性预检：通过；使用官方 JSON，同一设备三连就绪才允许开发严格门禁通过；本机 iPhone/iPad 三连采样均未就绪且退出码 2，未泄露设备标识；
 - iOS 签名产物完整性：通过；本地 Development App 的 strict codesign、Team/Bundle ID、leaf/Profile 指纹、entitlements 与 arm64 一致，冒充 App Store 模式严格失败；
+- App Store 最终聚合门禁：通过；当前 30 个外部字段保持 pending，四项最终证据均 skipped 且总体退出码 2，没有误报 GO；
 - 真实设备触控、安全区、帧率、静音键和响度：待设备体验执行；iPhone 12 Pro 与 iPad mini 状态连续波动并在最终复核时 unavailable，不能作为实际真机证据；
 - 两轮目标用户测试：待执行，所有外测 gate 仍为 `pending_external`。
 

@@ -65,6 +65,9 @@ APPLE_DEVICE_STABILITY_DOC = ROOT / "docs/release/apple-device-stability-iterati
 SIGNED_APP_VALIDATOR = ROOT / "tools/release/validate_ios_signed_app.py"
 SIGNED_APP_VALIDATOR_TEST = ROOT / "tools/release/test_validate_ios_signed_app.py"
 SIGNED_APP_VALIDATOR_DOC = ROOT / "docs/release/signed-app-integrity-iteration-1.md"
+FINAL_APP_STORE_GATE = ROOT / "tools/release/final_app_store_gate.py"
+FINAL_APP_STORE_GATE_TEST = ROOT / "tools/release/test_final_app_store_gate.py"
+FINAL_APP_STORE_GATE_DOC = ROOT / "docs/release/final-app-store-gate-iteration-1.md"
 
 
 def require(condition: bool, message: str) -> None:
@@ -657,6 +660,50 @@ def validate_signed_app_validator() -> None:
         require(marker in evidence, f"signed-app evidence is missing: {marker}")
 
 
+def validate_final_app_store_gate() -> None:
+    for path in (FINAL_APP_STORE_GATE, FINAL_APP_STORE_GATE_TEST, FINAL_APP_STORE_GATE_DOC):
+        require(path.is_file(), f"final App Store gate component is missing: {path.relative_to(ROOT)}")
+
+    gate = FINAL_APP_STORE_GATE.read_text(encoding="utf-8")
+    for marker in (
+        "pending_release_gates",
+        "submission_manifest_strict",
+        "public_pages_live",
+        "archive_content",
+        "signed_app_distribution",
+        "ready_for_submission",
+        "external manifest gates must be complete before final checks run",
+    ):
+        require(marker in gate, f"final App Store gate is missing: {marker}")
+
+    regression = FINAL_APP_STORE_GATE_TEST.read_text(encoding="utf-8")
+    for marker in (
+        "pending distribution grouping drifted",
+        "an empty final check list passed",
+        "one failed final check still produced GO",
+        "one skipped final check still produced GO",
+    ):
+        require(marker in regression, f"final App Store gate regression is missing: {marker}")
+
+    submission = (ROOT / "tools/release/validate_app_store_submission.py").read_text(encoding="utf-8")
+    for marker in (
+        "validate_ios_signed_app.py",
+        '"--mode",\n            "distribution"',
+        "xcarchive app is not a valid App Store distribution payload",
+    ):
+        require(marker in submission, f"strict submission validator is missing: {marker}")
+
+    evidence = FINAL_APP_STORE_GATE_DOC.read_text(encoding="utf-8")
+    for marker in (
+        "V2-029 / P1",
+        "pending_gate_count: 30",
+        "ready_for_submission: false",
+        "public_pages_live",
+        "退出码 2",
+    ):
+        require(marker in evidence, f"final App Store gate evidence is missing: {marker}")
+
+
 def validate_toolchain_and_repository() -> None:
     output = subprocess.run(
         ["xcodebuild", "-version"],
@@ -690,6 +737,7 @@ def main() -> None:
     validate_eaglview_contract()
     validate_apple_signing_readiness_audit()
     validate_signed_app_validator()
+    validate_final_app_store_gate()
     validate_toolchain_and_repository()
     print("iOS release static validation passed")
 

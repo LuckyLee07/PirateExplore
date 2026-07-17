@@ -251,6 +251,8 @@ python3 tools/release/validate_app_store_submission.py --strict
 
 在此之前，权威结论保持 HOLD。
 
+`V2-029` 已把本节所有最终证据收口到 [`final-app-store-gate-iteration-1.md`](final-app-store-gate-iteration-1.md)。最终只能以 `final_app_store_gate.py` 的退出码 0 与 `ready_for_submission: true` 改为 GO；单独某一条 strict、codesign 或网页检查通过都不够。
+
 ## 13. 本轮实际验收记录
 
 - `tools/release/validate_ios_release.sh`：阶段 0～4、19 项问题登记、发行静态、8 张商店截图、隐私/支持模板和 App Store 提交准备态全部通过；
