@@ -117,6 +117,7 @@ required_docs = (
     "phase-4-decision.md",
     "phase-4-test-record-template.csv",
     "phase-4-issue-register.csv",
+    "external-test-evidence-integrity-iteration-1.md",
 )
 for filename in required_docs:
     path = ROOT / "docs" / "v2" / filename
@@ -151,11 +152,28 @@ analyzer_test = ROOT / "tools/v2/test_analyze_user_tests.py"
 if not analyzer.is_file() or not analyzer_test.is_file():
     raise SystemExit("Phase 4 external-test aggregation tooling is missing")
 analyzer_source = analyzer.read_text(encoding="utf-8")
-for marker in ("ROUND_IDS =", "technical_failure", "external_gates_pass", "scope_warning"):
+for marker in (
+    "ROUND_IDS =",
+    "BUILD_COMMIT_RE",
+    "experience_segment",
+    "device_segment",
+    "technical-failure metric cells must remain blank",
+    "R2 must use a new frozen build_commit",
+    "build_commit does not identify a repository commit",
+    "R2 build_commit must descend from the frozen R1 build_commit",
+    "external_gates_pass",
+    "scope_warning",
+):
     if marker not in analyzer_source:
         raise SystemExit(f"external-test analyzer is missing {marker}")
 
-record_rows = list(csv.DictReader((ROOT / "docs/v2/phase-4-test-record-template.csv").open(encoding="utf-8", newline="")))
+with (ROOT / "docs/v2/phase-4-test-record-template.csv").open(encoding="utf-8", newline="") as handle:
+    record_reader = csv.DictReader(handle)
+    record_fields = set(record_reader.fieldnames or [])
+    record_rows = list(record_reader)
+for field in ("build_commit", "experience_segment", "device_segment", "goal_summary", "observed_blockers"):
+    if field not in record_fields:
+        raise SystemExit(f"external test record template is missing evidence field: {field}")
 if record_rows:
     raise SystemExit("external test record template must not contain fabricated participant results")
 

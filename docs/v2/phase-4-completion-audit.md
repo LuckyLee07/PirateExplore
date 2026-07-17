@@ -31,7 +31,7 @@
 - physical footprint 102.7 MB、峰值 103.7 MB，低于 256 MB 内部门槛；
 - 最终候选触发原生 cannon cue 后约 26 秒仍存活；
 - iPhone SE 3、iPhone 12 Pro 与 iPad A16 三档稳定模拟器比例全屏、操作完整；Xcode 26.2 的 iPhone 13 mini 错误尺寸缺陷已隔离；
-- 29 个已登记问题覆盖 P0/P1/P2；内部可完成的 P0/P1 已修复，外测、账号、公开隐私/支持页面与 App Store Connect 后台证据缺口保持开启；
+- 30 个已登记问题覆盖 P0/P1/P2；内部可完成的 P0/P1 已修复，外测、账号、公开隐私/支持页面与 App Store Connect 后台证据缺口保持开启；
 - 第二张地图 7.5 人周、前三海域 22 人周的限额预算，以及首章试玩后一次解锁的商业建议；
 - 外测模板保持空白，没有用内部自动化生成参与者结果。
 
@@ -60,7 +60,7 @@ python3 tools/v2/analyze_user_tests.py /path/to/phase-4-test-records.csv \
   --output /path/to/phase-4-external-report.md
 ```
 
-工具会验证轮次、匿名 ID、技术失败排除规则和布尔字段，并只用第二轮计算四项门槛。即使四项外测均通过，输出也明确不是总体 Go。
+工具会验证轮次与匿名 ID、每轮冻结 Git SHA、R2 新提交、技术失败排除规则、关键时序、访谈原始摘要，以及每轮经验和设备分层；只用第二轮计算四项门槛。形式化的“10 行全 true”不再能绕过证据完整性，详见 [`external-test-evidence-integrity-iteration-1.md`](external-test-evidence-integrity-iteration-1.md)。即使四项外测均通过，输出也明确不是总体 Go。
 
 ### 3. 最终决策与回归
 
