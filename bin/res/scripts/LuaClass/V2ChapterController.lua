@@ -88,6 +88,10 @@ function V2ChapterController:getNarrative()
     return V2ChapterState.getNarrative(self:load())
 end
 
+function V2ChapterController:getCombatImpact()
+    return V2ChapterState.getCombatImpact(self:load())
+end
+
 function V2ChapterController:getPresentation()
     return V2ChapterState.getPresentation(self:load())
 end

@@ -23,8 +23,9 @@ truthy(ipad.card_y > 250, "iPad story card leaves a dedicated action area")
 truthy(ipad.action_base_y + 28 < ipad.card_y, "iPad first action row stays below the story card")
 truthy(ipad.action_base_y - 2 * ipad.action_row_gap - 24 > ipad.footer_y + ipad.footer_size,
     "iPad third action row stays above the footer")
-truthy(ipad.card_battle_y > ipad.card_result_y + ipad.card_result_size,
-    "iPad battle metrics stay above the latest-result line")
+truthy(ipad.card_battle_y - ipad.card_battle_size * 3
+        > ipad.card_result_y + ipad.card_result_size,
+    "iPad three-line combat feedback stays above the latest-result line")
 truthy(ipad.art_y + ipad.art_height < ipad.map_y + 6,
     "iPad hero art stays below the route strip")
 

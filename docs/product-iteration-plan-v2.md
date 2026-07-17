@@ -841,6 +841,8 @@ P2：
 
 实施状态（2026-07-16）：内部候选基线已完成，包括本地行为记录、质量门槛源表、3→4 存档迁移、性能/资源/崩溃审计、两轮外测协议、问题登记、内容预算与商业模式建议。arm64 模拟器与 device compile 已通过；真实设备体验和两轮外部目标用户测试尚未执行，因此当前立项结论严格保持 **HOLD**。详见 [`v2/phase-4-user-test-protocol.md`](v2/phase-4-user-test-protocol.md)、[`v2/phase-4-quality-audit.md`](v2/phase-4-quality-audit.md) 与 [`v2/phase-4-decision.md`](v2/phase-4-decision.md)。
 
+内部样片续迭代（2026-07-17）：在不扩建第二海域的前提下继续修正纵切，优先补强舰炮到接舷的决策前因果反馈，以及完成升级对下一航程的具体收益说明。详见 [`v2/internal-sample-polish-3.md`](v2/internal-sample-polish-3.md)。该工作提升内部候选质量，但不替代真实目标用户证据，阶段 4 外部结论仍保持 **HOLD**。
+
 目标：判断是否值得进入前三海域和正式发行开发。
 
 交付：

@@ -548,9 +548,12 @@ function V2ChapterState.getActions(state)
     end
 
     local actions = copy(actionsByStage[state.stage] or {})
+    local combatImpact = state.stage == "naval"
+        and V2ChapterState.getCombatImpact(state) or nil
     if state.stage == "naval" and state.battle.enemy_ship_hp <= 0 then
         actions = {
-            { id = "board_now", label = "敌舰失去抵抗，开始接舷" },
+            { id = "board_now", label = string.format("敌舰失去抵抗，接舷｜敌军 %d/%d",
+                combatImpact.opening_hp, combatImpact.maximum_hp) },
             { id = "retreat", label = "放弃战利品并返航" },
         }
     elseif state.stage == "naval" and state.battle.gunner_mark_used then
@@ -570,6 +573,17 @@ function V2ChapterState.getActions(state)
             end
         end
         actions = filtered
+    end
+    if state.stage == "naval" then
+        for _, action in ipairs(actions) do
+            if action.id == "board_now" then
+                action.label = combatImpact.advantageous
+                    and string.format("带着甲板优势接舷｜敌军 %d/%d",
+                        combatImpact.opening_hp, combatImpact.maximum_hp)
+                    or string.format("立即接舷｜敌军 %d/%d",
+                        combatImpact.opening_hp, combatImpact.maximum_hp)
+            end
+        end
     end
     return actions
 end
@@ -630,13 +644,8 @@ function V2ChapterState.getNarrative(state)
         local gunStatus = state.battle.guns_suppressed
             and "敌炮已压制，后续反击降低。"
             or "压制敌炮不会推进接舷优势，但能降低后续反击。"
-        return string.format(
-            "%s\n甲板阈值 %d；火炮阈值 %d。%s",
-            dialogueBlock("node_raider", { "battle_start", "naval_hint" }),
-            state.battle.deck_threshold,
-            state.battle.gun_threshold,
-            gunStatus
-        )
+        return dialogueBlock("node_raider", { "battle_start", "naval_hint" })
+            .. "\n" .. gunStatus
     elseif state.stage == "boarding" then
         return state.battle.transfer_summary
             .. "\n" .. dialogueBlock("node_raider", { "boarding_start", "boarding_hint" })
@@ -650,12 +659,76 @@ function V2ChapterState.getNarrative(state)
         return dialogueBlock("node_port", { "return_to_port" })
             .. "\n船体升级提高远航容错；火炮升级提高舰炮输出。"
     elseif state.stage == "complete" then
-        return "第一枚符文线索：潮汐墓场。\n下一次远航目标已明确——穿过更深的迷雾，寻找符文守卫。"
+        local upgradeSummary = "本次升级已经完成。"
+        local nextAdvantage = "新的船只能力将在后续远航中生效。"
+        if state.upgrades.hull then
+            upgradeSummary = string.format(
+                "加固船体：最大耐久 +%d（当前 %d）。",
+                balanceValue("hull_level_bonus"), state.ship.hull_max
+            )
+            nextAdvantage = "更高耐久能提高穿越暗礁与承受敌炮反击的容错。"
+        elseif state.upgrades.guns then
+            upgradeSummary = string.format(
+                "强化火炮：单次齐射伤害 +%d（火炮等级 %d）。",
+                balanceValue("gun_level_bonus"), state.ship.gun_level
+            )
+            nextAdvantage = "更强齐射能更快击毁敌舰甲板，提前建立接舷优势。"
+        end
+        local nextObjective = state.next_voyage_objective
+            or "前往潮汐墓场寻找符文守卫"
+        return "第一枚符文线索：潮汐墓场。"
+            .. "\n本次升级｜" .. upgradeSummary
+            .. "\n下一航程｜" .. nextObjective .. "；" .. nextAdvantage
     elseif state.stage == "failed" then
         return "失败原因：" .. tostring(state.failure_reason)
             .. "\n恢复方案：" .. tostring(state.recovery_summary)
     end
     return ""
+end
+
+function V2ChapterState.getCombatImpact(state)
+    if state.stage ~= "naval" and state.stage ~= "boarding" then
+        return nil
+    end
+
+    local maximum = state.battle.enemy_boarding_hp_max
+    local wounded = math.max(0, math.min(maximum, balanceValue("boarding_wounded_hp")))
+    local reduction = math.max(0, maximum - wounded)
+    local deckBroken = state.battle.deck_broken == true
+    local openingHp = deckBroken and wounded or maximum
+
+    if state.stage == "naval" then
+        local remaining = math.max(0, state.battle.deck_threshold - state.battle.deck_damage)
+        local text = deckBroken
+            and string.format("接舷预估｜甲板已击毁 → 敌军 %d/%d（削弱 %d）",
+                openingHp, maximum, reduction)
+            or string.format("接舷预估｜甲板完整 → 敌军 %d/%d；还需 %d 甲板破坏",
+                openingHp, maximum, remaining)
+        return {
+            phase = "forecast",
+            text = text,
+            opening_hp = openingHp,
+            maximum_hp = maximum,
+            reduction = deckBroken and reduction or 0,
+            remaining_deck_damage = remaining,
+            advantageous = deckBroken,
+        }
+    end
+
+    local text = deckBroken
+        and string.format("舰炮传递｜甲板已击毁 → 敌军以 %d/%d 开场（削弱 %d）",
+            openingHp, maximum, reduction)
+        or string.format("舰炮传递｜甲板完整 → 敌军以 %d/%d 开场（未削弱）",
+            openingHp, maximum)
+    return {
+        phase = "transfer",
+        text = text,
+        opening_hp = openingHp,
+        maximum_hp = maximum,
+        reduction = deckBroken and reduction or 0,
+        remaining_deck_damage = 0,
+        advantageous = deckBroken,
+    }
 end
 
 function V2ChapterState.getPresentation(state)

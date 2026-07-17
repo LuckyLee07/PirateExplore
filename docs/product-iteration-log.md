@@ -311,3 +311,32 @@ Result:
 Internal simulator layout coverage is complete without claiming real-device or
 external-user evidence. The Phase 4 decision remains HOLD until those deferred
 gates are executed.
+
+## 2026-07-17 — V2 内部样片精修第 3 轮：因果反馈闭环
+
+目标：
+
+在不扩建第二海域、不改变存档和战斗数值的前提下，让玩家在接舷前看到
+舰炮结果预估，并在首章完成后理解本次升级会怎样影响下一航程。
+
+实现：
+
+- 新增与战斗状态同源的接舷预估：甲板完整为 100/100，击毁后为
+  65/100，并明确显示剩余甲板破坏和削弱值；
+- 接舷按钮同步显示敌军预估，进入接舷后继续显示实际传递结果；
+- 完成页按真实升级选择显示船体 +20 或火炮齐射 +25，并解释其对下一
+  航程的实际用途；
+- 紧凑布局和专项回归覆盖三行战斗反馈，问题以 `V2-033 / P2` 登记并修复。
+
+验收：
+
+- 专项状态机、阶段 0–4 与发行级静态/原生安全回归全部通过；
+- iPhone SE 3 的甲板完整预估与击毁后接舷传递两张 750×1334 实图通过，
+  截图后进程持续稳定；
+- Release 模拟器、device compile 与无签名 archive 构建通过，archive 内容
+  验证通过。
+
+结论：
+
+本轮只提升内部样片的可理解性和成长回报，不把内部自动化当作外部用户
+数据，也不改变阶段 4 的外部 `HOLD` 状态。

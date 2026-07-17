@@ -41,9 +41,9 @@ local function resourceLine(resources)
     )
 end
 
-local function battleLine(state)
+local function battleLine(state, impact)
     if state.stage == "naval" then
-        return string.format(
+        local metrics = string.format(
             "我方船体 %d/%d    敌舰 %d/%d\n甲板 %d/%d%s    敌炮 %d/%d%s",
             state.battle.player_hull,
             state.battle.player_hull_max,
@@ -56,14 +56,16 @@ local function battleLine(state)
             state.battle.gun_threshold,
             state.battle.guns_suppressed and "（已压制）" or ""
         )
+        return impact and (metrics .. "\n" .. impact.text) or metrics
     elseif state.stage == "boarding" then
-        return string.format(
+        local metrics = string.format(
             "接舷队 %d/%d    敌方甲板部队 %d/%d",
             state.battle.crew_hp,
             state.battle.crew_hp_max,
             state.battle.enemy_boarding_hp,
             state.battle.enemy_boarding_hp_max
         )
+        return impact and (metrics .. "\n" .. impact.text) or metrics
     end
     return nil
 end
@@ -541,7 +543,7 @@ function V2ChapterLayer:refresh()
     narrative:setPosition(cc.p(24, layout.card_narrative_y))
     card:addChild(narrative)
 
-    local battle = battleLine(state)
+    local battle = battleLine(state, self.controller:getCombatImpact())
     if battle then
         local battleLabel = createLabel(battle, layout.card_battle_size, state.stage == "naval" and COLORS.sea or COLORS.danger, width - 100)
         battleLabel:setAnchorPoint(cc.p(0, 1))
