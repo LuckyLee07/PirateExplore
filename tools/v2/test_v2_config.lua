@@ -39,6 +39,12 @@ assert(config:getPresentationMode() == "qa")
 zqV2SaveProfile = "qa_boarding"
 assert(config:getSaveProfile() == "qa_boarding")
 
+zqV2SaveProfile = "qa_harbor"
+assert(config:getSaveProfile() == "qa_harbor")
+
+zqV2SaveProfile = "qa_explore_intel"
+assert(config:getSaveProfile() == "qa_explore_intel")
+
 zqV2SaveProfile = "qa_rune"
 assert(config:getSaveProfile() == "qa_rune")
 

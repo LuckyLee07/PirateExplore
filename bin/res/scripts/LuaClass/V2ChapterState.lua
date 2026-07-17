@@ -238,13 +238,28 @@ end
 
 function V2ChapterState.new(profile)
     local state = baseState(profile)
-    if profile == "qa_explore" then
+    if profile == "qa_harbor" then
+        state.stage = "harbor"
+        state.current_node = "node_port"
+        state.objective = "确认船只模块取舍，然后从皇家港出航"
+        state.last_result = "四名船员和默认加固船体已经完成出航准备。"
+    elseif profile == "qa_explore" or profile == "qa_explore_intel" then
         state.stage = "route_choice"
         state.current_node = "node_fog_gate"
         state.flags.voyage_ready = true
         state.objective = "在安全航线与暗礁近路之间做出选择"
         state.last_result = "第一片迷雾已经在羊皮海图上显现。"
         state.resources.provisions = balanceValue("initial_provisions") - 1
+        if profile == "qa_explore_intel" then
+            state.flags.route_intel = true
+            state.resources.provisions = state.resources.provisions
+                - balanceValue("navigator_intel_cost")
+            state.route_intel = {
+                safe = routeData("safe_route").intel_hint,
+                risky = routeData("risky_shortcut").intel_hint,
+            }
+            state.last_result = "卡特琳娜已经揭示两条航线的风险、消耗与收益。"
+        end
     elseif profile == "qa_combat" then
         state.stage = "naval"
         state.current_node = "node_raider"
@@ -501,14 +516,18 @@ function V2ChapterState.getActions(state)
     end
 
     if state.stage == "harbor" then
-        local hullLabel = state.selected_module == "module_reinforced_hull"
-            and "✓ 加固船体" or "选择加固船体"
-        local gunsLabel = state.selected_module == "module_heavy_guns"
-            and "✓ 重炮甲板" or "选择重炮甲板"
+        local hull = ChapterData.by_id.ship_module.module_reinforced_hull
+        local guns = ChapterData.by_id.ship_module.module_heavy_guns
+        local hullLabel = string.format("%s%s\n耐久+%d",
+            state.selected_module == hull.id and "✓ " or "", hull.name, hull.hull_bonus)
+        local gunsLabel = string.format("%s%s\n齐射+%d｜补给%d",
+            state.selected_module == guns.id and "✓ " or "", guns.name,
+            guns.cannon_bonus, guns.supply_capacity_modifier)
+        local selected = moduleData(state)
         return {
             { id = "select_reinforced_hull", label = hullLabel },
             { id = "select_heavy_guns", label = gunsLabel },
-            { id = "start_voyage", label = "驶入第一片迷雾" },
+            { id = "start_voyage", label = "按" .. selected.name .. "\n配置出航" },
         }
     end
 
@@ -516,11 +535,13 @@ function V2ChapterState.getActions(state)
         local safe = routeData("safe_route")
         local risky = routeData("risky_shortcut")
         local safeLabel = state.flags.route_intel
-            and string.format("%s｜风险 %d / 补给 %d", safe.label, safe.risk, safe.supply_cost)
-            or "未知航线 A｜外海方向"
+            and string.format("安全外海｜风险%d\n补给-%d｜接舷+%d\n以补给换容错",
+                safe.risk, safe.supply_cost, safe.crew_max_bonus)
+            or "盲选 A｜外海方向"
         local riskyLabel = state.flags.route_intel
-            and string.format("%s｜风险 %d / 补给 %d", risky.label, risky.risk, risky.supply_cost)
-            or "未知航线 B｜暗礁方向"
+            and string.format("暗礁近路｜风险%d\n补给-%d｜船体-%d\n获得升级资源",
+                risky.risk, risky.supply_cost, risky.hull_damage)
+            or "盲选 B｜暗礁方向"
         local result = {
             { id = "choose_safe_route", label = safeLabel },
             { id = "choose_risky_route", label = riskyLabel },
@@ -528,7 +549,7 @@ function V2ChapterState.getActions(state)
         if not state.flags.route_intel then
             table.insert(result, 1, {
                 id = "reveal_route_intel",
-                label = "卡特琳娜：测绘（" .. balanceValue("navigator_intel_cost") .. " 补给）",
+                label = "先测绘｜花 " .. balanceValue("navigator_intel_cost") .. " 补给查看后果",
             })
         end
         return result
@@ -613,15 +634,24 @@ function V2ChapterState.getNarrative(state)
     if state.stage == "opening" then
         return dialogueBlock("node_port", { "chapter_start" })
     elseif state.stage == "harbor" then
-        return "四名船员已经就位：炮手罗克、水手米克、航海士卡特琳娜、医师艾琳。\n选择一项船只模块；当前配置可直接出航。"
+        local hull = ChapterData.by_id.ship_module.module_reinforced_hull
+        local guns = ChapterData.by_id.ship_module.module_heavy_guns
+        return "四名船员已经就位；默认已装配加固船体，可直接出航。"
+            .. string.format("\n加固船体｜耐久 +%d；重炮甲板｜齐射 +%d，但补给上限 %d。",
+                hull.hull_bonus, guns.cannon_bonus, guns.supply_capacity_modifier)
     elseif state.stage == "route_choice" then
         if state.flags.route_intel then
-            return "卡特琳娜完成测绘：\n"
-                .. routeData("safe_route").intel_hint .. "。\n"
-                .. routeData("risky_shortcut").intel_hint .. "。"
+            local safe = routeData("safe_route")
+            local risky = routeData("risky_shortcut")
+            return "卡特琳娜完成测绘，选择前已看清后果："
+                .. string.format("\n安全外海｜风险 %d · 补给 -%d · 接舷上限 +%d。",
+                    safe.risk, safe.supply_cost, safe.crew_max_bonus)
+                .. string.format("\n暗礁近路｜风险 %d · 补给 -%d · 船体 -%d · 获得升级资源。",
+                    risky.risk, risky.supply_cost, risky.hull_damage)
         end
         return dialogueBlock("node_fog_gate", { "node_enter" })
-            .. "\n前方两条航线都被迷雾覆盖；可以直接选择，也可以消耗补给测绘。"
+            .. string.format("\n可以盲选方向，也可以花 %d 补给测绘，先查看风险与后果。",
+                balanceValue("navigator_intel_cost"))
     elseif state.stage == "route_event" then
         if state.route == "risky_shortcut" then
             return dialogueBlock("node_wreck", { "node_enter" })

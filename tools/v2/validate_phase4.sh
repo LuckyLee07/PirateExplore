@@ -13,5 +13,7 @@ python3 tools/v2/validate_player_presentation.py
 python3 tools/v2/validate_internal_sample_2.py
 lua tools/v2/test_v2_internal_sample_3.lua
 python3 tools/v2/validate_internal_sample_3.py
+lua tools/v2/test_v2_internal_sample_4.lua
+python3 tools/v2/validate_internal_sample_4.py
 
 echo "V2 Phase 4 internal validation passed; external gates remain pending"

@@ -21,6 +21,8 @@ local ipad = Layout.build(640, 960)
 equal(ipad.compact, true, "4:3 iPad uses the compact composition")
 truthy(ipad.card_y > 250, "iPad story card leaves a dedicated action area")
 truthy(ipad.action_base_y + 28 < ipad.card_y, "iPad first action row stays below the story card")
+truthy(ipad.action_label_width < 128 * ipad.action_button_scale,
+    "iPad action text stays inside the scaled button")
 truthy(ipad.action_base_y - 2 * ipad.action_row_gap - 24 > ipad.footer_y + ipad.footer_size,
     "iPad third action row stays above the footer")
 truthy(ipad.card_battle_y - ipad.card_battle_size * 3

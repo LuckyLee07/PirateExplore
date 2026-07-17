@@ -451,8 +451,12 @@ function V2ChapterLayer:addActionButton(parent, action, x, y, layout)
         self:refresh()
     end)
 
-    local fontSize = string.len(action.label) > 36 and 12 or layout.action_font_size
-    local label = createLabel(action.label, fontSize, COLORS.ink, 116, cc.TEXT_ALIGNMENT_CENTER)
+    local maximumLineLength = 0
+    for line in string.gmatch(action.label, "[^\n]+") do
+        maximumLineLength = math.max(maximumLineLength, string.len(line))
+    end
+    local fontSize = maximumLineLength > 36 and 12 or layout.action_font_size
+    local label = createLabel(action.label, fontSize, COLORS.ink, layout.action_label_width, cc.TEXT_ALIGNMENT_CENTER)
     label:setAnchorPoint(cc.p(0.5, 0.5))
     label:setPosition(cc.p(button:getContentSize().width * 0.5, button:getContentSize().height * 0.5 + 2))
     label:setScale(1 / layout.action_button_scale)
