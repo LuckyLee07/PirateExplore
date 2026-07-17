@@ -52,6 +52,9 @@ zqV2SaveProfile = "qa_complete"
 assert(config:getSaveProfile() == "qa_complete")
 assert(config:isQAProfile())
 
+zqV2SaveProfile = "qa_upgrade"
+assert(config:getSaveProfile() == "qa_upgrade")
+
 zqV2SaveProfile = "invalid_profile"
 assert(config:getSaveProfile() == "player")
 assert(not config:isQAProfile())

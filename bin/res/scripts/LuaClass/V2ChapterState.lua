@@ -316,6 +316,18 @@ function V2ChapterState.new(profile)
         applyReward(state, "reward_rune_clue")
         state.objective = "确认战利品用途并返回皇家港"
         state.last_result = "符文碎片和追猎者战利品已经清点完毕。"
+    elseif profile == "qa_upgrade" then
+        state.stage = "upgrade"
+        state.current_node = "node_port"
+        state.route = "safe_route"
+        state.flags.raider_defeated = true
+        state.flags.chapter_01_complete = true
+        state.chapter_complete = true
+        state.voyage_count = 1
+        applyReward(state, "reward_battle")
+        applyReward(state, "reward_rune_clue")
+        state.objective = "使用本次远航资源完成一次船只升级"
+        state.last_result = "追猎者战利品已入库，船坞开放首次升级。"
     elseif profile == "qa_complete" then
         state.stage = "complete"
         state.current_node = "node_port"
@@ -497,8 +509,10 @@ local actionsByStage = {
         { id = "return_to_port", label = "带着战利品返航" },
     },
     upgrade = {
-        { id = "upgrade_hull", label = "升级船体（" .. balanceValue("hull_upgrade_timber_cost") .. " 木材）" },
-        { id = "upgrade_guns", label = "升级火炮（" .. balanceValue("guns_upgrade_iron_cost") .. " 铁料）" },
+        { id = "upgrade_hull", label = "加固船体\n木材-" .. balanceValue("hull_upgrade_timber_cost")
+            .. "｜耐久+" .. balanceValue("hull_level_bonus") },
+        { id = "upgrade_guns", label = "强化火炮\n铁料-" .. balanceValue("guns_upgrade_iron_cost")
+            .. "｜齐射+" .. balanceValue("gun_level_bonus") },
     },
     failed = {
         { id = "retry_battle", label = "重试（" .. balanceValue("retry_supply_cost") .. " 补给）" },
@@ -684,10 +698,24 @@ function V2ChapterState.getNarrative(state)
         return dialogueBlock("node_rune_clue", { "chapter_complete" })
             .. "\n战斗复盘：" .. tostring(state.battle_report)
     elseif state.stage == "settlement" then
-        return "追猎者战利品已经装船。返航后可在船体耐久与火炮效率之间完成一次有效升级。"
+        local battleReward = ChapterData.by_id.reward.reward_battle
+        local runeReward = ChapterData.by_id.reward.reward_rune_clue
+        return string.format(
+            "追猎者战利品｜金币 +%d · 木材 +%d · 铁料 +%d · 符文尘 +%d。",
+            battleReward.gold, battleReward.timber, battleReward.iron, battleReward.rune_dust
+        ) .. string.format(
+            "\n符文碎片｜符文尘 +%d，并指向潮汐墓场。",
+            runeReward.rune_dust
+        ) .. string.format(
+            "\n返航后可选：耐久 +%d，或单次齐射 +%d。",
+            balanceValue("hull_level_bonus"), balanceValue("gun_level_bonus")
+        )
     elseif state.stage == "upgrade" then
         return dialogueBlock("node_port", { "return_to_port" })
-            .. "\n船体升级提高远航容错；火炮升级提高舰炮输出。"
+            .. string.format("\n加固船体｜木材 -%d → 最大耐久 +%d，提高航行与敌炮容错。",
+                balanceValue("hull_upgrade_timber_cost"), balanceValue("hull_level_bonus"))
+            .. string.format("\n强化火炮｜铁料 -%d → 单次齐射 +%d，更快建立接舷优势。",
+                balanceValue("guns_upgrade_iron_cost"), balanceValue("gun_level_bonus"))
     elseif state.stage == "complete" then
         local upgradeSummary = "本次升级已经完成。"
         local nextAdvantage = "新的船只能力将在后续远航中生效。"
