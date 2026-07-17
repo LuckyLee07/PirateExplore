@@ -54,6 +54,7 @@
 | App Store 最终聚合门禁 | 通过 | `V2-029` 已关闭；30 个外部字段零 pending 后强制运行 strict manifest、公网页面、archive 内容和 Distribution App；空/skipped/failed 均 HOLD |
 | 真机体验证据门禁 | 通过 | `V2-031` 已关闭内部工具缺口；三类设备必须同候选完成 14 项检查和最低时长，最终只接受同一个 TestFlight build；当前零记录，体验门槛仍未通过 |
 | 总体产品上线聚合门禁 | 通过 | `V2-032` 已关闭内部工具缺口；联合完整发行、外测、TestFlight 真机、App Store 和候选一致性；当前 47 项 pending，总体仍 HOLD |
+| archive 产物溯源 | 通过 | `V2-037` 已关闭；App 内嵌候选 ID、源码提交与 dirty 状态，clean 候选同时校验 HEAD、App/dSYM UUID 与二进制 SHA-256 |
 | 隐私/支持内部准备 | 通过 | V2 顶栏入口、本地说明、公开页面模板、渲染和分层校验工具完成；真实 URL 仍由 `V2-018` 阻塞 |
 | App Store Connect 内部准备 | 通过 | 提交 manifest、纯文本元数据、审核路径、年龄分级事实盘点和准备/严格双层校验完成；账号侧填写仍由 `V2-019` 阻塞 |
 | Release 自动验收 | 通过 | 阶段 0～4、发行静态、Release arm64 模拟器、无签名 device archive 与 archive 内容检查通过；详见 `ios-release-engineering-iteration-1.md` |
@@ -129,6 +130,13 @@ python3 -B tools/release/apple_signing_readiness.py \
 
 # 检查 archive 的版本、架构、隐私清单、动态库和遗留符号
 python3 tools/release/validate_ios_archive.py build/archives/NewPirate.xcarchive
+
+# 冻结候选还需精确匹配干净 HEAD，并记录二进制与 dSYM 指纹
+python3 tools/release/archive_provenance.py build/archives/NewPirate.xcarchive \
+  --expected-source-commit <冻结 Git SHA> \
+  --expected-candidate-id 2.0.0-1-internal \
+  --require-clean-head \
+  --record-output /path/to/internal-candidate-provenance.json
 
 # App Store Connect 准备态：允许外部字段待办，但校验文本、隐私、分级与构建一致性
 python3 tools/release/validate_app_store_submission.py

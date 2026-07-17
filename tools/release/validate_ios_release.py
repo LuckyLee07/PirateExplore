@@ -77,6 +77,11 @@ FINAL_PRODUCT_LAUNCH_GATE = ROOT / "tools/release/final_product_launch_gate.py"
 FINAL_PRODUCT_LAUNCH_GATE_TEST = ROOT / "tools/release/test_final_product_launch_gate.py"
 PRODUCT_LAUNCH_MANIFEST = ROOT / "docs/release/product-launch-manifest.json"
 FINAL_PRODUCT_LAUNCH_DOC = ROOT / "docs/release/final-product-launch-gate-iteration-1.md"
+XCODE_SCRIPT = ROOT / "xcode.sh"
+ARCHIVE_PROVENANCE = ROOT / "tools/release/archive_provenance.py"
+ARCHIVE_PROVENANCE_TEST = ROOT / "tools/release/test_archive_provenance.py"
+ARCHIVE_VALIDATOR = ROOT / "tools/release/validate_ios_archive.py"
+ARCHIVE_PROVENANCE_DOC = ROOT / "docs/release/archive-provenance-iteration-1.md"
 
 
 def require(condition: bool, message: str) -> None:
@@ -112,6 +117,8 @@ def validate_info_plist() -> None:
     require(info.get("CFBundleDisplayName") == "海上探险家", "unexpected display name")
     require(info.get("CFBundleShortVersionString") == "$(MARKETING_VERSION)", "marketing version must come from build settings")
     require(info.get("CFBundleVersion") == "$(CURRENT_PROJECT_VERSION)", "build number must come from build settings")
+    require(info.get("NewPirateCandidateID") == "$(NEWPIRATE_CANDIDATE_ID)", "candidate ID must come from build settings")
+    require(info.get("NewPirateSourceCommit") == "$(NEWPIRATE_SOURCE_COMMIT)", "source commit must come from build settings")
     require(info.get("UILaunchScreen") == {}, "modern UILaunchScreen declaration is required")
     require(info.get("ITSAppUsesNonExemptEncryption") is False, "offline release must declare that it has no non-exempt encryption")
     require(info.get("UIRequiresFullScreen") is True, "portrait game must require full screen")
@@ -818,6 +825,70 @@ def validate_final_product_launch_gate() -> None:
         require(marker in evidence, f"final product launch evidence is missing: {marker}")
 
 
+def validate_archive_provenance() -> None:
+    for path in (
+        XCODE_SCRIPT,
+        ARCHIVE_PROVENANCE,
+        ARCHIVE_PROVENANCE_TEST,
+        ARCHIVE_VALIDATOR,
+        ARCHIVE_PROVENANCE_DOC,
+    ):
+        require(path.is_file(), f"archive provenance component is missing: {path.relative_to(ROOT)}")
+
+    xcode_script = XCODE_SCRIPT.read_text(encoding="utf-8")
+    for marker in (
+        "NEWPIRATE_SOURCE_COMMIT",
+        "NEWPIRATE_CANDIDATE_ID",
+        "HEAD-dirty",
+        "diff --cached --quiet",
+        '"${IOS_PROVENANCE_SETTINGS[@]}"',
+    ):
+        require(marker in xcode_script, f"Xcode provenance wiring is missing: {marker}")
+
+    provenance = ARCHIVE_PROVENANCE.read_text(encoding="utf-8")
+    for marker in (
+        "NewPirateSourceCommit",
+        "NewPirateCandidateID",
+        "dirty source cannot be recorded as a frozen candidate",
+        "archive executable and dSYM UUIDs do not match",
+        "tracked worktree must be clean",
+        "executable",
+        "info_plist_sha256",
+    ):
+        require(marker in provenance, f"archive provenance validator is missing: {marker}")
+
+    regression = ARCHIVE_PROVENANCE_TEST.read_text(encoding="utf-8")
+    for marker in (
+        "dirty source",
+        "source commit mismatch",
+        "candidate ID mismatch",
+        "does not identify",
+        "bad candidate",
+    ):
+        require(marker in regression, f"archive provenance regression is missing: {marker}")
+
+    archive_validator = ARCHIVE_VALIDATOR.read_text(encoding="utf-8")
+    for marker in (
+        "--expected-source-commit",
+        "--expected-candidate-id",
+        "--require-clean-provenance",
+        "validate_identity",
+    ):
+        require(marker in archive_validator, f"archive content validator lacks provenance enforcement: {marker}")
+
+    evidence = ARCHIVE_PROVENANCE_DOC.read_text(encoding="utf-8")
+    for marker in (
+        "V2-037 / P1",
+        "NewPirateSourceCommit",
+        "NewPirateCandidateID",
+        "NewPirate-provenance-iteration-1.xcarchive",
+        "2.0.0-1-provenance-test",
+        "预期拒绝",
+        "30 项外部字段",
+    ):
+        require(marker in evidence, f"archive provenance evidence is missing: {marker}")
+
+
 def validate_toolchain_and_repository() -> None:
     output = subprocess.run(
         ["xcodebuild", "-version"],
@@ -854,6 +925,7 @@ def main() -> None:
     validate_final_app_store_gate()
     validate_device_acceptance_gate()
     validate_final_product_launch_gate()
+    validate_archive_provenance()
     validate_toolchain_and_repository()
     print("iOS release static validation passed")
 

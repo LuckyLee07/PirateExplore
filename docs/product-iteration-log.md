@@ -428,7 +428,7 @@ gates are executed.
 结论：
 
 - 六轮内部精修及 10 张 iPhone SE 小屏证据全部通过；
-- 36 个问题中没有尚可由内部继续修复的开放 P0/P1；
+- 37 个问题中没有尚可由内部继续修复的开放 P0/P1；
 - 阶段 0–4、发行级回归、Release 模拟器、device compile 和最终 archive
   已形成可重复证据链；
 - 第一章内部样片状态改为 `FROZEN`，停止无外部证据驱动的功能扩张；
@@ -437,3 +437,25 @@ gates are executed.
 
 后续只在条件具备时按“冻结候选 → 同候选真机矩阵 → 外测 R1 → P0/P1
 修复 → 外测 R2 → Go/No-Go”顺序推进。
+
+## 2026-07-17 — 冻结后发行工程第 1 轮：archive 产物溯源
+
+实现：
+
+- iOS App 内嵌候选 ID、源码 Git 提交和 tracked 工作树 dirty 状态；
+- `xcode.sh` 对 simulator、device 和 archive 使用同一套身份注入；
+- archive 内容校验支持精确候选/提交匹配，并可强制 clean provenance；
+- 新增候选记录工具，联合可执行文件与 dSYM UUID、SHA-256、版本和提交；
+- `V2-037 / P1` 登记并关闭。
+
+验收：
+
+- 专项、阶段 0–4 与发行级回归通过；
+- Release simulator/device compile 通过，模拟器 App 实际显示 `HEAD-dirty`；
+- `NewPirate-provenance-iteration-1.xcarchive` 精确身份校验通过；
+- 同一 dirty archive 被 clean 候选门禁预期拒绝。
+
+结论：
+
+本轮没有改变冻结样片内容。下一轮从干净提交生成 `2.0.0-1-internal`
+候选并登记二进制指纹；外测、真机和 App Store 状态继续 HOLD。

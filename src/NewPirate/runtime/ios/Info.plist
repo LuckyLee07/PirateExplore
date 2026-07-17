@@ -20,6 +20,10 @@
 	<string>$(MARKETING_VERSION)</string>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<key>NewPirateCandidateID</key>
+	<string>$(NEWPIRATE_CANDIDATE_ID)</string>
+	<key>NewPirateSourceCommit</key>
+	<string>$(NEWPIRATE_SOURCE_COMMIT)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>ITSAppUsesNonExemptEncryption</key>

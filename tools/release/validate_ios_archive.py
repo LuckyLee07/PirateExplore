@@ -7,7 +7,12 @@ import argparse
 import plistlib
 import struct
 import subprocess
+import sys
 from pathlib import Path
+
+sys.dont_write_bytecode = True
+
+from archive_provenance import ProvenanceError, validate_identity
 
 
 def require(condition: bool, message: str) -> None:
@@ -30,6 +35,9 @@ def png_metadata(path: Path) -> tuple[int, int, int]:
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("archive", type=Path)
+    parser.add_argument("--expected-source-commit")
+    parser.add_argument("--expected-candidate-id")
+    parser.add_argument("--require-clean-provenance", action="store_true")
     args = parser.parse_args()
 
     archive = args.archive.resolve()
@@ -46,6 +54,15 @@ def main() -> None:
     require(info.get("MinimumOSVersion") == "12.0", "unexpected minimum iOS version")
     require(info.get("UIDeviceFamily") == [1, 2], "archive must support iPhone and iPad")
     require(info.get("ITSAppUsesNonExemptEncryption") is False, "offline archive must declare no non-exempt encryption")
+    try:
+        validate_identity(
+            info,
+            expected_source_commit=args.expected_source_commit,
+            expected_candidate_id=args.expected_candidate_id,
+            require_clean=args.require_clean_provenance,
+        )
+    except ProvenanceError as error:
+        raise AssertionError(str(error)) from error
 
     for filename, expected in (
         ("AppIcon60x60@2x.png", (120, 120)),
