@@ -53,6 +53,8 @@ iOS 启动必经的 `CCEAGLView` 仍采用手动引用计数；旧实现没有�
 
 外测入口原先只聚合轮次和四个布尔指标，无法拒绝混用构建、样本分层不足或缺少访谈原始回答的形式化记录。`V2-030` 已将冻结 Git SHA、R2 新构建、匿名编号、经验/设备分层、观察时序、访谈摘要和技术失败互斥规则纳入分析器；真实模板仍为空，外测状态没有被内部回归改成通过。完整证据见 [`external-test-evidence-integrity-iteration-1.md`](external-test-evidence-integrity-iteration-1.md)。
 
+真机体验原先只有人工检查表，稳定连接预检、模拟器运行或 device compile 都可能被误当作体验证据。`V2-031` 已建立零记录模板和严格验证器：低端 iPhone、现代 iPhone、iPad 必须使用同一候选，完成 14 项体验检查与最低持续时长；最终发布只接受同一 TestFlight build。当前缺三类真实记录并以退出码 2 保持 HOLD。完整证据见 [`../release/device-acceptance-evidence-iteration-1.md`](../release/device-acceptance-evidence-iteration-1.md)。
+
 本地行为记录与 V2 scoped save 同步保存；单会话最多 240 条，避免长期 QA 重玩导致存档无限增长。记录不联网，不含个人身份信息。
 
 ## 4. 崩溃与音频
@@ -107,6 +109,7 @@ iOS 使用 `UILaunchScreen`；应用 target 不再启用弃用的 LaunchImage �
 - iOS 签名产物完整性：通过；本地 Development App 的 strict codesign、Team/Bundle ID、leaf/Profile 指纹、entitlements 与 arm64 一致，冒充 App Store 模式严格失败；
 - App Store 最终聚合门禁：通过；当前 30 个外部字段保持 pending，四项最终证据均 skipped 且总体退出码 2，没有误报 GO；
 - 外测证据完整性：通过；混合构建、R2 复用提交、错轮 ID、空访谈、技术失败混填、时序倒退和样本分层不足均不能得到 PASS；模板保持零参与者行；
+- 真机体验证据门禁：通过；当前模板零记录、缺少低端 iPhone/现代 iPhone/iPad 并严格 HOLD；development 结果不能冒充最终 TestFlight 矩阵；
 - 真实设备触控、安全区、帧率、静音键和响度：待设备体验执行；iPhone 12 Pro 与 iPad mini 状态连续波动并在最终复核时 unavailable，不能作为实际真机证据；
 - 两轮目标用户测试：待执行，所有外测 gate 仍为 `pending_external`。
 

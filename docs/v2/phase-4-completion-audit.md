@@ -31,7 +31,7 @@
 - physical footprint 102.7 MB、峰值 103.7 MB，低于 256 MB 内部门槛；
 - 最终候选触发原生 cannon cue 后约 26 秒仍存活；
 - iPhone SE 3、iPhone 12 Pro 与 iPad A16 三档稳定模拟器比例全屏、操作完整；Xcode 26.2 的 iPhone 13 mini 错误尺寸缺陷已隔离；
-- 30 个已登记问题覆盖 P0/P1/P2；内部可完成的 P0/P1 已修复，外测、账号、公开隐私/支持页面与 App Store Connect 后台证据缺口保持开启；
+- 31 个已登记问题覆盖 P0/P1/P2；内部可完成的 P0/P1 已修复，外测、真机、账号、公开隐私/支持页面与 App Store Connect 后台证据缺口保持开启；
 - 第二张地图 7.5 人周、前三海域 22 人周的限额预算，以及首章试玩后一次解锁的商业建议；
 - 外测模板保持空白，没有用内部自动化生成参与者结果。
 
@@ -42,6 +42,8 @@
 ### 1. 真实设备体验
 
 需要把签名候选安装到真实 iPhone，逐项记录：启动与安全区、所有按钮触控、字号、30 FPS 航行/舰炮/接舷体验、横竖屏约束、静音键、系统音频混合和响度。compile-only 不能证明这些项目。
+
+真实记录必须从 [`../release/device-acceptance-template.csv`](../release/device-acceptance-template.csv) 复制，并通过 [`validate_device_acceptance.py`](../../tools/release/validate_device_acceptance.py)；开发签名结果只用于排障，最终关闭门槛必须用 `--require-testflight` 证明低端 iPhone、现代 iPhone 和 iPad 使用同一个 TestFlight build。完整规则见 [`../release/device-acceptance-evidence-iteration-1.md`](../release/device-acceptance-evidence-iteration-1.md)。
 
 2026-07-17 的指纹关联预检纠正了旧人工记录：本机当前 `Apple Development` 私钥身份有效至 2027-04-19，并与有效至 2027-05-12、覆盖 `24U7H6TL68.*` 的开发 Profile 匹配。此前按显示名称读取命中过期证书，不能代表当前 codesigning identity。工程仍未确认 `DEVELOPMENT_TEAM`，也没有匹配 `com.fancyGame.NewPirate` 的 Distribution identity/App Store Profile。
 

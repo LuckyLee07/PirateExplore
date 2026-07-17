@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import csv
 import json
 import plistlib
 import re
@@ -68,6 +69,10 @@ SIGNED_APP_VALIDATOR_DOC = ROOT / "docs/release/signed-app-integrity-iteration-1
 FINAL_APP_STORE_GATE = ROOT / "tools/release/final_app_store_gate.py"
 FINAL_APP_STORE_GATE_TEST = ROOT / "tools/release/test_final_app_store_gate.py"
 FINAL_APP_STORE_GATE_DOC = ROOT / "docs/release/final-app-store-gate-iteration-1.md"
+DEVICE_ACCEPTANCE_VALIDATOR = ROOT / "tools/release/validate_device_acceptance.py"
+DEVICE_ACCEPTANCE_TEST = ROOT / "tools/release/test_validate_device_acceptance.py"
+DEVICE_ACCEPTANCE_TEMPLATE = ROOT / "docs/release/device-acceptance-template.csv"
+DEVICE_ACCEPTANCE_DOC = ROOT / "docs/release/device-acceptance-evidence-iteration-1.md"
 
 
 def require(condition: bool, message: str) -> None:
@@ -704,6 +709,58 @@ def validate_final_app_store_gate() -> None:
         require(marker in evidence, f"final App Store gate evidence is missing: {marker}")
 
 
+def validate_device_acceptance_gate() -> None:
+    for path in (
+        DEVICE_ACCEPTANCE_VALIDATOR,
+        DEVICE_ACCEPTANCE_TEST,
+        DEVICE_ACCEPTANCE_TEMPLATE,
+        DEVICE_ACCEPTANCE_DOC,
+    ):
+        require(path.is_file(), f"device acceptance component is missing: {path.relative_to(ROOT)}")
+
+    validator = DEVICE_ACCEPTANCE_VALIDATOR.read_text(encoding="utf-8")
+    for marker in (
+        "low_end_iphone",
+        "modern_iphone",
+        "ipad",
+        "require_testflight",
+        "app_store_build_id",
+        "does not match submission candidate",
+        "thermal_duration_min",
+        "ready_for_device_release",
+        "failed device evidence requires issue_ids",
+        "build_commit does not identify a repository commit",
+    ):
+        require(marker in validator, f"device acceptance validator is missing: {marker}")
+
+    with DEVICE_ACCEPTANCE_TEMPLATE.open(encoding="utf-8", newline="") as handle:
+        reader = csv.DictReader(handle)
+        fields = set(reader.fieldnames or [])
+        rows = list(reader)
+    for field in (
+        "device_role",
+        "build_commit",
+        "distribution_channel",
+        "silent_switch",
+        "voyage_frame_rate",
+        "save_recovery",
+        "evidence_notes",
+    ):
+        require(field in fields, f"device acceptance template is missing: {field}")
+    require(not rows, "device acceptance template must not contain fabricated physical-device results")
+
+    evidence = DEVICE_ACCEPTANCE_DOC.read_text(encoding="utf-8")
+    for marker in (
+        "V2-031 / P1",
+        "ready_for_device_release: false",
+        "low_end_iphone",
+        "modern_iphone",
+        "TestFlight",
+        "零记录",
+    ):
+        require(marker in evidence, f"device acceptance evidence is missing: {marker}")
+
+
 def validate_toolchain_and_repository() -> None:
     output = subprocess.run(
         ["xcodebuild", "-version"],
@@ -738,6 +795,7 @@ def main() -> None:
     validate_apple_signing_readiness_audit()
     validate_signed_app_validator()
     validate_final_app_store_gate()
+    validate_device_acceptance_gate()
     validate_toolchain_and_repository()
     print("iOS release static validation passed")
 

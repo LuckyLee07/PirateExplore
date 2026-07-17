@@ -240,7 +240,7 @@ tools/release/validate_ios_release.sh
 
 ### 13.3 自动化与严格门禁
 
-- `tools/release/validate_ios_release.sh`：阶段 0～4、当前 30 项问题登记、发行静态、原生存档耐久性、核心缓冲所有权、本地文件安全读取、旧配置 XML 迁移、纹理图集缓冲、iOS 主视图输入契约、Apple 签名/真机稳定性/签名产物/最终聚合预检、商店素材、公共页面模板和 App Store 提交准备校验全部通过；
+- `tools/release/validate_ios_release.sh`：阶段 0～4、当前 31 项问题登记、发行静态、原生存档耐久性、核心缓冲所有权、本地文件安全读取、旧配置 XML 迁移、纹理图集缓冲、iOS 主视图输入契约、Apple 签名/真机稳定性/真机体验证据/签名产物/最终聚合预检、商店素材、公共页面模板和 App Store 提交准备校验全部通过；
 - `CONFIGURATION=Release ./xcode.sh ios-sim`：arm64 Release 模拟器构建通过；
 - `NewPirate-privacy-support-final.xcarchive`：Release arm64 无签名归档已生成，版本、build、隐私清单、动态库、网络/广告/内购遗留符号检查通过；
 - `python3 tools/release/validate_public_release_pages.py --require-app-links`：当前按预期失败于两个 URL 尚未配置，证明外部 P0 没有被误关闭；

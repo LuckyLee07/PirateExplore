@@ -111,6 +111,8 @@ exit: 2
 
 因此 `V2-027` 可以关闭，但 `V2-014`、真机矩阵与 `V2-006` 外测门槛均不受影响。
 
+`V2-031` 已进一步把设备就绪后的体验验收收口为结构化模板与验证器，见 [`device-acceptance-evidence-iteration-1.md`](device-acceptance-evidence-iteration-1.md)。连接预检通过仍不等于体验通过，最终矩阵必须让低端 iPhone、现代 iPhone 和 iPad 使用同一个 TestFlight build。
+
 ## 8. 回归验收
 
 | 验收项 | 结果 |

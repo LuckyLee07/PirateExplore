@@ -14,6 +14,7 @@ python3 tools/release/test_eaglview_contract.py
 python3 -B tools/release/test_apple_signing_readiness.py
 python3 -B tools/release/test_validate_ios_signed_app.py
 python3 -B tools/release/test_final_app_store_gate.py
+python3 -B tools/release/test_validate_device_acceptance.py
 python3 tools/release/validate_ios_release.py
 python3 tools/release/validate_app_store_assets.py
 python3 tools/release/validate_public_release_pages.py
