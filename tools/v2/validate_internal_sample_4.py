@@ -40,8 +40,8 @@ for marker in ('string.gmatch(action.label, "[^\\n]+")', "maximumLineLength > 36
     if marker not in LAYER:
         raise SystemExit(f"multi-line action sizing is missing: {marker}")
 
-if "layout.action_label_width" not in LAYER:
-    raise SystemExit("action labels do not use the responsive width model")
+if "layout.action_button_width - 58" not in LAYER:
+    raise SystemExit("numbered action labels do not use the responsive width model")
 
 for marker in (
     "preparation explains the safe default",

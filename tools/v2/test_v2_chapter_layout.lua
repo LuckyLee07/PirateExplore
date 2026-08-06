@@ -18,6 +18,8 @@ truthy(phone.top_bar_height - phone.title_y >= 85, "iPhone title clears the Dyna
 truthy(phone.action_base_y + phone.action_button_height * 0.5 < phone.card_y,
     "iPhone action row stays below the story card")
 truthy(phone.action_button_height >= 44, "iPhone actions meet the minimum touch target")
+truthy(phone.objective_panel_height >= 64, "iPhone mission order has a dedicated HUD plate")
+truthy(phone.voyage_rail_gap >= 36, "iPhone vertical voyage rail keeps its milestones legible")
 truthy(phone.resource_y - phone.resource_chip_height * 0.5 > phone.map_y + 20,
     "iPhone resource rail stays above the voyage progress line")
 truthy(phone.art_y + phone.art_height == phone.height - phone.top_bar_height,
@@ -75,4 +77,4 @@ truthy(ipadA16.action_base_y - ipadA16.story_card_offset
         < ipadA16.card_y - ipadA16.story_card_offset,
     "wider iPad quiet story actions stay below the shorter story sheet")
 
-print("V2 chapter responsive layout OK: UI 3.0 hierarchy and touch constraints passed")
+print("V2 chapter responsive layout OK: UI 3.1 structural HUD and touch constraints passed")

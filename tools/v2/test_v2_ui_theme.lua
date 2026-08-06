@@ -28,8 +28,9 @@ equal(Theme.actionRole("failed", "retry_battle", 1, 2), "primary", "retry is the
 local resources = Theme.resourceItems({ gold = 40, timber = 2, iron = 3, provisions = 6, rune_dust = 1 })
 equal(#resources, 5, "resource HUD stays compact")
 equal(resources[1].value, 40, "gold value is forwarded")
+equal(resources[1].short, "金", "resource HUD exposes a compact instrument label")
 equal(resources[5].accent, "purple", "rune resource keeps its semantic accent")
 
 equal(Theme.colors.separator[1], 76, "UI 3.0 keeps a dedicated quiet separator tone")
 
-print("V2 UI 3.0 theme OK: restrained stage accents, resources and action hierarchy passed")
+print("V2 UI 3.1 theme OK: stage accents, instrument resources and action hierarchy passed")

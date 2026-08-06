@@ -25,8 +25,8 @@ for marker in (
     'local V2UITheme = require "LuaClass/V2UITheme"',
     "function V2ChapterLayer:addObjectiveBanner",
     "function V2ChapterLayer:addResourceRow",
-    "function V2ChapterLayer:addMapStrip",
-    "function V2ChapterLayer:addMetaRow",
+    "function V2ChapterLayer:addVoyageRail",
+    "function V2ChapterLayer:addContextColumns",
     "function V2ChapterLayer:addBattleStatus",
     "cc.MenuItemSprite:create(normalFace, pressedFace)",
     "cc.Spawn:create(",
@@ -38,11 +38,11 @@ if "cc.RepeatForever:create" in LAYER:
     raise SystemExit("UI 2.0 must not use perpetual decorative animation")
 
 for marker in (
-    "resource_chip_height = 34",
-    "resource_chip_height = 38",
+    "resource_chip_height = 42",
+    "resource_chip_height = 46",
     "action_button_width = 276",
     "action_button_height = 54",
-    "action_button_height = 60",
+    "action_button_height = 64",
 ):
     if marker not in LAYOUT:
         raise SystemExit(f"UI 2.0 responsive layout is missing marker: {marker}")

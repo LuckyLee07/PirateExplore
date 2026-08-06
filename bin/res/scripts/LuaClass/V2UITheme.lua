@@ -145,11 +145,11 @@ end
 
 function V2UITheme.resourceItems(resources)
     return {
-        { name = "金币", value = resources.gold, accent = "gold" },
-        { name = "木材", value = resources.timber, accent = "success" },
-        { name = "铁料", value = resources.iron, accent = "muted" },
-        { name = "补给", value = resources.provisions, accent = "sea" },
-        { name = "符文", value = resources.rune_dust, accent = "purple" },
+        { name = "金币", short = "金", value = resources.gold, accent = "gold" },
+        { name = "木材", short = "木", value = resources.timber, accent = "success" },
+        { name = "铁料", short = "铁", value = resources.iron, accent = "muted" },
+        { name = "补给", short = "补", value = resources.provisions, accent = "sea" },
+        { name = "符文", short = "符", value = resources.rune_dust, accent = "purple" },
     }
 end
 
