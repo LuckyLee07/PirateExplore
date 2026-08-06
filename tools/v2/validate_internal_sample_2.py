@@ -37,8 +37,14 @@ for marker in (
 
 if "qa_complete = true" not in CONFIG:
     raise SystemExit("QA completion profile is not registered")
-if 'combat = "敌船 / 舰炮与接舷"' not in LAYER:
-    raise SystemExit("player-facing combat composition copy is missing")
+for marker in (
+    'addMeter(parent, "我方船体"',
+    'addMeter(parent, "敌方船体"',
+    'addMeter(parent, "我方接舷队"',
+    'addMeter(parent, "敌方甲板部队"',
+):
+    if marker not in LAYER:
+        raise SystemExit(f"player-facing combat composition is missing marker: {marker}")
 
 for leaked_label in (
     "重玩首章（测试）",

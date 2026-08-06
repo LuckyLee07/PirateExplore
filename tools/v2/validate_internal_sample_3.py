@@ -39,8 +39,8 @@ for marker in ("battleLine(state, impact)", "self.controller:getCombatImpact()",
         raise SystemExit(f"combat impact is not visibly wired into the layer: {marker}")
 
 for marker in (
-    "iPad three-line combat feedback stays above the latest-result line",
-    "ipad.card_battle_size * 3",
+    "iPad combat meters stay above the latest-result line",
+    "ipad.card_battle_y - 38 > ipad.card_result_y + ipad.card_result_size * 2",
 ):
     if marker not in LAYOUT_TEST:
         raise SystemExit(f"compact layout regression is missing: {marker}")

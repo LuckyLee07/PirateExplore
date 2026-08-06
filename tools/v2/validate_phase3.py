@@ -81,7 +81,10 @@ for marker in (
         raise SystemExit(f"state machine missing Phase 3 marker: {marker}")
 
 layer = (ROOT / "bin/res/scripts/LuaClass/V2ChapterLayer.lua").read_text(encoding="utf-8")
-for marker in ("addHeroArt", "playActionFeedback", "NEWPIRATE_V2_AUDIO_CUE", "cc.Spawn:create", "heroGroupLabel"):
+for marker in (
+    "addHeroArt", "playActionFeedback", "NEWPIRATE_V2_AUDIO_CUE",
+    "cc.Spawn:create", "local presentation = self.controller:getPresentation()",
+):
     if marker not in layer:
         raise SystemExit(f"presentation layer missing Phase 3 marker: {marker}")
 if "cc.RepeatForever:create" in layer:

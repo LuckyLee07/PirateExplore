@@ -20,11 +20,10 @@ for marker in (
 
 for marker in (
     "local isQA = V2Config:isQAProfile(state.profile)",
-    'local kickerText = "海上探险家  ·  第一章"',
-    'kickerText = "NEW PIRATE V2  ·  CHAPTER 01  ·  QA"',
-    'local footerText = "迷雾会记住你的每一次选择。"',
-    'artTagText = "QA 构图  ·  " .. artTagText',
-    'local profile = createLabel("存档 " .. state.profile',
+    'local kicker = createLabel("第一章  ·  瓶中海域"',
+    'local profile = createLabel("QA  ·  " .. state.profile',
+    "if isQA then",
+    "local footerText = string.format(",
     '"QA 记录 %d 条｜决策 %d｜舰炮 %d｜接舷 %d｜无效 %d"',
 ):
     if marker not in LAYER:
@@ -34,6 +33,8 @@ for leaked_label in (
     "CONTENT SAMPLE",
     "正式样片构图",
     "V2 样片：",
+    "QA 构图",
+    "迷雾会记住你的每一次选择。",
 ):
     if leaked_label in LAYER:
         raise SystemExit(f"internal label still leaks from presentation layer: {leaked_label}")

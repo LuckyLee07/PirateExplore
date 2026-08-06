@@ -39,10 +39,10 @@ if "cc.RepeatForever:create" in LAYER:
 
 for marker in (
     "resource_chip_height = 34",
-    "resource_chip_height = 40",
+    "resource_chip_height = 38",
     "action_button_width = 276",
-    "action_button_height = 58",
-    "action_button_height = 72",
+    "action_button_height = 54",
+    "action_button_height = 60",
 ):
     if marker not in LAYOUT:
         raise SystemExit(f"UI 2.0 responsive layout is missing marker: {marker}")

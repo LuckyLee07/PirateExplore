@@ -7,18 +7,22 @@
 local V2UITheme = {}
 
 V2UITheme.colors = {
-    shell = { 7, 20, 29 },
-    shell_raised = { 12, 35, 44 },
-    surface = { 10, 31, 39 },
-    surface_soft = { 23, 48, 54 },
-    ink = { 247, 238, 211 },
-    muted = { 174, 190, 184 },
-    gold = { 235, 183, 78 },
-    sea = { 91, 189, 190 },
-    danger = { 226, 92, 77 },
-    purple = { 171, 119, 205 },
-    success = { 102, 190, 142 },
-    track = { 37, 58, 62 },
+    -- UI 3.0 keeps the world colourful and the chrome quiet. Surfaces stay
+    -- close in value, so hierarchy comes from spacing and opacity instead of
+    -- a border around every element.
+    shell = { 5, 16, 23 },
+    shell_raised = { 12, 30, 37 },
+    surface = { 10, 27, 34 },
+    surface_soft = { 20, 42, 47 },
+    ink = { 244, 238, 218 },
+    muted = { 145, 164, 163 },
+    gold = { 224, 176, 84 },
+    sea = { 84, 171, 175 },
+    danger = { 211, 85, 72 },
+    purple = { 154, 111, 185 },
+    success = { 88, 163, 126 },
+    track = { 43, 61, 63 },
+    separator = { 76, 96, 96 },
 }
 
 local stageAccents = {

@@ -30,4 +30,6 @@ equal(#resources, 5, "resource HUD stays compact")
 equal(resources[1].value, 40, "gold value is forwarded")
 equal(resources[5].accent, "purple", "rune resource keeps its semantic accent")
 
-print("V2 UI 2.0 theme OK: stage accents, progress, resources and action hierarchy passed")
+equal(Theme.colors.separator[1], 76, "UI 3.0 keeps a dedicated quiet separator tone")
+
+print("V2 UI 3.0 theme OK: restrained stage accents, resources and action hierarchy passed")
