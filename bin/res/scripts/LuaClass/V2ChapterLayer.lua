@@ -4,6 +4,7 @@ require "LuaClass/V2ChapterController"
 
 local V2ChapterLayout = require "LuaClass/V2ChapterLayout"
 local V2ReleaseInfo = require "LuaClass/V2ReleaseInfo"
+local V2UITheme = require "LuaClass/V2UITheme"
 
 V2ChapterLayer = class("V2ChapterLayer", function()
     return cc.Layer:create()
@@ -11,12 +12,24 @@ end)
 
 V2ChapterLayer.__index = V2ChapterLayer
 
+local function color3(name)
+    local value = V2UITheme.colors[name] or V2UITheme.colors.ink
+    return cc.c3b(value[1], value[2], value[3])
+end
+
+local function color4(name, alpha)
+    local value = V2UITheme.colors[name] or V2UITheme.colors.ink
+    return cc.c4b(value[1], value[2], value[3], alpha or 255)
+end
+
 local COLORS = {
-    ink = cc.c3b(235, 226, 199),
-    muted = cc.c3b(170, 170, 160),
-    gold = cc.c3b(222, 174, 76),
-    danger = cc.c3b(219, 91, 74),
-    sea = cc.c3b(92, 157, 166),
+    ink = color3("ink"),
+    muted = color3("muted"),
+    gold = color3("gold"),
+    danger = color3("danger"),
+    sea = color3("sea"),
+    purple = color3("purple"),
+    success = color3("success"),
 }
 
 local function createLabel(text, size, color, width, alignment)
@@ -30,16 +43,62 @@ local function createLabel(text, size, color, width, alignment)
     return label
 end
 
-local function resourceLine(resources)
-    return string.format(
-        "金币 %d   木材 %d   铁料 %d   补给 %d   符文尘 %d",
-        resources.gold,
-        resources.timber,
-        resources.iron,
-        resources.provisions,
-        resources.rune_dust
-    )
+local function addBorder(parent, width, height, color, alpha, thickness)
+    local line = thickness or 2
+    local top = cc.LayerColor:create(color4(color, alpha), width, line)
+    top:setPosition(cc.p(0, height - line))
+    parent:addChild(top)
+    local bottom = cc.LayerColor:create(color4(color, alpha), width, line)
+    bottom:setPosition(cc.p(0, 0))
+    parent:addChild(bottom)
+    local left = cc.LayerColor:create(color4(color, alpha), line, height)
+    left:setPosition(cc.p(0, 0))
+    parent:addChild(left)
+    local right = cc.LayerColor:create(color4(color, alpha), line, height)
+    right:setPosition(cc.p(width - line, 0))
+    parent:addChild(right)
 end
+
+local function addSurface(parent, x, y, width, height, options)
+    local config = options or {}
+    local surface = cc.LayerColor:create(
+        color4(config.fill or "surface", config.alpha or 232),
+        width,
+        height
+    )
+    surface:setPosition(cc.p(x, y))
+    parent:addChild(surface, config.z or 1)
+    addBorder(
+        surface,
+        width,
+        height,
+        config.border or "sea",
+        config.border_alpha or 95,
+        config.border_width or 1
+    )
+    if config.accent ~= nil then
+        local accent = cc.LayerColor:create(color4(config.accent, 255), config.accent_width or 5, height)
+        accent:setPosition(cc.p(0, 0))
+        surface:addChild(accent, 2)
+    end
+    return surface
+end
+
+local function addPill(parent, text, x, y, width, height, accent, fontSize, align)
+    local pill = addSurface(parent, x, y, width, height, {
+        fill = "shell_raised",
+        alpha = 226,
+        border = accent or "sea",
+        border_alpha = 92,
+    })
+    local label = createLabel(text, fontSize or 14, color3(accent or "ink"), width - 12, align or cc.TEXT_ALIGNMENT_CENTER)
+    label:setAnchorPoint(cc.p(0.5, 0.5))
+    label:setPosition(cc.p(width * 0.5, height * 0.5 + 1))
+    pill:addChild(label, 3)
+    return pill
+end
+
+local createButtonFace
 
 local function battleLine(state, impact)
     if state.stage == "naval" then
@@ -108,7 +167,7 @@ function V2ChapterLayer:init()
     background:setPosition(self.origin)
     self:addChild(background)
 
-    local wash = cc.LayerColor:create(cc.c4b(8, 19, 27, 205), self.visibleSize.width, self.visibleSize.height)
+    local wash = cc.LayerColor:create(color4("shell", 118), self.visibleSize.width, self.visibleSize.height)
     wash:setPosition(self.origin)
     self:addChild(wash)
 
@@ -154,7 +213,7 @@ function V2ChapterLayer:showReleaseInfo(initialKind)
 
     local width = self.visibleSize.width
     local height = self.visibleSize.height
-    local overlay = cc.LayerColor:create(cc.c4b(2, 8, 12, 238), width, height)
+    local overlay = cc.LayerColor:create(color4("shell", 232), width, height)
     overlay:setPosition(self.origin)
     self:addChild(overlay, 2000)
     self.releaseInfoOverlay = overlay
@@ -166,9 +225,21 @@ function V2ChapterLayer:showReleaseInfo(initialKind)
 
     local panelWidth = math.min(width - 36, 604)
     local panelHeight = math.min(height - 48, 900)
-    local panel = cc.LayerColor:create(cc.c4b(13, 29, 37, 255), panelWidth, panelHeight)
-    panel:setPosition(cc.p((width - panelWidth) * 0.5, (height - panelHeight) * 0.5))
-    overlay:addChild(panel)
+    local panel = addSurface(
+        overlay,
+        (width - panelWidth) * 0.5,
+        (height - panelHeight) * 0.5,
+        panelWidth,
+        panelHeight,
+        {
+            fill = "surface",
+            alpha = 255,
+            border = "gold",
+            border_alpha = 155,
+            accent = "gold",
+            accent_width = 6,
+        }
+    )
 
     local heading = createLabel("隐私与支持", 25, COLORS.gold)
     heading:setAnchorPoint(cc.p(0, 1))
@@ -238,13 +309,22 @@ function V2ChapterLayer:showReleaseInfo(initialKind)
     })
 
     local spacing = panelWidth / (#buttons + 1)
+    local buttonWidth = math.min(132, (panelWidth - 36) / #buttons - 8)
+    local buttonHeight = 42
     for index, descriptor in ipairs(buttons) do
-        local label = createLabel(descriptor.label, 17, COLORS.gold)
+        local role = descriptor.isWeb and "primary" or (descriptor.label == "关闭" and "danger" or "utility")
+        local normalFace, textColor = createButtonFace(buttonWidth, buttonHeight, role, false)
+        local pressedFace = createButtonFace(buttonWidth, buttonHeight, role, true)
+        local item = cc.MenuItemSprite:create(normalFace, pressedFace)
+        local label = createLabel(descriptor.label, 13, color3(textColor), buttonWidth - 12, cc.TEXT_ALIGNMENT_CENTER)
         if descriptor.isWeb then
             webLabel = label
         end
-        local item = cc.MenuItemLabel:create(label)
-        item:setPosition(cc.p(spacing * index, 30))
+        label:setAnchorPoint(cc.p(0.5, 0.5))
+        label:setVerticalAlignment(cc.VERTICAL_TEXT_ALIGNMENT_CENTER)
+        label:setPosition(cc.p(buttonWidth * 0.5, buttonHeight * 0.5 + 1))
+        item:addChild(label, 2)
+        item:setPosition(cc.p(spacing * index, 34))
         item:registerScriptTapHandler(descriptor.action)
         menu:addChild(item)
     end
@@ -291,8 +371,9 @@ function V2ChapterLayer:addHeroArt(parent, state, isQA, layout)
     local width = self.visibleSize.width
     local artHeight = layout.art_height
     local artY = layout.art_y
+    local accentName = V2UITheme.accentName(state.stage)
 
-    local frame = cc.LayerColor:create(cc.c4b(6, 14, 20, 235), width, artHeight)
+    local frame = cc.LayerColor:create(color4("shell", 255), width, artHeight)
     frame:setPosition(cc.p(0, artY))
     parent:addChild(frame)
 
@@ -300,14 +381,22 @@ function V2ChapterLayer:addHeroArt(parent, state, isQA, layout)
     if background ~= nil then
         background:setPosition(cc.p(width * 0.5, artHeight * 0.5))
         fitSprite(background, width, artHeight)
-        background:setOpacity(190)
+        background:setOpacity(226)
         frame:addChild(background)
-        background:runAction(cc.FadeTo:create(0.45, 225))
+        background:runAction(cc.FadeTo:create(0.28, 255))
     end
 
-    local vignette = cc.LayerColor:create(cc.c4b(3, 11, 16, 92), width, artHeight)
-    vignette:setPosition(cc.p(0, 0))
-    frame:addChild(vignette, 2)
+    local atmosphere = cc.LayerColor:create(color4(accentName, 26), width, artHeight)
+    atmosphere:setPosition(cc.p(0, 0))
+    frame:addChild(atmosphere, 2)
+
+    local lowerScrim = cc.LayerColor:create(color4("shell", 124), width, layout.compact and 82 or 118)
+    lowerScrim:setPosition(cc.p(0, 0))
+    frame:addChild(lowerScrim, 3)
+
+    local accentLine = cc.LayerColor:create(color4(accentName, 220), width, 3)
+    accentLine:setPosition(cc.p(0, artHeight - 3))
+    frame:addChild(accentLine, 5)
 
     if presentation.foreground ~= nil then
         local foreground = cc.Sprite:create(presentation.foreground)
@@ -318,12 +407,13 @@ function V2ChapterLayer:addHeroArt(parent, state, isQA, layout)
                 local targetWidth = layout.compact and 180 or 250
                 foreground:setScale(math.min(layout.compact and 0.75 or 1.0, targetWidth / size.width))
             end
-            foreground:setOpacity(210)
-            frame:addChild(foreground, 3)
-            foreground:runAction(cc.RepeatForever:create(cc.Sequence:create(
-                cc.MoveBy:create(2.4, cc.p(0, 7)),
-                cc.MoveBy:create(2.4, cc.p(0, -7))
-            )))
+            foreground:setOpacity(0)
+            foreground:setPositionY(foreground:getPositionY() - 7)
+            frame:addChild(foreground, 4)
+            foreground:runAction(cc.Spawn:create(
+                cc.FadeTo:create(0.32, 232),
+                cc.MoveBy:create(0.32, cc.p(0, 7))
+            ))
         end
     end
 
@@ -336,12 +426,9 @@ function V2ChapterLayer:addHeroArt(parent, state, isQA, layout)
                 local targetWidth = layout.compact and 108 or 142
                 portrait:setScale(math.min(layout.compact and 0.52 or 0.72, targetWidth / size.width))
             end
-            portrait:setOpacity(240)
-            frame:addChild(portrait, 4)
-            portrait:runAction(cc.RepeatForever:create(cc.Sequence:create(
-                cc.ScaleBy:create(1.1, 1.035),
-                cc.ScaleBy:create(1.1, 1 / 1.035)
-            )))
+            portrait:setOpacity(0)
+            frame:addChild(portrait, 5)
+            portrait:runAction(cc.FadeTo:create(0.28, 244))
         end
     end
 
@@ -349,23 +436,20 @@ function V2ChapterLayer:addHeroArt(parent, state, isQA, layout)
     if isQA then
         artTagText = "QA 构图  ·  " .. artTagText
     end
-    local artTag = createLabel(artTagText, layout.compact and 13 or 15, COLORS.gold)
-    artTag:setAnchorPoint(cc.p(0, 1))
-    artTag:setPosition(cc.p(28, artHeight - (layout.compact and 14 or 18)))
-    frame:addChild(artTag, 5)
+    local artTagHeight = layout.compact and 28 or 34
+    local artTagY = layout.card_y + layout.card_height - artY
+    addPill(
+        frame,
+        artTagText,
+        24,
+        artTagY,
+        layout.compact and 196 or 224,
+        artTagHeight,
+        accentName,
+        layout.compact and 12 or 14,
+        cc.TEXT_ALIGNMENT_LEFT
+    )
 
-    if state.stage == "rune_clue" or state.stage == "settlement"
-        or state.stage == "upgrade" or state.stage == "complete" then
-        local rewardIcon = cc.Sprite:create("Images/UI/CoinBg.png")
-        rewardIcon:setPosition(cc.p(layout.compact and 40 or 48, layout.compact and 40 or 55))
-        rewardIcon:setScale(layout.compact and 0.62 or 0.82)
-        frame:addChild(rewardIcon, 5)
-        rewardIcon:runAction(cc.RepeatForever:create(cc.RotateBy:create(3.5, 360)))
-        local rewardLabel = createLabel("首章奖励已入库", layout.compact and 14 or 17, COLORS.gold)
-        rewardLabel:setAnchorPoint(cc.p(0, 0.5))
-        rewardLabel:setPosition(cc.p(layout.compact and 62 or 76, layout.compact and 40 or 55))
-        frame:addChild(rewardLabel, 5)
-    end
 end
 
 function V2ChapterLayer:viewWillDestory()
@@ -380,65 +464,100 @@ function V2ChapterLayer:updateInfoLabel()
 end
 
 function V2ChapterLayer:addMapStrip(parent, state, y)
-    local data = self.controller:getChapterData()
-    local visited = {
-        node_port = true,
-        node_fog_gate = state.stage ~= "opening" and state.stage ~= "harbor",
-        node_wreck = state.flags.risky_route == true,
-        node_safe_cove = state.flags.safe_route == true,
-        node_black_tide = state.flags.route_event_resolved == true,
-        node_whisper = state.flags.curse_heard == true or state.stage == "whisper",
-        node_cursed_compass = state.flags.curse_heard == true,
-        node_raider = state.flags.compass_resolved == true,
-        node_rune_clue = state.flags.raider_defeated == true,
-    }
-    local positions = {
-        node_port = 38,
-        node_fog_gate = 102,
-        node_wreck = 166,
-        node_safe_cove = 166,
-        node_black_tide = 244,
-        node_whisper = 322,
-        node_cursed_compass = 400,
-        node_raider = 478,
-        node_rune_clue = 558,
-    }
-    local offsets = { node_wreck = 28, node_safe_cove = -28 }
+    local width = self.visibleSize.width
+    local stripWidth = width - 52
+    local stripHeight = 58
+    local strip = addSurface(parent, 26, y - 10, stripWidth, stripHeight, {
+        fill = "shell",
+        alpha = 222,
+        border = "sea",
+        border_alpha = 66,
+    })
+    local current = V2UITheme.progressIndex(state.stage)
+    local accentName = V2UITheme.accentName(state.stage)
+    local startX = 50
+    local endX = stripWidth - 50
+    local segment = (endX - startX) / (#V2UITheme.progress_labels - 1)
 
-    local routeLine = cc.LayerColor:create(cc.c4b(83, 110, 116, 180), 500, 3)
-    routeLine:setPosition(cc.p(65, y + 8))
-    parent:addChild(routeLine)
+    local routeLine = cc.LayerColor:create(color4("track", 255), endX - startX, 4)
+    routeLine:setPosition(cc.p(startX, 32))
+    strip:addChild(routeLine, 2)
+    if current > 1 then
+        local completeWidth = segment * (current - 1)
+        local completeLine = cc.LayerColor:create(color4("success", 218), completeWidth, 4)
+        completeLine:setPosition(cc.p(startX, 32))
+        strip:addChild(completeLine, 3)
+    end
 
-    for _, node in ipairs(data.map_node) do
-        local x = positions[node.id]
-        local nodeY = y + (offsets[node.id] or 0)
-        local color = visited[node.id] and cc.c4b(107, 166, 154, 255) or cc.c4b(61, 72, 76, 255)
-        if state.current_node == node.id then
-            color = cc.c4b(222, 174, 76, 255)
-        end
-        local marker = cc.LayerColor:create(color, 18, 18)
-        marker:setPosition(cc.p(x - 9, nodeY))
-        parent:addChild(marker)
+    for index, labelText in ipairs(V2UITheme.progress_labels) do
+        local x = startX + segment * (index - 1)
+        local markerColor = "track"
+        if index < current then markerColor = "success" end
+        if index == current then markerColor = accentName end
+        local markerSize = index == current and 16 or 12
+        local marker = cc.LayerColor:create(color4(markerColor, 255), markerSize, markerSize)
+        marker:setPosition(cc.p(x - markerSize * 0.5, 26 + (16 - markerSize) * 0.5))
+        strip:addChild(marker, 4)
 
-        local shortName = node.name
-        if node.id == "node_fog_gate" then shortName = "迷雾" end
-        if node.id == "node_safe_cove" then shortName = "海湾" end
-        if node.id == "node_black_tide" then shortName = "黑潮" end
-        if node.id == "node_cursed_compass" then shortName = "罗盘" end
-        if node.id == "node_rune_clue" then shortName = "符文" end
-        if node.id == "node_raider" then shortName = "追猎者" end
-        if node.id == "node_whisper" then shortName = "低语" end
-        if node.id == "node_wreck" then shortName = "沉船" end
-        local label = createLabel(shortName, 16, state.current_node == node.id and COLORS.gold or COLORS.muted, 76, cc.TEXT_ALIGNMENT_CENTER)
-        label:setAnchorPoint(cc.p(0.5, 1))
-        label:setPosition(cc.p(x, nodeY - 5))
-        parent:addChild(label)
+        local label = createLabel(
+            labelText,
+            13,
+            index == current and color3(accentName) or (index < current and COLORS.ink or COLORS.muted),
+            84,
+            cc.TEXT_ALIGNMENT_CENTER
+        )
+        label:setAnchorPoint(cc.p(0.5, 0))
+        label:setPosition(cc.p(x, 5))
+        strip:addChild(label, 4)
     end
 end
 
-function V2ChapterLayer:addActionButton(parent, action, x, y, layout)
-    local button = cc.MenuItemImage:create("Images/btn/ann01_a.png", "Images/btn/ann01_b.png")
-    button:setScale(layout.action_button_scale)
+createButtonFace = function(width, height, role, pressed)
+    local face = cc.Node:create()
+    face:setContentSize(cc.size(width, height))
+    local style = {
+        primary = { fill = "gold", border = "gold", text = "shell", alpha = pressed and 188 or 238 },
+        selected = { fill = "surface_soft", border = "gold", text = "gold", alpha = pressed and 220 or 248 },
+        utility = { fill = "shell_raised", border = "sea", text = "sea", alpha = pressed and 210 or 246 },
+        danger = { fill = "surface", border = "danger", text = "danger", alpha = pressed and 210 or 246 },
+        choice = { fill = "surface_soft", border = "sea", text = "ink", alpha = pressed and 210 or 246 },
+    }
+    local token = style[role] or style.choice
+    local yOffset = pressed and -2 or 0
+    local shadow = cc.LayerColor:create(color4("shell", 170), width, height)
+    shadow:setPosition(cc.p(0, -3))
+    face:addChild(shadow, 0)
+    local fill = cc.LayerColor:create(color4(token.fill, token.alpha), width, height)
+    fill:setPosition(cc.p(0, yOffset))
+    face:addChild(fill, 1)
+    addBorder(fill, width, height, token.border, pressed and 145 or 230, 2)
+    local accent = cc.LayerColor:create(color4(token.border, 255), 5, height)
+    accent:setPosition(cc.p(0, 0))
+    fill:addChild(accent, 2)
+    return face, token.text
+end
+
+function V2ChapterLayer:addActionButton(parent, state, action, actionIndex, actionCount, x, y, layout)
+    local role = V2UITheme.actionRole(
+        state.stage,
+        action.id,
+        actionIndex,
+        actionCount,
+        state.selected_module
+    )
+    local normalFace, textColor = createButtonFace(
+        layout.action_button_width,
+        layout.action_button_height,
+        role,
+        false
+    )
+    local pressedFace = createButtonFace(
+        layout.action_button_width,
+        layout.action_button_height,
+        role,
+        true
+    )
+    local button = cc.MenuItemSprite:create(normalFace, pressedFace)
     button:setPosition(cc.p(x, y))
     button:registerScriptTapHandler(function()
         local previousStage = self.controller:load().stage
@@ -455,13 +574,162 @@ function V2ChapterLayer:addActionButton(parent, action, x, y, layout)
     for line in string.gmatch(action.label, "[^\n]+") do
         maximumLineLength = math.max(maximumLineLength, string.len(line))
     end
-    local fontSize = maximumLineLength > 36 and 12 or layout.action_font_size
-    local label = createLabel(action.label, fontSize, COLORS.ink, layout.action_label_width, cc.TEXT_ALIGNMENT_CENTER)
+    local fontSize = maximumLineLength > 36 and (layout.action_font_size - 2) or layout.action_font_size
+    local labelWidth = math.max(layout.action_label_width, layout.action_button_width - 26)
+    local label = createLabel(action.label, fontSize, color3(textColor), labelWidth, cc.TEXT_ALIGNMENT_CENTER)
     label:setAnchorPoint(cc.p(0.5, 0.5))
-    label:setPosition(cc.p(button:getContentSize().width * 0.5, button:getContentSize().height * 0.5 + 2))
-    label:setScale(1 / layout.action_button_scale)
+    label:setVerticalAlignment(cc.VERTICAL_TEXT_ALIGNMENT_CENTER)
+    label:setPosition(cc.p(layout.action_button_width * 0.5, layout.action_button_height * 0.5 + 1))
     button:addChild(label, 2)
     parent:addChild(button)
+end
+
+function V2ChapterLayer:addObjectiveBanner(parent, state, layout)
+    local width = self.visibleSize.width
+    local accentName = V2UITheme.accentName(state.stage)
+    local bannerHeight = layout.compact and 34 or 38
+    local banner = addSurface(parent, 26, layout.objective_y - bannerHeight, width - 52, bannerHeight, {
+        fill = "shell_raised",
+        alpha = 235,
+        border = accentName,
+        border_alpha = 96,
+        accent = accentName,
+        accent_width = 5,
+    })
+    local badge = createLabel("目标", layout.compact and 12 or 13, color3(accentName))
+    badge:setAnchorPoint(cc.p(0, 0.5))
+    badge:setPosition(cc.p(16, bannerHeight * 0.5 + 1))
+    banner:addChild(badge, 3)
+    local objective = createLabel(
+        state.objective,
+        layout.objective_size - 2,
+        COLORS.ink,
+        width - 120,
+        cc.TEXT_ALIGNMENT_LEFT
+    )
+    objective:setAnchorPoint(cc.p(0, 0.5))
+    objective:setVerticalAlignment(cc.VERTICAL_TEXT_ALIGNMENT_CENTER)
+    objective:setPosition(cc.p(62, bannerHeight * 0.5 + 1))
+    banner:addChild(objective, 3)
+end
+
+function V2ChapterLayer:addResourceRow(parent, resources, layout)
+    local width = self.visibleSize.width
+    local items = V2UITheme.resourceItems(resources)
+    local contentWidth = width - 52
+    local gap = layout.resource_chip_gap
+    local chipWidth = (contentWidth - gap * (#items - 1)) / #items
+    local chipHeight = layout.resource_chip_height
+    local baseY = layout.resource_y - chipHeight
+    for index, item in ipairs(items) do
+        local x = 26 + (index - 1) * (chipWidth + gap)
+        local chip = addSurface(parent, x, baseY, chipWidth, chipHeight, {
+            fill = "shell",
+            alpha = 218,
+            border = item.accent,
+            border_alpha = 82,
+        })
+        local accent = cc.LayerColor:create(color4(item.accent, 255), 4, chipHeight)
+        accent:setPosition(cc.p(0, 0))
+        chip:addChild(accent, 2)
+        local label = createLabel(
+            string.format("%s  %d", item.name, item.value),
+            layout.resource_size - 2,
+            COLORS.ink,
+            chipWidth - 12,
+            cc.TEXT_ALIGNMENT_CENTER
+        )
+        label:setAnchorPoint(cc.p(0.5, 0.5))
+        label:setVerticalAlignment(cc.VERTICAL_TEXT_ALIGNMENT_CENTER)
+        label:setPosition(cc.p(chipWidth * 0.5 + 2, chipHeight * 0.5 + 1))
+        chip:addChild(label, 3)
+    end
+end
+
+local function routeLabel(state)
+    if state.route == "safe_route" then return "安全外海" end
+    if state.route == "risky_shortcut" then return "暗礁近路" end
+    return "航线待定"
+end
+
+function V2ChapterLayer:addMetaRow(parent, state, moduleData, layout, cardWidth)
+    local data = self.controller:getChapterData()
+    local node = data.by_id.map_node[state.current_node]
+    local fontSize = layout.compact and 12 or 14
+    local gap = 8
+    local pillWidth = (cardWidth - 48 - gap * 2) / 3
+    local y = layout.card_meta_y - (layout.compact and 26 or 31)
+    local height = layout.compact and 28 or 34
+    local values = {
+        { "位置 · " .. node.name, "sea" },
+        { "航线 · " .. routeLabel(state), state.route == "risky_shortcut" and "danger" or "sea" },
+        { "船装 · " .. moduleData.name, "gold" },
+    }
+    for index, value in ipairs(values) do
+        addPill(
+            parent,
+            value[1],
+            16 + (index - 1) * (pillWidth + gap),
+            y,
+            pillWidth,
+            height,
+            value[2],
+            fontSize,
+            cc.TEXT_ALIGNMENT_CENTER
+        )
+    end
+end
+
+local function addMeter(parent, labelText, value, maximum, x, y, width, accentName, compact)
+    local label = createLabel(labelText, compact and 12 or 14, COLORS.muted)
+    label:setAnchorPoint(cc.p(0, 0))
+    label:setPosition(cc.p(x, y + 11))
+    parent:addChild(label, 4)
+    local valueLabel = createLabel(string.format("%d / %d", value, maximum), compact and 12 or 14, color3(accentName))
+    valueLabel:setAnchorPoint(cc.p(1, 0))
+    valueLabel:setPosition(cc.p(x + width, y + 11))
+    parent:addChild(valueLabel, 4)
+    local track = cc.LayerColor:create(color4("track", 255), width, 8)
+    track:setPosition(cc.p(x, y))
+    parent:addChild(track, 3)
+    local ratio = maximum > 0 and math.max(0, math.min(1, value / maximum)) or 0
+    if ratio > 0 then
+        local fill = cc.LayerColor:create(color4(accentName, 255), math.max(2, width * ratio), 8)
+        fill:setPosition(cc.p(x, y))
+        parent:addChild(fill, 4)
+    end
+end
+
+function V2ChapterLayer:addBattleStatus(parent, state, impact, layout, cardWidth)
+    local compact = layout.compact
+    local meterWidth = (cardWidth - 72) * 0.5
+    local rightX = 40 + meterWidth
+    local mainY = compact and 132 or 176
+    local secondaryY = compact and 96 or 132
+    if state.stage == "naval" then
+        addMeter(parent, "我方船体", state.battle.player_hull, state.battle.player_hull_max, 24, mainY, meterWidth, "success", compact)
+        addMeter(parent, "敌方船体", state.battle.enemy_ship_hp, state.battle.enemy_ship_hp_max, rightX, mainY, meterWidth, "danger", compact)
+        addMeter(parent, state.battle.deck_broken and "敌方甲板 · 已击毁" or "敌方甲板", state.battle.deck_damage, state.battle.deck_threshold, 24, secondaryY, meterWidth, "gold", compact)
+        addMeter(parent, state.battle.guns_suppressed and "敌方火炮 · 已压制" or "敌方火炮", state.battle.gun_damage, state.battle.gun_threshold, rightX, secondaryY, meterWidth, "sea", compact)
+    elseif state.stage == "boarding" then
+        addMeter(parent, "我方接舷队", state.battle.crew_hp, state.battle.crew_hp_max, 24, mainY, meterWidth, "success", compact)
+        addMeter(parent, "敌方甲板部队", state.battle.enemy_boarding_hp, state.battle.enemy_boarding_hp_max, rightX, mainY, meterWidth, "danger", compact)
+    else
+        return
+    end
+
+    if impact ~= nil and impact.text ~= nil then
+        local impactLabel = createLabel(
+            impact.text,
+            compact and 12 or 14,
+            color3(V2UITheme.accentName(state.stage)),
+            cardWidth - 48,
+            cc.TEXT_ALIGNMENT_LEFT
+        )
+        impactLabel:setAnchorPoint(cc.p(0, 1))
+        impactLabel:setPosition(cc.p(24, compact and 78 or 104))
+        parent:addChild(impactLabel, 4)
+    end
 end
 
 function V2ChapterLayer:refresh()
@@ -472,35 +740,39 @@ function V2ChapterLayer:refresh()
     local height = self.visibleSize.height
     local layout = V2ChapterLayout.build(width, height)
     local isQA = V2Config:isQAProfile(state.profile)
+    local accentName = V2UITheme.accentName(state.stage)
 
     self:addHeroArt(root, state, isQA, layout)
 
-    local topBar = cc.LayerColor:create(cc.c4b(13, 29, 37, 238), width, layout.top_bar_height)
+    local topBar = cc.LayerColor:create(color4("shell", 246), width, layout.top_bar_height)
     topBar:setPosition(cc.p(0, height - layout.top_bar_height))
     root:addChild(topBar)
+    local topAccent = cc.LayerColor:create(color4(accentName, 215), width, 3)
+    topAccent:setPosition(cc.p(0, 0))
+    topBar:addChild(topAccent, 3)
 
     local kickerText = "海上探险家  ·  第一章"
     if isQA then
         kickerText = "NEW PIRATE V2  ·  CHAPTER 01  ·  QA"
     end
-    local kicker = createLabel(kickerText, 15, COLORS.sea)
+    local kicker = createLabel(kickerText, 14, color3(accentName))
     kicker:setAnchorPoint(cc.p(0, 0.5))
     kicker:setPosition(cc.p(30, layout.kicker_y))
     topBar:addChild(kicker)
 
-    local title = createLabel(self.controller:getStageTitle(), layout.title_size, COLORS.ink)
+    local title = createLabel(self.controller:getStageTitle(), layout.title_size, COLORS.ink, width - 170)
     title:setAnchorPoint(cc.p(0, 0.5))
     title:setPosition(cc.p(30, layout.title_y))
     topBar:addChild(title)
 
     if isQA then
-        local profile = createLabel("存档 " .. state.profile, 15, COLORS.muted)
+        local profile = createLabel("存档 " .. state.profile, 14, COLORS.muted)
         profile:setAnchorPoint(cc.p(1, 0.5))
         profile:setPosition(cc.p(width - 28, layout.profile_y))
         topBar:addChild(profile)
     end
 
-    local releaseInfoLabel = createLabel("隐私与支持", 14, COLORS.gold)
+    local releaseInfoLabel = createLabel("隐私 · 支持", 13, COLORS.gold)
     local releaseInfoItem = cc.MenuItemLabel:create(releaseInfoLabel)
     releaseInfoItem:setPosition(cc.p(width - 62, layout.title_y))
     releaseInfoItem:registerScriptTapHandler(function() self:showReleaseInfo() end)
@@ -508,69 +780,95 @@ function V2ChapterLayer:refresh()
     releaseInfoMenu:setPosition(cc.p(0, 0))
     topBar:addChild(releaseInfoMenu)
 
-    local objectiveLabel = createLabel("当前目标｜" .. state.objective, layout.objective_size, COLORS.gold, width - 60)
-    objectiveLabel:setAnchorPoint(cc.p(0, 1))
-    objectiveLabel:setPosition(cc.p(30, layout.objective_y))
-    root:addChild(objectiveLabel)
-
-    local resourceLabel = createLabel(resourceLine(state.resources), layout.resource_size, COLORS.ink, width - 60, cc.TEXT_ALIGNMENT_CENTER)
-    resourceLabel:setAnchorPoint(cc.p(0, 1))
-    resourceLabel:setPosition(cc.p(30, layout.resource_y))
-    root:addChild(resourceLabel)
+    self:addObjectiveBanner(root, state, layout)
+    self:addResourceRow(root, state.resources, layout)
 
     self:addMapStrip(root, state, layout.map_y)
 
     local cardHeight = layout.card_height
-    local card = cc.LayerColor:create(cc.c4b(10, 25, 32, 208), width - 52, cardHeight)
-    card:setPosition(cc.p(26, layout.card_y))
-    root:addChild(card)
+    local cardWidth = width - 52
+    local card = addSurface(root, 26, layout.card_y, cardWidth, cardHeight, {
+        fill = "surface",
+        alpha = 216,
+        border = accentName,
+        border_alpha = 118,
+        accent = accentName,
+        accent_width = 6,
+    })
 
-    local stageLabel = createLabel(self.controller:getStageTitle(), layout.card_title_size, COLORS.gold)
+    local stageLabel = createLabel(self.controller:getStageTitle(), layout.card_title_size, color3(accentName))
     stageLabel:setAnchorPoint(cc.p(0, 1))
     stageLabel:setPosition(cc.p(24, layout.card_title_y))
     card:addChild(stageLabel)
 
-    local moduleData = self.controller:getChapterData().by_id.ship_module[state.selected_module]
-    local meta = string.format(
-        "节点：%s   航线：%s   模块：%s",
-        self.controller:getChapterData().by_id.map_node[state.current_node].name,
-        state.route == "safe_route" and "安全外海" or (state.route == "risky_shortcut" and "暗礁近路" or "未选择"),
-        moduleData.name
-    )
-    local metaLabel = createLabel(meta, layout.card_meta_size, COLORS.muted, width - 100)
-    metaLabel:setAnchorPoint(cc.p(0, 1))
-    metaLabel:setPosition(cc.p(24, layout.card_meta_y))
-    card:addChild(metaLabel)
+    local stageKind = createLabel(V2UITheme.stageKind(state.stage), layout.compact and 12 or 14, COLORS.muted)
+    stageKind:setAnchorPoint(cc.p(1, 1))
+    stageKind:setPosition(cc.p(cardWidth - 20, layout.card_title_y - 4))
+    card:addChild(stageKind, 3)
 
-    local narrative = createLabel(self.controller:getNarrative(), layout.card_narrative_size, COLORS.ink, width - 100)
+    local moduleData = self.controller:getChapterData().by_id.ship_module[state.selected_module]
+    self:addMetaRow(card, state, moduleData, layout, cardWidth)
+
+    local narrative = createLabel(self.controller:getNarrative(), layout.card_narrative_size, COLORS.ink, cardWidth - 48)
     narrative:setAnchorPoint(cc.p(0, 1))
     narrative:setPosition(cc.p(24, layout.card_narrative_y))
     card:addChild(narrative)
 
-    local battle = battleLine(state, self.controller:getCombatImpact())
+    local impact = self.controller:getCombatImpact()
+    local battle = battleLine(state, impact)
     if battle then
-        local battleLabel = createLabel(battle, layout.card_battle_size, state.stage == "naval" and COLORS.sea or COLORS.danger, width - 100)
-        battleLabel:setAnchorPoint(cc.p(0, 1))
-        battleLabel:setPosition(cc.p(24, layout.card_battle_y))
-        card:addChild(battleLabel)
+        self:addBattleStatus(card, state, impact, layout, cardWidth)
     end
 
-    local resultLabel = createLabel("最近结果｜" .. state.last_result, layout.card_result_size, COLORS.muted, width - 100)
-    resultLabel:setAnchorPoint(cc.p(0, 0))
-    resultLabel:setPosition(cc.p(24, layout.card_result_y))
-    card:addChild(resultLabel)
+    local logHeight = layout.compact and 42 or 48
+    local logY = math.max(8, layout.card_result_y - 5)
+    local resultPanel = addSurface(card, 16, logY, cardWidth - 32, logHeight, {
+        fill = "shell",
+        alpha = 226,
+        border = "muted",
+        border_alpha = 48,
+    })
+    local logBadge = createLabel("航海日志", layout.compact and 11 or 12, color3(accentName))
+    logBadge:setAnchorPoint(cc.p(0, 0.5))
+    logBadge:setPosition(cc.p(12, logHeight * 0.5 + 1))
+    resultPanel:addChild(logBadge, 3)
+    local resultLabel = createLabel(state.last_result, layout.card_result_size - 1, COLORS.muted, cardWidth - 132)
+    resultLabel:setAnchorPoint(cc.p(0, 0.5))
+    resultLabel:setVerticalAlignment(cc.VERTICAL_TEXT_ALIGNMENT_CENTER)
+    resultLabel:setPosition(cc.p(86, logHeight * 0.5 + 1))
+    resultPanel:addChild(resultLabel, 3)
 
     local actions = self.controller:getActions()
     local menu = cc.Menu:create()
     menu:setPosition(cc.p(0, 0))
     root:addChild(menu)
-    local columns = #actions == 1 and { width * 0.5 } or { width * 0.27, width * 0.73 }
+    local columns = { width * 0.27, width * 0.73 }
     for index, action in ipairs(actions) do
-        local column = ((index - 1) % 2) + 1
-        local row = math.floor((index - 1) / 2)
-        local x = columns[column] or width * 0.5
-        local y = layout.action_base_y - row * layout.action_row_gap
-        self:addActionButton(menu, action, x, y, layout)
+        local x = width * 0.5
+        local y = layout.action_base_y
+        if #actions == 2 then
+            x = columns[index]
+        elseif #actions == 3 and state.stage == "route_choice" then
+            if index > 1 then
+                x = columns[index - 1]
+                y = layout.action_base_y - layout.action_row_gap
+            end
+        elseif #actions == 3 then
+            if index < 3 then
+                x = columns[index]
+            else
+                y = layout.action_base_y - layout.action_row_gap
+            end
+        elseif #actions > 3 then
+            local column = ((index - 1) % 2) + 1
+            local row = math.floor((index - 1) / 2)
+            x = columns[column]
+            y = layout.action_base_y - row * layout.action_row_gap
+            if index == #actions and (#actions % 2) == 1 then
+                x = width * 0.5
+            end
+        end
+        self:addActionButton(menu, state, action, index, #actions, x, y, layout)
     end
 
     local footerText = "迷雾会记住你的每一次选择。"
@@ -585,10 +883,13 @@ function V2ChapterLayer:refresh()
             report.invalid_actions
         )
     end
+    local footerShade = cc.LayerColor:create(color4("shell", 232), width, layout.compact and 24 or 34)
+    footerShade:setPosition(cc.p(0, 0))
+    root:addChild(footerShade, 1)
     local footer = createLabel(footerText, layout.footer_size, COLORS.muted, width - 40, cc.TEXT_ALIGNMENT_CENTER)
     footer:setAnchorPoint(cc.p(0, 0))
     footer:setPosition(cc.p(20, layout.footer_y))
-    root:addChild(footer)
+    root:addChild(footer, 2)
 end
 
 return V2ChapterLayer
