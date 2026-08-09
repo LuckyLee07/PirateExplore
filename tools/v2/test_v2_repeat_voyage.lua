@@ -21,10 +21,12 @@ local function apply(state, action)
     if not ok then error(string.format("%s failed: %s", action, tostring(message))) end
 end
 
-local function advanceToTideGuardian(state, routeAction)
+local function advanceToTideGuardian(state, routeAction, eventAction)
     apply(state, "start_voyage")
     equal(state.stage, "tide_route_choice", "second departure reaches the Tide Graveyard route")
     apply(state, routeAction)
+    equal(state.stage, "tide_character_event", "second route reaches the Tide Graveyard character event")
+    apply(state, eventAction)
     equal(state.stage, "tide_guardian", "second route reaches the distinct guardian encounter")
 end
 
@@ -57,7 +59,7 @@ end
 contains(State.getStageTitle(hull), "第 2 次", "harbor title identifies the next voyage")
 contains(State.getNarrative(hull), "成长与库存已经保留", "harbor narrative confirms persistence")
 
-advanceToTideGuardian(hull, "choose_tide_breaker")
+advanceToTideGuardian(hull, "choose_tide_breaker", "rescue_anchor_keeper")
 equal(hull.voyage_count, 2, "the next departure advances the voyage count")
 equal(hull.battle.player_hull_max, 140, "retained hull growth changes the next battle")
 equal(hull.voyage_hull_damage, 10, "retained hull growth reduces breaker-channel damage")
@@ -70,7 +72,7 @@ equal(guns.ship.gun_level, 1, "gun upgrade reaches completion")
 apply(guns, "promote_sailor")
 apply(guns, "prepare_next_voyage")
 local provisionsBefore = guns.resources.provisions
-advanceToTideGuardian(guns, "choose_tide_cannon")
+advanceToTideGuardian(guns, "choose_tide_cannon", "shatter_tide_bell")
 equal(guns.resources.provisions, provisionsBefore - 1, "gun growth removes route cost beyond departure")
 apply(guns, "tide_barrage")
 equal(guns.stage, "tide_rune_clue", "gun growth unlocks a one-action barrage strategy")

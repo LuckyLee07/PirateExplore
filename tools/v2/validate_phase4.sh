@@ -26,9 +26,11 @@ lua tools/v2/test_v2_repeat_voyage.lua
 lua tools/v2/test_v2_second_voyage.lua
 lua tools/v2/test_v2_port_logistics.lua
 lua tools/v2/test_v2_crew_growth.lua
+lua tools/v2/test_v2_tide_character_event.lua
 python3 tools/v2/validate_second_voyage.py
 python3 tools/v2/validate_port_logistics.py
 python3 tools/v2/validate_crew_growth.py
+python3 tools/v2/validate_tide_character_event.py
 python3 tools/v2/validate_ui2_iteration_1.py
 python3 tools/v2/validate_ui2_iteration_2.py
 python3 tools/v2/validate_ui3_style.py

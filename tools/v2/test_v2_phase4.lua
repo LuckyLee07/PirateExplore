@@ -24,7 +24,7 @@ local function trackedApply(state, action)
     return event
 end
 
-equal(#Data.telemetry_event, 24, "Phase 4 exports the extended local event contract")
+equal(#Data.telemetry_event, 25, "Phase 4 exports the extended local event contract")
 equal(#Data.quality_gate, 10, "Phase 4 exports every decision and quality gate")
 
 local state = State.new("qa_fresh")

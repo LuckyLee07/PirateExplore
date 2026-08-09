@@ -74,7 +74,8 @@ zqV2SaveProfile = "qa_crew_growth"
 assert(config:getSaveProfile() == "qa_crew_growth")
 
 for _, profile in ipairs({
-    "qa_tide_route", "qa_tide_guardian", "qa_tide_guardian_gunner",
+    "qa_tide_route", "qa_tide_signal_gunner", "qa_tide_signal_sailor",
+    "qa_tide_guardian", "qa_tide_guardian_gunner",
     "qa_tide_guardian_sailor", "qa_tide_rune",
     "qa_tide_settlement", "qa_tide_complete",
 }) do

@@ -100,6 +100,7 @@ apply(overkill, "promote_gunner")
 apply(overkill, "prepare_next_voyage")
 apply(overkill, "start_voyage")
 apply(overkill, "choose_tide_cannon")
+apply(overkill, "rescue_anchor_keeper")
 contains(actionLabel(overkill, "tide_barrage"), "潮盾-100（火力120）",
     "stacked ship and crew growth separates actual shield loss from potential firepower")
 contains(State.getNarrative(overkill), "潮盾 -100（火力120）",
@@ -125,7 +126,8 @@ equal(groups[2].value, "远距破盾 +20\n稳定齐射方案", "chapter result g
 equal(groups[3].value, "撞锚自损 -10\n稳定近身方案", "chapter result group uses authored sailor tuning")
 
 for _, profile in ipairs({
-    "qa_crew_growth", "qa_tide_guardian_gunner", "qa_tide_guardian_sailor",
+    "qa_crew_growth", "qa_tide_signal_gunner", "qa_tide_signal_sailor",
+    "qa_tide_guardian_gunner", "qa_tide_guardian_sailor",
 }) do
     local restored, recovery = State.normalize(State.new(profile), profile)
     truthy(recovery == nil and State.STAGES[restored.stage], profile .. " remains restorable")

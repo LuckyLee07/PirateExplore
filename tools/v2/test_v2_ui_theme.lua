@@ -15,6 +15,8 @@ equal(Theme.progressIndex("whisper"), 3, "curse encounter advances to the anomal
 equal(Theme.progressIndex("naval"), 4, "naval combat advances to the hunter milestone")
 equal(Theme.progressIndex("complete"), 5, "completion reaches the rune milestone")
 equal(Theme.progressIndex("tide_guardian"), 4, "Tide Guardian occupies the encounter milestone")
+equal(Theme.progressIndex("tide_character_event"), 3, "Tide character event occupies the anomaly milestone")
+equal(Theme.progressLabels("tide_character_event")[3], "求救火", "character event gains a distinct Tide voyage milestone")
 equal(Theme.progressLabels("tide_guardian")[4], "沉锚守卫", "second voyage uses distinct wayfinding labels")
 
 equal(Theme.accentName("route_choice"), "sea", "exploration uses the sea accent")
@@ -30,6 +32,7 @@ equal(Theme.actionRole("harbor", "select_reinforced_hull", 1, 3, "module_reinfor
 equal(Theme.actionRole("failed", "retry_battle", 1, 2), "primary", "retry is the forward recovery action")
 equal(Theme.actionRole("complete", "prepare_next_voyage", 1, 1), "primary", "retained-growth preparation is the completion action")
 equal(Theme.actionRole("tide_route_choice", "choose_tide_breaker", 1, 2), "choice", "growth routes remain equal choices")
+equal(Theme.actionRole("tide_character_event", "shatter_tide_bell", 1, 2), "choice", "character event preserves equal agency")
 equal(Theme.actionRole("tide_guardian", "tide_ram", 2, 2), "danger", "ram communicates its hull cost")
 
 local resources = Theme.resourceItems({ gold = 40, timber = 2, iron = 3, provisions = 6, rune_dust = 1 })
@@ -99,6 +102,11 @@ equal(failedGroups[3].value, "金币 -5\n清除损伤", "port recovery group exp
 local tideGroups = Theme.outcomeGroups(State.new("qa_tide_settlement"), State.getData())
 equal(#tideGroups, 3, "second settlement exposes three result groups")
 equal(tideGroups[3].label, "第二符文", "second settlement gives the new rune its own group")
+
+local characterGroups = Theme.outcomeGroups(State.new("qa_tide_signal_sailor"), State.getData())
+equal(characterGroups[1].value, "大副 · 米克\n建议先救人", "character event names the appointed officer's advice")
+equal(characterGroups[2].value, "开场潮盾 -20\n失去救援窗口", "bell option previews its exact combat consequence")
+equal(characterGroups[3].value, "撞锚破盾 +25\n取得锚链弱点", "rescue option previews its exact combat consequence")
 
 equal(Theme.colors.separator[1], 76, "UI 3.0 keeps a dedicated quiet separator tone")
 

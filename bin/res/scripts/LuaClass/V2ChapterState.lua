@@ -99,6 +99,15 @@ local function dialogueBlock(nodeId, triggers)
     return table.concat(lines, "\n")
 end
 
+local function dialogueLine(nodeId, trigger, speaker)
+    for _, row in ipairs(ChapterData.dialogue) do
+        if row.node_id == nodeId and row.trigger == trigger and row.speaker == speaker then
+            return row.speaker .. "：" .. row.text
+        end
+    end
+    return ""
+end
+
 V2ChapterState.SCHEMA_VERSION = 4
 V2ChapterState.SAVE_RECOVERY_MESSAGE = "检测到损坏或不兼容的存档，已安全创建新的首章航程。"
 V2ChapterState.STAGES = {
@@ -117,6 +126,7 @@ V2ChapterState.STAGES = {
     crew_growth = true,
     complete = true,
     tide_route_choice = true,
+    tide_character_event = true,
     tide_guardian = true,
     tide_rune_clue = true,
     tide_settlement = true,
@@ -286,14 +296,28 @@ local function resetTideGuardian(state)
         actions_log = {},
         transfer_summary = "潮盾尚未被击破",
     }
+    if state.flags.tide_bell_shattered then
+        local openingDamage = balanceValue("tide_bell_shield_damage")
+        state.battle.tide_shield = math.max(0, state.battle.tide_shield - openingDamage)
+        state.battle.transfer_summary = string.format(
+            "引潮钟已被击碎：守卫开场潮盾损失 %d。", openingDamage
+        )
+    elseif state.flags.tide_keeper_rescued then
+        state.battle.transfer_summary = string.format(
+            "守墓人已指出锚链弱点：撞锚破盾伤害 +%d。",
+            balanceValue("tide_keeper_ram_bonus")
+        )
+    end
 end
 
 local function prepareTideQAState(state, stage)
     state.stage = stage
     state.current_node = stage == "tide_route_choice" and "node_tide_gate"
-        or (stage == "tide_guardian" and "node_tide_guardian" or "node_tide_rune")
+        or (stage == "tide_character_event" and "node_tide_signal"
+        or (stage == "tide_guardian" and "node_tide_guardian" or "node_tide_rune"))
     state.active_event = stage == "tide_route_choice" and "event_tide_route_choice"
-        or (stage == "tide_guardian" and "event_tide_guardian" or "event_tide_rune")
+        or (stage == "tide_character_event" and "event_tide_signal"
+        or (stage == "tide_guardian" and "event_tide_guardian" or "event_tide_rune"))
     state.flags = { chapter_01_complete = true }
     state.chapter_complete = true
     state.voyage_count = 2
@@ -575,6 +599,18 @@ function V2ChapterState.new(profile)
         prepareTideQAState(state, "tide_route_choice")
         state.objective = "根据已有船体成长选择进入潮汐墓场的航道"
         state.last_result = "第二次远航已抵达潮汐墓场入口，两条航道会检验不同的船只成长。"
+    elseif profile == "qa_tide_signal_gunner" or profile == "qa_tide_signal_sailor" then
+        prepareTideQAState(state, "tide_character_event")
+        state.route = "tide_breaker_channel"
+        state.flags.tide_route_chosen = true
+        state.flags.tide_breaker_chosen = true
+        state.voyage_hull_damage = tideRouteHullDamage(state)
+        state.upgrades.crew = profile == "qa_tide_signal_gunner"
+            and "crew_upgrade_gunner" or "crew_upgrade_sailor"
+        state.objective = "在击碎引潮钟与救下缚锚水手之间作出选择"
+        state.last_result = profile == "qa_tide_signal_gunner"
+            and "炮术长罗克要求立刻开炮；米克仍在准备救人的小艇。"
+            or "大副米克要求先救下水手；罗克仍保留击碎引潮钟的射界。"
     elseif profile == "qa_tide_guardian" then
         prepareTideQAState(state, "tide_guardian")
         state.route = "tide_breaker_channel"
@@ -676,6 +712,7 @@ local routeRequiredStages = {
     upgrade = true,
     crew_growth = true,
     complete = true,
+    tide_character_event = true,
     tide_guardian = true,
     tide_rune_clue = true,
     tide_settlement = true,
@@ -935,6 +972,24 @@ function V2ChapterState.getActions(state)
         }
     end
 
+    if state.stage == "tide_character_event" then
+        local chief = selectedCrewUpgrade(state)
+        local gunnerTag = chief and chief.id == "crew_upgrade_gunner" and "【首席建议】" or ""
+        local sailorTag = chief and chief.id == "crew_upgrade_sailor" and "【首席建议】" or ""
+        return {
+            {
+                id = "shatter_tide_bell",
+                label = string.format("罗克 · 击碎引潮钟%s\n守卫开场潮盾-%d｜远距方案",
+                    gunnerTag, balanceValue("tide_bell_shield_damage")),
+            },
+            {
+                id = "rescue_anchor_keeper",
+                label = string.format("米克 · 救下缚锚水手%s\n撞锚破盾+%d｜近身方案",
+                    sailorTag, balanceValue("tide_keeper_ram_bonus")),
+            },
+        }
+    end
+
     if state.stage == "route_event" then
         if state.route == "risky_shortcut" then
             return {
@@ -989,6 +1044,7 @@ function V2ChapterState.getActions(state)
             + crewUpgradeEffect(state, "crew_upgrade_gunner")
         local ramDamage = ram.damage
             + state.ship.hull_level * balanceValue("tide_ram_hull_bonus")
+            + (state.flags.tide_keeper_rescued and balanceValue("tide_keeper_ram_bonus") or 0)
         local ramCost = math.max(0, ram.retaliation
             - state.ship.hull_level * balanceValue("tide_ram_hull_reduction")
             - crewUpgradeEffect(state, "crew_upgrade_sailor"))
@@ -1032,6 +1088,7 @@ local stageTitles = {
     crew_growth = "皇家港 · 首席任命",
     complete = "第一章完成",
     tide_route_choice = "潮汐墓场 · 航线抉择",
+    tide_character_event = "潮汐墓场 · 墓场求救火",
     tide_guardian = "潮汐墓场 · 沉锚守卫",
     tide_rune_clue = "沉锚符文 · 新线索",
     tide_settlement = "潮汐墓场 · 结算",
@@ -1189,6 +1246,19 @@ function V2ChapterState.getNarrative(state)
                 breaker.hull_damage, breaker.hull_damage - breakerDamage, breakerDamage)
             .. string.format("\n炮门航道｜基础补给 %d，当前火炮成长减免 %d，实际补给 %d。",
                 cannon.supply_cost, cannon.supply_cost - cannonCost, cannonCost)
+    elseif state.stage == "tide_character_event" then
+        local chief = selectedCrewUpgrade(state)
+        local chiefLine
+        if chief and chief.id == "crew_upgrade_gunner" then
+            chiefLine = "首席建议｜" .. dialogueLine("node_tide_signal", "choice_prompt", "罗克")
+        elseif chief and chief.id == "crew_upgrade_sailor" then
+            chiefLine = "首席建议｜" .. dialogueLine("node_tide_signal", "choice_prompt", "米克")
+        else
+            chiefLine = "首席建议｜当前 QA 状态未记录任命，两项方案仍保持可执行。"
+        end
+        return dialogueBlock("node_tide_signal", { "node_enter" })
+            .. "\n" .. chiefLine
+            .. "\n船长仍可否决首席；下令后另一窗口会关闭。"
     elseif state.stage == "tide_guardian" then
         local barrage = battleAction("tide_barrage")
         local ram = battleAction("tide_ram")
@@ -1197,10 +1267,19 @@ function V2ChapterState.getNarrative(state)
             + crewUpgradeEffect(state, "crew_upgrade_gunner")
         local ramDamage = ram.damage
             + state.ship.hull_level * balanceValue("tide_ram_hull_bonus")
+            + (state.flags.tide_keeper_rescued and balanceValue("tide_keeper_ram_bonus") or 0)
         local ramCost = math.max(0, ram.retaliation
             - state.ship.hull_level * balanceValue("tide_ram_hull_reduction")
             - crewUpgradeEffect(state, "crew_upgrade_sailor"))
+        local eventResult = state.flags.tide_bell_shattered
+            and string.format("求救火结果｜引潮钟已碎，守卫以 %d/%d 潮盾开场。",
+                state.battle.tide_shield, state.battle.tide_shield_max)
+            or (state.flags.tide_keeper_rescued
+            and string.format("求救火结果｜守墓人已获救，撞锚方案额外 +%d 破盾。",
+                balanceValue("tide_keeper_ram_bonus"))
+            or "求救火结果｜旧存档从守卫阶段继续，未追加事件效果。")
         return dialogueBlock("node_tide_guardian", { "battle_start", "naval_hint" })
+            .. "\n" .. eventResult
             .. string.format("\n远距齐射｜潮盾 -%s，若守卫未沉则反击 -%d 船体。",
                 tideDamagePreview(state, barrageDamage), barrage.retaliation)
             .. string.format("\n撞断潮锚｜潮盾 -%s，并承受 %d 船体自损。",
@@ -1343,9 +1422,14 @@ local function winTideGuardian(state, action, damage, potential)
     local finalImpact = potential > damage
         and string.format("最终破盾 %d（方案火力 %d）", damage, potential)
         or string.format("最终破盾 %d", damage)
+    local eventSummary = state.flags.tide_bell_shattered
+        and "击碎引潮钟 · 开场削盾"
+        or (state.flags.tide_keeper_rescued
+        and "救下守墓人 · 锚链弱点" or "旧存档未经历求救火")
     state.battle_report = string.format(
-        "%s；破盾行动 %d 次；%s；船体剩余 %d/%d。船只方案：%s；首席任命：%s。",
+        "%s；求救火：%s；破盾行动 %d 次；%s；船体剩余 %d/%d。船只方案：%s；首席任命：%s。",
         routeData(state.route).label,
+        eventSummary,
         state.battle.tide_action_count,
         finalImpact,
         state.battle.player_hull,
@@ -1369,6 +1453,8 @@ local function resolveTideAttack(state, action)
         damage = damage + crewUpgradeEffect(state, "crew_upgrade_gunner")
     else
         damage = damage + state.ship.hull_level * balanceValue("tide_ram_hull_bonus")
+        damage = damage
+            + (state.flags.tide_keeper_rescued and balanceValue("tide_keeper_ram_bonus") or 0)
         hullCost = math.max(0, hullCost
             - state.ship.hull_level * balanceValue("tide_ram_hull_reduction")
             - crewUpgradeEffect(state, "crew_upgrade_sailor"))
@@ -1592,11 +1678,10 @@ function V2ChapterState.apply(state, action)
         state.voyage_hull_damage = hullDamage
         grantFlag(state, "tide_route_chosen")
         grantFlag(state, "tide_breaker_chosen")
-        resetTideGuardian(state)
-        state.stage = "tide_guardian"
-        state.current_node = "node_tide_guardian"
-        state.active_event = "event_tide_guardian"
-        state.objective = "用船体或火炮成长击破沉锚守卫的潮盾"
+        state.stage = "tide_character_event"
+        state.current_node = "node_tide_signal"
+        state.active_event = "event_tide_signal"
+        state.objective = "处理墓场求救火，并决定如何削弱沉锚守卫"
         addHistory(state, action, string.format(
             "选择%s：基础航损 %d，船体成长减免 %d，实际航损 %d。",
             route.label, route.hull_damage, route.hull_damage - hullDamage, hullDamage
@@ -1612,15 +1697,31 @@ function V2ChapterState.apply(state, action)
         state.voyage_hull_damage = 0
         grantFlag(state, "tide_route_chosen")
         grantFlag(state, "tide_cannon_chosen")
-        resetTideGuardian(state)
-        state.stage = "tide_guardian"
-        state.current_node = "node_tide_guardian"
-        state.active_event = "event_tide_guardian"
-        state.objective = "用船体或火炮成长击破沉锚守卫的潮盾"
+        state.stage = "tide_character_event"
+        state.current_node = "node_tide_signal"
+        state.active_event = "event_tide_signal"
+        state.objective = "处理墓场求救火，并决定如何削弱沉锚守卫"
         addHistory(state, action, string.format(
             "选择%s：基础补给 %d，火炮成长减免 %d，实际补给 %d。",
             route.label, route.supply_cost, route.supply_cost - supplyCost, supplyCost
         ))
+    elseif (action == "shatter_tide_bell" or action == "rescue_anchor_keeper")
+        and state.stage == "tide_character_event" then
+        local result = applyChoiceOutcome(state, action)
+        grantFlag(state, "tide_signal_resolved")
+        local chief = selectedCrewUpgrade(state)
+        local followed = chief ~= nil
+            and ((chief.id == "crew_upgrade_gunner" and action == "shatter_tide_bell")
+            or (chief.id == "crew_upgrade_sailor" and action == "rescue_anchor_keeper"))
+        if followed then grantFlag(state, "tide_chief_followed") end
+        resetTideGuardian(state)
+        state.stage = "tide_guardian"
+        state.current_node = "node_tide_guardian"
+        state.active_event = "event_tide_guardian"
+        state.objective = "把求救火的选择转化为真实破盾优势"
+        local chiefResult = chief == nil and "；当前诊断状态未记录首席任命"
+            or (followed and "；船长采纳了本次首席建议" or "；船长选择了另一名船员的方案")
+        addHistory(state, action, result .. chiefResult)
     elseif (action == "rest_at_cove" or action == "press_through_cove")
         and state.stage == "route_event" and state.route == "safe_route" then
         local result = applyChoiceOutcome(state, action)
@@ -1856,6 +1957,10 @@ function V2ChapterState.apply(state, action)
         state.flags.tide_route_chosen = nil
         state.flags.tide_breaker_chosen = nil
         state.flags.tide_cannon_chosen = nil
+        state.flags.tide_signal_resolved = nil
+        state.flags.tide_bell_shattered = nil
+        state.flags.tide_keeper_rescued = nil
+        state.flags.tide_chief_followed = nil
         state.flags.harbor_relief_used = nil
         state.stage = "harbor"
         state.current_node = "node_port"

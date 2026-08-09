@@ -22,8 +22,8 @@ def ids(name: str) -> set[str]:
 
 
 required = {
-    "map_node.csv": {"node_tide_gate", "node_tide_guardian", "node_tide_rune"},
-    "event.csv": {"event_tide_route_choice", "event_tide_guardian", "event_tide_rune"},
+    "map_node.csv": {"node_tide_gate", "node_tide_signal", "node_tide_guardian", "node_tide_rune"},
+    "event.csv": {"event_tide_route_choice", "event_tide_signal", "event_tide_guardian", "event_tide_rune"},
     "route.csv": {"tide_breaker_channel", "tide_cannon_pass"},
     "enemy.csv": {"enemy_tide_warden"},
     "reward.csv": {"reward_tide_guardian", "reward_tide_rune"},
@@ -47,11 +47,13 @@ if int(routes["tide_cannon_pass"]["supply_cost"]) != 2:
 state = (ROOT / "bin/res/scripts/LuaClass/V2ChapterState.lua").read_text(encoding="utf-8")
 for marker in (
     "tide_route_choice = true",
+    "tide_character_event = true",
     "tide_guardian = true",
     "tide_rune_clue = true",
     "tide_settlement = true",
     "tide_complete = true",
     'state.stage = "tide_route_choice"',
+    'state.stage = "tide_character_event"',
     'state.stage = "tide_guardian"',
     'state.stage = "tide_rune_clue"',
     'state.stage = "tide_settlement"',

@@ -129,8 +129,8 @@ def validate_content(tables: dict[str, list[dict[str, str]]]) -> None:
         raise ValidationError("chapter_01 estimated_minutes must be between 15 and 20")
 
     chapter_nodes = [row for row in tables["map_node.csv"] if row["chapter_id"] == "chapter_01"]
-    if not 7 <= len(chapter_nodes) <= 12:
-        raise ValidationError("chapter_01 must contain 7 to 12 meaningful nodes")
+    if not 7 <= len(chapter_nodes) <= 13:
+        raise ValidationError("the current Chapter 1 plus second-voyage slice must contain 7 to 13 meaningful nodes")
     for row in tables["map_node.csv"]:
         require_ref(row["chapter_id"], chapter_ids, f"map_node.{row['id']}.chapter_id")
         require_ref(row["event_id"], event_ids, f"map_node.{row['id']}.event_id")

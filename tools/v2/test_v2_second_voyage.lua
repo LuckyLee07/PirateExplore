@@ -43,6 +43,8 @@ equal(hull.stage, "tide_route_choice", "second departure no longer replays the f
 contains(actionLabel(hull, "choose_tide_breaker"), "航损-10", "hull route previews reduced damage")
 contains(actionLabel(hull, "choose_tide_cannon"), "补给-2", "non-gun growth leaves cannon route cost intact")
 apply(hull, "choose_tide_breaker")
+equal(hull.stage, "tide_character_event", "second route now reaches the character event before combat")
+apply(hull, "rescue_anchor_keeper")
 equal(hull.battle.player_hull, 130, "hull route applies ten damage after growth reduction")
 contains(actionLabel(hull, "tide_ram"), "潮盾-100", "hull growth previews a decisive ram")
 contains(actionLabel(hull, "tide_ram"), "船体-10", "hull growth previews reduced ram damage")
@@ -59,6 +61,8 @@ apply(guns, "start_voyage")
 contains(actionLabel(guns, "choose_tide_breaker"), "航损-30", "non-hull growth leaves breaker damage intact")
 contains(actionLabel(guns, "choose_tide_cannon"), "补给-0", "gun growth removes cannon route cost")
 apply(guns, "choose_tide_cannon")
+equal(guns.stage, "tide_character_event", "cannon route also reaches the shared character event")
+apply(guns, "rescue_anchor_keeper")
 contains(actionLabel(guns, "tide_barrage"), "潮盾-100", "gun growth previews a decisive barrage")
 apply(guns, "tide_barrage")
 equal(guns.stage, "tide_rune_clue", "decisive barrage defeats the guardian")
@@ -94,7 +98,8 @@ apply(recovered, "start_voyage")
 equal(recovered.stage, "tide_route_choice", "recovered voyage can choose a Tide Graveyard route again")
 
 for _, profile in ipairs({
-    "qa_tide_route", "qa_tide_guardian", "qa_tide_rune",
+    "qa_tide_route", "qa_tide_signal_gunner", "qa_tide_signal_sailor",
+    "qa_tide_guardian", "qa_tide_rune",
     "qa_tide_settlement", "qa_tide_complete",
 }) do
     local restored, recovery = State.normalize(State.new(profile), profile)

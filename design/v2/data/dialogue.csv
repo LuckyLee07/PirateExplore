@@ -19,6 +19,9 @@ dialogue_017,chapter_01,node_rune_clue,海盗王,第一道封印已经松动。�
 dialogue_018,chapter_01,node_port,卡特琳娜,这次战利品足够改造船。选好方向，下一片迷雾不会等我们。,return_to_port
 dialogue_019,chapter_01,node_tide_gate,卡特琳娜,墓场的潮流在两条航道间切换。强化过的那一侧会更容易通过。,node_enter
 dialogue_020,chapter_01,node_tide_gate,罗克,炮门航道给我射界；破潮水道就交给加固船壳。别让升级只躺在账本里。,choice_prompt
+dialogue_024,chapter_01,node_tide_signal,卡特琳娜,雾里有求救火。引潮钟正把那名水手的锚链和守卫潮盾连在一起。,node_enter
+dialogue_025,chapter_01,node_tide_signal,罗克,现在开炮能打碎钟，但靠近以后射界就没了。,choice_prompt
+dialogue_026,chapter_01,node_tide_signal,米克,给我一条小艇，我能把人带回来。他一定知道锚链从哪里断。,choice_prompt
 dialogue_021,chapter_01,node_tide_guardian,米克,那不是船壳——锚链织成的潮盾正在替它挡炮。,battle_start
 dialogue_022,chapter_01,node_tide_guardian,艾琳,远射保船但要多打一轮；撞断潮锚更快，也会伤到我们。,naval_hint
 dialogue_023,chapter_01,node_tide_rune,海盗王,第二道封印不是被岁月磨损的。是我亲手撕开的。,chapter_complete

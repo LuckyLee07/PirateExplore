@@ -28,3 +28,5 @@ tide_gun_route_reduction,second_voyage,2,每级火炮强化减少炮门航道补
 tide_barrage_gun_bonus,second_voyage,40,每级火炮强化增加远距破盾伤害
 tide_ram_hull_bonus,second_voyage,25,每级船体强化增加撞锚破盾伤害
 tide_ram_hull_reduction,second_voyage,15,每级船体强化减少撞锚自损
+tide_bell_shield_damage,second_voyage,20,击碎引潮钟后沉锚守卫的开场潮盾损失
+tide_keeper_ram_bonus,second_voyage,25,救下缚锚水手后获得的撞锚破盾伤害

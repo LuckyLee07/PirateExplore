@@ -11,10 +11,16 @@ flowchart LR
     P["node_port\n皇家港"] --> F["node_fog_gate\n第一片迷雾"]
     F -->|"暗礁近路\n风险 2 / 补给 1"| W["node_wreck\n沉船残骸"]
     F -->|"安全外海\n风险 1 / 补给 2"| S["node_safe_cove\n避风海湾"]
-    W --> H["node_whisper\n海盗王低语"]
-    S --> H
-    H --> R["node_raider\n诅咒追猎者"]
-    R --> C["node_rune_clue\n符文回响"]
+    W --> B["node_black_tide\n黑潮浪墙"]
+    S --> B
+    B --> H["node_whisper\n海盗王低语"]
+    H --> C["node_cursed_compass\n诅咒罗盘"]
+    C --> R["node_raider\n诅咒追猎者"]
+    R --> RC["node_rune_clue\n第一枚符文"]
+    P -->|"第二次远航"| T["node_tide_gate\n潮汐墓场入口"]
+    T -->|"破潮水道 / 炮门航道"| G["node_tide_signal\n墓场求救火"]
+    G --> TG["node_tide_guardian\n沉锚符文守卫"]
+    TG --> TR["node_tide_rune\n第二枚符文"]
 ```
 
 ## 2. 节点定义
@@ -25,9 +31,15 @@ flowchart LR
 | `node_fog_gate` | 路线选择 | 1 | 教会风险与成本比较 | `route_chosen` |
 | `node_wreck` | 资源 | 1 | 近路额外收益 | `reward_salvage` |
 | `node_safe_cove` | 事件 | 1 | 远路恢复接舷状态 | `crew_restored` |
+| `node_black_tide` | 海况事件 | 2 | 补给与船体风险取舍 | `black_tide_crossed` |
 | `node_whisper` | 剧情事件 | 2 | 第一次诅咒选择 | `curse_heard` |
+| `node_cursed_compass` | 剧情事件 | 3 | 敌舰开场与接舷状态取舍 | `compass_resolved` |
 | `node_raider` | 双阶段战斗 | 3 | 验证核心战斗 | `reward_battle` |
 | `node_rune_clue` | 章节终点 | 2 | 主线推进与返港 | `reward_rune_clue` |
+| `node_tide_gate` | 成长航线 | 2 | 船体/火炮成长改变航线代价 | `tide_route_chosen` |
+| `node_tide_signal` | 角色事件 | 3 | 首席建议与船长取舍改变守卫准备 | `tide_signal_resolved` |
+| `node_tide_guardian` | 潮盾战斗 | 3 | 船只、船员和事件结果共同破盾 | `reward_tide_guardian` |
+| `node_tide_rune` | 第二航程终点 | 3 | 主线推进与第二次返港 | `reward_tide_rune` |
 
 ## 3. 两条路线的设计目的
 
@@ -64,10 +76,12 @@ flowchart LR
 
 ## 5. 扩展约束
 
-首章通过验收前：
+当前内容扩展继续遵守：
 
-- 不增加第二张地图；
+- 不为了时长增加重复地图格子；
 - 不增加与首章目标无关的支路；
 - 不用体力或付费地图门替代内容门槛；
 - 不把节点数量扩充为无选择的逐格移动；
 - 新节点必须新增信息、选择、结果或故事中的至少一项。
+
+第二次远航目前仍在同一份章节数据中作为潮汐墓场短闭环管理；若后续扩成独立章节或第三海域，必须先拆分内容边界和存档迁移，再调整地图数据结构。

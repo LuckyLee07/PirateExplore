@@ -58,11 +58,12 @@ set `CODE_SIGNING_ALLOWED=YES` only after selecting the App Store Connect team a
   [`docs/v2/phase-4-quality-audit.md`](docs/v2/phase-4-quality-audit.md),
   [`docs/v2/phase-4-decision.md`](docs/v2/phase-4-decision.md),
   [`docs/v2/phase-4-completion-audit.md`](docs/v2/phase-4-completion-audit.md)
-- V2 retained-growth loop, playable Tide Graveyard second voyage, Royal Port logistics, and crew growth:
+- V2 retained-growth loop, playable Tide Graveyard second voyage, Royal Port logistics, crew growth, and character event:
   [`docs/v2/repeat-voyage-iteration-1.md`](docs/v2/repeat-voyage-iteration-1.md),
   [`docs/v2/second-voyage-iteration-1.md`](docs/v2/second-voyage-iteration-1.md),
   [`docs/v2/port-logistics-iteration-1.md`](docs/v2/port-logistics-iteration-1.md),
-  [`docs/v2/crew-growth-iteration-1.md`](docs/v2/crew-growth-iteration-1.md)
+  [`docs/v2/crew-growth-iteration-1.md`](docs/v2/crew-growth-iteration-1.md),
+  [`docs/v2/tide-character-event-iteration-1.md`](docs/v2/tide-character-event-iteration-1.md)
 - iOS release engineering baseline and App Store metadata draft:
   [`docs/release/ios-release-readiness.md`](docs/release/ios-release-readiness.md),
   [`docs/release/app-store-metadata-zh-CN.md`](docs/release/app-store-metadata-zh-CN.md),

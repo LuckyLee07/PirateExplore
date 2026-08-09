@@ -25,7 +25,7 @@ expected_events = {
     "port_logistics_used",
     "rune_claimed", "return_completed", "upgrade_completed", "crew_upgrade_selected",
     "next_voyage_prepared", "chapter_restarted",
-    "invalid_action", "tide_guardian_action", "tide_guardian_result",
+    "invalid_action", "tide_character_event_choice", "tide_guardian_action", "tide_guardian_result",
     "second_rune_claimed", "second_voyage_completed",
 }
 if {row["id"] for row in telemetry} != expected_events:

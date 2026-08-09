@@ -66,6 +66,7 @@ equal(cargoActions[1].id, "return_to_port", "cargo never invents a second settle
 equal(Port.status(State.new("qa_failed")).accent, "danger", "failed voyage is visibly cautionary")
 equal(Port.status(State.new("qa_complete")).label, "首航完成", "completed voyage has a stable port state")
 equal(Port.status(State.new("qa_tide_guardian")).label, "潮盾交战", "port reflects the distinct guardian encounter")
+equal(Port.status(State.new("qa_tide_signal_gunner")).label, "墓场求救火", "port reflects the pending Tide character event")
 equal(Port.status(State.new("qa_tide_complete")).label, "墓场完成", "port reflects second-voyage completion")
 
 print("V2 UI 3.4 port model OK: chart, ship, crew, cargo and real actions passed")

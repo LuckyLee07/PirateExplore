@@ -41,6 +41,7 @@ local stageAccents = {
     crew_growth = "sea",
     complete = "success",
     tide_route_choice = "sea",
+    tide_character_event = "gold",
     tide_guardian = "danger",
     tide_rune_clue = "purple",
     tide_settlement = "gold",
@@ -64,6 +65,7 @@ local stageKinds = {
     crew_growth = "首席任命",
     complete = "首航完成",
     tide_route_choice = "成长航线",
+    tide_character_event = "船员事件",
     tide_guardian = "潮盾破袭",
     tide_rune_clue = "第二符文",
     tide_settlement = "航程清点",
@@ -88,6 +90,7 @@ local progressByStage = {
     crew_growth = 5,
     complete = 5,
     tide_route_choice = 2,
+    tide_character_event = 3,
     tide_guardian = 4,
     tide_rune_clue = 5,
     tide_settlement = 5,
@@ -95,10 +98,10 @@ local progressByStage = {
 }
 
 V2UITheme.progress_labels = { "港口", "航线", "异象", "追猎者", "符文" }
-V2UITheme.tide_progress_labels = { "港口", "墓场入口", "潮流", "沉锚守卫", "第二符文" }
+V2UITheme.tide_progress_labels = { "港口", "墓场入口", "求救火", "沉锚守卫", "第二符文" }
 
 function V2UITheme.progressLabels(stage)
-    if stage == "tide_route_choice" or stage == "tide_guardian"
+    if stage == "tide_route_choice" or stage == "tide_character_event" or stage == "tide_guardian"
         or stage == "tide_rune_clue" or stage == "tide_settlement"
         or stage == "tide_complete" then
         return V2UITheme.tide_progress_labels
@@ -169,6 +172,7 @@ function V2UITheme.actionRole(stage, actionId, actionIndex, actionCount, selecte
         return "primary"
     end
     if stage == "upgrade" or stage == "route_choice" or stage == "tide_route_choice"
+        or stage == "tide_character_event"
         or stage == "harbor" or stage == "crew_growth" then
         return "choice"
     end
@@ -238,6 +242,8 @@ local actionFeedbackTitles = {
     restart_chapter = "首航记录已重置",
     choose_tide_breaker = "破潮水道已锁定",
     choose_tide_cannon = "炮门航道已锁定",
+    shatter_tide_bell = "引潮钟已击碎",
+    rescue_anchor_keeper = "缚锚水手已救回",
     tide_barrage = "远距齐射命中潮盾",
     tide_ram = "守卫潮锚已撞击",
     take_tide_rune = "第二枚符文已收录",
@@ -389,6 +395,18 @@ function V2UITheme.outcomeGroups(state, chapterData)
             { label = "任命席位", value = "首席船员 1 名\n选择后永久保留", accent = "muted" },
             { label = "炮术长 · 罗克", value = string.format("远距破盾 +%d\n稳定齐射方案", gunner), accent = "gold" },
             { label = "大副 · 米克", value = string.format("撞锚自损 -%d\n稳定近身方案", sailor), accent = "sea" },
+        }
+    elseif stage == "tide_character_event" then
+        local bellDamage = authoredValue(chapterData, "balance", "tide_bell_shield_damage")
+        local ramBonus = authoredValue(chapterData, "balance", "tide_keeper_ram_bonus")
+        local chief = state.upgrades and state.upgrades.crew
+        local chiefValue = chief == "crew_upgrade_sailor"
+            and "大副 · 米克\n建议先救人"
+            or "炮术长 · 罗克\n建议立刻开炮"
+        return {
+            { label = "本次首席", value = chiefValue, accent = "gold" },
+            { label = "击碎引潮钟", value = string.format("开场潮盾 -%d\n失去救援窗口", bellDamage), accent = "danger" },
+            { label = "救下守墓人", value = string.format("撞锚破盾 +%d\n取得锚链弱点", ramBonus), accent = "sea" },
         }
     elseif stage == "failed" then
         local retryCost = authoredValue(chapterData, "balance", "retry_supply_cost")

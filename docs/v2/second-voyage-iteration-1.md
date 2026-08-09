@@ -161,8 +161,8 @@ stateDiagram-v2
 
 后续优先级：
 
-1. 为潮汐墓场补一个角色事件，使第二航程不只有路线与战斗；
-2. 玩法稳定后再制作沉锚守卫专属美术与一次性破盾效果；
+1. 潮汐墓场角色事件已完成，见 [`tide-character-event-iteration-1.md`](tide-character-event-iteration-1.md)；
+2. 下一轮制作沉锚守卫专属美术与一次性破盾效果；
 3. 继续验证存档迁移、内容表扩展和长流程稳定性；
 4. 所有游戏内容收敛后，最后统一执行真机、签名、TestFlight 与 App Store。
 

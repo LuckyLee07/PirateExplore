@@ -44,6 +44,7 @@ local stageStatus = {
     crew_growth = { label = "等待任命", detail = "选择一名首席船员，让专长进入下一次远航", accent = "sea" },
     complete = { label = "首航完成", detail = "新的远航目标已经记录", accent = "success" },
     tide_route_choice = { label = "墓场航线", detail = "成长正在改变两条航道的实际代价", accent = "sea" },
+    tide_character_event = { label = "墓场求救火", detail = "首席船员正在提出两种互斥处理方案", accent = "gold" },
     tide_guardian = { label = "潮盾交战", detail = "沉锚守卫要求用船体或火炮成长破盾", accent = "danger" },
     tide_rune_clue = { label = "第二符文", detail = "沉锚符文等待收入水晶瓶", accent = "purple" },
     tide_settlement = { label = "等待返港", detail = "第二次远航的符文与残骸已经清点", accent = "gold" },
