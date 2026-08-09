@@ -24,7 +24,7 @@ local function trackedApply(state, action)
     return event
 end
 
-equal(#Data.telemetry_event, 17, "Phase 4 exports the full local event contract")
+equal(#Data.telemetry_event, 18, "Phase 4 exports the full local event contract")
 equal(#Data.quality_gate, 10, "Phase 4 exports every decision and quality gate")
 
 local state = State.new("qa_fresh")
@@ -66,6 +66,10 @@ equal(summary.naval_actions, 3, "two volleys and boarding choice are counted")
 equal(summary.boarding_actions, 2, "non-terminal boarding actions are counted")
 equal(summary.battle_results, 1, "terminal boarding action is counted once")
 equal(summary.invalid_actions, 0, "valid completion has no friction events")
+
+local nextVoyageEvent = trackedApply(state, "prepare_next_voyage")
+equal(nextVoyageEvent.event_id, "next_voyage_prepared", "retained-growth preparation has a distinct event")
+equal(nextVoyageEvent.stage_after, "harbor", "next voyage telemetry records the port transition")
 
 local invalid = State.new("qa_fresh")
 Telemetry.ensureSession(invalid)

@@ -25,6 +25,7 @@ equal(Theme.actionRole("route_choice", "reveal_route_intel", 1, 3), "utility", "
 equal(Theme.actionRole("naval", "retreat", 5, 5), "danger", "retreat is visually cautionary")
 equal(Theme.actionRole("harbor", "select_reinforced_hull", 1, 3, "module_reinforced_hull"), "selected", "equipped module is selected")
 equal(Theme.actionRole("failed", "retry_battle", 1, 2), "primary", "retry is the forward recovery action")
+equal(Theme.actionRole("complete", "prepare_next_voyage", 1, 1), "primary", "retained-growth preparation is the completion action")
 
 local resources = Theme.resourceItems({ gold = 40, timber = 2, iron = 3, provisions = 6, rune_dust = 1 })
 equal(#resources, 5, "resource HUD stays compact")
@@ -35,6 +36,7 @@ equal(resources[5].accent, "purple", "rune resource keeps its semantic accent")
 equal(Theme.battleIcon("cannon"), "Images/V2/Icons/battle-cannon.png", "battle meters expose a semantic cannon icon")
 equal(Theme.actionFeedbackTitle("fire_at_deck", "naval"), "齐射命中甲板", "combat feedback names the completed action")
 equal(Theme.actionFeedbackTitle("unknown_action", "boarding"), "甲板接舷已更新", "unknown actions fall back to the next stage")
+equal(Theme.actionFeedbackTitle("prepare_next_voyage", "harbor"), "成长已装载", "repeat preparation confirms persistence")
 local changes = Theme.feedbackChanges(
     { provisions = 5, enemy_ship_hp = 500, player_hull = 110, deck_damage = 0 },
     { provisions = 5, enemy_ship_hp = 325, player_hull = 96, deck_damage = 175 }

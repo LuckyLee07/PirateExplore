@@ -21,7 +21,8 @@ for marker in (
     "local function hasBooleanFields(value, fields)",
     "routeRequiredStages",
     'profile == "qa_complete"',
-    'and "重置首章（QA）" or "再次体验第一章"',
+    'and "restart_chapter" or "prepare_next_voyage"',
+    'and "重置首章（QA）" or "准备下一次远航\\n保留升级与库存"',
     'or "迷雾重新聚拢，新的首章航程已经开始。"',
 ):
     if marker not in STATE:

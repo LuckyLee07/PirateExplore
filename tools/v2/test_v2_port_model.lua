@@ -45,6 +45,14 @@ local harborActions = Port.actions("chart", State.getActions(harbor))
 equal(#harborActions, 1, "chart table exposes the real departure action")
 equal(harborActions[1].id, "start_voyage", "departure remains owned by the chapter state machine")
 
+local nextVoyage = State.new("qa_complete")
+nextVoyage.profile = "player"
+local nextActions = Port.actions("chart", State.getActions(nextVoyage))
+equal(nextActions[1].id, "prepare_next_voyage", "chart exposes the real retained-growth transition")
+truthy(not Port.returnsToVoyage("prepare_next_voyage"), "preparation remains in the port after loading growth")
+State.apply(nextVoyage, "prepare_next_voyage")
+truthy(string.find(Port.status(nextVoyage).detail, "第 2 次", 1, true), "port status identifies the prepared voyage")
+
 local upgrade = State.new("qa_upgrade")
 local upgradeActions = Port.actions("ship", State.getActions(upgrade))
 equal(#upgradeActions, 2, "shipyard exposes both real first-upgrade choices")

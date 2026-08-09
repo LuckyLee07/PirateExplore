@@ -178,6 +178,15 @@ function V2PortLayer:init()
     self.dynamicNode = cc.Node:create()
     self:addChild(self.dynamicNode)
     self:refresh()
+    if V2Config:isQAProfile(state.profile) and os ~= nil and os.getenv ~= nil then
+        local qaAction = os.getenv("NEWPIRATE_V2_QA_ACTION")
+        if qaAction ~= nil and qaAction ~= "" then
+            self:runAction(cc.Sequence:create(
+                cc.DelayTime:create(0.8),
+                cc.CallFunc:create(function() self:performAction(qaAction) end)
+            ))
+        end
+    end
     return true
 end
 

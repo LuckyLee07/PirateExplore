@@ -174,6 +174,7 @@ local data = {
         { id = "rune_claimed", trigger = "take_rune_clue", description = "取得第一枚符文线索", required_fields = "stage_after|rune_dust", decision_metric = "chapter_goal_reached" },
         { id = "return_completed", trigger = "return_to_port", description = "带着战利品返回皇家港", required_fields = "stage_after|resources", decision_metric = "return_loop_completed" },
         { id = "upgrade_completed", trigger = "upgrade", description = "使用远航资源完成升级", required_fields = "action|stage_after|resources", decision_metric = "upgrade_conversion" },
+        { id = "next_voyage_prepared", trigger = "prepare_next_voyage", description = "保留成长与库存并返回皇家港准备下一次远航", required_fields = "action|stage_after|resources|voyage_count", decision_metric = "repeat_voyage_conversion" },
         { id = "chapter_restarted", trigger = "restart_chapter", description = "重置首章测试进度并创建新会话", required_fields = "action|stage_after", decision_metric = "repeat_test_count" },
         { id = "invalid_action", trigger = "invalid_action", description = "记录资源不足或非法操作", required_fields = "action|stage_before|result", decision_metric = "friction_count" },
     },

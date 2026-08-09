@@ -79,6 +79,7 @@ function V2Telemetry.ensureSession(state)
         rune_dust = state.resources and state.resources.rune_dust or 0,
         route_intel = state.flags and state.flags.route_intel == true,
         module_preference = state.selected_module,
+        voyage_count = state.voyage_count or 0,
     })
     return state.telemetry
 end
@@ -153,6 +154,7 @@ local function classify(action, before, state, success)
     if action == "take_rune_clue" then return "rune_claimed" end
     if action == "return_to_port" then return "return_completed" end
     if action == "upgrade_hull" or action == "upgrade_guns" then return "upgrade_completed" end
+    if action == "prepare_next_voyage" then return "next_voyage_prepared" end
     if action == "restart_chapter" then return "chapter_restarted" end
     return "invalid_action"
 end
@@ -182,6 +184,7 @@ function V2Telemetry.record(state, action, before, success, message)
         rune_dust = state.resources and state.resources.rune_dust or 0,
         route_intel = state.flags and state.flags.route_intel == true,
         module_preference = state.selected_module,
+        voyage_count = state.voyage_count or 0,
         player_hull = battle.player_hull,
         enemy_ship_hp = battle.enemy_ship_hp,
         deck_damage = battle.deck_damage,

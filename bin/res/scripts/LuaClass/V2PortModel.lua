@@ -72,7 +72,11 @@ function V2PortModel.section(sectionId)
 end
 
 function V2PortModel.status(state)
-    return copy(stageStatus[state.stage] or stageStatus.harbor)
+    local status = copy(stageStatus[state.stage] or stageStatus.harbor)
+    if state.stage == "harbor" and (state.voyage_count or 0) > 0 then
+        status.detail = string.format("第 %d 次远航准备中；船只成长、库存与符文线索已保留", state.voyage_count + 1)
+    end
+    return status
 end
 
 function V2PortModel.ship(state, data)
@@ -169,6 +173,7 @@ local actionsBySection = {
     chart = {
         start_voyage = true,
         return_to_port = true,
+        prepare_next_voyage = true,
     },
     ship = {
         select_reinforced_hull = true,

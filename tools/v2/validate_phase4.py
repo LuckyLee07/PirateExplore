@@ -22,7 +22,7 @@ expected_events = {
     "session_started", "opening_accepted", "module_selected", "voyage_started",
     "route_intel_revealed", "route_selected", "voyage_event_choice", "curse_decision",
     "naval_action", "boarding_action", "battle_result", "recovery_choice",
-    "rune_claimed", "return_completed", "upgrade_completed", "chapter_restarted",
+    "rune_claimed", "return_completed", "upgrade_completed", "next_voyage_prepared", "chapter_restarted",
     "invalid_action",
 }
 if {row["id"] for row in telemetry} != expected_events:

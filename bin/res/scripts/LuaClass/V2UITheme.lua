@@ -84,6 +84,7 @@ local forwardActions = {
     board_now = true,
     take_rune_clue = true,
     return_to_port = true,
+    prepare_next_voyage = true,
     restart_chapter = true,
 }
 
@@ -197,6 +198,7 @@ local actionFeedbackTitles = {
     upgrade_guns = "火炮强化完成",
     retry_battle = "战斗状态已重置",
     recover_at_port = "港口整备完成",
+    prepare_next_voyage = "成长已装载",
     restart_chapter = "首航记录已重置",
 }
 

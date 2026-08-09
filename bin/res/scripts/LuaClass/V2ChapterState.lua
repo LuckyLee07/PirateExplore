@@ -597,10 +597,12 @@ local actionsByStage = {
 
 function V2ChapterState.getActions(state)
     if state.stage == "complete" then
+        local action = V2Config:isQAProfile(state.profile)
+            and "restart_chapter" or "prepare_next_voyage"
         local label = V2Config:isQAProfile(state.profile)
-            and "重置首章（QA）" or "再次体验第一章"
+            and "重置首章（QA）" or "准备下一次远航\n保留升级与库存"
         return {
-            { id = "restart_chapter", label = label },
+            { id = action, label = label },
         }
     end
 
@@ -716,6 +718,9 @@ local stageTitles = {
 }
 
 function V2ChapterState.getStageTitle(state)
+    if state.stage == "harbor" and (state.voyage_count or 0) > 0 then
+        return string.format("皇家港 · 第 %d 次整备", state.voyage_count + 1)
+    end
     return stageTitles[state.stage] or "皇家港与瓶中海域"
 end
 
@@ -725,7 +730,14 @@ function V2ChapterState.getNarrative(state)
     elseif state.stage == "harbor" then
         local hull = ChapterData.by_id.ship_module.module_reinforced_hull
         local guns = ChapterData.by_id.ship_module.module_heavy_guns
-        return "四名船员已经就位；默认已装配加固船体，可直接出航。"
+        local preparation = "四名船员已经就位；默认已装配加固船体，可直接出航。"
+        if (state.voyage_count or 0) > 0 then
+            preparation = string.format(
+                "第 %d 次远航准备就绪；上次获得的船只成长与库存已经保留。",
+                state.voyage_count + 1
+            )
+        end
+        return preparation
             .. string.format("\n加固船体｜耐久 +%d；重炮甲板｜齐射 +%d，但补给上限 %d。",
                 hull.hull_bonus, guns.cannon_bonus, guns.supply_capacity_modifier)
     elseif state.stage == "route_choice" then
@@ -1245,6 +1257,26 @@ function V2ChapterState.apply(state, action)
         state.active_event = "event_route_choice"
         state.objective = "重新整备后再次出航"
         addHistory(state, action, string.format("支付 %d 金币，船只与船员已在皇家港恢复。", recoveryCost))
+    elseif action == "prepare_next_voyage" and state.stage == "complete" then
+        state.stage = "harbor"
+        state.current_node = "node_port"
+        state.objective = "确认已保留的船只成长，为潮汐墓场再次出航"
+        state.route = nil
+        state.flags = { chapter_01_complete = true }
+        state.claimed_rewards.reward_salvage = nil
+        state.claimed_rewards.reward_rescue = nil
+        state.claimed_rewards.reward_battle = nil
+        state.voyage_hull_damage = 0
+        state.route_intel = nil
+        state.battle_report = nil
+        state.recovery_summary = nil
+        state.failure_reason = nil
+        state.active_event = "event_route_choice"
+        resetBattle(state)
+        addHistory(state, action, string.format(
+            "第 %d 次远航整备开始：船只升级、库存与符文线索已保留。",
+            state.voyage_count + 1
+        ))
     elseif action == "restart_chapter" and state.stage == "complete" then
         local restarted = V2ChapterState.new(state.profile)
         for key in pairs(state) do

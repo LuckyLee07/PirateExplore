@@ -87,7 +87,8 @@ truthy(string.find(retry.objective, "削弱接舷敌军", 1, true), "retry guida
 local completedPlayer = State.new("player")
 completedPlayer.stage = "complete"
 local completedActions = State.getActions(completedPlayer)
-equal(completedActions[1].label, "再次体验第一章", "player completion action has no test terminology")
+equal(completedActions[1].id, "prepare_next_voyage", "player completion enters the retained-growth loop")
+truthy(string.find(completedActions[1].label, "保留升级与库存", 1, true), "player completion explains what carries forward")
 
 local completedQA = State.new("qa_fresh")
 completedQA.stage = "complete"

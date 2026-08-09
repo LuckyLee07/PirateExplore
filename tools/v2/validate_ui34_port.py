@@ -52,6 +52,7 @@ require_markers(
         "self.controller:getActions()",
         "self.controller:dispatch(actionId)",
         'os.getenv("NEWPIRATE_V2_PORT_SECTION")',
+        'os.getenv("NEWPIRATE_V2_QA_ACTION")',
         'createLabel(item.active_detail',
     ),
 )
