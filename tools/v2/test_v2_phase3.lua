@@ -27,7 +27,7 @@ local function apply(state, action)
     if not ok then error(string.format("%s failed: %s", action, tostring(message))) end
 end
 
-equal(#Data.event, 8, "Chapter 1 content sample has exactly eight authored events")
+truthy(#Data.event >= 8, "Chapter 1 retains at least eight authored events")
 truthy(#Data.dialogue >= 18, "Chapter 1 has plot and voyage dialogue coverage")
 equal(#Data.audio_cue, 6, "approved V2 audio cue set is exported")
 

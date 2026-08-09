@@ -1,3 +1,5 @@
 id,chapter_id,label,supply_cost,risk,reward_id,hull_damage,crew_max_bonus,status_id,intel_hint,outcome_hint
 safe_route,chapter_01,外海安全航线,2,1,,0,10,steady_approach,风险 1；多消耗补给；接舷队状态上限提高,以补给换取接舷容错
 risky_shortcut,chapter_01,暗礁高风险近路,1,3,reward_salvage,10,0,exposed_hull,风险 3；船体受损；获得沉船战利品,以船体风险换取升级资源
+tide_breaker_channel,chapter_01,破潮水道,0,3,,30,0,hull_growth_route,基础航损 30；每级船体强化减免 20,用船体成长抵消墓场冲击
+tide_cannon_pass,chapter_01,炮门航道,2,3,,0,0,gun_growth_route,基础补给 2；每级火炮强化减免 2,用火炮成长压低航线补给

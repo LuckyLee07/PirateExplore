@@ -42,6 +42,11 @@ local stageStatus = {
     settlement = { label = "等待返港", detail = "战利品已经清点，可以返回皇家港", accent = "gold" },
     upgrade = { label = "可以强化", detail = "本次战利品足够完成首次船只升级", accent = "gold" },
     complete = { label = "首航完成", detail = "新的远航目标已经记录", accent = "success" },
+    tide_route_choice = { label = "墓场航线", detail = "成长正在改变两条航道的实际代价", accent = "sea" },
+    tide_guardian = { label = "潮盾交战", detail = "沉锚守卫要求用船体或火炮成长破盾", accent = "danger" },
+    tide_rune_clue = { label = "第二符文", detail = "沉锚符文等待收入水晶瓶", accent = "purple" },
+    tide_settlement = { label = "等待返港", detail = "第二次远航的符文与残骸已经清点", accent = "gold" },
+    tide_complete = { label = "墓场完成", detail = "第二次远航完成，已取得两枚符文", accent = "success" },
 }
 
 local function rowById(data, group, id)
@@ -173,6 +178,7 @@ local actionsBySection = {
     chart = {
         start_voyage = true,
         return_to_port = true,
+        return_from_tide = true,
         prepare_next_voyage = true,
     },
     ship = {
@@ -183,6 +189,7 @@ local actionsBySection = {
     },
     cargo = {
         return_to_port = true,
+        return_from_tide = true,
     },
 }
 
@@ -200,6 +207,7 @@ end
 function V2PortModel.returnsToVoyage(actionId)
     return actionId == "start_voyage"
         or actionId == "return_to_port"
+        or actionId == "return_from_tide"
         or actionId == "upgrade_hull"
         or actionId == "upgrade_guns"
 end

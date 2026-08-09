@@ -46,7 +46,7 @@ for marker in (
     'os.getenv("NEWPIRATE_V2_QA_ACTION")',
     'os.getenv("NEWPIRATE_V2_QA_FEEDBACK_HOLD")',
     'cc.FadeTo:create(0.14, 255)',
-    'local isBattleStage = state.stage == "naval" or state.stage == "boarding"',
+    "local function isBattleStage(stage)",
     'createButtonFace(infoWidth, infoHeight, "utility"',
 ):
     if marker not in LAYER:

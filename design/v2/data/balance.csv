@@ -20,3 +20,8 @@ retry_supply_cost,recovery,1,原地重试战斗消耗的补给
 port_recovery_gold_cost,recovery,5,返港恢复船只和船员的金币成本
 hull_upgrade_timber_cost,upgrade,10,首次船体升级木材成本
 guns_upgrade_iron_cost,upgrade,15,首次火炮升级铁料成本
+tide_hull_route_reduction,second_voyage,20,每级船体强化减少破潮水道航损
+tide_gun_route_reduction,second_voyage,2,每级火炮强化减少炮门航道补给
+tide_barrage_gun_bonus,second_voyage,40,每级火炮强化增加远距破盾伤害
+tide_ram_hull_bonus,second_voyage,25,每级船体强化增加撞锚破盾伤害
+tide_ram_hull_reduction,second_voyage,15,每级船体强化减少撞锚自损

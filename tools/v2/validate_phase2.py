@@ -17,8 +17,9 @@ def rows(name: str) -> list[dict[str, str]]:
 
 
 route_rows = rows("route.csv")
-if {row["id"] for row in route_rows} != {"safe_route", "risky_shortcut"}:
-    raise SystemExit("route.csv must define exactly safe and risky Chapter 1 routes")
+required_routes = {"safe_route", "risky_shortcut"}
+if not required_routes.issubset({row["id"] for row in route_rows}):
+    raise SystemExit("route.csv must retain the safe and risky Chapter 1 routes")
 for row in route_rows:
     if not row["intel_hint"] or not row["outcome_hint"]:
         raise SystemExit(f"route {row['id']} needs intel and outcome explanations")
@@ -62,10 +63,10 @@ required_actions = {
     "sailor_guard",
     "medic_heal",
 }
-if action_ids != required_actions:
-    raise SystemExit("battle_action.csv does not match the Phase 2 action set")
+if not required_actions.issubset(action_ids):
+    raise SystemExit("battle_action.csv does not retain the Phase 2 action set")
 for row in action_rows:
-    if row["stage"] not in {"naval", "boarding"}:
+    if row["stage"] not in {"naval", "boarding", "tide_guardian"}:
         raise SystemExit(f"battle action {row['id']} has invalid stage")
     for field in ("damage", "deck_damage", "gun_damage", "retaliation"):
         if int(row[field]) < 0:

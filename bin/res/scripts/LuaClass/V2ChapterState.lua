@@ -78,6 +78,11 @@ V2ChapterState.STAGES = {
     settlement = true,
     upgrade = true,
     complete = true,
+    tide_route_choice = true,
+    tide_guardian = true,
+    tide_rune_clue = true,
+    tide_settlement = true,
+    tide_complete = true,
     failed = true,
 }
 
@@ -181,9 +186,76 @@ local function resetBattle(state)
         total_hull_damage = state.voyage_hull_damage or 0,
         naval_action_count = 0,
         boarding_action_count = 0,
+        tide_shield = 0,
+        tide_shield_max = 0,
+        tide_action_count = 0,
         actions_log = {},
         transfer_summary = "尚未进入接舷阶段",
     }
+end
+
+local function tideRouteHullDamage(state)
+    local route = routeData("tide_breaker_channel")
+    return math.max(0, route.hull_damage
+        - state.ship.hull_level * balanceValue("tide_hull_route_reduction"))
+end
+
+local function tideRouteSupplyCost(state)
+    local route = routeData("tide_cannon_pass")
+    return math.max(0, route.supply_cost
+        - state.ship.gun_level * balanceValue("tide_gun_route_reduction"))
+end
+
+local function resetTideGuardian(state)
+    local enemy = ChapterData.by_id.enemy.enemy_tide_warden
+    state.ship.hull_max = calculateHullMax(state)
+    state.battle = {
+        enemy_ship_hp = 0,
+        enemy_ship_hp_max = 0,
+        deck_damage = 0,
+        deck_threshold = 0,
+        deck_broken = false,
+        gun_damage = 0,
+        gun_threshold = 0,
+        guns_suppressed = false,
+        player_hull = math.max(1, state.ship.hull_max - (state.voyage_hull_damage or 0)),
+        player_hull_max = state.ship.hull_max,
+        enemy_boarding_hp = 0,
+        enemy_boarding_hp_max = 0,
+        crew_hp = 0,
+        crew_hp_max = 0,
+        medic_used = false,
+        sailor_guard_used = false,
+        sailor_guarded = false,
+        gunner_mark_used = false,
+        gunner_marked = false,
+        volley_count = 0,
+        total_hull_damage = state.voyage_hull_damage or 0,
+        naval_action_count = 0,
+        boarding_action_count = 0,
+        tide_shield = enemy.ship_hp,
+        tide_shield_max = enemy.ship_hp,
+        tide_action_count = 0,
+        actions_log = {},
+        transfer_summary = "潮盾尚未被击破",
+    }
+end
+
+local function prepareTideQAState(state, stage)
+    state.stage = stage
+    state.current_node = stage == "tide_route_choice" and "node_tide_gate"
+        or (stage == "tide_guardian" and "node_tide_guardian" or "node_tide_rune")
+    state.active_event = stage == "tide_route_choice" and "event_tide_route_choice"
+        or (stage == "tide_guardian" and "event_tide_guardian" or "event_tide_rune")
+    state.flags = { chapter_01_complete = true }
+    state.chapter_complete = true
+    state.voyage_count = 2
+    state.ship.hull_level = 1
+    state.ship.hull_max = calculateHullMax(state)
+    state.upgrades.hull = true
+    state.next_voyage_objective = "前往潮汐墓场寻找沉锚符文守卫"
+    applyReward(state, "reward_battle")
+    applyReward(state, "reward_rune_clue")
 end
 
 local function baseState(profile)
@@ -420,6 +492,51 @@ function V2ChapterState.new(profile)
         state.next_voyage_objective = "前往潮汐墓场寻找符文守卫"
         state.objective = "查看下一次远航目标"
         state.last_result = "首航已经完成，船体强化也已安装完毕。"
+    elseif profile == "qa_tide_route" then
+        prepareTideQAState(state, "tide_route_choice")
+        state.objective = "根据已有船体成长选择进入潮汐墓场的航道"
+        state.last_result = "第二次远航已抵达潮汐墓场入口，两条航道会检验不同的船只成长。"
+    elseif profile == "qa_tide_guardian" then
+        prepareTideQAState(state, "tide_guardian")
+        state.route = "tide_breaker_channel"
+        state.flags.tide_route_chosen = true
+        state.flags.tide_breaker_chosen = true
+        state.voyage_hull_damage = tideRouteHullDamage(state)
+        resetTideGuardian(state)
+        state.objective = "用船体或火炮成长击破沉锚守卫的潮盾"
+        state.last_result = "破潮水道的冲击被强化船体吸收，沉锚守卫已经苏醒。"
+    elseif profile == "qa_tide_rune" then
+        prepareTideQAState(state, "tide_rune_clue")
+        state.route = "tide_breaker_channel"
+        state.flags.tide_route_chosen = true
+        state.flags.tide_guardian_defeated = true
+        applyReward(state, "reward_tide_guardian")
+        resetTideGuardian(state)
+        state.battle.tide_shield = 0
+        state.objective = "确认第二枚沉锚符文揭示的新线索"
+        state.last_result = "符文守卫沉入墓场，第二枚符文正在水晶瓶旁共鸣。"
+    elseif profile == "qa_tide_settlement" then
+        prepareTideQAState(state, "tide_settlement")
+        state.route = "tide_breaker_channel"
+        state.flags.tide_route_chosen = true
+        state.flags.tide_guardian_defeated = true
+        state.flags.tide_voyage_complete = true
+        applyReward(state, "reward_tide_guardian")
+        applyReward(state, "reward_tide_rune")
+        state.objective = "清点第二次远航收获并返回皇家港"
+        state.last_result = "第二枚符文和守卫残骸已经清点完毕。"
+    elseif profile == "qa_tide_complete" then
+        prepareTideQAState(state, "tide_complete")
+        state.current_node = "node_port"
+        state.route = "tide_breaker_channel"
+        state.flags.tide_route_chosen = true
+        state.flags.tide_guardian_defeated = true
+        state.flags.tide_voyage_complete = true
+        applyReward(state, "reward_tide_guardian")
+        applyReward(state, "reward_tide_rune")
+        state.next_voyage_objective = "第二次远航已完成；后续海域仍在制作"
+        state.objective = "查看潮汐墓场航程成果"
+        state.last_result = "第二次远航完成：两次成长已经转化为路线和破盾优势。"
     end
     return state
 end
@@ -466,6 +583,10 @@ local routeRequiredStages = {
     settlement = true,
     upgrade = true,
     complete = true,
+    tide_guardian = true,
+    tide_rune_clue = true,
+    tide_settlement = true,
+    tide_complete = true,
     failed = true,
 }
 
@@ -508,6 +629,7 @@ local function isRestorableState(state)
         "gun_damage", "gun_threshold", "player_hull", "player_hull_max",
         "enemy_boarding_hp", "enemy_boarding_hp_max", "crew_hp", "crew_hp_max",
         "volley_count", "total_hull_damage", "naval_action_count", "boarding_action_count",
+        "tide_shield", "tide_shield_max", "tide_action_count",
     }) or not hasBooleanFields(state.battle, {
         "deck_broken", "guns_suppressed", "medic_used", "sailor_guard_used",
         "sailor_guarded", "gunner_mark_used", "gunner_marked",
@@ -537,8 +659,9 @@ function V2ChapterState.normalize(savedState, profile)
         overwrite(candidate, savedState)
         candidate.profile = profile or candidate.profile or "player"
         if isRestorableState(candidate) then
-            -- Phase 4 only adds local test records. Preserve the complete Phase 3
-            -- chapter state and let V2Telemetry create a fresh session on load.
+            -- New fields are seeded from the current profile baseline before the
+            -- saved values are overlaid, so compatible schema 3/4 saves retain
+            -- progress while newer battle fields receive safe defaults.
             candidate.schema_version = V2ChapterState.SCHEMA_VERSION
             return candidate, nil
         end
@@ -582,6 +705,16 @@ local actionsByStage = {
     },
     settlement = {
         { id = "return_to_port", label = "带着战利品返航" },
+    },
+    tide_guardian = {
+        { id = "tide_barrage", label = ChapterData.by_id.battle_action.tide_barrage.label },
+        { id = "tide_ram", label = ChapterData.by_id.battle_action.tide_ram.label },
+    },
+    tide_rune_clue = {
+        { id = "take_tide_rune", label = choiceLabel("take_tide_rune") },
+    },
+    tide_settlement = {
+        { id = "return_from_tide", label = "带着第二枚符文返港" },
     },
     upgrade = {
         { id = "upgrade_hull", label = "加固船体\n木材-" .. balanceValue("hull_upgrade_timber_cost")
@@ -646,6 +779,25 @@ function V2ChapterState.getActions(state)
         return result
     end
 
+    if state.stage == "tide_route_choice" then
+        local breaker = routeData("tide_breaker_channel")
+        local cannon = routeData("tide_cannon_pass")
+        local breakerDamage = tideRouteHullDamage(state)
+        local cannonCost = tideRouteSupplyCost(state)
+        return {
+            {
+                id = "choose_tide_breaker",
+                label = string.format("%s｜船体路线\n航损-%d（强化减免%d）",
+                    breaker.label, breakerDamage, breaker.hull_damage - breakerDamage),
+            },
+            {
+                id = "choose_tide_cannon",
+                label = string.format("%s｜火炮路线\n补给-%d（强化减免%d）",
+                    cannon.label, cannonCost, cannon.supply_cost - cannonCost),
+            },
+        }
+    end
+
     if state.stage == "route_event" then
         if state.route == "risky_shortcut" then
             return {
@@ -656,6 +808,13 @@ function V2ChapterState.getActions(state)
         return {
             { id = "rest_at_cove", label = choiceLabel("rest_at_cove") },
             { id = "press_through_cove", label = choiceLabel("press_through_cove") },
+        }
+    end
+
+    if state.stage == "failed" and state.flags.failed_tide_guardian then
+        return {
+            { id = "retry_battle", label = "重试守卫战\n补给-" .. balanceValue("retry_supply_cost") .. "｜保留成长" },
+            { id = "recover_at_port", label = "返港恢复\n金币-" .. balanceValue("port_recovery_gold_cost") .. "｜重选航道" },
         }
     end
 
@@ -685,6 +844,22 @@ function V2ChapterState.getActions(state)
             end
         end
         actions = filtered
+    elseif state.stage == "tide_guardian" then
+        local barrage = battleAction("tide_barrage")
+        local ram = battleAction("tide_ram")
+        local barrageDamage = barrage.damage
+            + state.ship.gun_level * balanceValue("tide_barrage_gun_bonus")
+        local ramDamage = ram.damage
+            + state.ship.hull_level * balanceValue("tide_ram_hull_bonus")
+        local ramCost = math.max(0, ram.retaliation
+            - state.ship.hull_level * balanceValue("tide_ram_hull_reduction"))
+        for _, action in ipairs(actions) do
+            if action.id == "tide_barrage" then
+                action.label = string.format("远距齐射｜火炮路线\n潮盾-%d｜反击-%d", barrageDamage, barrage.retaliation)
+            elseif action.id == "tide_ram" then
+                action.label = string.format("撞断潮锚｜船体路线\n潮盾-%d｜船体-%d", ramDamage, ramCost)
+            end
+        end
     end
     if state.stage == "naval" then
         for _, action in ipairs(actions) do
@@ -714,6 +889,11 @@ local stageTitles = {
     settlement = "首次返航 · 战利品结算",
     upgrade = "皇家港 · 首次升级",
     complete = "第一章完成",
+    tide_route_choice = "潮汐墓场 · 航线抉择",
+    tide_guardian = "潮汐墓场 · 沉锚守卫",
+    tide_rune_clue = "沉锚符文 · 新线索",
+    tide_settlement = "潮汐墓场 · 结算",
+    tide_complete = "第二次远航完成",
     failed = "本次远航失败",
 }
 
@@ -824,7 +1004,56 @@ function V2ChapterState.getNarrative(state)
         return "第一枚符文线索：潮汐墓场。"
             .. "\n本次升级｜" .. upgradeSummary
             .. "\n下一航程｜" .. nextObjective .. "；" .. nextAdvantage
+    elseif state.stage == "tide_route_choice" then
+        local breaker = routeData("tide_breaker_channel")
+        local cannon = routeData("tide_cannon_pass")
+        local breakerDamage = tideRouteHullDamage(state)
+        local cannonCost = tideRouteSupplyCost(state)
+        return dialogueBlock("node_tide_gate", { "node_enter", "choice_prompt" })
+            .. string.format("\n破潮水道｜基础航损 %d，当前船体成长减免 %d，实际航损 %d。",
+                breaker.hull_damage, breaker.hull_damage - breakerDamage, breakerDamage)
+            .. string.format("\n炮门航道｜基础补给 %d，当前火炮成长减免 %d，实际补给 %d。",
+                cannon.supply_cost, cannon.supply_cost - cannonCost, cannonCost)
+    elseif state.stage == "tide_guardian" then
+        local barrage = battleAction("tide_barrage")
+        local ram = battleAction("tide_ram")
+        local barrageDamage = barrage.damage
+            + state.ship.gun_level * balanceValue("tide_barrage_gun_bonus")
+        local ramDamage = ram.damage
+            + state.ship.hull_level * balanceValue("tide_ram_hull_bonus")
+        local ramCost = math.max(0, ram.retaliation
+            - state.ship.hull_level * balanceValue("tide_ram_hull_reduction"))
+        return dialogueBlock("node_tide_guardian", { "battle_start", "naval_hint" })
+            .. string.format("\n远距齐射｜潮盾 -%d，若守卫未沉则反击 -%d 船体。",
+                barrageDamage, barrage.retaliation)
+            .. string.format("\n撞断潮锚｜潮盾 -%d，并承受 %d 船体自损。",
+                ramDamage, ramCost)
+    elseif state.stage == "tide_rune_clue" then
+        return dialogueBlock("node_tide_rune", { "chapter_complete" })
+            .. "\n守卫复盘：" .. tostring(state.battle_report)
+    elseif state.stage == "tide_settlement" then
+        local guardianReward = ChapterData.by_id.reward.reward_tide_guardian
+        local runeReward = ChapterData.by_id.reward.reward_tide_rune
+        return string.format(
+            "守卫残骸｜金币 +%d · 木材 +%d · 铁料 +%d · 补给 +%d。",
+            guardianReward.gold, guardianReward.timber, guardianReward.iron,
+            guardianReward.provisions
+        ) .. string.format(
+            "\n沉锚符文｜符文尘 +%d；线索表明海盗王曾主动撕裂封印。",
+            guardianReward.rune_dust + runeReward.rune_dust
+        ) .. "\n本轮目标已经完成，返港后保留两次航程的成长与收藏。"
+    elseif state.stage == "tide_complete" then
+        return "第二次远航：潮汐墓场已经完成。"
+            .. "\n成长兑现｜船体或火炮强化同时改变了航线代价与破盾方案。"
+            .. "\n主线进度｜已取得 2 枚符文；下一海域将在后续内容迭代中开放。"
     elseif state.stage == "failed" then
+        if state.flags.failed_tide_guardian then
+            return "失败原因：" .. tostring(state.failure_reason)
+                .. string.format("\n原地重试｜补给 -%d；保留墓场航道与成长，从完整潮盾重新开始。",
+                    balanceValue("retry_supply_cost"))
+                .. string.format("\n返港恢复｜金币 -%d；清除航损并重新选择潮汐墓场航道。",
+                    balanceValue("port_recovery_gold_cost"))
+        end
         return "失败原因：" .. tostring(state.failure_reason)
             .. string.format("\n原地重试｜补给 -%d；保留当前航线与已确认战利品，从舰炮战重新开始。",
                 balanceValue("retry_supply_cost"))
@@ -923,6 +1152,67 @@ local function winBoarding(state, action)
     addHistory(state, action, "接舷队击败追猎者，舰炮战结果已影响敌方开场状态。")
 end
 
+local function winTideGuardian(state, action, damage)
+    grantFlag(state, "tide_guardian_defeated")
+    applyReward(state, "reward_tide_guardian")
+    state.stage = "tide_rune_clue"
+    state.current_node = "node_tide_rune"
+    state.active_event = "event_tide_rune"
+    state.objective = "确认第二枚沉锚符文揭示的新线索"
+    state.battle_report = string.format(
+        "%s；破盾行动 %d 次；最终一击 %d；船体剩余 %d/%d。升级路线：%s。",
+        routeData(state.route).label,
+        state.battle.tide_action_count,
+        damage,
+        state.battle.player_hull,
+        state.battle.player_hull_max,
+        action == "tide_ram" and "船体成长" or "火炮成长"
+    )
+    addHistory(state, action, "潮盾崩解，沉锚守卫沉入墓场；第二枚符文已经显现。")
+end
+
+local function resolveTideAttack(state, action)
+    if state.battle.tide_shield <= 0 then
+        return false, "潮盾已经崩解，请确认第二枚符文"
+    end
+
+    local data = battleAction(action)
+    local damage = data.damage
+    local hullCost = data.retaliation
+    if action == "tide_barrage" then
+        damage = damage + state.ship.gun_level * balanceValue("tide_barrage_gun_bonus")
+    else
+        damage = damage + state.ship.hull_level * balanceValue("tide_ram_hull_bonus")
+        hullCost = math.max(0, hullCost
+            - state.ship.hull_level * balanceValue("tide_ram_hull_reduction"))
+    end
+
+    state.battle.tide_shield = math.max(0, state.battle.tide_shield - damage)
+    state.battle.tide_action_count = state.battle.tide_action_count + 1
+    table.insert(state.battle.actions_log, action)
+
+    if action == "tide_ram" or state.battle.tide_shield > 0 then
+        state.battle.player_hull = state.battle.player_hull - hullCost
+        state.battle.total_hull_damage = state.battle.total_hull_damage + hullCost
+    end
+    if state.battle.player_hull <= 0 then
+        state.flags.failed_tide_guardian = true
+        failBattle(state, "船体在沉锚守卫前失去航行能力", action)
+        return true, state.last_result
+    end
+    if state.battle.tide_shield <= 0 then
+        winTideGuardian(state, action, damage)
+        return true, state.last_result
+    end
+
+    state.objective = "比较剩余潮盾、船体代价与成长加成，再选择下一次破盾"
+    addHistory(state, action, string.format(
+        "破盾造成 %d 点伤害，船体承受 %d 点代价；潮盾剩余 %d/%d。",
+        damage, hullCost, state.battle.tide_shield, state.battle.tide_shield_max
+    ))
+    return true, state.last_result
+end
+
 local function resolveNavalAttack(state, action)
     if state.battle.enemy_ship_hp <= 0 then
         return false, "敌舰已经失去舰炮抵抗，请开始接舷"
@@ -1006,18 +1296,30 @@ function V2ChapterState.apply(state, action)
         local capacity = balanceValue("initial_provisions")
             + (moduleData(state).supply_capacity_modifier or 0)
         state.resources.provisions = math.min(state.resources.provisions, capacity)
-        local departureCost = edgeData("edge_01").supply_cost
+        local nextVoyageCount = state.voyage_count + 1
+        local startsTideVoyage = state.chapter_complete
+            and not state.flags.tide_voyage_complete
+            and nextVoyageCount >= 2
+        local departureCost = edgeData(startsTideVoyage and "edge_10" or "edge_01").supply_cost
         if state.resources.provisions < departureCost then
             return false, "补给不足，无法出航"
         end
         state.resources.provisions = state.resources.provisions - departureCost
         state.voyage_count = state.voyage_count + 1
         grantFlag(state, "voyage_ready")
-        state.stage = "route_choice"
-        state.current_node = "node_fog_gate"
-        state.active_event = "event_route_choice"
-        state.objective = "在安全航线与暗礁近路之间做出选择"
-        addHistory(state, action, "船离开皇家港，第一片迷雾在海图上展开。")
+        if startsTideVoyage then
+            state.stage = "tide_route_choice"
+            state.current_node = "node_tide_gate"
+            state.active_event = "event_tide_route_choice"
+            state.objective = "让已有船只成长决定进入潮汐墓场的代价"
+            addHistory(state, action, "船驶入潮汐墓场，两条航道正在检验不同的船只成长。")
+        else
+            state.stage = "route_choice"
+            state.current_node = "node_fog_gate"
+            state.active_event = "event_route_choice"
+            state.objective = "在安全航线与暗礁近路之间做出选择"
+            addHistory(state, action, "船离开皇家港，第一片迷雾在海图上展开。")
+        end
     elseif action == "reveal_route_intel" and state.stage == "route_choice" then
         local intelCost = balanceValue("navigator_intel_cost")
         if state.resources.provisions < intelCost then
@@ -1060,6 +1362,42 @@ function V2ChapterState.apply(state, action)
         state.active_event = "event_wreck_survivors"
         state.objective = "搜索暗礁后的沉船残骸"
         addHistory(state, action, string.format("选择%s：船体预损 %d，%s。", route.label, route.hull_damage, route.outcome_hint))
+    elseif action == "choose_tide_breaker" and state.stage == "tide_route_choice" then
+        local route = routeData("tide_breaker_channel")
+        local hullDamage = tideRouteHullDamage(state)
+        state.route = route.id
+        state.voyage_hull_damage = hullDamage
+        grantFlag(state, "tide_route_chosen")
+        grantFlag(state, "tide_breaker_chosen")
+        resetTideGuardian(state)
+        state.stage = "tide_guardian"
+        state.current_node = "node_tide_guardian"
+        state.active_event = "event_tide_guardian"
+        state.objective = "用船体或火炮成长击破沉锚守卫的潮盾"
+        addHistory(state, action, string.format(
+            "选择%s：基础航损 %d，船体成长减免 %d，实际航损 %d。",
+            route.label, route.hull_damage, route.hull_damage - hullDamage, hullDamage
+        ))
+    elseif action == "choose_tide_cannon" and state.stage == "tide_route_choice" then
+        local route = routeData("tide_cannon_pass")
+        local supplyCost = tideRouteSupplyCost(state)
+        if state.resources.provisions < supplyCost then
+            return false, "炮门航道需要 " .. supplyCost .. " 份补给"
+        end
+        state.resources.provisions = state.resources.provisions - supplyCost
+        state.route = route.id
+        state.voyage_hull_damage = 0
+        grantFlag(state, "tide_route_chosen")
+        grantFlag(state, "tide_cannon_chosen")
+        resetTideGuardian(state)
+        state.stage = "tide_guardian"
+        state.current_node = "node_tide_guardian"
+        state.active_event = "event_tide_guardian"
+        state.objective = "用船体或火炮成长击破沉锚守卫的潮盾"
+        addHistory(state, action, string.format(
+            "选择%s：基础补给 %d，火炮成长减免 %d，实际补给 %d。",
+            route.label, route.supply_cost, route.supply_cost - supplyCost, supplyCost
+        ))
     elseif (action == "rest_at_cove" or action == "press_through_cove")
         and state.stage == "route_event" and state.route == "safe_route" then
         local result = applyChoiceOutcome(state, action)
@@ -1172,6 +1510,9 @@ function V2ChapterState.apply(state, action)
                 addHistory(state, action, string.format("接舷造成 %d 点伤害，船员承受 %d 点反击。", damage, retaliation))
             end
         end
+    elseif (action == "tide_barrage" or action == "tide_ram")
+        and state.stage == "tide_guardian" then
+        return resolveTideAttack(state, action)
     elseif action == "sailor_guard" and state.stage == "boarding" then
         if state.battle.sailor_guard_used then
             return false, "甲板守卫本场已经使用"
@@ -1199,11 +1540,22 @@ function V2ChapterState.apply(state, action)
         state.stage = "settlement"
         state.objective = "确认战利品用途并返回皇家港"
         addHistory(state, action, result .. "：潮汐墓场。")
+    elseif action == "take_tide_rune" and state.stage == "tide_rune_clue" then
+        local result = applyChoiceOutcome(state, action)
+        state.stage = "tide_settlement"
+        state.objective = "清点第二次远航收获并返回皇家港"
+        state.next_voyage_objective = "第二次远航已完成；后续海域仍在制作"
+        addHistory(state, action, result .. "：海盗王曾主动撕裂封印。")
     elseif action == "return_to_port" and state.stage == "settlement" then
         state.stage = "upgrade"
         state.current_node = "node_port"
         state.objective = "使用本次远航资源完成一次船只升级"
         addHistory(state, action, "追猎者战利品已入库，船坞开放首次升级。")
+    elseif action == "return_from_tide" and state.stage == "tide_settlement" then
+        state.stage = "tide_complete"
+        state.current_node = "node_port"
+        state.objective = "查看潮汐墓场航程成果"
+        addHistory(state, action, "第二枚符文已带回皇家港；潮汐墓场航程完成。")
     elseif action == "upgrade_hull" and state.stage == "upgrade" then
         local cost = balanceValue("hull_upgrade_timber_cost")
         if state.resources.timber < cost then
@@ -1235,12 +1587,24 @@ function V2ChapterState.apply(state, action)
             return false, "补给不足，必须返回皇家港恢复"
         end
         state.resources.provisions = state.resources.provisions - retryCost
-        resetBattle(state)
+        local retryTideGuardian = state.flags.failed_tide_guardian == true
+        if retryTideGuardian then
+            resetTideGuardian(state)
+        else
+            resetBattle(state)
+        end
         state.failure_reason = nil
-        state.stage = "naval"
-        state.current_node = "node_raider"
-        state.objective = "重新进行舰炮战；先破坏甲板可削弱接舷敌军"
-        addHistory(state, action, string.format("消耗 %d 补给，战斗状态重置到舰炮战开始前。", retryCost))
+        state.flags.failed_tide_guardian = nil
+        state.stage = retryTideGuardian and "tide_guardian" or "naval"
+        state.current_node = retryTideGuardian and "node_tide_guardian" or "node_raider"
+        state.active_event = retryTideGuardian and "event_tide_guardian" or "event_raider_encounter"
+        state.objective = retryTideGuardian
+            and "重新选择破盾方案；成长加成仍然生效"
+            or "重新进行舰炮战；先破坏甲板可削弱接舷敌军"
+        addHistory(state, action, string.format(
+            "消耗 %d 补给，战斗状态重置到%s开始前。",
+            retryCost, retryTideGuardian and "符文守卫战" or "舰炮战"
+        ))
     elseif action == "recover_at_port" and state.stage == "failed" then
         local recoveryCost = balanceValue("port_recovery_gold_cost")
         if state.resources.gold < recoveryCost then
@@ -1252,9 +1616,14 @@ function V2ChapterState.apply(state, action)
         state.route_intel = nil
         resetBattle(state)
         state.failure_reason = nil
+        state.flags.failed_tide_guardian = nil
+        state.flags.tide_route_chosen = nil
+        state.flags.tide_breaker_chosen = nil
+        state.flags.tide_cannon_chosen = nil
         state.stage = "harbor"
         state.current_node = "node_port"
-        state.active_event = "event_route_choice"
+        state.active_event = state.chapter_complete
+            and "event_tide_route_choice" or "event_route_choice"
         state.objective = "重新整备后再次出航"
         addHistory(state, action, string.format("支付 %d 金币，船只与船员已在皇家港恢复。", recoveryCost))
     elseif action == "prepare_next_voyage" and state.stage == "complete" then
@@ -1271,7 +1640,7 @@ function V2ChapterState.apply(state, action)
         state.battle_report = nil
         state.recovery_summary = nil
         state.failure_reason = nil
-        state.active_event = "event_route_choice"
+        state.active_event = "event_tide_route_choice"
         resetBattle(state)
         addHistory(state, action, string.format(
             "第 %d 次远航整备开始：船只升级、库存与符文线索已保留。",

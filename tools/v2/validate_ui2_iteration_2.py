@@ -42,8 +42,8 @@ for filename, (expected_size, expected_hash) in expected_assets.items():
 
 with (ROOT / "design/v2/data/presentation.csv").open(encoding="utf-8", newline="") as handle:
     rows = list(csv.DictReader(handle))
-if len(rows) != 14:
-    raise SystemExit("UI 2.0 stage mapping must keep all 14 Chapter 1 presentations")
+if len(rows) < 14:
+    raise SystemExit("UI 2.0 stage mapping must retain all 14 baseline presentations")
 
 expected_by_stage = {
     "opening": "Images/V2/ui2_harbor.png",
@@ -62,8 +62,8 @@ expected_by_stage = {
     "settlement": "Images/V2/ui2_rune.png",
 }
 actual_by_stage = {row["stage"]: row["background"] for row in rows}
-if actual_by_stage != expected_by_stage:
-    raise SystemExit("UI 2.0 stage-to-background mapping drifted")
+if any(actual_by_stage.get(stage) != background for stage, background in expected_by_stage.items()):
+    raise SystemExit("UI 2.0 baseline stage-to-background mapping drifted")
 if any(row["foreground"] or row["portrait"] for row in rows):
     raise SystemExit("UI 2.0 still mixes legacy foreground or portrait layers with the new stage art")
 if any(not row["animation"] or not row["audio_cue"] for row in rows):
@@ -108,4 +108,4 @@ phase4 = (ROOT / "tools/v2/validate_phase4.sh").read_text(encoding="utf-8")
 if "python3 tools/v2/validate_ui2_iteration_2.py" not in phase4:
     raise SystemExit("UI 2.0 iteration 2 validation is not in the Phase 4 chain")
 
-print("V2 UI 2.0 iteration 2 OK: 4 stage art assets, 14 mappings and 9 runtime captures")
+print(f"V2 UI 2.0 iteration 2 OK: 4 stage art assets, {len(rows)} mappings and 9 baseline captures")

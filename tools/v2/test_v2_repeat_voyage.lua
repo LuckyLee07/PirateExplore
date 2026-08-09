@@ -21,14 +21,11 @@ local function apply(state, action)
     if not ok then error(string.format("%s failed: %s", action, tostring(message))) end
 end
 
-local function advanceToNaval(state)
+local function advanceToTideGuardian(state, routeAction)
     apply(state, "start_voyage")
-    apply(state, "choose_safe_route")
-    apply(state, "rest_at_cove")
-    apply(state, "lash_cargo")
-    apply(state, "resist_whisper")
-    apply(state, "break_cursed_compass")
-    equal(state.stage, "naval", "repeat route reaches the real naval stage")
+    equal(state.stage, "tide_route_choice", "second departure reaches the Tide Graveyard route")
+    apply(state, routeAction)
+    equal(state.stage, "tide_guardian", "second route reaches the distinct guardian encounter")
 end
 
 local hull = State.new("qa_complete")
@@ -60,17 +57,21 @@ end
 contains(State.getStageTitle(hull), "第 2 次", "harbor title identifies the next voyage")
 contains(State.getNarrative(hull), "成长与库存已经保留", "harbor narrative confirms persistence")
 
-advanceToNaval(hull)
+advanceToTideGuardian(hull, "choose_tide_breaker")
 equal(hull.voyage_count, 2, "the next departure advances the voyage count")
 equal(hull.battle.player_hull_max, 140, "retained hull growth changes the next battle")
+equal(hull.voyage_hull_damage, 10, "retained hull growth reduces breaker-channel damage")
+apply(hull, "tide_ram")
+equal(hull.stage, "tide_rune_clue", "hull growth unlocks a one-action ram strategy")
 
 local guns = State.new("qa_upgrade")
 apply(guns, "upgrade_guns")
 equal(guns.ship.gun_level, 1, "gun upgrade reaches completion")
 apply(guns, "prepare_next_voyage")
-advanceToNaval(guns)
-apply(guns, "fire_at_deck")
-equal(guns.battle.deck_damage, 200, "retained gun growth increases the next voyage volley")
-equal(guns.battle.enemy_ship_hp, 300, "next voyage enemy health reflects upgraded damage")
+local provisionsBefore = guns.resources.provisions
+advanceToTideGuardian(guns, "choose_tide_cannon")
+equal(guns.resources.provisions, provisionsBefore - 1, "gun growth removes route cost beyond departure")
+apply(guns, "tide_barrage")
+equal(guns.stage, "tide_rune_clue", "gun growth unlocks a one-action barrage strategy")
 
-print("V2 repeat voyage OK: growth, inventory, history and second-departure combat effects persist")
+print("V2 repeat voyage OK: retained growth changes Tide Graveyard routes and guardian strategy")

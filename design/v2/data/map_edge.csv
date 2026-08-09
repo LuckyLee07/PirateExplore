@@ -8,3 +8,7 @@ edge_06,chapter_01,node_black_tide,node_whisper,convergence,2,0,black_tide_cross
 edge_07,chapter_01,node_whisper,node_cursed_compass,curse_path,2,0,curse_heard
 edge_08,chapter_01,node_cursed_compass,node_raider,intercept,3,1,compass_resolved
 edge_09,chapter_01,node_raider,node_rune_clue,chapter_goal,1,0,raider_defeated
+edge_10,chapter_01,node_port,node_tide_gate,tide_departure,1,1,chapter_01_complete
+edge_11,chapter_01,node_tide_gate,node_tide_guardian,tide_breaker_channel,3,0,tide_route_chosen
+edge_12,chapter_01,node_tide_gate,node_tide_guardian,tide_cannon_pass,3,0,tide_route_chosen
+edge_13,chapter_01,node_tide_guardian,node_tide_rune,tide_goal,2,0,tide_guardian_defeated

@@ -39,6 +39,11 @@ local stageAccents = {
     settlement = "gold",
     upgrade = "gold",
     complete = "success",
+    tide_route_choice = "sea",
+    tide_guardian = "danger",
+    tide_rune_clue = "purple",
+    tide_settlement = "gold",
+    tide_complete = "success",
     failed = "danger",
 }
 
@@ -56,6 +61,11 @@ local stageKinds = {
     settlement = "战利品清点",
     upgrade = "船坞强化",
     complete = "首航完成",
+    tide_route_choice = "成长航线",
+    tide_guardian = "潮盾破袭",
+    tide_rune_clue = "第二符文",
+    tide_settlement = "航程清点",
+    tide_complete = "墓场完成",
     failed = "远航受挫",
 }
 
@@ -74,9 +84,24 @@ local progressByStage = {
     settlement = 5,
     upgrade = 5,
     complete = 5,
+    tide_route_choice = 2,
+    tide_guardian = 4,
+    tide_rune_clue = 5,
+    tide_settlement = 5,
+    tide_complete = 5,
 }
 
 V2UITheme.progress_labels = { "港口", "航线", "异象", "追猎者", "符文" }
+V2UITheme.tide_progress_labels = { "港口", "墓场入口", "潮流", "沉锚守卫", "第二符文" }
+
+function V2UITheme.progressLabels(stage)
+    if stage == "tide_route_choice" or stage == "tide_guardian"
+        or stage == "tide_rune_clue" or stage == "tide_settlement"
+        or stage == "tide_complete" then
+        return V2UITheme.tide_progress_labels
+    end
+    return V2UITheme.progress_labels
+end
 
 local forwardActions = {
     accept_call = true,
@@ -84,6 +109,8 @@ local forwardActions = {
     board_now = true,
     take_rune_clue = true,
     return_to_port = true,
+    take_tide_rune = true,
+    return_from_tide = true,
     prepare_next_voyage = true,
     restart_chapter = true,
 }
@@ -99,6 +126,7 @@ local dangerActions = {
     retreat = true,
     ride_black_tide = true,
     boarding_rush = true,
+    tide_ram = true,
 }
 
 function V2UITheme.accentName(stage)
@@ -135,7 +163,8 @@ function V2UITheme.actionRole(stage, actionId, actionIndex, actionCount, selecte
     if stage == "failed" and actionId == "retry_battle" then
         return "primary"
     end
-    if stage == "upgrade" or stage == "route_choice" or stage == "harbor" then
+    if stage == "upgrade" or stage == "route_choice" or stage == "tide_route_choice"
+        or stage == "harbor" then
         return "choice"
     end
     if actionIndex == 1 and actionCount > 2 then
@@ -200,6 +229,12 @@ local actionFeedbackTitles = {
     recover_at_port = "港口整备完成",
     prepare_next_voyage = "成长已装载",
     restart_chapter = "首航记录已重置",
+    choose_tide_breaker = "破潮水道已锁定",
+    choose_tide_cannon = "炮门航道已锁定",
+    tide_barrage = "远距齐射命中潮盾",
+    tide_ram = "守卫潮锚已撞击",
+    take_tide_rune = "第二枚符文已收录",
+    return_from_tide = "潮汐墓场航程完成",
 }
 
 function V2UITheme.actionFeedbackTitle(actionId, nextStage)
@@ -223,6 +258,7 @@ function V2UITheme.feedbackChanges(before, after)
         { key = "enemy_boarding_hp", label = "敌军" },
         { key = "crew_hp", label = "接舷队" },
         { key = "crew_hp_max", label = "接舷上限" },
+        { key = "tide_shield", label = "潮盾" },
     }
     local changes = {}
     for _, descriptor in ipairs(descriptors) do
@@ -288,6 +324,15 @@ function V2UITheme.sceneFeedbackItems(actionId, before, after)
         add("player", "primary", "甲板防线", "已就绪", "sea", "guard")
     elseif actionId == "gunner_mark_deck" then
         add("enemy", "primary", "甲板弱点", "已锁定", "gold", "target")
+    elseif actionId == "tide_barrage" or actionId == "tide_ram" then
+        local shieldLoss = -stateDelta(before, after, "tide_shield")
+        local hullLoss = -stateDelta(before, after, "player_hull")
+        if shieldLoss > 0 then
+            add("enemy", "primary", "守卫潮盾", "-" .. shieldLoss, "purple", "impact")
+        end
+        if hullLoss > 0 then
+            add("player", "primary", "我方船体", "-" .. hullLoss, "sea", "impact")
+        end
     end
     return items
 end
@@ -347,6 +392,23 @@ function V2UITheme.outcomeGroups(state, chapterData)
             { label = "本次升级", value = upgradeValue, accent = "success" },
             { label = "线索已确认", value = "第一枚符文\n潮汐墓场", accent = "purple" },
             { label = "下一航程", value = "寻找符文守卫\n准备再次出航", accent = "sea" },
+        }
+    elseif stage == "tide_settlement" then
+        local guardianGold = authoredValue(chapterData, "reward", "reward_tide_guardian", "gold")
+        local guardianTimber = authoredValue(chapterData, "reward", "reward_tide_guardian", "timber")
+        local guardianIron = authoredValue(chapterData, "reward", "reward_tide_guardian", "iron")
+        local guardianRune = authoredValue(chapterData, "reward", "reward_tide_guardian", "rune_dust")
+        local clueRune = authoredValue(chapterData, "reward", "reward_tide_rune", "rune_dust")
+        return {
+            { label = "守卫残骸", value = string.format("金币 +%d\n木材 +%d", guardianGold, guardianTimber), accent = "gold" },
+            { label = "强化物资", value = string.format("铁料 +%d\n符文 +%d", guardianIron, guardianRune), accent = "sea" },
+            { label = "第二符文", value = string.format("符文 +%d\n线索已确认", clueRune), accent = "purple" },
+        }
+    elseif stage == "tide_complete" then
+        return {
+            { label = "航程进度", value = "2 次完成\n2 枚符文", accent = "success" },
+            { label = "成长兑现", value = "航线代价\n破盾策略", accent = "sea" },
+            { label = "当前边界", value = "后续海域\n仍在制作", accent = "muted" },
         }
     end
     return {}

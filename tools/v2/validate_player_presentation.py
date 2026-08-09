@@ -20,7 +20,7 @@ for marker in (
 
 for marker in (
     "local isQA = V2Config:isQAProfile(state.profile)",
-    'local kicker = createLabel("瓶中海域  /  CAPTAIN\'S LOG"',
+    'local kicker = createLabel(kickerText',
     'local profile = createLabel("QA  ·  " .. state.profile',
     "if isQA then",
     "local footerText = string.format(",

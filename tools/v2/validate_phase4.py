@@ -23,7 +23,8 @@ expected_events = {
     "route_intel_revealed", "route_selected", "voyage_event_choice", "curse_decision",
     "naval_action", "boarding_action", "battle_result", "recovery_choice",
     "rune_claimed", "return_completed", "upgrade_completed", "next_voyage_prepared", "chapter_restarted",
-    "invalid_action",
+    "invalid_action", "tide_guardian_action", "tide_guardian_result",
+    "second_rune_claimed", "second_voyage_completed",
 }
 if {row["id"] for row in telemetry} != expected_events:
     raise SystemExit("Phase 4 telemetry contract is incomplete")

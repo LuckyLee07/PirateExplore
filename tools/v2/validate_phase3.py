@@ -18,14 +18,14 @@ def rows(name: str) -> list[dict[str, str]]:
 
 
 events = rows("event.csv")
-if len(events) != 8:
-    raise SystemExit("Phase 3 requires exactly eight Chapter 1 events")
+if len(events) < 8:
+    raise SystemExit("Phase 3 requires at least eight Chapter 1 events")
 required_events = {
     "event_route_choice", "event_safe_cove", "event_wreck_survivors",
     "event_black_tide", "event_whisper", "event_cursed_compass",
     "event_raider_encounter", "event_rune_clue",
 }
-if {row["id"] for row in events} != required_events:
+if not required_events.issubset({row["id"] for row in events}):
     raise SystemExit("Phase 3 event set is incomplete")
 
 choices = rows("event_choice.csv")

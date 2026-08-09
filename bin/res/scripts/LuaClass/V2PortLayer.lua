@@ -454,7 +454,7 @@ function V2PortLayer:addChartSection(sheet, state, data, actions, layout, width,
     shipDetail:setAnchorPoint(cc.p(0, 1))
     shipDetail:setPosition(cc.p(16, lowerHeight - 70))
     shipCard:addChild(shipDetail, 3)
-    local voyage = createLabel(string.format("已完成远航 %d 次", ship.voyages), 10, color3("gold"))
+    local voyage = createLabel(string.format("累计出航 %d 次", ship.voyages), 10, color3("gold"))
     voyage:setAnchorPoint(cc.p(0, 0.5))
     voyage:setPosition(cc.p(16, 14))
     shipCard:addChild(voyage, 3)
@@ -471,7 +471,9 @@ function V2PortLayer:addChartSection(sheet, state, data, actions, layout, width,
     goalLabel:setAnchorPoint(cc.p(0, 1))
     goalLabel:setPosition(cc.p(16, lowerHeight - 46))
     goalCard:addChild(goalLabel, 3)
-    local clue = createLabel(string.format("符文尘 %d  ·  首章线索 %s", (state.resources or {}).rune_dust or 0, state.chapter_complete and "已确认" or "未确认"), 10, COLORS.muted, summaryWidth - 32)
+    local runeCount = state.flags and state.flags.tide_voyage_complete and 2
+        or (state.chapter_complete and 1 or 0)
+    local clue = createLabel(string.format("符文尘 %d  ·  已确认符文 %d / 16", (state.resources or {}).rune_dust or 0, runeCount), 10, COLORS.muted, summaryWidth - 32)
     clue:setAnchorPoint(cc.p(0, 0.5))
     clue:setPosition(cc.p(16, 16))
     goalCard:addChild(clue, 3)
@@ -498,6 +500,7 @@ function V2PortLayer:addShipSection(sheet, state, data, actions, layout, width, 
         { label = "船体等级", value = ship.hull_level },
         { label = "火炮等级", value = ship.gun_level },
         { label = "航行损伤", value = ship.voyage_damage },
+        { label = "累计出航", value = ship.voyages },
     }
     local metricWidth = 82
     for index, metric in ipairs(metrics) do

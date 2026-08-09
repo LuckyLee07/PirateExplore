@@ -42,6 +42,7 @@ local function battleSnapshot(battle)
         gun_damage = battle.gun_damage,
         crew_hp = battle.crew_hp,
         enemy_boarding_hp = battle.enemy_boarding_hp,
+        tide_shield = battle.tide_shield,
     }
 end
 
@@ -102,6 +103,8 @@ local moduleActions = {
 local routeActions = {
     choose_safe_route = true,
     choose_risky_route = true,
+    choose_tide_breaker = true,
+    choose_tide_cannon = true,
 }
 
 local voyageEventActions = {
@@ -134,11 +137,20 @@ local boardingActions = {
     medic_heal = true,
 }
 
+local tideGuardianActions = {
+    tide_barrage = true,
+    tide_ram = true,
+}
+
 local function classify(action, before, state, success)
     if not success then return "invalid_action" end
     if (before.stage == "naval" or before.stage == "boarding")
         and (state.stage == "failed" or state.stage == "rune_clue") then
         return "battle_result"
+    end
+    if before.stage == "tide_guardian"
+        and (state.stage == "failed" or state.stage == "tide_rune_clue") then
+        return "tide_guardian_result"
     end
     if action == "accept_call" then return "opening_accepted" end
     if moduleActions[action] then return "module_selected" end
@@ -149,10 +161,13 @@ local function classify(action, before, state, success)
     if curseActions[action] then return "curse_decision" end
     if navalActions[action] then return "naval_action" end
     if boardingActions[action] then return "boarding_action" end
+    if tideGuardianActions[action] then return "tide_guardian_action" end
     if action == "retreat" then return "battle_result" end
     if action == "retry_battle" or action == "recover_at_port" then return "recovery_choice" end
     if action == "take_rune_clue" then return "rune_claimed" end
+    if action == "take_tide_rune" then return "second_rune_claimed" end
     if action == "return_to_port" then return "return_completed" end
+    if action == "return_from_tide" then return "second_voyage_completed" end
     if action == "upgrade_hull" or action == "upgrade_guns" then return "upgrade_completed" end
     if action == "prepare_next_voyage" then return "next_voyage_prepared" end
     if action == "restart_chapter" then return "chapter_restarted" end
@@ -191,6 +206,7 @@ function V2Telemetry.record(state, action, before, success, message)
         gun_damage = battle.gun_damage,
         crew_hp = battle.crew_hp,
         enemy_boarding_hp = battle.enemy_boarding_hp,
+        tide_shield = battle.tide_shield,
     }
     table.insert(telemetry.events, event)
     while #telemetry.events > V2Telemetry.MAX_EVENTS do
@@ -208,17 +224,25 @@ function V2Telemetry.getSummary(state)
         decisions = 0,
         naval_actions = 0,
         boarding_actions = 0,
+        tide_guardian_actions = 0,
         invalid_actions = 0,
         battle_results = 0,
-        completed = state.stage == "complete",
+        completed = state.stage == "complete" or state.stage == "tide_complete",
+        second_voyage_complete = state.stage == "tide_complete"
+            or (state.flags and state.flags.tide_voyage_complete == true),
         chapter_complete = state.chapter_complete == true,
         route = state.route,
     }
     for _, event in ipairs(telemetry.events) do
         if event.event_id == "naval_action" then summary.naval_actions = summary.naval_actions + 1 end
         if event.event_id == "boarding_action" then summary.boarding_actions = summary.boarding_actions + 1 end
+        if event.event_id == "tide_guardian_action" or event.event_id == "tide_guardian_result" then
+            summary.tide_guardian_actions = summary.tide_guardian_actions + 1
+        end
         if event.event_id == "invalid_action" then summary.invalid_actions = summary.invalid_actions + 1 end
-        if event.event_id == "battle_result" then summary.battle_results = summary.battle_results + 1 end
+        if event.event_id == "battle_result" or event.event_id == "tide_guardian_result" then
+            summary.battle_results = summary.battle_results + 1
+        end
         if event.event_id == "route_selected" or event.event_id == "voyage_event_choice"
             or event.event_id == "curse_decision" then
             summary.decisions = summary.decisions + 1

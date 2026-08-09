@@ -6,3 +6,5 @@ boarding_attack,boarding,稳步推进,30,0,0,18,,低风险接舷攻击
 boarding_rush,boarding,冒险强攻,42,0,0,34,,更高伤害与更高船员损耗
 sailor_guard,boarding,米克：甲板守卫,0,0,0,0,sailor_guard_used,抵消下一次接舷反击
 medic_heal,boarding,艾琳：紧急包扎,0,0,0,0,medic_used,恢复接舷队状态
+tide_barrage,tide_guardian,远距齐射破盾,60,0,0,12,,保守破盾；火炮强化会显著提高伤害
+tide_ram,tide_guardian,撞断守卫潮锚,75,0,0,25,,快速破盾；船体强化会提高伤害并降低自损

@@ -48,6 +48,11 @@ local validSaveProfiles = {
     qa_settlement = true,
     qa_upgrade = true,
     qa_complete = true,
+    qa_tide_route = true,
+    qa_tide_guardian = true,
+    qa_tide_rune = true,
+    qa_tide_settlement = true,
+    qa_tide_complete = true,
 }
 
 function V2Config:shouldPlayAudioCues()

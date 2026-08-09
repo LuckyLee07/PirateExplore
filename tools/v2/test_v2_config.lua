@@ -64,6 +64,15 @@ assert(config:isQAProfile())
 zqV2SaveProfile = "qa_upgrade"
 assert(config:getSaveProfile() == "qa_upgrade")
 
+for _, profile in ipairs({
+    "qa_tide_route", "qa_tide_guardian", "qa_tide_rune",
+    "qa_tide_settlement", "qa_tide_complete",
+}) do
+    zqV2SaveProfile = profile
+    assert(config:getSaveProfile() == profile)
+    assert(config:isQAProfile())
+end
+
 zqV2SaveProfile = "invalid_profile"
 assert(config:getSaveProfile() == "player")
 assert(not config:isQAProfile())

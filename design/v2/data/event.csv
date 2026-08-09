@@ -7,3 +7,6 @@ event_whisper,chapter_01,瓶中低语,海盗王提出以力量交换服从,black
 event_cursed_compass,chapter_01,诅咒罗盘,罗盘指向追猎者的弱点也在侵蚀船员意志,curse_heard
 event_raider_encounter,chapter_01,追猎者拦截,诅咒敌船封锁航道；舰炮结果将直接影响接舷战,compass_resolved
 event_rune_clue,chapter_01,符文回响,战利品中的碎片回应了水晶瓶,raider_defeated
+event_tide_route_choice,chapter_01,潮汐墓场入口,船体强化可抵消破潮水道的撞击；火炮强化可压低炮门航道的补给消耗,chapter_01_complete
+event_tide_guardian,chapter_01,沉锚符文守卫,潮盾会吸收全部攻击；船体与火炮成长对应两种破盾方案,tide_route_chosen
+event_tide_rune,chapter_01,沉锚符文祭台,第二枚符文揭示海盗王曾主动撕裂封印,tide_guardian_defeated

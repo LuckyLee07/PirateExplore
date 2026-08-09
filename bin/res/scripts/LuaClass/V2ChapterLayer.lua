@@ -114,8 +114,20 @@ local function battleLine(state, impact)
             state.battle.enemy_boarding_hp_max
         )
         return impact and (metrics .. "\n" .. impact.text) or metrics
+    elseif state.stage == "tide_guardian" then
+        return string.format(
+            "我方船体 %d/%d    守卫潮盾 %d/%d",
+            state.battle.player_hull,
+            state.battle.player_hull_max,
+            state.battle.tide_shield,
+            state.battle.tide_shield_max
+        )
     end
     return nil
+end
+
+local function isBattleStage(stage)
+    return stage == "naval" or stage == "boarding" or stage == "tide_guardian"
 end
 
 local function fitSprite(sprite, targetWidth, targetHeight)
@@ -162,6 +174,7 @@ local function captureActionSnapshot(state)
         crew_hp = battle.crew_hp or 0,
         crew_hp_max = battle.crew_hp_max or 0,
         enemy_boarding_hp = battle.enemy_boarding_hp or 0,
+        tide_shield = battle.tide_shield or 0,
         voyage_hull_damage = state.voyage_hull_damage or 0,
         ship_hull_max = ship.hull_max or 0,
         ship_gun_level = ship.gun_level or 0,
@@ -388,11 +401,12 @@ end
 function V2ChapterLayer:playActionFeedback(actionId, previousStage, nextStage)
     if nextStage == "failed" then
         self:playCue("sinking")
-    elseif nextStage == "rune_clue" then
+    elseif nextStage == "rune_clue" or nextStage == "tide_rune_clue" then
         self:playCue("victory")
-    elseif actionId == "fire_at_deck" or actionId == "fire_at_guns" then
+    elseif actionId == "fire_at_deck" or actionId == "fire_at_guns"
+        or actionId == "tide_barrage" then
         self:playCue("cannon")
-    elseif actionId == "board_now" then
+    elseif actionId == "board_now" or actionId == "tide_ram" then
         self:playCue("boarding")
     elseif actionId == "resist_whisper" or actionId == "listen_whisper"
         or actionId == "follow_cursed_compass" or actionId == "break_cursed_compass"
@@ -426,9 +440,9 @@ function V2ChapterLayer:showActionFeedback(actionId, before, after, layout)
         detail = "指令已执行，航海日志已更新"
     end
 
-    local isBattleStage = after.stage == "naval" or after.stage == "boarding"
-    local cardHeight = isBattleStage and layout.card_height or layout.story_card_height
-    local cardY = isBattleStage and layout.card_y or (layout.card_y - layout.story_card_offset)
+    local battleStage = isBattleStage(after.stage)
+    local cardHeight = battleStage and layout.card_height or layout.story_card_height
+    local cardY = battleStage and layout.card_y or (layout.card_y - layout.story_card_offset)
     local width = math.min(self.visibleSize.width - 64, 404)
     local height = layout.compact and 50 or 56
     local x = (self.visibleSize.width - width) * 0.5
@@ -490,7 +504,7 @@ end
 
 function V2ChapterLayer:showSceneActionFeedback(actionId, before, after, layout)
     if self.dynamicNode == nil or before.stage ~= after.stage
-        or (before.stage ~= "naval" and before.stage ~= "boarding") then
+        or not isBattleStage(before.stage) then
         return
     end
     local items = V2UITheme.sceneFeedbackItems(actionId, before, after)
@@ -499,8 +513,9 @@ function V2ChapterLayer:showSceneActionFeedback(actionId, before, after, layout)
     end
 
     local sceneCenterY = layout.art_y + layout.art_height * 0.49
-    if before.stage == "naval"
-        and (actionId == "fire_at_deck" or actionId == "fire_at_guns") then
+    if (before.stage == "naval"
+            and (actionId == "fire_at_deck" or actionId == "fire_at_guns"))
+        or (before.stage == "tide_guardian" and actionId == "tide_barrage") then
         local tracer = cc.LayerColor:create(color4("gold", 220), self.visibleSize.width * 0.30, 2)
         tracer:setAnchorPoint(cc.p(0, 0.5))
         tracer:setPosition(cc.p(self.visibleSize.width * 0.34, sceneCenterY + 4))
@@ -670,10 +685,11 @@ end
 function V2ChapterLayer:addVoyageRail(parent, state, layout)
     local width = self.visibleSize.width
     local current = V2UITheme.progressIndex(state.stage)
+    local progressLabels = V2UITheme.progressLabels(state.stage)
     local accentName = V2UITheme.accentName(state.stage)
     local gap = layout.voyage_rail_gap
     local railWidth = 72
-    local railHeight = gap * (#V2UITheme.progress_labels - 1) + 64
+    local railHeight = gap * (#progressLabels - 1) + 64
     local railX = width - railWidth - 24
     local railY = layout.map_y - railHeight + 30
     local rail = cc.LayerColor:create(color4("shell", 188), railWidth, railHeight)
@@ -697,7 +713,7 @@ function V2ChapterLayer:addVoyageRail(parent, state, layout)
         rail:addChild(completeLine, 3)
     end
 
-    for index, _ in ipairs(V2UITheme.progress_labels) do
+    for index, _ in ipairs(progressLabels) do
         local y = lineTop - gap * (index - 1)
         local markerColor = index <= current and accentName or "track"
         local markerSize = index == current and 12 or 7
@@ -711,7 +727,7 @@ function V2ChapterLayer:addVoyageRail(parent, state, layout)
             stageTag:setPosition(cc.p(-86, y - 12))
             rail:addChild(stageTag, 3)
             local stageLabel = createLabel(
-                string.format("%02d  %s", index, V2UITheme.progress_labels[index]),
+                string.format("%02d  %s", index, progressLabels[index]),
                 layout.compact and 10 or 11,
                 color3(accentName),
                 80,
@@ -870,7 +886,8 @@ function V2ChapterLayer:addObjectiveBanner(parent, state, layout)
     local orderBlock = cc.LayerColor:create(color4(accentName, 226), 52, panelHeight)
     orderBlock:setPosition(cc.p(0, 0))
     mission:addChild(orderBlock, 2)
-    local orderNumber = createLabel("01", layout.compact and 17 or 20, color3("shell"), nil, nil, BoldFont)
+    local orderValue = (state.voyage_count or 0) >= 2 and "02" or "01"
+    local orderNumber = createLabel(orderValue, layout.compact and 17 or 20, color3("shell"), nil, nil, BoldFont)
     orderNumber:setAnchorPoint(cc.p(0.5, 0.5))
     orderNumber:setPosition(cc.p(26, panelHeight * 0.61))
     orderBlock:addChild(orderNumber, 2)
@@ -930,6 +947,8 @@ end
 local function routeLabel(state)
     if state.route == "safe_route" then return "安全外海" end
     if state.route == "risky_shortcut" then return "暗礁近路" end
+    if state.route == "tide_breaker_channel" then return "破潮水道" end
+    if state.route == "tide_cannon_pass" then return "炮门航道" end
     return "航线待定"
 end
 
@@ -998,6 +1017,9 @@ function V2ChapterLayer:addBattleStatus(parent, state, impact, layout, cardWidth
     elseif state.stage == "boarding" then
         addMeter(parent, "我方接舷队", state.battle.crew_hp, state.battle.crew_hp_max, 24, mainY, meterWidth, "sea", compact, V2UITheme.battleIcon("crew"))
         addMeter(parent, "敌方甲板部队", state.battle.enemy_boarding_hp, state.battle.enemy_boarding_hp_max, rightX, mainY, meterWidth, "danger", compact, V2UITheme.battleIcon("crew"))
+    elseif state.stage == "tide_guardian" then
+        addMeter(parent, "我方船体", state.battle.player_hull, state.battle.player_hull_max, 24, mainY, meterWidth, "sea", compact, V2UITheme.battleIcon("hull"))
+        addMeter(parent, "守卫潮盾", state.battle.tide_shield, state.battle.tide_shield_max, rightX, mainY, meterWidth, "purple", compact, V2UITheme.battleIcon("cannon"))
     else
         return
     end
@@ -1064,7 +1086,8 @@ function V2ChapterLayer:refresh()
     local chapterPlate = cc.LayerColor:create(color4(accentName, 236), 44, 56)
     chapterPlate:setPosition(cc.p(26, 16))
     topBar:addChild(chapterPlate, 2)
-    local chapterNumber = createLabel("01", layout.compact and 17 or 19, color3("shell"), nil, nil, BoldFont)
+    local chapterValue = (state.voyage_count or 0) >= 2 and "02" or "01"
+    local chapterNumber = createLabel(chapterValue, layout.compact and 17 or 19, color3("shell"), nil, nil, BoldFont)
     chapterNumber:setAnchorPoint(cc.p(0.5, 0.5))
     chapterNumber:setPosition(cc.p(22, 34))
     chapterPlate:addChild(chapterNumber, 2)
@@ -1073,7 +1096,9 @@ function V2ChapterLayer:refresh()
     chapterUnit:setPosition(cc.p(22, 13))
     chapterPlate:addChild(chapterUnit, 2)
 
-    local kicker = createLabel("瓶中海域  /  CAPTAIN'S LOG", layout.compact and 9 or 10, COLORS.muted)
+    local kickerText = (state.voyage_count or 0) >= 2
+        and "潮汐墓场  /  CAPTAIN'S LOG" or "瓶中海域  /  CAPTAIN'S LOG"
+    local kicker = createLabel(kickerText, layout.compact and 9 or 10, COLORS.muted)
     kicker:setAnchorPoint(cc.p(0, 0.5))
     kicker:setPosition(cc.p(82, layout.kicker_y))
     topBar:addChild(kicker)
@@ -1124,9 +1149,9 @@ function V2ChapterLayer:refresh()
 
     self:addVoyageRail(root, state, layout)
 
-    local isBattleStage = state.stage == "naval" or state.stage == "boarding"
-    local cardHeight = isBattleStage and layout.card_height or layout.story_card_height
-    local cardY = isBattleStage and layout.card_y or (layout.card_y - layout.story_card_offset)
+    local battleStage = isBattleStage(state.stage)
+    local cardHeight = battleStage and layout.card_height or layout.story_card_height
+    local cardY = battleStage and layout.card_y or (layout.card_y - layout.story_card_offset)
     local cardMetaY = cardHeight - (layout.compact and 34 or 38)
     local narrativeY = cardHeight - (layout.compact and 84 or 94)
     local cardWidth = width - 44
@@ -1203,7 +1228,7 @@ function V2ChapterLayer:refresh()
     menu:setPosition(cc.p(0, 0))
     root:addChild(menu)
     local columns = { width * 0.27, width * 0.73 }
-    local actionBaseY = isBattleStage and layout.action_base_y or (layout.action_base_y - layout.story_card_offset)
+    local actionBaseY = battleStage and layout.action_base_y or (layout.action_base_y - layout.story_card_offset)
     for index, action in ipairs(actions) do
         local x = width * 0.5
         local y = actionBaseY

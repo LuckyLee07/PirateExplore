@@ -22,6 +22,9 @@ local data = {
         { id = "node_cursed_compass", chapter_id = "chapter_01", type = "event", name = "诅咒罗盘", risk = 3, visibility = "fogged", event_id = "event_cursed_compass", required_flag = "curse_heard", grants_flag = "compass_resolved" },
         { id = "node_raider", chapter_id = "chapter_01", type = "battle", name = "诅咒追猎者", risk = 3, visibility = "fogged", event_id = "event_raider_encounter", enemy_id = "enemy_cursed_raider", reward_id = "reward_battle", required_flag = "compass_resolved", grants_flag = "raider_defeated" },
         { id = "node_rune_clue", chapter_id = "chapter_01", type = "chapter_end", name = "符文回响", risk = 2, visibility = "fogged", event_id = "event_rune_clue", reward_id = "reward_rune_clue", required_flag = "raider_defeated", grants_flag = "chapter_01_complete" },
+        { id = "node_tide_gate", chapter_id = "chapter_01", type = "choice", name = "潮汐墓场入口", risk = 2, visibility = "visible", event_id = "event_tide_route_choice", grants_flag = "tide_route_chosen" },
+        { id = "node_tide_guardian", chapter_id = "chapter_01", type = "battle", name = "沉锚符文守卫", risk = 3, visibility = "fogged", event_id = "event_tide_guardian", enemy_id = "enemy_tide_warden", reward_id = "reward_tide_guardian", required_flag = "tide_route_chosen", grants_flag = "tide_guardian_defeated" },
+        { id = "node_tide_rune", chapter_id = "chapter_01", type = "chapter_end", name = "沉锚符文祭台", risk = 3, visibility = "fogged", event_id = "event_tide_rune", reward_id = "reward_tide_rune", required_flag = "tide_guardian_defeated", grants_flag = "tide_voyage_complete" },
     },
     map_edge = {
         { id = "edge_01", chapter_id = "chapter_01", from_node = "node_port", to_node = "node_fog_gate", route = "departure", risk = 0, supply_cost = 1, condition = "voyage_ready" },
@@ -33,6 +36,10 @@ local data = {
         { id = "edge_07", chapter_id = "chapter_01", from_node = "node_whisper", to_node = "node_cursed_compass", route = "curse_path", risk = 2, supply_cost = 0, condition = "curse_heard" },
         { id = "edge_08", chapter_id = "chapter_01", from_node = "node_cursed_compass", to_node = "node_raider", route = "intercept", risk = 3, supply_cost = 1, condition = "compass_resolved" },
         { id = "edge_09", chapter_id = "chapter_01", from_node = "node_raider", to_node = "node_rune_clue", route = "chapter_goal", risk = 1, supply_cost = 0, condition = "raider_defeated" },
+        { id = "edge_10", chapter_id = "chapter_01", from_node = "node_port", to_node = "node_tide_gate", route = "tide_departure", risk = 1, supply_cost = 1, condition = "chapter_01_complete" },
+        { id = "edge_11", chapter_id = "chapter_01", from_node = "node_tide_gate", to_node = "node_tide_guardian", route = "tide_breaker_channel", risk = 3, supply_cost = 0, condition = "tide_route_chosen" },
+        { id = "edge_12", chapter_id = "chapter_01", from_node = "node_tide_gate", to_node = "node_tide_guardian", route = "tide_cannon_pass", risk = 3, supply_cost = 0, condition = "tide_route_chosen" },
+        { id = "edge_13", chapter_id = "chapter_01", from_node = "node_tide_guardian", to_node = "node_tide_rune", route = "tide_goal", risk = 2, supply_cost = 0, condition = "tide_guardian_defeated" },
     },
     event = {
         { id = "event_route_choice", chapter_id = "chapter_01", name = "暗礁间的航线", description = "安全航线更远但能恢复补给；近路可能发现沉船战利品", required_flag = "voyage_ready" },
@@ -43,6 +50,9 @@ local data = {
         { id = "event_cursed_compass", chapter_id = "chapter_01", name = "诅咒罗盘", description = "罗盘指向追猎者的弱点也在侵蚀船员意志", required_flag = "curse_heard" },
         { id = "event_raider_encounter", chapter_id = "chapter_01", name = "追猎者拦截", description = "诅咒敌船封锁航道；舰炮结果将直接影响接舷战", required_flag = "compass_resolved" },
         { id = "event_rune_clue", chapter_id = "chapter_01", name = "符文回响", description = "战利品中的碎片回应了水晶瓶", required_flag = "raider_defeated" },
+        { id = "event_tide_route_choice", chapter_id = "chapter_01", name = "潮汐墓场入口", description = "船体强化可抵消破潮水道的撞击；火炮强化可压低炮门航道的补给消耗", required_flag = "chapter_01_complete" },
+        { id = "event_tide_guardian", chapter_id = "chapter_01", name = "沉锚符文守卫", description = "潮盾会吸收全部攻击；船体与火炮成长对应两种破盾方案", required_flag = "tide_route_chosen" },
+        { id = "event_tide_rune", chapter_id = "chapter_01", name = "沉锚符文祭台", description = "第二枚符文揭示海盗王曾主动撕裂封印", required_flag = "tide_guardian_defeated" },
     },
     event_choice = {
         { id = "choice_route_risky", event_id = "event_route_choice", action_id = "choose_risky_route", label = "穿过暗礁走近路", result_text = "节省补给并发现沉船残骸", reward_id = "reward_salvage", grants_flag = "risky_route" },
@@ -58,6 +68,9 @@ local data = {
         { id = "choice_compass_follow", event_id = "event_cursed_compass", action_id = "follow_cursed_compass", label = "沿罗盘直取弱点", result_text = "敌舰开场受损但诅咒进一步加深", grants_flag = "compass_followed" },
         { id = "choice_compass_break", event_id = "event_cursed_compass", action_id = "break_cursed_compass", label = "砸碎诅咒罗盘", result_text = "船员意志增强并提高接舷状态", grants_flag = "compass_broken" },
         { id = "choice_rune_take", event_id = "event_rune_clue", action_id = "take_rune_clue", label = "收下符文碎片", result_text = "第一枚符文线索被记录", reward_id = "reward_rune_clue", grants_flag = "chapter_01_complete" },
+        { id = "choice_tide_breaker", event_id = "event_tide_route_choice", action_id = "choose_tide_breaker", label = "进入破潮水道", result_text = "用船体承受墓场冲击并直抵守卫", grants_flag = "tide_breaker_chosen" },
+        { id = "choice_tide_cannon", event_id = "event_tide_route_choice", action_id = "choose_tide_cannon", label = "穿过炮门航道", result_text = "用补给换取稳定射界并直抵守卫", grants_flag = "tide_cannon_chosen" },
+        { id = "choice_tide_rune_take", event_id = "event_tide_rune", action_id = "take_tide_rune", label = "收下沉锚符文", result_text = "第二枚符文已经归入水晶瓶", reward_id = "reward_tide_rune", grants_flag = "tide_voyage_complete" },
     },
     crew = {
         { id = "crew_gunner", name = "罗克", role = "gunner", active_skill = "齐射标记", active_action = "gunner_mark_deck", passive_trait = "舰炮阶段对标记部位伤害提高", chapter_id = "chapter_01" },
@@ -71,12 +84,15 @@ local data = {
     },
     enemy = {
         { id = "enemy_cursed_raider", name = "海魂诅咒追猎者", chapter_id = "chapter_01", ship_hp = 500, boarding_power = 100, transfer_rule = "舰炮击毁甲板后接舷敌人以受伤状态开场", reward_id = "reward_battle" },
+        { id = "enemy_tide_warden", name = "沉锚符文守卫", chapter_id = "chapter_01", ship_hp = 100, boarding_power = 0, transfer_rule = "潮盾归零后守卫沉没并开放第二枚符文", reward_id = "reward_tide_guardian" },
     },
     reward = {
         { id = "reward_salvage", name = "沉船补给", gold = 20, timber = 15, iron = 5, provisions = 2, rune_dust = 0, purpose_hint = "可用于修复船体或强化火炮" },
         { id = "reward_rescue", name = "幸存者谢礼", gold = 10, timber = 5, iron = 5, provisions = 1, rune_dust = 0, purpose_hint = "物资较少但提高船员信任" },
         { id = "reward_battle", name = "追猎者战利品", gold = 35, timber = 10, iron = 15, provisions = 0, rune_dust = 1, purpose_hint = "返港后选择船体或火炮升级" },
         { id = "reward_rune_clue", name = "第一枚符文线索", gold = 0, timber = 0, iron = 0, provisions = 0, rune_dust = 5, purpose_hint = "解锁下一次远航目标" },
+        { id = "reward_tide_guardian", name = "符文守卫残骸", gold = 45, timber = 12, iron = 12, provisions = 1, rune_dust = 1, purpose_hint = "奖励第二次远航的差异敌人战果" },
+        { id = "reward_tide_rune", name = "第二枚沉锚符文", gold = 0, timber = 0, iron = 0, provisions = 0, rune_dust = 7, purpose_hint = "记录海盗王主动撕裂封印的新线索" },
     },
     dialogue = {
         { id = "dialogue_001", chapter_id = "chapter_01", node_id = "node_port", speaker = "海盗王", text = "终于有人打开了这只瓶子。", trigger = "chapter_start" },
@@ -97,10 +113,17 @@ local data = {
         { id = "dialogue_016", chapter_id = "chapter_01", node_id = "node_raider", speaker = "艾琳", text = "守住阵线，我只能进行一次紧急包扎。", trigger = "boarding_hint" },
         { id = "dialogue_017", chapter_id = "chapter_01", node_id = "node_rune_clue", speaker = "海盗王", text = "第一道封印已经松动。继续吧，船长。", trigger = "chapter_complete" },
         { id = "dialogue_018", chapter_id = "chapter_01", node_id = "node_port", speaker = "卡特琳娜", text = "这次战利品足够改造船。选好方向，下一片迷雾不会等我们。", trigger = "return_to_port" },
+        { id = "dialogue_019", chapter_id = "chapter_01", node_id = "node_tide_gate", speaker = "卡特琳娜", text = "墓场的潮流在两条航道间切换。强化过的那一侧会更容易通过。", trigger = "node_enter" },
+        { id = "dialogue_020", chapter_id = "chapter_01", node_id = "node_tide_gate", speaker = "罗克", text = "炮门航道给我射界；破潮水道就交给加固船壳。别让升级只躺在账本里。", trigger = "choice_prompt" },
+        { id = "dialogue_021", chapter_id = "chapter_01", node_id = "node_tide_guardian", speaker = "米克", text = "那不是船壳——锚链织成的潮盾正在替它挡炮。", trigger = "battle_start" },
+        { id = "dialogue_022", chapter_id = "chapter_01", node_id = "node_tide_guardian", speaker = "艾琳", text = "远射保船但要多打一轮；撞断潮锚更快，也会伤到我们。", trigger = "naval_hint" },
+        { id = "dialogue_023", chapter_id = "chapter_01", node_id = "node_tide_rune", speaker = "海盗王", text = "第二道封印不是被岁月磨损的。是我亲手撕开的。", trigger = "chapter_complete" },
     },
     route = {
         { id = "safe_route", chapter_id = "chapter_01", label = "外海安全航线", supply_cost = 2, risk = 1, hull_damage = 0, crew_max_bonus = 10, status_id = "steady_approach", intel_hint = "风险 1；多消耗补给；接舷队状态上限提高", outcome_hint = "以补给换取接舷容错" },
         { id = "risky_shortcut", chapter_id = "chapter_01", label = "暗礁高风险近路", supply_cost = 1, risk = 3, reward_id = "reward_salvage", hull_damage = 10, crew_max_bonus = 0, status_id = "exposed_hull", intel_hint = "风险 3；船体受损；获得沉船战利品", outcome_hint = "以船体风险换取升级资源" },
+        { id = "tide_breaker_channel", chapter_id = "chapter_01", label = "破潮水道", supply_cost = 0, risk = 3, hull_damage = 30, crew_max_bonus = 0, status_id = "hull_growth_route", intel_hint = "基础航损 30；每级船体强化减免 20", outcome_hint = "用船体成长抵消墓场冲击" },
+        { id = "tide_cannon_pass", chapter_id = "chapter_01", label = "炮门航道", supply_cost = 2, risk = 3, hull_damage = 0, crew_max_bonus = 0, status_id = "gun_growth_route", intel_hint = "基础补给 2；每级火炮强化减免 2", outcome_hint = "用火炮成长压低航线补给" },
     },
     balance = {
         { id = "initial_gold", category = "economy", value = 40, description = "新档初始金币" },
@@ -124,6 +147,11 @@ local data = {
         { id = "port_recovery_gold_cost", category = "recovery", value = 5, description = "返港恢复船只和船员的金币成本" },
         { id = "hull_upgrade_timber_cost", category = "upgrade", value = 10, description = "首次船体升级木材成本" },
         { id = "guns_upgrade_iron_cost", category = "upgrade", value = 15, description = "首次火炮升级铁料成本" },
+        { id = "tide_hull_route_reduction", category = "second_voyage", value = 20, description = "每级船体强化减少破潮水道航损" },
+        { id = "tide_gun_route_reduction", category = "second_voyage", value = 2, description = "每级火炮强化减少炮门航道补给" },
+        { id = "tide_barrage_gun_bonus", category = "second_voyage", value = 40, description = "每级火炮强化增加远距破盾伤害" },
+        { id = "tide_ram_hull_bonus", category = "second_voyage", value = 25, description = "每级船体强化增加撞锚破盾伤害" },
+        { id = "tide_ram_hull_reduction", category = "second_voyage", value = 15, description = "每级船体强化减少撞锚自损" },
     },
     battle_action = {
         { id = "gunner_mark_deck", stage = "naval", label = "罗克：齐射标记", damage = 0, deck_damage = 0, gun_damage = 0, retaliation = 0, once_flag = "gunner_mark_used", description = "下一次甲板齐射获得额外破坏" },
@@ -133,6 +161,8 @@ local data = {
         { id = "boarding_rush", stage = "boarding", label = "冒险强攻", damage = 42, deck_damage = 0, gun_damage = 0, retaliation = 34, description = "更高伤害与更高船员损耗" },
         { id = "sailor_guard", stage = "boarding", label = "米克：甲板守卫", damage = 0, deck_damage = 0, gun_damage = 0, retaliation = 0, once_flag = "sailor_guard_used", description = "抵消下一次接舷反击" },
         { id = "medic_heal", stage = "boarding", label = "艾琳：紧急包扎", damage = 0, deck_damage = 0, gun_damage = 0, retaliation = 0, once_flag = "medic_used", description = "恢复接舷队状态" },
+        { id = "tide_barrage", stage = "tide_guardian", label = "远距齐射破盾", damage = 60, deck_damage = 0, gun_damage = 0, retaliation = 12, description = "保守破盾；火炮强化会显著提高伤害" },
+        { id = "tide_ram", stage = "tide_guardian", label = "撞断守卫潮锚", damage = 75, deck_damage = 0, gun_damage = 0, retaliation = 25, description = "快速破盾；船体强化会提高伤害并降低自损" },
     },
     presentation = {
         { id = "presentation_opening", hero_group = "harbor", stage = "opening", background = "Images/V2/ui2_harbor.png", accent = "gold", animation = "bottle_float", audio_cue = "curse" },
@@ -149,6 +179,11 @@ local data = {
         { id = "presentation_upgrade", hero_group = "harbor", stage = "upgrade", background = "Images/V2/ui2_harbor.png", accent = "gold", animation = "reward_reveal", audio_cue = "victory" },
         { id = "presentation_complete", hero_group = "harbor", stage = "complete", background = "Images/V2/ui2_harbor.png", accent = "gold", animation = "bottle_float", audio_cue = "victory" },
         { id = "presentation_failed", hero_group = "combat", stage = "failed", background = "Images/V2/ui2_combat.png", accent = "danger", animation = "damage_shake", audio_cue = "sinking" },
+        { id = "presentation_tide_route", hero_group = "map", stage = "tide_route_choice", background = "Images/V2/ui2_exploration.png", accent = "sea", animation = "map_drift", audio_cue = "wave" },
+        { id = "presentation_tide_guardian", hero_group = "combat", stage = "tide_guardian", background = "Images/V2/ui2_combat.png", accent = "danger", animation = "enemy_heave", audio_cue = "cannon" },
+        { id = "presentation_tide_rune", hero_group = "rune", stage = "tide_rune_clue", background = "Images/V2/ui2_rune.png", accent = "purple", animation = "rune_pulse", audio_cue = "victory" },
+        { id = "presentation_tide_settlement", hero_group = "rune", stage = "tide_settlement", background = "Images/V2/ui2_rune.png", accent = "gold", animation = "reward_reveal", audio_cue = "victory" },
+        { id = "presentation_tide_complete", hero_group = "harbor", stage = "tide_complete", background = "Images/V2/ui2_harbor.png", accent = "success", animation = "bottle_float", audio_cue = "victory" },
     },
     audio_cue = {
         { id = "wave", file = "music/walk.mp3", trigger = "start_voyage", volume = 0.70, loop = 0, source_status = "legacy_approved_ship_movement" },
@@ -177,6 +212,10 @@ local data = {
         { id = "next_voyage_prepared", trigger = "prepare_next_voyage", description = "保留成长与库存并返回皇家港准备下一次远航", required_fields = "action|stage_after|resources|voyage_count", decision_metric = "repeat_voyage_conversion" },
         { id = "chapter_restarted", trigger = "restart_chapter", description = "重置首章测试进度并创建新会话", required_fields = "action|stage_after", decision_metric = "repeat_test_count" },
         { id = "invalid_action", trigger = "invalid_action", description = "记录资源不足或非法操作", required_fields = "action|stage_before|result", decision_metric = "friction_count" },
+        { id = "tide_guardian_action", trigger = "tide_guardian_action", description = "执行符文守卫破盾操作", required_fields = "action|tide_shield|player_hull", decision_metric = "guardian_strategy" },
+        { id = "tide_guardian_result", trigger = "tide_guardian_result", description = "击败沉锚符文守卫", required_fields = "action|stage_before|stage_after|result", decision_metric = "second_voyage_battle_completion" },
+        { id = "second_rune_claimed", trigger = "take_tide_rune", description = "取得第二枚沉锚符文", required_fields = "stage_after|rune_dust", decision_metric = "second_voyage_goal_reached" },
+        { id = "second_voyage_completed", trigger = "return_from_tide", description = "带着第二枚符文返回皇家港", required_fields = "stage_after|resources|voyage_count", decision_metric = "second_voyage_completion" },
     },
     quality_gate = {
         { id = "independent_first_voyage", category = "external_test", metric = "无口头指导完成首次远航比例", target = ">=70%", decision_rule = "第二轮目标用户结果达到目标才通过", evidence_status = "pending_external" },
