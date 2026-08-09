@@ -21,8 +21,10 @@ lua tools/v2/test_v2_internal_sample_6.lua
 python3 tools/v2/validate_internal_sample_6.py
 python3 tools/v2/validate_internal_sample_freeze.py
 lua tools/v2/test_v2_ui_theme.lua
+lua tools/v2/test_v2_port_model.lua
 python3 tools/v2/validate_ui2_iteration_1.py
 python3 tools/v2/validate_ui2_iteration_2.py
 python3 tools/v2/validate_ui3_style.py
+python3 tools/v2/validate_ui34_port.py
 
 echo "V2 Phase 4 internal validation passed; external gates remain pending"

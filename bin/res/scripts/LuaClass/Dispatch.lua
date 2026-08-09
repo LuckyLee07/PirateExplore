@@ -9,6 +9,7 @@ require "LuaClass/GuideController"
 require "LuaClass/ToastUtil"
 require "LuaClass/V2Config"
 require "LuaClass/V2ChapterLayer"
+require "LuaClass/V2PortLayer"
 
 
 Dispatch = class("Dispatch", function ()
@@ -187,7 +188,15 @@ function Dispatch:init(bIsDead)
 
     if V2Config:isFeatureEnabled("v2.chapter_01") then
         self.mainMenu:setV2Mode(true)
-        self:moveToV2Chapter()
+        local qaSurface = nil
+        if V2Config:isQAProfile() and os ~= nil and os.getenv ~= nil then
+            qaSurface = os.getenv("NEWPIRATE_V2_START_SURFACE")
+        end
+        if qaSurface == "port" then
+            self:moveToV2Port()
+        else
+            self:moveToV2Chapter()
+        end
     else
         self:moveToRepository()
     end
@@ -210,6 +219,10 @@ end
 
 function Dispatch:moveToV2Chapter()
     self:setViewWithDirection(V2ChapterLayer:create(), false, 1)
+end
+
+function Dispatch:moveToV2Port()
+    self:setViewWithDirection(V2PortLayer:create(), false, 1)
 end
 
 -- 移动到天赋界面

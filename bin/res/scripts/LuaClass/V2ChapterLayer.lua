@@ -238,6 +238,12 @@ function V2ChapterLayer:openReleaseUrl(kind)
     openUrlFunc(url)
 end
 
+function V2ChapterLayer:openPort()
+    if zqDispatch ~= nil and zqDispatch.moveToV2Port ~= nil then
+        zqDispatch:moveToV2Port()
+    end
+end
+
 function V2ChapterLayer:showReleaseInfo(initialKind)
     if self.releaseInfoOverlay ~= nil then
         return
@@ -1072,7 +1078,7 @@ function V2ChapterLayer:refresh()
     kicker:setPosition(cc.p(82, layout.kicker_y))
     topBar:addChild(kicker)
 
-    local title = createLabel(self.controller:getStageTitle(), layout.title_size, COLORS.ink, width - 232, nil, BoldFont)
+    local title = createLabel(self.controller:getStageTitle(), layout.title_size, COLORS.ink, width - 320, nil, BoldFont)
     title:setAnchorPoint(cc.p(0, 0.5))
     title:setPosition(cc.p(82, layout.title_y))
     topBar:addChild(title)
@@ -1098,6 +1104,20 @@ function V2ChapterLayer:refresh()
     local releaseInfoMenu = cc.Menu:create(releaseInfoItem)
     releaseInfoMenu:setPosition(cc.p(0, 0))
     topBar:addChild(releaseInfoMenu)
+
+    local portWidth = 70
+    local portNormal, portTextColor = createButtonFace(portWidth, infoHeight, "selected", false, accentName)
+    local portPressed = createButtonFace(portWidth, infoHeight, "selected", true, accentName)
+    local portItem = cc.MenuItemSprite:create(portNormal, portPressed)
+    portItem:setPosition(cc.p(width - 30 - infoWidth - 10 - portWidth * 0.5, layout.title_y))
+    portItem:registerScriptTapHandler(function() self:openPort() end)
+    local portLabel = createLabel("整备", 11, color3(portTextColor), portWidth - 12, cc.TEXT_ALIGNMENT_CENTER, BoldFont)
+    portLabel:setAnchorPoint(cc.p(0.5, 0.5))
+    portLabel:setPosition(cc.p(portWidth * 0.5, infoHeight * 0.5 + 1))
+    portItem:addChild(portLabel, 3)
+    local portMenu = cc.Menu:create(portItem)
+    portMenu:setPosition(cc.p(0, 0))
+    topBar:addChild(portMenu)
 
     self:addObjectiveBanner(root, state, layout)
     self:addResourceRow(root, state.resources, layout)
