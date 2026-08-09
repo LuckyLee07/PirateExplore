@@ -199,7 +199,7 @@ local data = {
         { id = "presentation_failed", hero_group = "combat", stage = "failed", background = "Images/V2/ui2_combat.png", accent = "danger", animation = "damage_shake", audio_cue = "sinking" },
         { id = "presentation_tide_route", hero_group = "map", stage = "tide_route_choice", background = "Images/V2/ui2_exploration.png", accent = "sea", animation = "map_drift", audio_cue = "wave" },
         { id = "presentation_tide_signal", hero_group = "map", stage = "tide_character_event", background = "Images/V2/ui2_exploration.png", accent = "gold", animation = "map_drift", audio_cue = "wave" },
-        { id = "presentation_tide_guardian", hero_group = "combat", stage = "tide_guardian", background = "Images/V2/ui2_combat.png", accent = "danger", animation = "enemy_heave", audio_cue = "cannon" },
+        { id = "presentation_tide_guardian", hero_group = "combat", stage = "tide_guardian", background = "Images/V2/ui2_tide_guardian.png", accent = "danger", animation = "enemy_heave", audio_cue = "cannon" },
         { id = "presentation_tide_rune", hero_group = "rune", stage = "tide_rune_clue", background = "Images/V2/ui2_rune.png", accent = "purple", animation = "rune_pulse", audio_cue = "victory" },
         { id = "presentation_tide_settlement", hero_group = "rune", stage = "tide_settlement", background = "Images/V2/ui2_rune.png", accent = "gold", animation = "reward_reveal", audio_cue = "victory" },
         { id = "presentation_tide_complete", hero_group = "harbor", stage = "tide_complete", background = "Images/V2/ui2_harbor.png", accent = "success", animation = "bottle_float", audio_cue = "victory" },

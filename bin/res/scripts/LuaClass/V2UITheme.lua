@@ -352,6 +352,21 @@ function V2UITheme.sceneFeedbackItems(actionId, before, after)
     return items
 end
 
+function V2UITheme.tideShieldBreakFeedback(before, after)
+    local shieldBefore = before.tide_shield or 0
+    local shieldAfter = after.tide_shield or 0
+    if before.stage ~= "tide_guardian" or after.stage ~= "tide_rune_clue"
+        or shieldBefore <= 0 or shieldAfter > 0 then
+        return nil
+    end
+    return {
+        title = "潮盾崩解",
+        label = "守卫潮盾",
+        value = "-" .. (shieldBefore - shieldAfter),
+        accent = "purple",
+    }
+end
+
 local function authoredValue(chapterData, group, id, key, fallback)
     local groups = chapterData and chapterData.by_id
     local row = groups and groups[group] and groups[group][id]

@@ -16,7 +16,7 @@ presentation_complete,harbor,complete,Images/V2/ui2_harbor.png,,,gold,bottle_flo
 presentation_failed,combat,failed,Images/V2/ui2_combat.png,,,danger,damage_shake,sinking
 presentation_tide_route,map,tide_route_choice,Images/V2/ui2_exploration.png,,,sea,map_drift,wave
 presentation_tide_signal,map,tide_character_event,Images/V2/ui2_exploration.png,,,gold,map_drift,wave
-presentation_tide_guardian,combat,tide_guardian,Images/V2/ui2_combat.png,,,danger,enemy_heave,cannon
+presentation_tide_guardian,combat,tide_guardian,Images/V2/ui2_tide_guardian.png,,,danger,enemy_heave,cannon
 presentation_tide_rune,rune,tide_rune_clue,Images/V2/ui2_rune.png,,,purple,rune_pulse,victory
 presentation_tide_settlement,rune,tide_settlement,Images/V2/ui2_rune.png,,,gold,reward_reveal,victory
 presentation_tide_complete,harbor,tide_complete,Images/V2/ui2_harbor.png,,,success,bottle_float,victory

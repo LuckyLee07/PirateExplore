@@ -603,6 +603,112 @@ function V2ChapterLayer:showSceneActionFeedback(actionId, before, after, layout)
     end
 end
 
+function V2ChapterLayer:showTideShieldBreakFeedback(before, after, layout, completion)
+    local feedback = V2UITheme.tideShieldBreakFeedback(before, after)
+    if feedback == nil then
+        return false
+    end
+
+    local width = self.visibleSize.width
+    local height = self.visibleSize.height
+    local centerX = width * 0.66
+    local centerY = layout.art_y + layout.art_height * 0.48
+    local holdDuration = self.qaFeedbackHold or 0.10
+
+    local overlay = cc.LayerColor:create(color4("shell", 0), width, height)
+    overlay:setPosition(self.origin)
+    self:addChild(overlay, 1500)
+    self.transitionOverlay = overlay
+
+    local listener = cc.EventListenerTouchOneByOne:create()
+    listener:setSwallowTouches(true)
+    listener:registerScriptHandler(function() return true end, cc.Handler.EVENT_TOUCH_BEGAN)
+    self:getEventDispatcher():addEventListenerWithSceneGraphPriority(listener, overlay)
+
+    overlay:runAction(cc.FadeTo:create(0.08, 76))
+
+    local burst = cc.Node:create()
+    burst:setPosition(cc.p(centerX, centerY))
+    burst:setCascadeOpacityEnabled(true)
+    burst:setOpacity(0)
+    burst:setScale(0.72)
+    overlay:addChild(burst, 3)
+
+    local outer = cc.LayerColor:create(color4("purple", 78), 112, 112)
+    outer:setAnchorPoint(cc.p(0.5, 0.5))
+    outer:setPosition(cc.p(0, 0))
+    outer:setRotation(45)
+    burst:addChild(outer, 1)
+    local inner = cc.LayerColor:create(color4("sea", 174), 54, 54)
+    inner:setAnchorPoint(cc.p(0.5, 0.5))
+    inner:setPosition(cc.p(0, 0))
+    inner:setRotation(45)
+    burst:addChild(inner, 2)
+
+    addFeedbackStroke(burst, 76, 4, -54, 0, 0, "sea")
+    addFeedbackStroke(burst, 76, 4, 54, 0, 0, "sea")
+    addFeedbackStroke(burst, 76, 4, 0, -54, 90, "purple")
+    addFeedbackStroke(burst, 76, 4, 0, 54, 90, "purple")
+    addFeedbackStroke(burst, 60, 3, -40, -40, 45, "sea")
+    addFeedbackStroke(burst, 60, 3, 40, 40, 45, "sea")
+    addFeedbackStroke(burst, 60, 3, -40, 40, -45, "purple")
+    addFeedbackStroke(burst, 60, 3, 40, -40, -45, "purple")
+
+    burst:runAction(cc.Sequence:create(
+        cc.Spawn:create(
+            cc.FadeTo:create(0.06, 255),
+            cc.ScaleTo:create(0.20, 1.18)
+        ),
+        cc.DelayTime:create(holdDuration),
+        cc.Spawn:create(
+            cc.FadeTo:create(0.14, 0),
+            cc.ScaleTo:create(0.14, 1.34)
+        )
+    ))
+
+    local chipWidth = layout.compact and 154 or 174
+    local chipHeight = layout.compact and 54 or 60
+    local chipNode = cc.Node:create()
+    chipNode:setPosition(cc.p(0, -8))
+    chipNode:setCascadeOpacityEnabled(true)
+    chipNode:setOpacity(0)
+    overlay:addChild(chipNode, 4)
+    local chip = addSurface(
+        chipNode,
+        centerX - chipWidth * 0.5,
+        centerY - chipHeight * 0.5,
+        chipWidth,
+        chipHeight,
+        { fill = "shell_raised", alpha = 246, accent = feedback.accent, accent_width = 4 }
+    )
+    local title = createLabel(feedback.title, layout.compact and 17 or 20, color3("ink"), nil, nil, BoldFont)
+    title:setAnchorPoint(cc.p(0, 0.5))
+    title:setPosition(cc.p(14, chipHeight * 0.62))
+    chip:addChild(title, 4)
+    local value = createLabel(feedback.label .. "  " .. feedback.value, layout.compact and 9 or 10, color3("purple"), nil, nil, BoldFont)
+    value:setAnchorPoint(cc.p(0, 0.5))
+    value:setPosition(cc.p(14, chipHeight * 0.24))
+    chip:addChild(value, 4)
+    chipNode:runAction(cc.Sequence:create(
+        cc.Spawn:create(
+            cc.FadeTo:create(0.08, 255),
+            cc.MoveBy:create(0.08, cc.p(0, 8))
+        ),
+        cc.DelayTime:create(0.18 + holdDuration),
+        cc.FadeTo:create(0.14, 0)
+    ))
+
+    overlay:runAction(cc.Sequence:create(
+        cc.DelayTime:create(0.40 + holdDuration),
+        cc.CallFunc:create(function()
+            self.transitionOverlay = nil
+            overlay:removeFromParent()
+            completion()
+        end)
+    ))
+    return true
+end
+
 function V2ChapterLayer:addHeroArt(parent, state, layout)
     local presentation = self.controller:getPresentation()
     local width = self.visibleSize.width
@@ -865,6 +971,17 @@ function V2ChapterLayer:performAction(actionId)
         ToastUtil:downString(message)
     else
         self:playActionFeedback(actionId, before.stage, after.stage)
+    end
+    if ok then
+        local layout = V2ChapterLayout.build(self.visibleSize.width, self.visibleSize.height)
+        local deferred = self:showTideShieldBreakFeedback(before, after, layout, function()
+            self:refresh()
+            local nextLayout = V2ChapterLayout.build(self.visibleSize.width, self.visibleSize.height)
+            self:showActionFeedback(actionId, before, after, nextLayout)
+        end)
+        if deferred then
+            return ok, message
+        end
     end
     self:refresh()
     if ok then

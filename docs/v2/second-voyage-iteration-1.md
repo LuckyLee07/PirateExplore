@@ -153,7 +153,7 @@ stateDiagram-v2
 
 本轮是第二航程的可玩灰盒，不是第二海域正式内容完成：
 
-- 守卫暂时复用现有舰炮英雄背景，机制和界面已区分，专属守卫美术待玩法稳定后制作；
+- 守卫专属战场与潮盾崩解已在后续 [`tide-guardian-visual-iteration-1.md`](tide-guardian-visual-iteration-1.md) 完成；
 - 第二航程目前是一段聚焦成长兑现的短路线，没有扩成大量格子或事件；
 - 船员成长第 1 轮已经补入永久首席任命，并改变远距或近身破盾；
 - 皇家港后勤第 1 轮已经补入常规补给、应急救济和无效出航隐藏；
@@ -162,7 +162,7 @@ stateDiagram-v2
 后续优先级：
 
 1. 潮汐墓场角色事件已完成，见 [`tide-character-event-iteration-1.md`](tide-character-event-iteration-1.md)；
-2. 下一轮制作沉锚守卫专属美术与一次性破盾效果；
+2. 沉锚守卫专属美术与一次性破盾效果已完成，见 [`tide-guardian-visual-iteration-1.md`](tide-guardian-visual-iteration-1.md)；
 3. 继续验证存档迁移、内容表扩展和长流程稳定性；
 4. 所有游戏内容收敛后，最后统一执行真机、签名、TestFlight 与 App Store。
 

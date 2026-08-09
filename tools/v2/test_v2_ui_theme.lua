@@ -86,6 +86,21 @@ local tideItems = Theme.sceneFeedbackItems(
 equal(tideItems[1].value, "-100", "guardian feedback exposes shield loss")
 equal(tideItems[2].value, "-10", "guardian feedback exposes ram hull cost")
 
+local shieldBreak = Theme.tideShieldBreakFeedback(
+    { stage = "tide_guardian", tide_shield = 80 },
+    { stage = "tide_rune_clue", tide_shield = 0 }
+)
+equal(shieldBreak.title, "潮盾崩解", "terminal Guardian hit gains a dedicated transition title")
+equal(shieldBreak.value, "-80", "shield-break feedback uses the exact final shield loss")
+equal(
+    Theme.tideShieldBreakFeedback(
+        { stage = "tide_guardian", tide_shield = 100 },
+        { stage = "tide_guardian", tide_shield = 20 }
+    ),
+    nil,
+    "non-terminal Guardian hits keep the regular combat feedback"
+)
+
 local settlementGroups = Theme.outcomeGroups(State.new("qa_settlement"), State.getData())
 equal(#settlementGroups, 3, "settlement is grouped into three scan targets")
 equal(settlementGroups[1].value, "金币 +35\n木材 +10", "settlement reward group uses authored values")
