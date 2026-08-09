@@ -76,9 +76,79 @@ function V2PortModel.section(sectionId)
     return V2PortModel.sections[1]
 end
 
-function V2PortModel.status(state)
+function V2PortModel.logistics(state, data)
+    local resources = state.resources or {}
+    local module = rowById(data, "ship_module", state.selected_module) or {}
+    local capacity = balanceValue(data, "initial_provisions")
+        + (module.supply_capacity_modifier or 0)
+    local provisions = resources.provisions or 0
+    local beginsTideVoyage = state.chapter_complete
+        and not (state.flags or {}).tide_voyage_complete
+        and (state.voyage_count or 0) + 1 >= 2
+    local edge = rowById(data, "map_edge", beginsTideVoyage and "edge_10" or "edge_01") or {}
+    local departureCost = edge.supply_cost or 0
+    local resupplyCost = balanceValue(data, "port_resupply_gold_cost")
+    local missingToFull = math.max(0, capacity - provisions)
+    local actualGain = math.min(balanceValue(data, "port_resupply_gain"), missingToFull)
+    local blocked = provisions < departureCost
+    local canResupply = state.stage == "harbor"
+        and actualGain > 0
+        and (resources.gold or 0) >= resupplyCost
+    local canClaimRelief = state.stage == "harbor"
+        and blocked
+        and (resources.gold or 0) < resupplyCost
+        and not (state.flags or {}).harbor_relief_used
+    local status = blocked and "blocked" or (missingToFull > 0 and "low" or "ready")
+    local label = blocked and "补给不足" or (status == "low" and "可以离港 · 储备偏低" or "补给舱已满")
+    local accent = blocked and "danger" or (status == "low" and "gold" or "success")
+    local detail
+    if canClaimRelief then
+        detail = "金币不足，可领取一次免费应急补给，保证本次离港。"
+    elseif blocked then
+        detail = string.format("购买航海补给需要 %d 金币，本次可增加 %d 份。", resupplyCost, actualGain)
+    elseif provisions > capacity then
+        detail = string.format("当前船装最多装载 %d 份；库存超出的 %d 份不会随船出航。", capacity, provisions - capacity)
+    elseif status == "low" then
+        detail = string.format("离港需要 %d 份；也可花 %d 金币补充 %d 份。", departureCost, resupplyCost, actualGain)
+    else
+        detail = string.format("离港需要 %d 份，当前船装的补给容量已经装满。", departureCost)
+    end
+    return {
+        capacity = capacity,
+        provisions = provisions,
+        loaded = math.min(provisions, capacity),
+        departure_cost = departureCost,
+        missing_to_depart = math.max(0, departureCost - provisions),
+        missing_to_full = missingToFull,
+        resupply_cost = resupplyCost,
+        resupply_gain = actualGain,
+        relief_gain = balanceValue(data, "port_relief_gain"),
+        can_resupply = canResupply,
+        can_claim_relief = canClaimRelief,
+        status = status,
+        label = label,
+        detail = detail,
+        accent = accent,
+    }
+end
+
+function V2PortModel.status(state, data)
     local status = copy(stageStatus[state.stage] or stageStatus.harbor)
-    if state.stage == "harbor" and (state.voyage_count or 0) > 0 then
+    if state.stage == "harbor" and data ~= nil then
+        local logistics = V2PortModel.logistics(state, data)
+        if logistics.status == "blocked" then
+            status.label = "航程受阻"
+            status.detail = "补给不足；前往货舱处理港务补给后即可离港"
+            status.accent = "danger"
+        elseif logistics.status == "low" then
+            status.label = "可以出航 · 储备偏低"
+            status.detail = "当前满足离港门槛；货舱可补足后续航程储备"
+            status.accent = "gold"
+        end
+    end
+    if state.stage == "harbor"
+        and (state.voyage_count or 0) > 0
+        and (data == nil or V2PortModel.logistics(state, data).status == "ready") then
         status.detail = string.format("第 %d 次远航准备中；船只成长、库存与符文线索已保留", state.voyage_count + 1)
     end
     return status
@@ -166,11 +236,11 @@ end
 function V2PortModel.readiness(state, data)
     local ship = V2PortModel.ship(state, data)
     local crew = V2PortModel.crew(state, data)
-    local provisions = (state.resources or {}).provisions or 0
+    local logistics = V2PortModel.logistics(state, data)
     return {
         { label = "船只", value = ship.selected_module, ready = ship.hull_max > 0 },
         { label = "船员", value = string.format("%d / 4 就位", #crew), ready = #crew == 4 },
-        { label = "补给", value = string.format("%d 份", provisions), ready = provisions > 0 },
+        { label = "补给", value = string.format("%d / %d 份", logistics.loaded, logistics.capacity), ready = logistics.missing_to_depart == 0 },
     }
 end
 
@@ -190,6 +260,8 @@ local actionsBySection = {
     cargo = {
         return_to_port = true,
         return_from_tide = true,
+        port_resupply = true,
+        claim_harbor_relief = true,
     },
 }
 

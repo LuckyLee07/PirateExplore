@@ -22,6 +22,7 @@ expected_events = {
     "session_started", "opening_accepted", "module_selected", "voyage_started",
     "route_intel_revealed", "route_selected", "voyage_event_choice", "curse_decision",
     "naval_action", "boarding_action", "battle_result", "recovery_choice",
+    "port_logistics_used",
     "rune_claimed", "return_completed", "upgrade_completed", "next_voyage_prepared", "chapter_restarted",
     "invalid_action", "tide_guardian_action", "tide_guardian_result",
     "second_rune_claimed", "second_voyage_completed",

@@ -164,6 +164,7 @@ local function classify(action, before, state, success)
     if tideGuardianActions[action] then return "tide_guardian_action" end
     if action == "retreat" then return "battle_result" end
     if action == "retry_battle" or action == "recover_at_port" then return "recovery_choice" end
+    if action == "port_resupply" or action == "claim_harbor_relief" then return "port_logistics_used" end
     if action == "take_rune_clue" then return "rune_claimed" end
     if action == "take_tide_rune" then return "second_rune_claimed" end
     if action == "return_to_port" then return "return_completed" end
@@ -225,6 +226,7 @@ function V2Telemetry.getSummary(state)
         naval_actions = 0,
         boarding_actions = 0,
         tide_guardian_actions = 0,
+        port_logistics_actions = 0,
         invalid_actions = 0,
         battle_results = 0,
         completed = state.stage == "complete" or state.stage == "tide_complete",
@@ -240,6 +242,9 @@ function V2Telemetry.getSummary(state)
             summary.tide_guardian_actions = summary.tide_guardian_actions + 1
         end
         if event.event_id == "invalid_action" then summary.invalid_actions = summary.invalid_actions + 1 end
+        if event.event_id == "port_logistics_used" then
+            summary.port_logistics_actions = summary.port_logistics_actions + 1
+        end
         if event.event_id == "battle_result" or event.event_id == "tide_guardian_result" then
             summary.battle_results = summary.battle_results + 1
         end

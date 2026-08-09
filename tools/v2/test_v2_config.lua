@@ -45,6 +45,12 @@ assert(config:getSaveProfile() == "qa_failed")
 zqV2SaveProfile = "qa_harbor"
 assert(config:getSaveProfile() == "qa_harbor")
 
+for _, profile in ipairs({ "qa_port_low_supply", "qa_port_blocked" }) do
+    zqV2SaveProfile = profile
+    assert(config:getSaveProfile() == profile)
+    assert(config:isQAProfile())
+end
+
 zqV2SaveProfile = "qa_explore_intel"
 assert(config:getSaveProfile() == "qa_explore_intel")
 

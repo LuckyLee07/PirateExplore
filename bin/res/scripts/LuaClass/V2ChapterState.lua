@@ -17,6 +17,11 @@ local function moduleData(state)
     return ChapterData.by_id.ship_module[state.selected_module]
 end
 
+local function supplyCapacity(state)
+    return balanceValue("initial_provisions")
+        + (moduleData(state).supply_capacity_modifier or 0)
+end
+
 local function routeData(routeId)
     local row = ChapterData.by_id.route[routeId]
     assert(row, "Unknown V2 route: " .. tostring(routeId))
@@ -27,6 +32,16 @@ local function edgeData(edgeId)
     local row = ChapterData.by_id.map_edge[edgeId]
     assert(row, "Unknown V2 map edge: " .. tostring(edgeId))
     return row
+end
+
+local function startsTideVoyage(state)
+    return state.chapter_complete
+        and not state.flags.tide_voyage_complete
+        and (state.voyage_count or 0) + 1 >= 2
+end
+
+local function departureSupplyCost(state)
+    return edgeData(startsTideVoyage(state) and "edge_10" or "edge_01").supply_cost
 end
 
 local function battleAction(actionId)
@@ -315,6 +330,20 @@ function V2ChapterState.new(profile)
         state.current_node = "node_port"
         state.objective = "确认船只模块取舍，然后从皇家港出航"
         state.last_result = "四名船员和默认加固船体已经完成出航准备。"
+    elseif profile == "qa_port_low_supply" then
+        state.stage = "harbor"
+        state.current_node = "node_port"
+        state.resources.gold = 12
+        state.resources.provisions = 2
+        state.objective = "补充远航物资，避免以低储备离港"
+        state.last_result = "当前补给足以离港，但无法覆盖更长的连续航程。"
+    elseif profile == "qa_port_blocked" then
+        state.stage = "harbor"
+        state.current_node = "node_port"
+        state.resources.gold = 0
+        state.resources.provisions = 0
+        state.objective = "领取港务救济，解除补给耗尽造成的航程阻塞"
+        state.last_result = "补给与金币均已耗尽，港务处保留了一份应急离港物资。"
     elseif profile == "qa_explore" or profile == "qa_explore_intel" then
         state.stage = "route_choice"
         state.current_node = "node_fog_gate"
@@ -748,11 +777,38 @@ function V2ChapterState.getActions(state)
             state.selected_module == guns.id and "✓ " or "", guns.name,
             guns.cannon_bonus, guns.supply_capacity_modifier)
         local selected = moduleData(state)
-        return {
+        local actions = {
             { id = "select_reinforced_hull", label = hullLabel },
             { id = "select_heavy_guns", label = gunsLabel },
-            { id = "start_voyage", label = "按" .. selected.name .. "\n配置出航" },
         }
+        local provisions = state.resources.provisions or 0
+        local capacity = supplyCapacity(state)
+        local resupplyCost = balanceValue("port_resupply_gold_cost")
+        local resupplyGain = math.min(
+            balanceValue("port_resupply_gain"),
+            math.max(0, capacity - provisions)
+        )
+        local departureCost = departureSupplyCost(state)
+        if resupplyGain > 0 and (state.resources.gold or 0) >= resupplyCost then
+            table.insert(actions, {
+                id = "port_resupply",
+                label = string.format("购买航海补给\n金币-%d｜补给+%d", resupplyCost, resupplyGain),
+            })
+        elseif provisions < departureCost
+            and (state.resources.gold or 0) < resupplyCost
+            and not state.flags.harbor_relief_used then
+            table.insert(actions, {
+                id = "claim_harbor_relief",
+                label = string.format("领取港务救济\n本次免费｜补给+%d", balanceValue("port_relief_gain")),
+            })
+        end
+        if provisions >= departureCost then
+            table.insert(actions, {
+                id = "start_voyage",
+                label = "按" .. selected.name .. "\n配置出航",
+            })
+        end
+        return actions
     end
 
     if state.stage == "route_choice" then
@@ -917,9 +973,27 @@ function V2ChapterState.getNarrative(state)
                 state.voyage_count + 1
             )
         end
+        local provisions = state.resources.provisions or 0
+        local capacity = supplyCapacity(state)
+        local departureCost = departureSupplyCost(state)
+        local logistics = string.format(
+            "当前可装载 %d/%d；离港需要 %d。",
+            math.min(provisions, capacity), capacity, departureCost
+        )
+        if provisions > capacity then
+            logistics = logistics .. string.format("库存超出当前船装容量 %d 份，出航时不会装船。", provisions - capacity)
+        end
+        if provisions < departureCost then
+            logistics = logistics .. "补给不足：可在货舱购买补给；金币不足时可领取一次港务救济。"
+        elseif provisions < capacity then
+            logistics = logistics .. "现在可以出航，也可先在货舱补足储备。"
+        else
+            logistics = logistics .. "补给舱已满。"
+        end
         return preparation
             .. string.format("\n加固船体｜耐久 +%d；重炮甲板｜齐射 +%d，但补给上限 %d。",
                 hull.hull_bonus, guns.cannon_bonus, guns.supply_capacity_modifier)
+            .. "\n" .. logistics
     elseif state.stage == "route_choice" then
         if state.flags.route_intel then
             local safe = routeData("safe_route")
@@ -1292,22 +1366,57 @@ function V2ChapterState.apply(state, action)
         state.ship.hull_max = calculateHullMax(state)
         resetBattle(state)
         addHistory(state, action, "已装配重炮甲板：舰炮更强，但船体容错较低。")
+    elseif action == "port_resupply" and state.stage == "harbor" then
+        local cost = balanceValue("port_resupply_gold_cost")
+        local gain = math.min(
+            balanceValue("port_resupply_gain"),
+            math.max(0, supplyCapacity(state) - state.resources.provisions)
+        )
+        if gain <= 0 then
+            return false, "补给舱已经达到当前船装上限"
+        end
+        if state.resources.gold < cost then
+            return false, "金币不足，无法购买航海补给"
+        end
+        state.resources.gold = state.resources.gold - cost
+        state.resources.provisions = state.resources.provisions + gain
+        addHistory(state, action, string.format(
+            "支付 %d 金币，港务处装入 %d 份航海补给。", cost, gain
+        ))
+    elseif action == "claim_harbor_relief" and state.stage == "harbor" then
+        local cost = balanceValue("port_resupply_gold_cost")
+        local departureCost = departureSupplyCost(state)
+        if state.resources.provisions >= departureCost then
+            return false, "当前补给已经足够离港"
+        end
+        if state.resources.gold >= cost then
+            return false, "当前仍可购买常规航海补给"
+        end
+        if state.flags.harbor_relief_used then
+            return false, "本次港口停留的应急救济已经领取"
+        end
+        local gain = math.min(
+            balanceValue("port_relief_gain"),
+            math.max(0, supplyCapacity(state) - state.resources.provisions)
+        )
+        state.resources.provisions = state.resources.provisions + gain
+        state.flags.harbor_relief_used = true
+        addHistory(state, action, string.format(
+            "港务处发放 %d 份应急补给；这份救济只保证本次能够离港。", gain
+        ))
     elseif action == "start_voyage" and state.stage == "harbor" then
-        local capacity = balanceValue("initial_provisions")
-            + (moduleData(state).supply_capacity_modifier or 0)
+        local capacity = supplyCapacity(state)
         state.resources.provisions = math.min(state.resources.provisions, capacity)
-        local nextVoyageCount = state.voyage_count + 1
-        local startsTideVoyage = state.chapter_complete
-            and not state.flags.tide_voyage_complete
-            and nextVoyageCount >= 2
-        local departureCost = edgeData(startsTideVoyage and "edge_10" or "edge_01").supply_cost
+        local beginsTideVoyage = startsTideVoyage(state)
+        local departureCost = departureSupplyCost(state)
         if state.resources.provisions < departureCost then
             return false, "补给不足，无法出航"
         end
         state.resources.provisions = state.resources.provisions - departureCost
         state.voyage_count = state.voyage_count + 1
+        state.flags.harbor_relief_used = nil
         grantFlag(state, "voyage_ready")
-        if startsTideVoyage then
+        if beginsTideVoyage then
             state.stage = "tide_route_choice"
             state.current_node = "node_tide_gate"
             state.active_event = "event_tide_route_choice"
@@ -1620,6 +1729,7 @@ function V2ChapterState.apply(state, action)
         state.flags.tide_route_chosen = nil
         state.flags.tide_breaker_chosen = nil
         state.flags.tide_cannon_chosen = nil
+        state.flags.harbor_relief_used = nil
         state.stage = "harbor"
         state.current_node = "node_port"
         state.active_event = state.chapter_complete

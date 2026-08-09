@@ -16,7 +16,7 @@ end
 local data = State.getData()
 local harbor = State.new("qa_harbor")
 equal(#Port.sections, 4, "port exposes four focused preparation areas")
-equal(Port.status(harbor).label, "可以出航", "harbor reports actionable readiness")
+equal(Port.status(harbor, data).label, "可以出航", "harbor reports actionable readiness")
 
 local ship = Port.ship(harbor, data)
 equal(ship.selected_module, "加固船体", "ship panel reads the equipped module")
@@ -51,7 +51,7 @@ local nextActions = Port.actions("chart", State.getActions(nextVoyage))
 equal(nextActions[1].id, "prepare_next_voyage", "chart exposes the real retained-growth transition")
 truthy(not Port.returnsToVoyage("prepare_next_voyage"), "preparation remains in the port after loading growth")
 State.apply(nextVoyage, "prepare_next_voyage")
-truthy(string.find(Port.status(nextVoyage).detail, "第 2 次", 1, true), "port status identifies the prepared voyage")
+truthy(string.find(Port.status(nextVoyage, data).detail, "第 2 次", 1, true), "port status identifies the prepared voyage")
 
 local upgrade = State.new("qa_upgrade")
 local upgradeActions = Port.actions("ship", State.getActions(upgrade))

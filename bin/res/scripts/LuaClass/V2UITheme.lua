@@ -112,6 +112,7 @@ local forwardActions = {
     take_tide_rune = true,
     return_from_tide = true,
     prepare_next_voyage = true,
+    claim_harbor_relief = true,
     restart_chapter = true,
 }
 
@@ -120,6 +121,7 @@ local utilityActions = {
     gunner_mark_deck = true,
     sailor_guard = true,
     medic_heal = true,
+    port_resupply = true,
 }
 
 local dangerActions = {
@@ -235,6 +237,8 @@ local actionFeedbackTitles = {
     tide_ram = "守卫潮锚已撞击",
     take_tide_rune = "第二枚符文已收录",
     return_from_tide = "潮汐墓场航程完成",
+    port_resupply = "航海补给已入库",
+    claim_harbor_relief = "应急补给已领取",
 }
 
 function V2UITheme.actionFeedbackTitle(actionId, nextStage)

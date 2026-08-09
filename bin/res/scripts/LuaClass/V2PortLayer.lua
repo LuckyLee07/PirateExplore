@@ -391,7 +391,7 @@ end
 
 function V2PortLayer:addChartSection(sheet, state, data, actions, layout, width, height)
     self:addSheetHeader(sheet, "下一次远航", "默认配置可直接行动，复杂选项按需展开", layout, width, height)
-    local status = V2PortModel.status(state)
+    local status = V2PortModel.status(state, data)
     local objective = addSurface(sheet, 24, height - 172, width - 48, 96, {
         fill = "surface_soft",
         alpha = 124,
@@ -637,15 +637,102 @@ function V2PortLayer:addCrewSection(sheet, state, data, layout, width, height)
 end
 
 function V2PortLayer:addCargoSection(sheet, state, data, actions, layout, width, height)
-    self:addSheetHeader(sheet, "货舱与用途", "五种资源只服务远航、恢复和关键成长", layout, width, height)
+    local atHarbor = state.stage == "harbor"
+    self:addSheetHeader(
+        sheet,
+        atHarbor and "港务后勤" or "货舱与用途",
+        atHarbor and "先确认离港条件，再查看其余库存" or "五种资源只服务远航、恢复和关键成长",
+        layout,
+        width,
+        height
+    )
     local cargo = V2PortModel.cargo(state, data)
     local themed = {}
     for _, item in ipairs(V2UITheme.resourceItems(state.resources)) do themed[item.id] = item end
     local bottomReserve = #actions > 0 and (layout.compact and 78 or 94) or 18
-    local rowHeight = (height - 80 - bottomReserve) / #cargo
+    local listTop = height - 72
+
+    if atHarbor then
+        local logistics = V2PortModel.logistics(state, data)
+        local panelHeight = layout.compact and 106 or 122
+        local panelY = listTop - panelHeight
+        local panel = addSurface(sheet, 24, panelY, width - 48, panelHeight, {
+            fill = "surface_soft",
+            alpha = 132,
+            accent = logistics.accent,
+            accent_width = 4,
+            border = logistics.accent,
+            border_alpha = 48,
+        })
+        addTintedIcon(
+            panel,
+            "Images/V2/Icons/resource-provisions.png",
+            28,
+            panelHeight * 0.5,
+            layout.compact and 20 or 23,
+            logistics.accent,
+            238
+        )
+        local amount = createLabel(
+            string.format("%d / %d", logistics.loaded, logistics.capacity),
+            layout.compact and 19 or 22,
+            color3(logistics.accent),
+            nil,
+            nil,
+            BoldFont
+        )
+        amount:setAnchorPoint(cc.p(0, 0.5))
+        amount:setPosition(cc.p(50, panelHeight * 0.61))
+        panel:addChild(amount, 3)
+        local unit = createLabel("份补给", 9, COLORS.muted)
+        unit:setAnchorPoint(cc.p(0, 0.5))
+        unit:setPosition(cc.p(50, panelHeight * 0.31))
+        panel:addChild(unit, 3)
+
+        local rightWidth = layout.compact and 120 or 136
+        local rightX = width - 48 - rightWidth
+        local divider = cc.LayerColor:create(color4("separator", 62), 1, panelHeight - 28)
+        divider:setPosition(cc.p(rightX - 14, 14))
+        panel:addChild(divider, 2)
+        local serviceLabel = createLabel(logistics.label, layout.compact and 11 or 12, color3(logistics.accent), rightX - 128, nil, BoldFont)
+        serviceLabel:setAnchorPoint(cc.p(0, 1))
+        serviceLabel:setPosition(cc.p(126, panelHeight - 23))
+        panel:addChild(serviceLabel, 3)
+        local serviceDetail = createLabel(logistics.detail, layout.compact and 9 or 10, COLORS.ink, rightX - 136)
+        serviceDetail:setAnchorPoint(cc.p(0, 1))
+        serviceDetail:setPosition(cc.p(126, panelHeight - 48))
+        panel:addChild(serviceDetail, 3)
+        local departureCaption = createLabel("离港消耗", 8, COLORS.muted)
+        departureCaption:setAnchorPoint(cc.p(0, 0.5))
+        departureCaption:setPosition(cc.p(rightX, panelHeight * 0.67))
+        panel:addChild(departureCaption, 3)
+        local departureValue = createLabel(
+            string.format("%d 份", logistics.departure_cost),
+            layout.compact and 15 or 17,
+            COLORS.ink,
+            nil,
+            nil,
+            BoldFont
+        )
+        departureValue:setAnchorPoint(cc.p(0, 0.5))
+        departureValue:setPosition(cc.p(rightX, panelHeight * 0.43))
+        panel:addChild(departureValue, 3)
+        local serviceRule = createLabel(
+            logistics.can_claim_relief and "救济 · 本次免费"
+                or string.format("补给 · %d 金币", logistics.resupply_cost),
+            8,
+            logistics.can_claim_relief and color3("success") or COLORS.muted
+        )
+        serviceRule:setAnchorPoint(cc.p(0, 0.5))
+        serviceRule:setPosition(cc.p(rightX, panelHeight * 0.20))
+        panel:addChild(serviceRule, 3)
+        listTop = panelY - (layout.compact and 8 or 10)
+    end
+
+    local rowHeight = (listTop - bottomReserve) / #cargo
     for index, item in ipairs(cargo) do
         local theme = themed[item.id]
-        local y = height - 72 - index * rowHeight
+        local y = listTop - index * rowHeight
         local row = addSurface(sheet, 24, y, width - 48, rowHeight - 7, {
             fill = "surface_soft", alpha = index % 2 == 0 and 82 or 106,
         })
@@ -736,7 +823,7 @@ function V2PortLayer:refresh()
     local state = self.controller:load()
     local data = self.controller:getChapterData()
     local layout = portLayout(self.visibleSize.width, self.visibleSize.height)
-    local status = V2PortModel.status(state)
+    local status = V2PortModel.status(state, data)
 
     local background = cc.Sprite:create("Images/V2/ui2_harbor.png")
     background:setPosition(cc.p(self.visibleSize.width * 0.5, self.visibleSize.height * 0.5))

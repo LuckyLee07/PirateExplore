@@ -18,6 +18,9 @@ boarding_wounded_hp,boarding,65,甲板被击毁后的敌方接舷开场状态
 medic_heal_amount,boarding,28,医师紧急包扎恢复量
 retry_supply_cost,recovery,1,原地重试战斗消耗的补给
 port_recovery_gold_cost,recovery,5,返港恢复船只和船员的金币成本
+port_resupply_gold_cost,recovery,4,皇家港购买一次航海补给的金币成本
+port_resupply_gain,recovery,3,皇家港一次常规补给增加的补给数量
+port_relief_gain,recovery,1,补给与金币均不足时港务救济发放的最低补给
 hull_upgrade_timber_cost,upgrade,10,首次船体升级木材成本
 guns_upgrade_iron_cost,upgrade,15,首次火炮升级铁料成本
 tide_hull_route_reduction,second_voyage,20,每级船体强化减少破潮水道航损
