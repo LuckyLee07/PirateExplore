@@ -57,6 +57,10 @@ equal(risky.battle.enemy_ship_hp, Data.by_id.enemy.enemy_cursed_raider.ship_hp
     - Data.by_id.balance.compass_ship_damage.value, "following the compass damages the enemy opening state")
 
 equal(State.new("qa_boarding").stage, "boarding", "boarding hero screen has an isolated QA profile")
+equal(State.new("qa_route_event").stage, "route_event", "route encounter has an isolated QA profile")
+equal(State.new("qa_black_tide").stage, "black_tide", "black tide has an isolated QA profile")
+equal(State.new("qa_whisper").stage, "whisper", "whisper has an isolated QA profile")
+equal(State.new("qa_curse").stage, "curse_choice", "cursed compass has an isolated QA profile")
 equal(State.new("qa_rune").stage, "rune_clue", "rune hero screen has an isolated QA profile")
 equal(State.new("qa_settlement").stage, "settlement", "settlement hero screen has an isolated QA profile")
 equal(State.new("qa_complete").stage, "complete", "completion screen has an isolated QA profile")
@@ -69,6 +73,10 @@ equal(State.getPresentation(State.new("qa_boarding")).stage, "boarding", "boardi
 equal(State.getPresentation(State.new("qa_rune")).hero_group, "rune", "rune clue maps to the rune hero composition")
 for _, profile in ipairs({
     "qa_explore",
+    "qa_route_event",
+    "qa_black_tide",
+    "qa_whisper",
+    "qa_curse",
     "qa_combat",
     "qa_boarding",
     "qa_rune",

@@ -145,12 +145,91 @@ end
 
 function V2UITheme.resourceItems(resources)
     return {
-        { name = "金币", short = "金", value = resources.gold, accent = "gold" },
-        { name = "木材", short = "木", value = resources.timber, accent = "success" },
-        { name = "铁料", short = "铁", value = resources.iron, accent = "muted" },
-        { name = "补给", short = "补", value = resources.provisions, accent = "sea" },
-        { name = "符文", short = "符", value = resources.rune_dust, accent = "purple" },
+        { id = "gold", name = "金币", value = resources.gold, accent = "gold", icon = "Images/V2/Icons/resource-gold.png" },
+        { id = "timber", name = "木材", value = resources.timber, accent = "success", icon = "Images/V2/Icons/resource-timber.png" },
+        { id = "iron", name = "铁料", value = resources.iron, accent = "muted", icon = "Images/V2/Icons/resource-iron.png" },
+        { id = "provisions", name = "补给", value = resources.provisions, accent = "sea", icon = "Images/V2/Icons/resource-provisions.png" },
+        { id = "rune_dust", name = "符文", value = resources.rune_dust, accent = "purple", icon = "Images/V2/Icons/resource-rune.png" },
     }
+end
+
+local battleIcons = {
+    hull = "Images/V2/Icons/battle-hull.png",
+    deck = "Images/V2/Icons/battle-deck.png",
+    cannon = "Images/V2/Icons/battle-cannon.png",
+    crew = "Images/V2/Icons/battle-crew.png",
+}
+
+function V2UITheme.battleIcon(kind)
+    return battleIcons[kind]
+end
+
+local actionFeedbackTitles = {
+    accept_call = "召唤已回应",
+    select_reinforced_hull = "船装已切换",
+    select_heavy_guns = "船装已切换",
+    start_voyage = "远航已启程",
+    reveal_route_intel = "航线情报已展开",
+    choose_safe_route = "安全航线已锁定",
+    choose_risky_route = "暗礁近路已锁定",
+    rest_at_cove = "避风湾休整完成",
+    press_through_cove = "已驶离避风湾",
+    rescue_survivors = "幸存者已救起",
+    salvage_wreck = "沉船物资已打捞",
+    lash_cargo = "货舱已加固",
+    ride_black_tide = "已穿过黑潮",
+    resist_whisper = "低语已压制",
+    listen_whisper = "诅咒交易已接受",
+    follow_cursed_compass = "罗盘航向已锁定",
+    break_cursed_compass = "诅咒罗盘已摧毁",
+    gunner_mark_deck = "甲板弱点已标记",
+    fire_at_deck = "齐射命中甲板",
+    fire_at_guns = "齐射压制火炮",
+    board_now = "接舷战开始",
+    boarding_attack = "接舷推进",
+    boarding_rush = "强攻完成",
+    sailor_guard = "甲板防线已建立",
+    medic_heal = "紧急包扎完成",
+    retreat = "已脱离战斗",
+    take_rune_clue = "符文线索已收录",
+    return_to_port = "战利品已入库",
+    upgrade_hull = "船体强化完成",
+    upgrade_guns = "火炮强化完成",
+    retry_battle = "战斗状态已重置",
+    recover_at_port = "港口整备完成",
+    restart_chapter = "首航记录已重置",
+}
+
+function V2UITheme.actionFeedbackTitle(actionId, nextStage)
+    return actionFeedbackTitles[actionId] or (V2UITheme.stageKind(nextStage) .. "已更新")
+end
+
+function V2UITheme.feedbackChanges(before, after)
+    local descriptors = {
+        { key = "gold", label = "金币" },
+        { key = "timber", label = "木材" },
+        { key = "iron", label = "铁料" },
+        { key = "provisions", label = "补给" },
+        { key = "rune_dust", label = "符文" },
+        { key = "voyage_hull_damage", label = "航行损伤" },
+        { key = "ship_hull_max", label = "最大耐久" },
+        { key = "ship_gun_level", label = "火炮等级" },
+        { key = "enemy_ship_hp", label = "敌舰" },
+        { key = "player_hull", label = "船体" },
+        { key = "deck_damage", label = "甲板破坏" },
+        { key = "gun_damage", label = "火炮压制" },
+        { key = "enemy_boarding_hp", label = "敌军" },
+        { key = "crew_hp", label = "接舷队" },
+        { key = "crew_hp_max", label = "接舷上限" },
+    }
+    local changes = {}
+    for _, descriptor in ipairs(descriptors) do
+        local delta = (after[descriptor.key] or 0) - (before[descriptor.key] or 0)
+        if delta ~= 0 then
+            table.insert(changes, string.format("%s %s%d", descriptor.label, delta > 0 and "+" or "", delta))
+        end
+    end
+    return changes
 end
 
 return V2UITheme

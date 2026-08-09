@@ -127,6 +127,47 @@ local function fitSprite(sprite, targetWidth, targetHeight)
     sprite:setScale(scale)
 end
 
+local function addTintedIcon(parent, path, x, y, size, accentName, opacity)
+    local icon = cc.Sprite:create(path)
+    if icon == nil then
+        return nil
+    end
+    local contentSize = icon:getContentSize()
+    local maximum = math.max(contentSize.width, contentSize.height)
+    if maximum > 0 then
+        icon:setScale(size / maximum)
+    end
+    icon:setColor(color3(accentName))
+    icon:setOpacity(opacity or 232)
+    icon:setPosition(cc.p(x, y))
+    parent:addChild(icon, 4)
+    return icon
+end
+
+local function captureActionSnapshot(state)
+    local resources = state.resources or {}
+    local battle = state.battle or {}
+    local ship = state.ship or {}
+    return {
+        stage = state.stage,
+        gold = resources.gold or 0,
+        timber = resources.timber or 0,
+        iron = resources.iron or 0,
+        provisions = resources.provisions or 0,
+        rune_dust = resources.rune_dust or 0,
+        player_hull = battle.player_hull or 0,
+        enemy_ship_hp = battle.enemy_ship_hp or 0,
+        deck_damage = battle.deck_damage or 0,
+        gun_damage = battle.gun_damage or 0,
+        crew_hp = battle.crew_hp or 0,
+        crew_hp_max = battle.crew_hp_max or 0,
+        enemy_boarding_hp = battle.enemy_boarding_hp or 0,
+        voyage_hull_damage = state.voyage_hull_damage or 0,
+        ship_hull_max = ship.hull_max or 0,
+        ship_gun_level = ship.gun_level or 0,
+    }
+end
+
 function V2ChapterLayer:create()
     local view = V2ChapterLayer.new()
     if view and view:init() then
@@ -166,6 +207,13 @@ function V2ChapterLayer:init()
             self:runAction(cc.Sequence:create(
                 cc.DelayTime:create(0.8),
                 cc.CallFunc:create(function() self:showReleaseInfo(releaseInfoSection) end)
+            ))
+        end
+        local qaAction = os.getenv("NEWPIRATE_V2_QA_ACTION")
+        if qaAction ~= nil and qaAction ~= "" and V2Config:isQAProfile(self.controller:load().profile) then
+            self:runAction(cc.Sequence:create(
+                cc.DelayTime:create(0.8),
+                cc.CallFunc:create(function() self:performAction(qaAction) end)
             ))
         end
     end
@@ -343,6 +391,82 @@ function V2ChapterLayer:playActionFeedback(actionId, previousStage, nextStage)
         or previousStage == "black_tide" then
         self:playCue("wave")
     end
+end
+
+function V2ChapterLayer:showActionFeedback(actionId, before, after, layout)
+    if self.dynamicNode == nil then
+        return
+    end
+    local accentName = V2UITheme.accentName(after.stage)
+    local changes = V2UITheme.feedbackChanges(before, after)
+    local detail = nil
+    if #changes > 0 then
+        local visible = {}
+        for index = 1, math.min(3, #changes) do
+            table.insert(visible, changes[index])
+        end
+        detail = table.concat(visible, "  ·  ")
+        if #changes > #visible then
+            detail = detail .. string.format("  ·  另%d项", #changes - #visible)
+        end
+    elseif before.stage ~= after.stage then
+        detail = "进入  ·  " .. V2UITheme.stageKind(after.stage)
+    else
+        detail = "指令已执行，航海日志已更新"
+    end
+
+    local isBattleStage = after.stage == "naval" or after.stage == "boarding"
+    local cardHeight = isBattleStage and layout.card_height or layout.story_card_height
+    local cardY = isBattleStage and layout.card_y or (layout.card_y - layout.story_card_offset)
+    local width = math.min(self.visibleSize.width - 64, 404)
+    local height = layout.compact and 50 or 56
+    local x = (self.visibleSize.width - width) * 0.5
+    local y = math.min(layout.resource_y - 88, cardY + cardHeight + 18)
+    local toast = cc.Node:create()
+    toast:setPosition(cc.p(0, -7))
+    toast:setOpacity(0)
+    toast:setCascadeOpacityEnabled(true)
+    self.dynamicNode:addChild(toast, 60)
+
+    local surface = addSurface(toast, x, y, width, height, {
+        fill = "shell_raised",
+        alpha = 250,
+        accent = accentName,
+        accent_width = 4,
+        border = "separator",
+        border_alpha = 74,
+    })
+    local title = createLabel(
+        V2UITheme.actionFeedbackTitle(actionId, after.stage),
+        layout.compact and 11 or 12,
+        color3(accentName),
+        width - 30,
+        cc.TEXT_ALIGNMENT_LEFT,
+        BoldFont
+    )
+    title:setAnchorPoint(cc.p(0, 0.5))
+    title:setPosition(cc.p(17, height * 0.68))
+    surface:addChild(title, 4)
+    local deltaLabel = createLabel(
+        detail,
+        layout.compact and 10 or 11,
+        COLORS.ink,
+        width - 30,
+        cc.TEXT_ALIGNMENT_LEFT
+    )
+    deltaLabel:setAnchorPoint(cc.p(0, 0.5))
+    deltaLabel:setPosition(cc.p(17, height * 0.30))
+    surface:addChild(deltaLabel, 4)
+
+    toast:runAction(cc.Sequence:create(
+        cc.Spawn:create(
+            cc.FadeTo:create(0.14, 255),
+            cc.MoveBy:create(0.14, cc.p(0, 7))
+        ),
+        cc.DelayTime:create(1.25),
+        cc.FadeTo:create(0.20, 0),
+        cc.RemoveSelf:create()
+    ))
 end
 
 function V2ChapterLayer:addHeroArt(parent, state, layout)
@@ -581,14 +705,7 @@ function V2ChapterLayer:addActionButton(parent, state, action, actionIndex, acti
     local button = cc.MenuItemSprite:create(normalFace, pressedFace)
     button:setPosition(cc.p(x, y))
     button:registerScriptTapHandler(function()
-        local previousStage = self.controller:load().stage
-        local ok, message = self.controller:dispatch(action.id)
-        if not ok then
-            ToastUtil:downString(message)
-        else
-            self:playActionFeedback(action.id, previousStage, self.controller:load().stage)
-        end
-        self:refresh()
+        self:performAction(action.id)
     end)
 
     local maximumLineLength = 0
@@ -603,6 +720,23 @@ function V2ChapterLayer:addActionButton(parent, state, action, actionIndex, acti
     label:setPosition(cc.p(52, layout.action_button_height * 0.5 + 1))
     button:addChild(label, 2)
     parent:addChild(button)
+end
+
+function V2ChapterLayer:performAction(actionId)
+    local before = captureActionSnapshot(self.controller:load())
+    local ok, message = self.controller:dispatch(actionId)
+    local after = captureActionSnapshot(self.controller:load())
+    if not ok then
+        ToastUtil:downString(message)
+    else
+        self:playActionFeedback(actionId, before.stage, after.stage)
+    end
+    self:refresh()
+    if ok then
+        local layout = V2ChapterLayout.build(self.visibleSize.width, self.visibleSize.height)
+        self:showActionFeedback(actionId, before, after, layout)
+    end
+    return ok, message
 end
 
 function V2ChapterLayer:addObjectiveBanner(parent, state, layout)
@@ -659,13 +793,16 @@ function V2ChapterLayer:addResourceRow(parent, resources, layout)
             separator:setPosition(cc.p(cellX, 7))
             statusDock:addChild(separator, 2)
         end
-        local resourceName = createLabel(item.short, layout.compact and 9 or 10, color3(item.accent), nil, nil, BoldFont)
-        resourceName:setAnchorPoint(cc.p(0.5, 0.5))
-        resourceName:setPosition(cc.p(cellX + cellWidth * 0.5, dockHeight * 0.72))
+        local iconX = cellX + (layout.compact and 16 or 18)
+        addTintedIcon(statusDock, item.icon, iconX, dockHeight * 0.5, layout.compact and 18 or 20, item.accent)
+        local textX = cellX + (layout.compact and 30 or 33)
+        local resourceName = createLabel(item.name, layout.compact and 8 or 9, color3(item.accent), nil, nil, BoldFont)
+        resourceName:setAnchorPoint(cc.p(0, 0.5))
+        resourceName:setPosition(cc.p(textX, dockHeight * 0.70))
         statusDock:addChild(resourceName, 3)
         local resourceValue = createLabel(tostring(item.value), layout.resource_size, COLORS.ink, nil, nil, BoldFont)
-        resourceValue:setAnchorPoint(cc.p(0.5, 0.5))
-        resourceValue:setPosition(cc.p(cellX + cellWidth * 0.5, dockHeight * 0.32))
+        resourceValue:setAnchorPoint(cc.p(0, 0.5))
+        resourceValue:setPosition(cc.p(textX, dockHeight * 0.30))
         statusDock:addChild(resourceValue, 3)
     end
 end
@@ -706,10 +843,11 @@ function V2ChapterLayer:addContextColumns(parent, state, moduleData, layout, car
     end
 end
 
-local function addMeter(parent, labelText, value, maximum, x, y, width, accentName, compact)
+local function addMeter(parent, labelText, value, maximum, x, y, width, accentName, compact, iconPath)
+    addTintedIcon(parent, iconPath, x + 8, y + (compact and 17 or 19), compact and 16 or 18, accentName, 214)
     local label = createLabel(labelText, compact and 12 or 14, COLORS.muted)
     label:setAnchorPoint(cc.p(0, 0))
-    label:setPosition(cc.p(x, y + 9))
+    label:setPosition(cc.p(x + (compact and 20 or 22), y + 9))
     parent:addChild(label, 4)
     local valueLabel = createLabel(string.format("%d / %d", value, maximum), compact and 12 or 14, color3(accentName))
     valueLabel:setAnchorPoint(cc.p(1, 0))
@@ -733,13 +871,13 @@ function V2ChapterLayer:addBattleStatus(parent, state, impact, layout, cardWidth
     local mainY = layout.card_battle_y
     local secondaryY = mainY - (compact and 38 or 44)
     if state.stage == "naval" then
-        addMeter(parent, "我方船体", state.battle.player_hull, state.battle.player_hull_max, 24, mainY, meterWidth, "sea", compact)
-        addMeter(parent, "敌方船体", state.battle.enemy_ship_hp, state.battle.enemy_ship_hp_max, rightX, mainY, meterWidth, "danger", compact)
-        addMeter(parent, state.battle.deck_broken and "敌方甲板 · 已击毁" or "敌方甲板", state.battle.deck_damage, state.battle.deck_threshold, 24, secondaryY, meterWidth, "muted", compact)
-        addMeter(parent, state.battle.guns_suppressed and "敌方火炮 · 已压制" or "敌方火炮", state.battle.gun_damage, state.battle.gun_threshold, rightX, secondaryY, meterWidth, "muted", compact)
+        addMeter(parent, "我方船体", state.battle.player_hull, state.battle.player_hull_max, 24, mainY, meterWidth, "sea", compact, V2UITheme.battleIcon("hull"))
+        addMeter(parent, "敌方船体", state.battle.enemy_ship_hp, state.battle.enemy_ship_hp_max, rightX, mainY, meterWidth, "danger", compact, V2UITheme.battleIcon("hull"))
+        addMeter(parent, state.battle.deck_broken and "敌方甲板 · 已击毁" or "敌方甲板", state.battle.deck_damage, state.battle.deck_threshold, 24, secondaryY, meterWidth, "muted", compact, V2UITheme.battleIcon("deck"))
+        addMeter(parent, state.battle.guns_suppressed and "敌方火炮 · 已压制" or "敌方火炮", state.battle.gun_damage, state.battle.gun_threshold, rightX, secondaryY, meterWidth, "muted", compact, V2UITheme.battleIcon("cannon"))
     elseif state.stage == "boarding" then
-        addMeter(parent, "我方接舷队", state.battle.crew_hp, state.battle.crew_hp_max, 24, mainY, meterWidth, "sea", compact)
-        addMeter(parent, "敌方甲板部队", state.battle.enemy_boarding_hp, state.battle.enemy_boarding_hp_max, rightX, mainY, meterWidth, "danger", compact)
+        addMeter(parent, "我方接舷队", state.battle.crew_hp, state.battle.crew_hp_max, 24, mainY, meterWidth, "sea", compact, V2UITheme.battleIcon("crew"))
+        addMeter(parent, "敌方甲板部队", state.battle.enemy_boarding_hp, state.battle.enemy_boarding_hp_max, rightX, mainY, meterWidth, "danger", compact, V2UITheme.battleIcon("crew"))
     else
         return
     end

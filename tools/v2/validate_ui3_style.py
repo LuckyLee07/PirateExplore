@@ -11,6 +11,8 @@ ROOT = Path(__file__).resolve().parents[2]
 LAYER = (ROOT / "bin/res/scripts/LuaClass/V2ChapterLayer.lua").read_text(encoding="utf-8")
 LAYOUT = (ROOT / "bin/res/scripts/LuaClass/V2ChapterLayout.lua").read_text(encoding="utf-8")
 THEME = (ROOT / "bin/res/scripts/LuaClass/V2UITheme.lua").read_text(encoding="utf-8")
+CONFIG = (ROOT / "bin/res/scripts/LuaClass/V2Config.lua").read_text(encoding="utf-8")
+STATE = (ROOT / "bin/res/scripts/LuaClass/V2ChapterState.lua").read_text(encoding="utf-8")
 PHASE4 = (ROOT / "tools/v2/validate_phase4.sh").read_text(encoding="utf-8")
 
 for marker in (
@@ -18,6 +20,10 @@ for marker in (
     'shell = { 5, 16, 23 }',
     'ink = { 244, 238, 218 }',
     "function V2UITheme.actionRole(stage, actionId, actionIndex, actionCount, selectedModule)",
+    "function V2UITheme.battleIcon(kind)",
+    "function V2UITheme.actionFeedbackTitle(actionId, nextStage)",
+    "function V2UITheme.feedbackChanges(before, after)",
+    'icon = "Images/V2/Icons/resource-gold.png"',
 ):
     if marker not in THEME:
         raise SystemExit(f"UI 3.0 theme is missing marker: {marker}")
@@ -29,7 +35,12 @@ for marker in (
     "local function createActionFace",
     'local chapterPlate = cc.LayerColor:create',
     'local logTab = cc.LayerColor:create',
-    'local resourceName = createLabel(item.short',
+    'local resourceName = createLabel(item.name',
+    "local function addTintedIcon",
+    "function V2ChapterLayer:showActionFeedback",
+    "function V2ChapterLayer:performAction(actionId)",
+    'os.getenv("NEWPIRATE_V2_QA_ACTION")',
+    'cc.FadeTo:create(0.14, 255)',
     'local isBattleStage = state.stage == "naval" or state.stage == "boarding"',
     'createButtonFace(infoWidth, infoHeight, "utility"',
 ):
@@ -78,17 +89,52 @@ for filename in evidence:
     if not path.is_file() or png_dimensions(path) != (1206, 2622):
         raise SystemExit(f"UI 3.0 mainstream-iPhone evidence is missing: {filename}")
 
+matrix = ROOT / "docs/v2/ui32-iphone-state-matrix.png"
+if not matrix.is_file() or png_dimensions(matrix) != (1687, 1018):
+    raise SystemExit("UI 3.2 fourteen-state iPhone matrix is missing")
+
+feedback_capture = ROOT / "docs/v2/ui32-iphone-action-feedback.png"
+if not feedback_capture.is_file() or png_dimensions(feedback_capture) != (1206, 2622):
+    raise SystemExit("UI 3.2 runtime action feedback capture is missing")
+
+for profile in ("qa_route_event", "qa_black_tide", "qa_whisper", "qa_curse"):
+    if f"{profile} = true" not in CONFIG or f'profile == "{profile}"' not in STATE:
+        raise SystemExit(f"UI 3.2 intermediate-state profile is missing: {profile}")
+
+icon_names = (
+    "resource-gold",
+    "resource-timber",
+    "resource-iron",
+    "resource-provisions",
+    "resource-rune",
+    "battle-hull",
+    "battle-deck",
+    "battle-cannon",
+    "battle-crew",
+)
+for icon_name in icon_names:
+    runtime_icon = ROOT / "bin/res/assets/Images/V2/Icons" / f"{icon_name}.png"
+    source_icon = ROOT / "design/v2/assets/icons" / f"{icon_name}.svg"
+    if not runtime_icon.is_file() or png_dimensions(runtime_icon) != (64, 64):
+        raise SystemExit(f"UI 3.2 runtime icon is missing or invalid: {icon_name}")
+    if not source_icon.is_file():
+        raise SystemExit(f"UI 3.2 vector source is missing: {icon_name}")
+
 doc = (ROOT / "docs/v2/ui-3.0-style-system.md").read_text(encoding="utf-8")
 for marker in (
     "克制的航海日志",
     "UI 3.1",
+    "UI 3.2",
     "主流 iPhone",
     "纵向航程",
     "指令编号",
     "单阶段强调色",
     "标题粗体、正文常规字重",
     "玩法状态机、数值和存档不变",
-    "HOLD",
+    "14 个状态",
+    "BASELINED",
+    "ACTIVE",
+    "DEFERRED_UNTIL_FINAL",
 ):
     if marker not in doc:
         raise SystemExit(f"UI 3.0 style record is missing marker: {marker}")
@@ -96,4 +142,4 @@ for marker in (
 if "python3 tools/v2/validate_ui3_style.py" not in PHASE4:
     raise SystemExit("UI 3.0 validation is not in the Phase 4 chain")
 
-print("V2 UI 3.1 style OK: structural HUD, logbook and 4 mainstream-iPhone runtime captures")
+print("V2 UI 3.2 style OK: semantic instruments, causal feedback and mainstream-iPhone captures")

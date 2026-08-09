@@ -260,6 +260,60 @@ function V2ChapterState.new(profile)
             }
             state.last_result = "卡特琳娜已经揭示两条航线的风险、消耗与收益。"
         end
+    elseif profile == "qa_route_event" then
+        state.stage = "route_event"
+        state.current_node = "node_wreck"
+        state.active_event = "event_wreck_survivors"
+        state.route = "risky_shortcut"
+        state.flags.voyage_ready = true
+        state.flags.route_chosen = true
+        state.flags.risky_route = true
+        state.resources.provisions = 5
+        state.voyage_hull_damage = routeData("risky_shortcut").hull_damage
+        state.objective = "搜索暗礁后的沉船残骸"
+        state.last_result = "近路节省了补给，但沉船残骸上仍有人发出求救信号。"
+    elseif profile == "qa_black_tide" then
+        state.stage = "black_tide"
+        state.current_node = "node_black_tide"
+        state.active_event = "event_black_tide"
+        state.route = "risky_shortcut"
+        state.flags.voyage_ready = true
+        state.flags.route_chosen = true
+        state.flags.risky_route = true
+        state.flags.route_event_resolved = true
+        state.resources.provisions = 5
+        state.voyage_hull_damage = routeData("risky_shortcut").hull_damage
+        state.objective = "决定如何穿过异常黑潮"
+        state.last_result = "沉船残骸被甩在身后，一道异常浪墙正横切航线。"
+    elseif profile == "qa_whisper" then
+        state.stage = "whisper"
+        state.current_node = "node_whisper"
+        state.active_event = "event_whisper"
+        state.route = "risky_shortcut"
+        state.flags.voyage_ready = true
+        state.flags.route_chosen = true
+        state.flags.risky_route = true
+        state.flags.route_event_resolved = true
+        state.flags.black_tide_crossed = true
+        state.resources.provisions = 4
+        state.voyage_hull_damage = routeData("risky_shortcut").hull_damage
+        state.objective = "回应海盗王提出的诅咒交易"
+        state.last_result = "黑潮退去后，瓶中海盗王的低语第一次变得清晰。"
+    elseif profile == "qa_curse" then
+        state.stage = "curse_choice"
+        state.current_node = "node_cursed_compass"
+        state.active_event = "event_cursed_compass"
+        state.route = "risky_shortcut"
+        state.flags.voyage_ready = true
+        state.flags.route_chosen = true
+        state.flags.risky_route = true
+        state.flags.route_event_resolved = true
+        state.flags.black_tide_crossed = true
+        state.flags.curse_heard = true
+        state.resources.provisions = 4
+        state.voyage_hull_damage = routeData("risky_shortcut").hull_damage
+        state.objective = "利用或摧毁失控的诅咒罗盘"
+        state.last_result = "诅咒罗盘在甲板上自行转动，指针锁定了追猎者的弱点。"
     elseif profile == "qa_combat" then
         state.stage = "naval"
         state.current_node = "node_raider"

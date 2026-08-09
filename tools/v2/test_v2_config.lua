@@ -48,6 +48,12 @@ assert(config:getSaveProfile() == "qa_harbor")
 zqV2SaveProfile = "qa_explore_intel"
 assert(config:getSaveProfile() == "qa_explore_intel")
 
+for _, profile in ipairs({ "qa_route_event", "qa_black_tide", "qa_whisper", "qa_curse" }) do
+    zqV2SaveProfile = profile
+    assert(config:getSaveProfile() == profile)
+    assert(config:isQAProfile())
+end
+
 zqV2SaveProfile = "qa_rune"
 assert(config:getSaveProfile() == "qa_rune")
 

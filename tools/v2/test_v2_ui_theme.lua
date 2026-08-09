@@ -28,9 +28,27 @@ equal(Theme.actionRole("failed", "retry_battle", 1, 2), "primary", "retry is the
 local resources = Theme.resourceItems({ gold = 40, timber = 2, iron = 3, provisions = 6, rune_dust = 1 })
 equal(#resources, 5, "resource HUD stays compact")
 equal(resources[1].value, 40, "gold value is forwarded")
-equal(resources[1].short, "金", "resource HUD exposes a compact instrument label")
+equal(resources[1].name, "金币", "resource HUD exposes a readable semantic label")
+equal(resources[1].icon, "Images/V2/Icons/resource-gold.png", "resource HUD exposes its dedicated instrument icon")
 equal(resources[5].accent, "purple", "rune resource keeps its semantic accent")
+equal(Theme.battleIcon("cannon"), "Images/V2/Icons/battle-cannon.png", "battle meters expose a semantic cannon icon")
+equal(Theme.actionFeedbackTitle("fire_at_deck", "naval"), "齐射命中甲板", "combat feedback names the completed action")
+equal(Theme.actionFeedbackTitle("unknown_action", "boarding"), "甲板接舷已更新", "unknown actions fall back to the next stage")
+local changes = Theme.feedbackChanges(
+    { provisions = 5, enemy_ship_hp = 500, player_hull = 110, deck_damage = 0 },
+    { provisions = 5, enemy_ship_hp = 325, player_hull = 96, deck_damage = 175 }
+)
+equal(#changes, 3, "one cannon action exposes all causal state changes")
+equal(changes[1], "敌舰 -175", "enemy damage is reported as an immediate loss")
+equal(changes[2], "船体 -14", "retaliation is reported alongside outgoing damage")
+equal(changes[3], "甲板破坏 +175", "part damage progress remains explicit")
+local upgradeChanges = Theme.feedbackChanges(
+    { timber = 10, ship_hull_max = 120 },
+    { timber = 0, ship_hull_max = 140 }
+)
+equal(upgradeChanges[1], "木材 -10", "upgrade feedback exposes its resource cost")
+equal(upgradeChanges[2], "最大耐久 +20", "upgrade feedback exposes its persistent payoff")
 
 equal(Theme.colors.separator[1], 76, "UI 3.0 keeps a dedicated quiet separator tone")
 
-print("V2 UI 3.1 theme OK: stage accents, instrument resources and action hierarchy passed")
+print("V2 UI 3.2 theme OK: semantic icons, action feedback and hierarchy passed")
