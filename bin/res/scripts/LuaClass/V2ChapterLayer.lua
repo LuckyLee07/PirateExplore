@@ -195,6 +195,11 @@ function V2ChapterLayer:init()
     self:addChild(self.dynamicNode)
     self:refresh()
     if os ~= nil and os.getenv ~= nil then
+        local qaFeedbackHold = tonumber(os.getenv("NEWPIRATE_V2_QA_FEEDBACK_HOLD") or "")
+        if V2Config:isQAProfile(self.controller:load().profile)
+            and qaFeedbackHold ~= nil and qaFeedbackHold > 0 then
+            self.qaFeedbackHold = math.min(10, qaFeedbackHold)
+        end
         local qaCue = os.getenv("NEWPIRATE_V2_AUDIO_CUE")
         if qaCue ~= nil and qaCue ~= "" then
             self:runAction(cc.Sequence:create(
@@ -463,10 +468,118 @@ function V2ChapterLayer:showActionFeedback(actionId, before, after, layout)
             cc.FadeTo:create(0.14, 255),
             cc.MoveBy:create(0.14, cc.p(0, 7))
         ),
-        cc.DelayTime:create(1.25),
+        cc.DelayTime:create(self.qaFeedbackHold or 1.25),
         cc.FadeTo:create(0.20, 0),
         cc.RemoveSelf:create()
     ))
+end
+
+local function addFeedbackStroke(parent, width, height, x, y, rotation, accentName)
+    local stroke = cc.LayerColor:create(color4(accentName, 236), width, height)
+    stroke:setAnchorPoint(cc.p(0.5, 0.5))
+    stroke:setPosition(cc.p(x, y))
+    stroke:setRotation(rotation or 0)
+    parent:addChild(stroke, 2)
+end
+
+function V2ChapterLayer:showSceneActionFeedback(actionId, before, after, layout)
+    if self.dynamicNode == nil or before.stage ~= after.stage
+        or (before.stage ~= "naval" and before.stage ~= "boarding") then
+        return
+    end
+    local items = V2UITheme.sceneFeedbackItems(actionId, before, after)
+    if #items == 0 then
+        return
+    end
+
+    local sceneCenterY = layout.art_y + layout.art_height * 0.49
+    if before.stage == "naval"
+        and (actionId == "fire_at_deck" or actionId == "fire_at_guns") then
+        local tracer = cc.LayerColor:create(color4("gold", 220), self.visibleSize.width * 0.30, 2)
+        tracer:setAnchorPoint(cc.p(0, 0.5))
+        tracer:setPosition(cc.p(self.visibleSize.width * 0.34, sceneCenterY + 4))
+        tracer:setRotation(-7)
+        tracer:setOpacity(0)
+        self.dynamicNode:addChild(tracer, 53)
+        tracer:runAction(cc.Sequence:create(
+            cc.FadeTo:create(0.05, 255),
+            cc.DelayTime:create(0.07),
+            cc.FadeTo:create(0.13, 0),
+            cc.RemoveSelf:create()
+        ))
+    end
+
+    for _, item in ipairs(items) do
+        local x = item.target == "enemy"
+            and self.visibleSize.width * 0.61 or self.visibleSize.width * 0.28
+        local y = sceneCenterY + (item.lane == "secondary" and -54 or 18)
+        local effect = cc.Node:create()
+        effect:setPosition(cc.p(x, y + 30))
+        effect:setCascadeOpacityEnabled(true)
+        effect:setOpacity(0)
+        self.dynamicNode:addChild(effect, 54)
+
+        if item.effect == "heal" then
+            addFeedbackStroke(effect, 30, 4, 0, 0, 0, item.accent)
+            addFeedbackStroke(effect, 30, 4, 0, 0, 90, item.accent)
+        elseif item.effect == "guard" then
+            addFeedbackStroke(effect, 34, 3, 0, 5, 0, item.accent)
+            addFeedbackStroke(effect, 24, 3, -10, -7, 55, item.accent)
+            addFeedbackStroke(effect, 24, 3, 10, -7, -55, item.accent)
+        elseif item.effect == "target" then
+            addFeedbackStroke(effect, 32, 2, 0, -14, 90, item.accent)
+            addFeedbackStroke(effect, 32, 2, 0, 14, 90, item.accent)
+            addFeedbackStroke(effect, 22, 2, -18, 0, 0, item.accent)
+            addFeedbackStroke(effect, 22, 2, 18, 0, 0, item.accent)
+        elseif item.effect == "impact" then
+            addFeedbackStroke(effect, 38, 3, -10, 2, -48, item.accent)
+            addFeedbackStroke(effect, 31, 3, 8, 1, 42, item.accent)
+            addFeedbackStroke(effect, 25, 2, 1, -4, 86, item.accent)
+        else
+            addFeedbackStroke(effect, 34, 3, 0, 0, -18, item.accent)
+        end
+
+        effect:runAction(cc.Sequence:create(
+            cc.FadeTo:create(0.06, 255),
+            cc.DelayTime:create(0.10),
+            cc.FadeTo:create(0.16, 0),
+            cc.RemoveSelf:create()
+        ))
+
+        local chipWidth = layout.compact and 96 or 108
+        local chipHeight = layout.compact and 42 or 46
+        local chipNode = cc.Node:create()
+        chipNode:setPosition(cc.p(0, -6))
+        chipNode:setCascadeOpacityEnabled(true)
+        chipNode:setOpacity(0)
+        self.dynamicNode:addChild(chipNode, 55)
+        local chip = addSurface(chipNode, x - chipWidth * 0.5, y - chipHeight * 0.5, chipWidth, chipHeight, {
+            fill = "shell_raised",
+            alpha = 238,
+            accent = item.accent,
+            accent_width = 3,
+        })
+        local value = createLabel(item.value, layout.compact and 18 or 21, color3(item.accent), nil, nil, BoldFont)
+        value:setAnchorPoint(cc.p(0.5, 0.5))
+        value:setPosition(cc.p(chipWidth * 0.5 + 2, chipHeight * 0.62))
+        chip:addChild(value, 4)
+        local caption = createLabel(item.label, layout.compact and 8 or 9, COLORS.muted)
+        caption:setAnchorPoint(cc.p(0.5, 0.5))
+        caption:setPosition(cc.p(chipWidth * 0.5 + 2, chipHeight * 0.23))
+        chip:addChild(caption, 4)
+        chipNode:runAction(cc.Sequence:create(
+            cc.Spawn:create(
+                cc.FadeTo:create(0.09, 255),
+                cc.MoveBy:create(0.09, cc.p(0, 6))
+            ),
+            cc.DelayTime:create(self.qaFeedbackHold or 0.52),
+            cc.Spawn:create(
+                cc.FadeTo:create(0.18, 0),
+                cc.MoveBy:create(0.18, cc.p(0, 10))
+            ),
+            cc.RemoveSelf:create()
+        ))
+    end
 end
 
 function V2ChapterLayer:addHeroArt(parent, state, layout)
@@ -734,6 +847,7 @@ function V2ChapterLayer:performAction(actionId)
     self:refresh()
     if ok then
         local layout = V2ChapterLayout.build(self.visibleSize.width, self.visibleSize.height)
+        self:showSceneActionFeedback(actionId, before, after, layout)
         self:showActionFeedback(actionId, before, after, layout)
     end
     return ok, message
@@ -896,6 +1010,35 @@ function V2ChapterLayer:addBattleStatus(parent, state, impact, layout, cardWidth
     end
 end
 
+function V2ChapterLayer:addOutcomeGroups(parent, groups, layout, cardWidth)
+    if #groups == 0 then
+        return
+    end
+    local gap = 8
+    local contentWidth = cardWidth - 48
+    local groupWidth = (contentWidth - gap * (#groups - 1)) / #groups
+    local groupHeight = layout.compact and 48 or 54
+    local baseY = layout.compact and 58 or 62
+    for index, group in ipairs(groups) do
+        local x = 24 + (index - 1) * (groupWidth + gap)
+        local panel = addSurface(parent, x, baseY, groupWidth, groupHeight, {
+            fill = "surface_soft",
+            alpha = 118,
+        })
+        local accent = cc.LayerColor:create(color4(group.accent or "muted", 226), groupWidth, 2)
+        accent:setPosition(cc.p(0, groupHeight - 2))
+        panel:addChild(accent, 3)
+        local label = createLabel(group.label, layout.compact and 8 or 9, color3(group.accent or "muted"), groupWidth - 16)
+        label:setAnchorPoint(cc.p(0, 1))
+        label:setPosition(cc.p(8, groupHeight - 8))
+        panel:addChild(label, 4)
+        local value = createLabel(group.value, layout.compact and 11 or 12, COLORS.ink, groupWidth - 16, cc.TEXT_ALIGNMENT_LEFT, BoldFont)
+        value:setAnchorPoint(cc.p(0, 1))
+        value:setPosition(cc.p(8, groupHeight - (layout.compact and 20 or 22)))
+        panel:addChild(value, 4)
+    end
+end
+
 function V2ChapterLayer:refresh()
     self.dynamicNode:removeAllChildren()
     local state = self.controller:load()
@@ -994,14 +1137,18 @@ function V2ChapterLayer:refresh()
     stageKindLabel:setPosition(cc.p(cardWidth - 22, cardHeight + 13))
     card:addChild(stageKindLabel, 5)
 
-    local moduleData = self.controller:getChapterData().by_id.ship_module[state.selected_module]
+    local chapterData = self.controller:getChapterData()
+    local moduleData = chapterData.by_id.ship_module[state.selected_module]
     self:addContextColumns(card, state, moduleData, layout, cardWidth, cardMetaY)
 
     local metaSeparator = cc.LayerColor:create(color4("separator", 72), cardWidth - 48, 1)
     metaSeparator:setPosition(cc.p(24, cardMetaY - (layout.compact and 40 or 44)))
     card:addChild(metaSeparator, 3)
 
-    local narrative = createLabel(self.controller:getNarrative(), layout.card_narrative_size, COLORS.ink, cardWidth - 48)
+    local outcomeGroups = V2UITheme.outcomeGroups(state, chapterData)
+    local narrativeSize = #outcomeGroups > 0
+        and math.max(12, layout.card_narrative_size - 2) or layout.card_narrative_size
+    local narrative = createLabel(self.controller:getNarrative(), narrativeSize, COLORS.ink, cardWidth - 48)
     narrative:setAnchorPoint(cc.p(0, 1))
     narrative:setPosition(cc.p(24, narrativeY))
     card:addChild(narrative)
@@ -1011,6 +1158,7 @@ function V2ChapterLayer:refresh()
     if battle then
         self:addBattleStatus(card, state, impact, layout, cardWidth)
     end
+    self:addOutcomeGroups(card, outcomeGroups, layout, cardWidth)
 
     local logSeparatorY = layout.card_result_y + (layout.compact and 22 or 26)
     local logSeparator = cc.LayerColor:create(color4("separator", 78), cardWidth - 48, 1)

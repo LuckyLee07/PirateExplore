@@ -232,4 +232,122 @@ function V2UITheme.feedbackChanges(before, after)
     return changes
 end
 
+local function stateDelta(before, after, key)
+    return (after[key] or 0) - (before[key] or 0)
+end
+
+local function signedValue(value)
+    return string.format("%s%d", value > 0 and "+" or "", value)
+end
+
+function V2UITheme.sceneFeedbackItems(actionId, before, after)
+    local items = {}
+    local function add(target, lane, label, value, accent, effect)
+        table.insert(items, {
+            target = target,
+            lane = lane,
+            label = label,
+            value = value,
+            accent = accent,
+            effect = effect,
+        })
+    end
+
+    if actionId == "fire_at_deck" or actionId == "fire_at_guns" then
+        local enemyLoss = -stateDelta(before, after, "enemy_ship_hp")
+        local playerLoss = -stateDelta(before, after, "player_hull")
+        if enemyLoss > 0 then
+            add("enemy", "primary", "敌舰受损", "-" .. enemyLoss, "danger", "impact")
+        end
+        local partKey = actionId == "fire_at_deck" and "deck_damage" or "gun_damage"
+        local partLabel = actionId == "fire_at_deck" and "甲板破坏" or "火炮压制"
+        local partGain = stateDelta(before, after, partKey)
+        if partGain > 0 then
+            add("enemy", "secondary", partLabel, signedValue(partGain), "gold", "status")
+        end
+        if playerLoss > 0 then
+            add("player", "primary", "我方船体", "-" .. playerLoss, "sea", "impact")
+        end
+    elseif actionId == "boarding_attack" or actionId == "boarding_rush" then
+        local enemyLoss = -stateDelta(before, after, "enemy_boarding_hp")
+        local crewLoss = -stateDelta(before, after, "crew_hp")
+        if enemyLoss > 0 then
+            add("enemy", "primary", "敌方部队", "-" .. enemyLoss, "danger", "impact")
+        end
+        if crewLoss > 0 then
+            add("player", "primary", "接舷队", "-" .. crewLoss, "sea", "impact")
+        end
+    elseif actionId == "medic_heal" then
+        local healed = stateDelta(before, after, "crew_hp")
+        if healed > 0 then
+            add("player", "primary", "紧急包扎", "+" .. healed, "success", "heal")
+        end
+    elseif actionId == "sailor_guard" then
+        add("player", "primary", "甲板防线", "已就绪", "sea", "guard")
+    elseif actionId == "gunner_mark_deck" then
+        add("enemy", "primary", "甲板弱点", "已锁定", "gold", "target")
+    end
+    return items
+end
+
+local function authoredValue(chapterData, group, id, key, fallback)
+    local groups = chapterData and chapterData.by_id
+    local row = groups and groups[group] and groups[group][id]
+    if row == nil then
+        return fallback or 0
+    end
+    if key == nil then
+        return row.value or fallback or 0
+    end
+    return row[key] or fallback or 0
+end
+
+function V2UITheme.outcomeGroups(state, chapterData)
+    local stage = state.stage
+    local hullBonus = authoredValue(chapterData, "balance", "hull_level_bonus")
+    local gunBonus = authoredValue(chapterData, "balance", "gun_level_bonus")
+    local hullCost = authoredValue(chapterData, "balance", "hull_upgrade_timber_cost")
+    local gunCost = authoredValue(chapterData, "balance", "guns_upgrade_iron_cost")
+    if stage == "settlement" then
+        local battleGold = authoredValue(chapterData, "reward", "reward_battle", "gold")
+        local battleTimber = authoredValue(chapterData, "reward", "reward_battle", "timber")
+        local battleIron = authoredValue(chapterData, "reward", "reward_battle", "iron")
+        local battleRune = authoredValue(chapterData, "reward", "reward_battle", "rune_dust")
+        local clueRune = authoredValue(chapterData, "reward", "reward_rune_clue", "rune_dust")
+        return {
+            { label = "追猎者战利品", value = string.format("金币 +%d\n木材 +%d", battleGold, battleTimber), accent = "gold" },
+            { label = "强化物资", value = string.format("铁料 +%d\n符文 +%d", battleIron, battleRune + clueRune), accent = "purple" },
+            { label = "返港可选", value = string.format("耐久 +%d\n或齐射 +%d", hullBonus, gunBonus), accent = "sea" },
+        }
+    elseif stage == "upgrade" then
+        local resources = state.resources or {}
+        return {
+            { label = "当前库存", value = string.format("木材 %d\n铁料 %d", resources.timber or 0, resources.iron or 0), accent = "muted" },
+            { label = "船体方案", value = string.format("木材 -%d\n耐久 +%d", hullCost, hullBonus), accent = "sea" },
+            { label = "火炮方案", value = string.format("铁料 -%d\n齐射 +%d", gunCost, gunBonus), accent = "gold" },
+        }
+    elseif stage == "failed" then
+        local retryCost = authoredValue(chapterData, "balance", "retry_supply_cost")
+        local recoverCost = authoredValue(chapterData, "balance", "port_recovery_gold_cost")
+        return {
+            { label = "失利原因", value = tostring(state.failure_reason or "战斗失利"), accent = "danger" },
+            { label = "原地重试", value = string.format("补给 -%d\n保留航线", retryCost), accent = "sea" },
+            { label = "返港恢复", value = string.format("金币 -%d\n清除损伤", recoverCost), accent = "gold" },
+        }
+    elseif stage == "complete" then
+        local upgradeValue = "船只强化\n已经完成"
+        if state.upgrades and state.upgrades.hull then
+            upgradeValue = string.format("耐久 +%d\n当前 %d", hullBonus, (state.ship or {}).hull_max or 0)
+        elseif state.upgrades and state.upgrades.guns then
+            upgradeValue = string.format("齐射 +%d\n火炮等级 %d", gunBonus, (state.ship or {}).gun_level or 0)
+        end
+        return {
+            { label = "本次升级", value = upgradeValue, accent = "success" },
+            { label = "线索已确认", value = "第一枚符文\n潮汐墓场", accent = "purple" },
+            { label = "下一航程", value = "寻找符文守卫\n准备再次出航", accent = "sea" },
+        }
+    end
+    return {}
+end
+
 return V2UITheme

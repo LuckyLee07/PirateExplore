@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate the structural UI 3.1 style contract and mainstream-iPhone evidence."""
+"""Validate the UI 3.3 style contract and mainstream-iPhone evidence."""
 
 from __future__ import annotations
 
@@ -23,6 +23,8 @@ for marker in (
     "function V2UITheme.battleIcon(kind)",
     "function V2UITheme.actionFeedbackTitle(actionId, nextStage)",
     "function V2UITheme.feedbackChanges(before, after)",
+    "function V2UITheme.sceneFeedbackItems(actionId, before, after)",
+    "function V2UITheme.outcomeGroups(state, chapterData)",
     'icon = "Images/V2/Icons/resource-gold.png"',
 ):
     if marker not in THEME:
@@ -38,8 +40,11 @@ for marker in (
     'local resourceName = createLabel(item.name',
     "local function addTintedIcon",
     "function V2ChapterLayer:showActionFeedback",
+    "function V2ChapterLayer:showSceneActionFeedback",
+    "function V2ChapterLayer:addOutcomeGroups",
     "function V2ChapterLayer:performAction(actionId)",
     'os.getenv("NEWPIRATE_V2_QA_ACTION")',
+    'os.getenv("NEWPIRATE_V2_QA_FEEDBACK_HOLD")',
     'cc.FadeTo:create(0.14, 255)',
     'local isBattleStage = state.stage == "naval" or state.stage == "boarding"',
     'createButtonFace(infoWidth, infoHeight, "utility"',
@@ -97,6 +102,14 @@ feedback_capture = ROOT / "docs/v2/ui32-iphone-action-feedback.png"
 if not feedback_capture.is_file() or png_dimensions(feedback_capture) != (1206, 2622):
     raise SystemExit("UI 3.2 runtime action feedback capture is missing")
 
+scene_feedback = ROOT / "docs/v2/ui33-iphone-scene-feedback.png"
+if not scene_feedback.is_file() or png_dimensions(scene_feedback) != (1254, 890):
+    raise SystemExit("UI 3.3 scene-local combat feedback evidence is missing")
+
+result_groups = ROOT / "docs/v2/ui33-iphone-result-groups.png"
+if not result_groups.is_file() or png_dimensions(result_groups) != (1272, 672):
+    raise SystemExit("UI 3.3 settlement, upgrade and recovery evidence is missing")
+
 for profile in ("qa_route_event", "qa_black_tide", "qa_whisper", "qa_curse"):
     if f"{profile} = true" not in CONFIG or f'profile == "{profile}"' not in STATE:
         raise SystemExit(f"UI 3.2 intermediate-state profile is missing: {profile}")
@@ -125,6 +138,7 @@ for marker in (
     "克制的航海日志",
     "UI 3.1",
     "UI 3.2",
+    "UI 3.3",
     "主流 iPhone",
     "纵向航程",
     "指令编号",
@@ -142,4 +156,4 @@ for marker in (
 if "python3 tools/v2/validate_ui3_style.py" not in PHASE4:
     raise SystemExit("UI 3.0 validation is not in the Phase 4 chain")
 
-print("V2 UI 3.2 style OK: semantic instruments, causal feedback and mainstream-iPhone captures")
+print("V2 UI 3.3 style OK: scene feedback, result groups and mainstream-iPhone captures")

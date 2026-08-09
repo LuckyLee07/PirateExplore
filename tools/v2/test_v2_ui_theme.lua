@@ -1,6 +1,7 @@
 package.path = "bin/res/scripts/?.lua;bin/res/scripts/?/init.lua;" .. package.path
 
 local Theme = require "LuaClass/V2UITheme"
+local State = require "LuaClass/V2ChapterState"
 
 local function equal(actual, expected, message)
     if actual ~= expected then
@@ -49,6 +50,37 @@ local upgradeChanges = Theme.feedbackChanges(
 equal(upgradeChanges[1], "木材 -10", "upgrade feedback exposes its resource cost")
 equal(upgradeChanges[2], "最大耐久 +20", "upgrade feedback exposes its persistent payoff")
 
+local cannonItems = Theme.sceneFeedbackItems(
+    "fire_at_guns",
+    { enemy_ship_hp = 500, player_hull = 110, gun_damage = 0 },
+    { enemy_ship_hp = 370, player_hull = 96, gun_damage = 130 }
+)
+equal(#cannonItems, 3, "cannon action creates target, part and retaliation scene feedback")
+equal(cannonItems[1].value, "-130", "enemy scene feedback uses the real ship loss")
+equal(cannonItems[2].label, "火炮压制", "part feedback names the affected subsystem")
+equal(cannonItems[3].target, "player", "retaliation feedback returns to the player side")
+
+local boardingItems = Theme.sceneFeedbackItems(
+    "boarding_attack",
+    { enemy_boarding_hp = 65, crew_hp = 100 },
+    { enemy_boarding_hp = 35, crew_hp = 82 }
+)
+equal(boardingItems[1].value, "-30", "boarding feedback exposes enemy loss")
+equal(boardingItems[2].value, "-18", "boarding feedback exposes crew loss")
+
+local settlementGroups = Theme.outcomeGroups(State.new("qa_settlement"), State.getData())
+equal(#settlementGroups, 3, "settlement is grouped into three scan targets")
+equal(settlementGroups[1].value, "金币 +35\n木材 +10", "settlement reward group uses authored values")
+equal(settlementGroups[2].value, "铁料 +15\n符文 +6", "battle and rune rewards stay causally combined")
+
+local upgradeGroups = Theme.outcomeGroups(State.new("qa_upgrade"), State.getData())
+equal(upgradeGroups[2].value, "木材 -10\n耐久 +20", "hull choice shows cost and payoff together")
+equal(upgradeGroups[3].value, "铁料 -15\n齐射 +25", "gun choice shows cost and payoff together")
+
+local failedGroups = Theme.outcomeGroups(State.new("qa_failed"), State.getData())
+equal(failedGroups[2].value, "补给 -1\n保留航线", "retry group explains cost and retention")
+equal(failedGroups[3].value, "金币 -5\n清除损伤", "port recovery group explains cost and reset")
+
 equal(Theme.colors.separator[1], 76, "UI 3.0 keeps a dedicated quiet separator tone")
 
-print("V2 UI 3.2 theme OK: semantic icons, action feedback and hierarchy passed")
+print("V2 UI 3.3 theme OK: scene feedback, result groups and hierarchy passed")
