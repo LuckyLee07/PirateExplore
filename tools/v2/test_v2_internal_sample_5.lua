@@ -54,11 +54,13 @@ contains(State.getNarrative(direct), "单次齐射 +25", "upgrade QA profile ren
 
 local hull = State.new("qa_upgrade")
 apply(hull, "upgrade_hull")
+apply(hull, "promote_gunner")
 equal(hull.resources.timber, 0, "hull conversion spends the previewed timber")
 equal(hull.ship.hull_max, 140, "hull conversion grants the previewed durability")
 
 local guns = State.new("qa_upgrade")
 apply(guns, "upgrade_guns")
+apply(guns, "promote_sailor")
 equal(guns.resources.iron, 0, "gun conversion spends the previewed iron")
 equal(guns.ship.gun_level, 1, "gun conversion grants the previewed gun level")
 contains(State.getNarrative(guns), "单次齐射伤害 +25", "gun completion agrees with the pre-commitment preview")

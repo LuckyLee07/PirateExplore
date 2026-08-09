@@ -41,6 +41,7 @@ local stageStatus = {
     rune_clue = { label = "发现符文", detail = "第一枚符文线索等待确认", accent = "purple" },
     settlement = { label = "等待返港", detail = "战利品已经清点，可以返回皇家港", accent = "gold" },
     upgrade = { label = "可以强化", detail = "本次战利品足够完成首次船只升级", accent = "gold" },
+    crew_growth = { label = "等待任命", detail = "选择一名首席船员，让专长进入下一次远航", accent = "sea" },
     complete = { label = "首航完成", detail = "新的远航目标已经记录", accent = "success" },
     tide_route_choice = { label = "墓场航线", detail = "成长正在改变两条航道的实际代价", accent = "sea" },
     tide_guardian = { label = "潮盾交战", detail = "沉锚守卫要求用船体或火炮成长破盾", accent = "danger" },
@@ -65,6 +66,12 @@ local function copy(item)
         result[key] = value
     end
     return result
+end
+
+local function crewUpgradeEffectText(upgrade)
+    if upgrade == nil then return nil end
+    local sign = upgrade.effect_kind == "ram_hull_reduction" and "-" or "+"
+    return string.format("%s %s%d", upgrade.effect_label, sign, upgrade.effect_value)
 end
 
 function V2PortModel.section(sectionId)
@@ -193,10 +200,15 @@ end
 
 function V2PortModel.crew(state, data)
     local result = {}
+    local promotions = {}
+    for _, promotion in ipairs(data.crew_upgrade or {}) do
+        promotions[promotion.crew_id] = promotion
+    end
     for index, crewId in ipairs(state.crew or {}) do
         local crew = rowById(data, "crew", crewId)
         if crew ~= nil then
             local action = rowById(data, "battle_action", crew.active_action)
+            local promotion = promotions[crew.id]
             local activeDetail = action and action.description or nil
             if crew.active_action == "reveal_route_intel" then
                 activeDetail = string.format("消耗 %d 份补给，揭示两条航线的风险与后果", balanceValue(data, "navigator_intel_cost"))
@@ -212,8 +224,39 @@ function V2PortModel.crew(state, data)
                 active_detail = activeDetail or "在对应远航阶段开放",
                 passive_trait = crew.passive_trait,
                 accent = roleAccents[crew.role] or "sea",
+                promotion_id = promotion and promotion.id or nil,
+                promotion_title = promotion and promotion.title or nil,
+                promotion_effect = crewUpgradeEffectText(promotion),
+                promoted = promotion ~= nil and (state.upgrades or {}).crew == promotion.id,
             })
         end
+    end
+    return result
+end
+
+function V2PortModel.crewUpgrades(state, data)
+    local result = {}
+    for _, promotion in ipairs(data.crew_upgrade or {}) do
+        local crew = rowById(data, "crew", promotion.crew_id) or {}
+        table.insert(result, {
+            id = promotion.id,
+            crew_id = promotion.crew_id,
+            action_id = promotion.action_id,
+            name = crew.name or promotion.crew_id,
+            role = roleLabels[crew.role] or crew.role,
+            title = promotion.title,
+            effect = crewUpgradeEffectText(promotion),
+            description = promotion.description,
+            active_skill = crew.active_skill,
+            strategy = promotion.effect_kind == "barrage_damage"
+                and "沉锚守卫 · 远距齐射"
+                or "沉锚守卫 · 撞断潮锚",
+            strategy_icon = promotion.effect_kind == "barrage_damage"
+                and "Images/V2/Icons/battle-cannon.png"
+                or "Images/V2/Icons/battle-hull.png",
+            accent = promotion.accent or roleAccents[crew.role] or "sea",
+            selected = (state.upgrades or {}).crew == promotion.id,
+        })
     end
     return result
 end
@@ -256,6 +299,10 @@ local actionsBySection = {
         select_heavy_guns = true,
         upgrade_hull = true,
         upgrade_guns = true,
+    },
+    crew = {
+        promote_gunner = true,
+        promote_sailor = true,
     },
     cargo = {
         return_to_port = true,

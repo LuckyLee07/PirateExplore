@@ -575,7 +575,86 @@ function V2PortLayer:addShipSection(sheet, state, data, actions, layout, width, 
     self:addActions(sheet, state, actions, layout.compact and 44 or 66, layout, width)
 end
 
-function V2PortLayer:addCrewSection(sheet, state, data, layout, width, height)
+function V2PortLayer:addCrewGrowthSection(sheet, state, data, actions, layout, width, height)
+    self:addSheetHeader(sheet, "首席任命", "只任命一人；效果永久保留并进入潮汐墓场", layout, width, height)
+    local candidates = V2PortModel.crewUpgrades(state, data)
+    local gap = 12
+    local cardWidth = (width - 48 - gap) * 0.5
+    local cardY = layout.compact and 92 or 104
+    local cardHeight = height - 78 - cardY
+    for index, item in ipairs(candidates) do
+        local x = 24 + (index - 1) * (cardWidth + gap)
+        local card = addSurface(sheet, x, cardY, cardWidth, cardHeight, {
+            fill = "surface_soft",
+            alpha = 118,
+            accent = item.accent,
+            accent_width = 4,
+            border = item.accent,
+            border_alpha = 54,
+        })
+        local badge = addSurface(card, 16, cardHeight - 64, 46, 46, {
+            fill = item.accent, alpha = 224,
+        })
+        local initial = createLabel(string.sub(item.name, 1, 3), 15, color3("shell"), nil, nil, BoldFont)
+        initial:setAnchorPoint(cc.p(0.5, 0.5))
+        initial:setPosition(cc.p(23, 23))
+        badge:addChild(initial, 3)
+        local candidate = createLabel(string.format("候选 %02d  ·  %s", index, item.role), 9, color3(item.accent))
+        candidate:setAnchorPoint(cc.p(0, 0.5))
+        candidate:setPosition(cc.p(76, cardHeight - 29))
+        card:addChild(candidate, 3)
+        local name = createLabel(item.name, 19, COLORS.ink, cardWidth - 94, nil, BoldFont)
+        name:setAnchorPoint(cc.p(0, 0.5))
+        name:setPosition(cc.p(76, cardHeight - 52))
+        card:addChild(name, 3)
+
+        local appointmentCaption = createLabel("拟任职位", 8, COLORS.muted)
+        appointmentCaption:setAnchorPoint(cc.p(0, 1))
+        appointmentCaption:setPosition(cc.p(16, cardHeight - 92))
+        card:addChild(appointmentCaption, 3)
+        local title = createLabel(item.title, 18, color3(item.accent), cardWidth - 32, nil, BoldFont)
+        title:setAnchorPoint(cc.p(0, 1))
+        title:setPosition(cc.p(16, cardHeight - 114))
+        card:addChild(title, 3)
+        local currentSkill = createLabel("现有技能  ·  " .. item.active_skill, 10, COLORS.muted, cardWidth - 32)
+        currentSkill:setAnchorPoint(cc.p(0, 1))
+        currentSkill:setPosition(cc.p(16, cardHeight - 154))
+        card:addChild(currentSkill, 3)
+
+        local effectCaption = createLabel("下一航程实际效果", 8, COLORS.muted)
+        effectCaption:setAnchorPoint(cc.p(0, 1))
+        effectCaption:setPosition(cc.p(16, cardHeight * 0.57))
+        card:addChild(effectCaption, 3)
+        local effect = createLabel(item.effect, layout.compact and 13 or 15, color3(item.accent), cardWidth - 32, nil, BoldFont)
+        effect:setAnchorPoint(cc.p(0, 1))
+        effect:setPosition(cc.p(16, cardHeight * 0.50))
+        card:addChild(effect, 3)
+        local description = createLabel(item.description, layout.compact and 9 or 10, COLORS.ink, cardWidth - 32)
+        description:setAnchorPoint(cc.p(0, 1))
+        description:setPosition(cc.p(16, cardHeight * 0.36))
+        card:addChild(description, 3)
+        local strategyCaption = createLabel("战术落点", 8, COLORS.muted)
+        strategyCaption:setAnchorPoint(cc.p(0, 0.5))
+        strategyCaption:setPosition(cc.p(16, 100))
+        card:addChild(strategyCaption, 3)
+        addTintedIcon(card, item.strategy_icon, 25, 72, 17, item.accent, 220)
+        local strategy = createLabel(item.strategy, 10, color3(item.accent), cardWidth - 58, nil, BoldFont)
+        strategy:setAnchorPoint(cc.p(0, 0.5))
+        strategy:setPosition(cc.p(44, 72))
+        card:addChild(strategy, 3)
+        local lock = createLabel("一次任命  ·  永久保留", 9, COLORS.muted)
+        lock:setAnchorPoint(cc.p(0, 0.5))
+        lock:setPosition(cc.p(16, 18))
+        card:addChild(lock, 3)
+    end
+    self:addActions(sheet, state, actions, layout.compact and 34 or 42, layout, width)
+end
+
+function V2PortLayer:addCrewSection(sheet, state, data, actions, layout, width, height)
+    if state.stage == "crew_growth" then
+        self:addCrewGrowthSection(sheet, state, data, actions, layout, width, height)
+        return
+    end
     self:addSheetHeader(sheet, "核心船员", "身份、主动技能和远航特性保持一眼可读", layout, width, height)
     local crew = V2PortModel.crew(state, data)
     local gap = 12
@@ -587,7 +666,12 @@ function V2PortLayer:addCrewSection(sheet, state, data, layout, width, height)
         local x = 24 + column * (cardWidth + gap)
         local y = height - 78 - cardHeight - row * (cardHeight + gap)
         local card = addSurface(sheet, x, y, cardWidth, cardHeight, {
-            fill = "surface_soft", alpha = 108, accent = item.accent, accent_width = 4,
+            fill = item.promoted and "shell_raised" or "surface_soft",
+            alpha = item.promoted and 214 or 108,
+            accent = item.accent,
+            accent_width = item.promoted and 6 or 4,
+            border = item.promoted and item.accent or nil,
+            border_alpha = 72,
         })
         local badge = addSurface(card, 16, cardHeight - 58, 42, 42, {
             fill = item.accent, alpha = 220,
@@ -596,7 +680,10 @@ function V2PortLayer:addCrewSection(sheet, state, data, layout, width, height)
         initial:setAnchorPoint(cc.p(0.5, 0.5))
         initial:setPosition(cc.p(21, 21))
         badge:addChild(initial, 3)
-        local indexLabel = createLabel(item.index .. "  ·  " .. item.role, 9, color3(item.accent))
+        local identity = item.promoted
+            and ("已任命  ·  " .. item.promotion_title)
+            or (item.index .. "  ·  " .. item.role)
+        local indexLabel = createLabel(identity, 9, color3(item.accent))
         indexLabel:setAnchorPoint(cc.p(0, 0.5))
         indexLabel:setPosition(cc.p(70, cardHeight - 27))
         card:addChild(indexLabel, 3)
@@ -625,11 +712,18 @@ function V2PortLayer:addCrewSection(sheet, state, data, layout, width, height)
         action:setPosition(cc.p(16, cardHeight - 171))
         card:addChild(action, 3)
 
-        local passiveCaption = createLabel("远航特性", 8, COLORS.muted)
+        local passiveCaption = createLabel(item.promoted and "任命效果" or "远航特性", 8, COLORS.muted)
         passiveCaption:setAnchorPoint(cc.p(0, 1))
         passiveCaption:setPosition(cc.p(16, cardHeight - 210))
         card:addChild(passiveCaption, 3)
-        local passive = createLabel(item.passive_trait, layout.compact and 9 or 10, COLORS.ink, cardWidth - 32)
+        local passive = createLabel(
+            item.promoted and item.promotion_effect or item.passive_trait,
+            layout.compact and 9 or 10,
+            item.promoted and color3(item.accent) or COLORS.ink,
+            cardWidth - 32,
+            nil,
+            item.promoted and BoldFont or nil
+        )
         passive:setAnchorPoint(cc.p(0, 1))
         passive:setPosition(cc.p(16, cardHeight - 230))
         card:addChild(passive, 3)
@@ -844,7 +938,7 @@ function V2PortLayer:refresh()
     if self.activeSection == "ship" then
         self:addShipSection(sheet, state, data, actions, layout, sheetWidth, layout.sheet_height)
     elseif self.activeSection == "crew" then
-        self:addCrewSection(sheet, state, data, layout, sheetWidth, layout.sheet_height)
+        self:addCrewSection(sheet, state, data, actions, layout, sheetWidth, layout.sheet_height)
     elseif self.activeSection == "cargo" then
         self:addCargoSection(sheet, state, data, actions, layout, sheetWidth, layout.sheet_height)
     else

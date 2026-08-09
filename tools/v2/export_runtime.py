@@ -21,6 +21,7 @@ TABLES = (
     "event",
     "event_choice",
     "crew",
+    "crew_upgrade",
     "ship_module",
     "enemy",
     "reward",

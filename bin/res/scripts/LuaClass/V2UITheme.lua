@@ -38,6 +38,7 @@ local stageAccents = {
     rune_clue = "purple",
     settlement = "gold",
     upgrade = "gold",
+    crew_growth = "sea",
     complete = "success",
     tide_route_choice = "sea",
     tide_guardian = "danger",
@@ -60,6 +61,7 @@ local stageKinds = {
     rune_clue = "符文发现",
     settlement = "战利品清点",
     upgrade = "船坞强化",
+    crew_growth = "首席任命",
     complete = "首航完成",
     tide_route_choice = "成长航线",
     tide_guardian = "潮盾破袭",
@@ -83,6 +85,7 @@ local progressByStage = {
     rune_clue = 5,
     settlement = 5,
     upgrade = 5,
+    crew_growth = 5,
     complete = 5,
     tide_route_choice = 2,
     tide_guardian = 4,
@@ -166,7 +169,7 @@ function V2UITheme.actionRole(stage, actionId, actionIndex, actionCount, selecte
         return "primary"
     end
     if stage == "upgrade" or stage == "route_choice" or stage == "tide_route_choice"
-        or stage == "harbor" then
+        or stage == "harbor" or stage == "crew_growth" then
         return "choice"
     end
     if actionIndex == 1 and actionCount > 2 then
@@ -227,6 +230,8 @@ local actionFeedbackTitles = {
     return_to_port = "战利品已入库",
     upgrade_hull = "船体强化完成",
     upgrade_guns = "火炮强化完成",
+    promote_gunner = "炮术长任命完成",
+    promote_sailor = "大副任命完成",
     retry_battle = "战斗状态已重置",
     recover_at_port = "港口整备完成",
     prepare_next_voyage = "成长已装载",
@@ -376,6 +381,14 @@ function V2UITheme.outcomeGroups(state, chapterData)
             { label = "当前库存", value = string.format("木材 %d\n铁料 %d", resources.timber or 0, resources.iron or 0), accent = "muted" },
             { label = "船体方案", value = string.format("木材 -%d\n耐久 +%d", hullCost, hullBonus), accent = "sea" },
             { label = "火炮方案", value = string.format("铁料 -%d\n齐射 +%d", gunCost, gunBonus), accent = "gold" },
+        }
+    elseif stage == "crew_growth" then
+        local gunner = authoredValue(chapterData, "crew_upgrade", "crew_upgrade_gunner", "effect_value")
+        local sailor = authoredValue(chapterData, "crew_upgrade", "crew_upgrade_sailor", "effect_value")
+        return {
+            { label = "任命席位", value = "首席船员 1 名\n选择后永久保留", accent = "muted" },
+            { label = "炮术长 · 罗克", value = string.format("远距破盾 +%d\n稳定齐射方案", gunner), accent = "gold" },
+            { label = "大副 · 米克", value = string.format("撞锚自损 -%d\n稳定近身方案", sailor), accent = "sea" },
         }
     elseif stage == "failed" then
         local retryCost = authoredValue(chapterData, "balance", "retry_supply_cost")

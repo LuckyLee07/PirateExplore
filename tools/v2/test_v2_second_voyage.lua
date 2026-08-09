@@ -53,6 +53,7 @@ truthy(hull.claimed_rewards.reward_tide_guardian, "guardian reward is claimed on
 
 local guns = State.new("qa_upgrade")
 apply(guns, "upgrade_guns")
+apply(guns, "promote_sailor")
 apply(guns, "prepare_next_voyage")
 apply(guns, "start_voyage")
 contains(actionLabel(guns, "choose_tide_breaker"), "航损-30", "non-hull growth leaves breaker damage intact")

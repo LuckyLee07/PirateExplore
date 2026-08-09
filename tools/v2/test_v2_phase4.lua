@@ -24,7 +24,7 @@ local function trackedApply(state, action)
     return event
 end
 
-equal(#Data.telemetry_event, 23, "Phase 4 exports the extended local event contract")
+equal(#Data.telemetry_event, 24, "Phase 4 exports the extended local event contract")
 equal(#Data.quality_gate, 10, "Phase 4 exports every decision and quality gate")
 
 local state = State.new("qa_fresh")
@@ -56,6 +56,9 @@ equal(victoryEvent.event_id, "battle_result", "the winning action is recorded as
 trackedApply(state, "take_rune_clue")
 trackedApply(state, "return_to_port")
 trackedApply(state, "upgrade_hull")
+local crewEvent = trackedApply(state, "promote_gunner")
+equal(crewEvent.event_id, "crew_upgrade_selected", "crew appointment has a distinct event")
+equal(crewEvent.crew_upgrade, "crew_upgrade_gunner", "crew appointment records the retained choice")
 
 local summary = Telemetry.getSummary(state)
 truthy(summary.completed, "session summary identifies a completed sample")
@@ -66,6 +69,7 @@ equal(summary.naval_actions, 3, "two volleys and boarding choice are counted")
 equal(summary.boarding_actions, 2, "non-terminal boarding actions are counted")
 equal(summary.battle_results, 1, "terminal boarding action is counted once")
 equal(summary.invalid_actions, 0, "valid completion has no friction events")
+equal(summary.crew_growth_decisions, 1, "session summary counts the one retained crew appointment")
 
 local nextVoyageEvent = trackedApply(state, "prepare_next_voyage")
 equal(nextVoyageEvent.event_id, "next_voyage_prepared", "retained-growth preparation has a distinct event")

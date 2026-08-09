@@ -170,6 +170,7 @@ local function classify(action, before, state, success)
     if action == "return_to_port" then return "return_completed" end
     if action == "return_from_tide" then return "second_voyage_completed" end
     if action == "upgrade_hull" or action == "upgrade_guns" then return "upgrade_completed" end
+    if action == "promote_gunner" or action == "promote_sailor" then return "crew_upgrade_selected" end
     if action == "prepare_next_voyage" then return "next_voyage_prepared" end
     if action == "restart_chapter" then return "chapter_restarted" end
     return "invalid_action"
@@ -201,6 +202,7 @@ function V2Telemetry.record(state, action, before, success, message)
         route_intel = state.flags and state.flags.route_intel == true,
         module_preference = state.selected_module,
         voyage_count = state.voyage_count or 0,
+        crew_upgrade = state.upgrades and state.upgrades.crew,
         player_hull = battle.player_hull,
         enemy_ship_hp = battle.enemy_ship_hp,
         deck_damage = battle.deck_damage,
@@ -227,6 +229,7 @@ function V2Telemetry.getSummary(state)
         boarding_actions = 0,
         tide_guardian_actions = 0,
         port_logistics_actions = 0,
+        crew_growth_decisions = 0,
         invalid_actions = 0,
         battle_results = 0,
         completed = state.stage == "complete" or state.stage == "tide_complete",
@@ -244,6 +247,9 @@ function V2Telemetry.getSummary(state)
         if event.event_id == "invalid_action" then summary.invalid_actions = summary.invalid_actions + 1 end
         if event.event_id == "port_logistics_used" then
             summary.port_logistics_actions = summary.port_logistics_actions + 1
+        end
+        if event.event_id == "crew_upgrade_selected" then
+            summary.crew_growth_decisions = summary.crew_growth_decisions + 1
         end
         if event.event_id == "battle_result" or event.event_id == "tide_guardian_result" then
             summary.battle_results = summary.battle_results + 1

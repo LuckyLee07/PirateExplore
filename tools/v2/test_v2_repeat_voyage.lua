@@ -67,6 +67,7 @@ equal(hull.stage, "tide_rune_clue", "hull growth unlocks a one-action ram strate
 local guns = State.new("qa_upgrade")
 apply(guns, "upgrade_guns")
 equal(guns.ship.gun_level, 1, "gun upgrade reaches completion")
+apply(guns, "promote_sailor")
 apply(guns, "prepare_next_voyage")
 local provisionsBefore = guns.resources.provisions
 advanceToTideGuardian(guns, "choose_tide_cannon")

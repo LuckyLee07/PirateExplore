@@ -11,6 +11,7 @@ presentation_boarding,combat,boarding,Images/V2/ui2_combat.png,,,danger,enemy_he
 presentation_rune,rune,rune_clue,Images/V2/ui2_rune.png,,,purple,rune_pulse,victory
 presentation_settlement,rune,settlement,Images/V2/ui2_rune.png,,,gold,reward_reveal,victory
 presentation_upgrade,harbor,upgrade,Images/V2/ui2_harbor.png,,,gold,reward_reveal,victory
+presentation_crew_growth,harbor,crew_growth,Images/V2/ui2_harbor.png,,,sea,reward_reveal,victory
 presentation_complete,harbor,complete,Images/V2/ui2_harbor.png,,,gold,bottle_float,victory
 presentation_failed,combat,failed,Images/V2/ui2_combat.png,,,danger,damage_shake,sinking
 presentation_tide_route,map,tide_route_choice,Images/V2/ui2_exploration.png,,,sea,map_drift,wave

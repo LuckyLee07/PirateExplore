@@ -1,0 +1,3 @@
+id,crew_id,title,action_id,effect_kind,effect_value,effect_label,description,accent
+crew_upgrade_gunner,crew_gunner,炮术长,promote_gunner,barrage_damage,20,远距齐射潮盾伤害,罗克统一校准全舰炮位，让每次远距破盾获得额外伤害,gold
+crew_upgrade_sailor,crew_sailor,大副,promote_sailor,ram_hull_reduction,10,撞锚船体代价,米克重排甲板与锚链人手，降低撞断潮锚时的船体损伤,sea

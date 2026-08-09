@@ -17,6 +17,28 @@ local function moduleData(state)
     return ChapterData.by_id.ship_module[state.selected_module]
 end
 
+local function selectedCrewUpgrade(state)
+    local upgradeId = state.upgrades and state.upgrades.crew
+    return upgradeId and ChapterData.by_id.crew_upgrade[upgradeId] or nil
+end
+
+local function crewUpgradeForAction(actionId)
+    for _, upgrade in ipairs(ChapterData.crew_upgrade or {}) do
+        if upgrade.action_id == actionId then return upgrade end
+    end
+    return nil
+end
+
+local function crewUpgradeEffectText(upgrade)
+    local sign = upgrade.effect_kind == "ram_hull_reduction" and "-" or "+"
+    return string.format("%s %s%d", upgrade.effect_label, sign, upgrade.effect_value)
+end
+
+local function crewUpgradeEffect(state, upgradeId)
+    local upgrade = selectedCrewUpgrade(state)
+    return upgrade and upgrade.id == upgradeId and upgrade.effect_value or 0
+end
+
 local function supplyCapacity(state)
     return balanceValue("initial_provisions")
         + (moduleData(state).supply_capacity_modifier or 0)
@@ -92,6 +114,7 @@ V2ChapterState.STAGES = {
     rune_clue = true,
     settlement = true,
     upgrade = true,
+    crew_growth = true,
     complete = true,
     tide_route_choice = true,
     tide_guardian = true,
@@ -219,6 +242,15 @@ local function tideRouteSupplyCost(state)
     local route = routeData("tide_cannon_pass")
     return math.max(0, route.supply_cost
         - state.ship.gun_level * balanceValue("tide_gun_route_reduction"))
+end
+
+local function tideDamagePreview(state, potential)
+    local remaining = (state.battle or {}).tide_shield or potential
+    local actual = math.min(remaining, potential)
+    if potential > actual then
+        return string.format("%d（火力%d）", actual, potential)
+    end
+    return tostring(actual)
 end
 
 local function resetTideGuardian(state)
@@ -504,6 +536,23 @@ function V2ChapterState.new(profile)
         applyReward(state, "reward_rune_clue")
         state.objective = "使用本次远航资源完成一次船只升级"
         state.last_result = "追猎者战利品已入库，船坞开放首次升级。"
+    elseif profile == "qa_crew_growth" then
+        state.stage = "crew_growth"
+        state.current_node = "node_port"
+        state.route = "safe_route"
+        state.flags.raider_defeated = true
+        state.flags.chapter_01_complete = true
+        state.chapter_complete = true
+        state.voyage_count = 1
+        applyReward(state, "reward_battle")
+        applyReward(state, "reward_rune_clue")
+        state.resources.timber = state.resources.timber - balanceValue("hull_upgrade_timber_cost")
+        state.ship.hull_level = 1
+        state.ship.hull_max = calculateHullMax(state)
+        state.upgrades.hull = true
+        state.next_voyage_objective = "前往潮汐墓场寻找沉锚符文守卫"
+        state.objective = "任命一名首席船员，让他的专长进入下一次远航"
+        state.last_result = "旗舰改造已经完成；罗克与米克分别提交了破盾方案。"
     elseif profile == "qa_complete" then
         state.stage = "complete"
         state.current_node = "node_port"
@@ -518,9 +567,10 @@ function V2ChapterState.new(profile)
         state.ship.hull_level = 1
         state.ship.hull_max = calculateHullMax(state)
         state.upgrades.hull = true
+        state.upgrades.crew = "crew_upgrade_gunner"
         state.next_voyage_objective = "前往潮汐墓场寻找符文守卫"
         state.objective = "查看下一次远航目标"
-        state.last_result = "首航已经完成，船体强化也已安装完毕。"
+        state.last_result = "首航完成：船体强化已经安装，罗克已被任命为炮术长。"
     elseif profile == "qa_tide_route" then
         prepareTideQAState(state, "tide_route_choice")
         state.objective = "根据已有船体成长选择进入潮汐墓场的航道"
@@ -534,6 +584,19 @@ function V2ChapterState.new(profile)
         resetTideGuardian(state)
         state.objective = "用船体或火炮成长击破沉锚守卫的潮盾"
         state.last_result = "破潮水道的冲击被强化船体吸收，沉锚守卫已经苏醒。"
+    elseif profile == "qa_tide_guardian_gunner" or profile == "qa_tide_guardian_sailor" then
+        prepareTideQAState(state, "tide_guardian")
+        state.route = "tide_breaker_channel"
+        state.flags.tide_route_chosen = true
+        state.flags.tide_breaker_chosen = true
+        state.voyage_hull_damage = tideRouteHullDamage(state)
+        state.upgrades.crew = profile == "qa_tide_guardian_gunner"
+            and "crew_upgrade_gunner" or "crew_upgrade_sailor"
+        resetTideGuardian(state)
+        state.objective = "验证首席船员任命对沉锚守卫破盾方案的实际影响"
+        state.last_result = profile == "qa_tide_guardian_gunner"
+            and "炮术长罗克已经校准舰炮，远距破盾伤害获得加成。"
+            or "大副米克已经加固锚链，撞锚船体代价得到减免。"
     elseif profile == "qa_tide_rune" then
         prepareTideQAState(state, "tide_rune_clue")
         state.route = "tide_breaker_channel"
@@ -611,6 +674,7 @@ local routeRequiredStages = {
     rune_clue = true,
     settlement = true,
     upgrade = true,
+    crew_growth = true,
     complete = true,
     tide_guardian = true,
     tide_rune_clue = true,
@@ -758,6 +822,23 @@ local actionsByStage = {
 }
 
 function V2ChapterState.getActions(state)
+    if state.stage == "crew_growth"
+        or (state.stage == "complete" and selectedCrewUpgrade(state) == nil) then
+        local actions = {}
+        for _, upgrade in ipairs(ChapterData.crew_upgrade or {}) do
+            table.insert(actions, {
+                id = upgrade.action_id,
+                label = string.format(
+                    "任命%s为%s\n%s",
+                    ChapterData.by_id.crew[upgrade.crew_id].name,
+                    upgrade.title,
+                    crewUpgradeEffectText(upgrade)
+                ),
+            })
+        end
+        return actions
+    end
+
     if state.stage == "complete" then
         local action = V2Config:isQAProfile(state.profile)
             and "restart_chapter" or "prepare_next_voyage"
@@ -905,15 +986,19 @@ function V2ChapterState.getActions(state)
         local ram = battleAction("tide_ram")
         local barrageDamage = barrage.damage
             + state.ship.gun_level * balanceValue("tide_barrage_gun_bonus")
+            + crewUpgradeEffect(state, "crew_upgrade_gunner")
         local ramDamage = ram.damage
             + state.ship.hull_level * balanceValue("tide_ram_hull_bonus")
         local ramCost = math.max(0, ram.retaliation
-            - state.ship.hull_level * balanceValue("tide_ram_hull_reduction"))
+            - state.ship.hull_level * balanceValue("tide_ram_hull_reduction")
+            - crewUpgradeEffect(state, "crew_upgrade_sailor"))
         for _, action in ipairs(actions) do
             if action.id == "tide_barrage" then
-                action.label = string.format("远距齐射｜火炮路线\n潮盾-%d｜反击-%d", barrageDamage, barrage.retaliation)
+                action.label = string.format("远距齐射｜火炮路线\n潮盾-%s｜反击-%d",
+                    tideDamagePreview(state, barrageDamage), barrage.retaliation)
             elseif action.id == "tide_ram" then
-                action.label = string.format("撞断潮锚｜船体路线\n潮盾-%d｜船体-%d", ramDamage, ramCost)
+                action.label = string.format("撞断潮锚｜船体路线\n潮盾-%s｜船体-%d",
+                    tideDamagePreview(state, ramDamage), ramCost)
             end
         end
     end
@@ -944,6 +1029,7 @@ local stageTitles = {
     rune_clue = "章节目标 · 符文回响",
     settlement = "首次返航 · 战利品结算",
     upgrade = "皇家港 · 首次升级",
+    crew_growth = "皇家港 · 首席任命",
     complete = "第一章完成",
     tide_route_choice = "潮汐墓场 · 航线抉择",
     tide_guardian = "潮汐墓场 · 沉锚守卫",
@@ -1057,6 +1143,13 @@ function V2ChapterState.getNarrative(state)
                 balanceValue("hull_upgrade_timber_cost"), balanceValue("hull_level_bonus"))
             .. string.format("\n强化火炮｜铁料 -%d → 单次齐射 +%d，更快建立接舷优势。",
                 balanceValue("guns_upgrade_iron_cost"), balanceValue("gun_level_bonus"))
+    elseif state.stage == "crew_growth" then
+        local gunner = ChapterData.by_id.crew_upgrade.crew_upgrade_gunner
+        local sailor = ChapterData.by_id.crew_upgrade.crew_upgrade_sailor
+        return "船只强化已经完成；现在只能任命一名首席船员。"
+            .. string.format("\n罗克 · %s｜%s。", gunner.title, gunner.description)
+            .. string.format("\n米克 · %s｜%s。", sailor.title, sailor.description)
+            .. "\n任命会永久保留，并直接改变潮汐墓场的破盾方案。"
     elseif state.stage == "complete" then
         local upgradeSummary = "本次升级已经完成。"
         local nextAdvantage = "新的船只能力将在后续远航中生效。"
@@ -1075,8 +1168,16 @@ function V2ChapterState.getNarrative(state)
         end
         local nextObjective = state.next_voyage_objective
             or "前往潮汐墓场寻找符文守卫"
+        local crewUpgrade = selectedCrewUpgrade(state)
+        local crewSummary = crewUpgrade and string.format(
+            "\n首席任命｜%s · %s；%s。",
+            ChapterData.by_id.crew[crewUpgrade.crew_id].name,
+            crewUpgrade.title,
+            crewUpgradeEffectText(crewUpgrade)
+        ) or "\n首席任命｜尚未完成。"
         return "第一枚符文线索：潮汐墓场。"
             .. "\n本次升级｜" .. upgradeSummary
+            .. crewSummary
             .. "\n下一航程｜" .. nextObjective .. "；" .. nextAdvantage
     elseif state.stage == "tide_route_choice" then
         local breaker = routeData("tide_breaker_channel")
@@ -1093,15 +1194,17 @@ function V2ChapterState.getNarrative(state)
         local ram = battleAction("tide_ram")
         local barrageDamage = barrage.damage
             + state.ship.gun_level * balanceValue("tide_barrage_gun_bonus")
+            + crewUpgradeEffect(state, "crew_upgrade_gunner")
         local ramDamage = ram.damage
             + state.ship.hull_level * balanceValue("tide_ram_hull_bonus")
         local ramCost = math.max(0, ram.retaliation
-            - state.ship.hull_level * balanceValue("tide_ram_hull_reduction"))
+            - state.ship.hull_level * balanceValue("tide_ram_hull_reduction")
+            - crewUpgradeEffect(state, "crew_upgrade_sailor"))
         return dialogueBlock("node_tide_guardian", { "battle_start", "naval_hint" })
-            .. string.format("\n远距齐射｜潮盾 -%d，若守卫未沉则反击 -%d 船体。",
-                barrageDamage, barrage.retaliation)
-            .. string.format("\n撞断潮锚｜潮盾 -%d，并承受 %d 船体自损。",
-                ramDamage, ramCost)
+            .. string.format("\n远距齐射｜潮盾 -%s，若守卫未沉则反击 -%d 船体。",
+                tideDamagePreview(state, barrageDamage), barrage.retaliation)
+            .. string.format("\n撞断潮锚｜潮盾 -%s，并承受 %d 船体自损。",
+                tideDamagePreview(state, ramDamage), ramCost)
     elseif state.stage == "tide_rune_clue" then
         return dialogueBlock("node_tide_rune", { "chapter_complete" })
             .. "\n守卫复盘：" .. tostring(state.battle_report)
@@ -1226,21 +1329,29 @@ local function winBoarding(state, action)
     addHistory(state, action, "接舷队击败追猎者，舰炮战结果已影响敌方开场状态。")
 end
 
-local function winTideGuardian(state, action, damage)
+local function winTideGuardian(state, action, damage, potential)
     grantFlag(state, "tide_guardian_defeated")
     applyReward(state, "reward_tide_guardian")
     state.stage = "tide_rune_clue"
     state.current_node = "node_tide_rune"
     state.active_event = "event_tide_rune"
     state.objective = "确认第二枚沉锚符文揭示的新线索"
+    local crewUpgrade = selectedCrewUpgrade(state)
+    local crewSummary = crewUpgrade and string.format(
+        "%s · %s", ChapterData.by_id.crew[crewUpgrade.crew_id].name, crewUpgrade.title
+    ) or "未任命首席船员"
+    local finalImpact = potential > damage
+        and string.format("最终破盾 %d（方案火力 %d）", damage, potential)
+        or string.format("最终破盾 %d", damage)
     state.battle_report = string.format(
-        "%s；破盾行动 %d 次；最终一击 %d；船体剩余 %d/%d。升级路线：%s。",
+        "%s；破盾行动 %d 次；%s；船体剩余 %d/%d。船只方案：%s；首席任命：%s。",
         routeData(state.route).label,
         state.battle.tide_action_count,
-        damage,
+        finalImpact,
         state.battle.player_hull,
         state.battle.player_hull_max,
-        action == "tide_ram" and "船体成长" or "火炮成长"
+        action == "tide_ram" and "船体成长" or "火炮成长",
+        crewSummary
     )
     addHistory(state, action, "潮盾崩解，沉锚守卫沉入墓场；第二枚符文已经显现。")
 end
@@ -1255,13 +1366,16 @@ local function resolveTideAttack(state, action)
     local hullCost = data.retaliation
     if action == "tide_barrage" then
         damage = damage + state.ship.gun_level * balanceValue("tide_barrage_gun_bonus")
+        damage = damage + crewUpgradeEffect(state, "crew_upgrade_gunner")
     else
         damage = damage + state.ship.hull_level * balanceValue("tide_ram_hull_bonus")
         hullCost = math.max(0, hullCost
-            - state.ship.hull_level * balanceValue("tide_ram_hull_reduction"))
+            - state.ship.hull_level * balanceValue("tide_ram_hull_reduction")
+            - crewUpgradeEffect(state, "crew_upgrade_sailor"))
     end
 
-    state.battle.tide_shield = math.max(0, state.battle.tide_shield - damage)
+    local appliedDamage = math.min(state.battle.tide_shield, damage)
+    state.battle.tide_shield = state.battle.tide_shield - appliedDamage
     state.battle.tide_action_count = state.battle.tide_action_count + 1
     table.insert(state.battle.actions_log, action)
 
@@ -1275,7 +1389,7 @@ local function resolveTideAttack(state, action)
         return true, state.last_result
     end
     if state.battle.tide_shield <= 0 then
-        winTideGuardian(state, action, damage)
+        winTideGuardian(state, action, appliedDamage, damage)
         return true, state.last_result
     end
 
@@ -1674,9 +1788,9 @@ function V2ChapterState.apply(state, action)
         state.ship.hull_level = state.ship.hull_level + 1
         state.ship.hull_max = calculateHullMax(state)
         state.upgrades.hull = true
-        state.stage = "complete"
+        state.stage = "crew_growth"
         state.next_voyage_objective = "前往潮汐墓场寻找符文守卫"
-        state.objective = "查看下一次远航目标"
+        state.objective = "任命一名首席船员，让他的专长进入下一次远航"
         addHistory(state, action, "船体升级完成：最大耐久提高 " .. balanceValue("hull_level_bonus") .. "。")
     elseif action == "upgrade_guns" and state.stage == "upgrade" then
         local cost = balanceValue("guns_upgrade_iron_cost")
@@ -1686,10 +1800,23 @@ function V2ChapterState.apply(state, action)
         state.resources.iron = state.resources.iron - cost
         state.ship.gun_level = state.ship.gun_level + 1
         state.upgrades.guns = true
-        state.stage = "complete"
+        state.stage = "crew_growth"
         state.next_voyage_objective = "前往潮汐墓场寻找符文守卫"
-        state.objective = "查看下一次远航目标"
+        state.objective = "任命一名首席船员，让他的专长进入下一次远航"
         addHistory(state, action, "火炮升级完成：后续齐射伤害提高。")
+    elseif crewUpgradeForAction(action) ~= nil
+        and (state.stage == "crew_growth" or state.stage == "complete") then
+        if selectedCrewUpgrade(state) ~= nil then
+            return false, "首席船员已经任命，不能在本次成长中重复更换"
+        end
+        local upgrade = crewUpgradeForAction(action)
+        local crew = ChapterData.by_id.crew[upgrade.crew_id]
+        state.upgrades.crew = upgrade.id
+        state.stage = "complete"
+        state.objective = "查看船只与船员成长如何改变下一次远航"
+        addHistory(state, action, string.format(
+            "%s已被任命为%s：%s。", crew.name, upgrade.title, crewUpgradeEffectText(upgrade)
+        ))
     elseif action == "retry_battle" and state.stage == "failed" then
         local retryCost = balanceValue("retry_supply_cost")
         if state.resources.provisions < retryCost then
@@ -1737,6 +1864,9 @@ function V2ChapterState.apply(state, action)
         state.objective = "重新整备后再次出航"
         addHistory(state, action, string.format("支付 %d 金币，船只与船员已在皇家港恢复。", recoveryCost))
     elseif action == "prepare_next_voyage" and state.stage == "complete" then
+        if selectedCrewUpgrade(state) == nil then
+            return false, "请先完成一次首席船员任命"
+        end
         state.stage = "harbor"
         state.current_node = "node_port"
         state.objective = "确认已保留的船只成长，为潮汐墓场再次出航"
