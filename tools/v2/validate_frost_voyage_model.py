@@ -17,16 +17,16 @@ if prototype != {
     "module": "bin/res/scripts/LuaClass/V2FrostVoyageModel.lua",
     "test": "tools/v2/test_v2_frost_voyage_model.lua",
     "validated": True,
-    "runtime_wiring": False,
+    "runtime_wiring": True,
 }:
     raise SystemExit("Frostbound candidate prototype evidence drifted")
 if candidate.get("runtime_exposed") is not False:
-    raise SystemExit("Frostbound prototype cannot be exposed before runtime integration is complete")
+    raise SystemExit("Frostbound cannot be exposed before dedicated art and forecast UI are complete")
 
 model = (ROOT / prototype["module"]).read_text(encoding="utf-8")
 test = (ROOT / prototype["test"]).read_text(encoding="utf-8")
 for marker in (
-    'V2FrostVoyageModel.MODEL_STATUS = "prototype_only"',
+    'V2FrostVoyageModel.MODEL_STATUS = "runtime_integrated_unexposed"',
     'frost_pack_channel = {',
     'frost_flare_pass = {',
     'port = "frost_turn_port"',
@@ -59,27 +59,25 @@ for marker in (
     if marker not in test:
         raise SystemExit(f"Frostbound behavioral regression is missing: {marker}")
 
-runtime_sources = (
-    "bin/res/scripts/LuaClass/V2ChapterState.lua",
-    "bin/res/scripts/LuaClass/V2ChapterLayer.lua",
-    "bin/res/scripts/LuaClass/V2PortModel.lua",
-    "bin/res/scripts/LuaClass/V2PortLayer.lua",
-    "bin/res/scripts/LuaClass/V2Config.lua",
-)
-for filename in runtime_sources:
-    source = (ROOT / filename).read_text(encoding="utf-8")
-    if "V2FrostVoyageModel" in source:
-        raise SystemExit(f"Frostbound prototype leaked into player runtime: {filename}")
+state_source = (ROOT / "bin/res/scripts/LuaClass/V2ChapterState.lua").read_text(encoding="utf-8")
+if 'local V2FrostVoyageModel = require "LuaClass/V2FrostVoyageModel"' not in state_source:
+    raise SystemExit("Frostbound pure model is not wired into the formal state machine")
+if 'elseif profile == "qa_frost_route"' not in state_source:
+    raise SystemExit("Frostbound integration has no isolated QA entry")
 
 phase4 = (ROOT / "tools/v2/validate_phase4.sh").read_text(encoding="utf-8")
 for command in (
     "lua tools/v2/test_v2_frost_voyage_model.lua",
+    "lua tools/v2/test_v2_frost_integration.lua",
     "python3 tools/v2/validate_frost_voyage_model.py",
 ):
     if command not in phase4:
         raise SystemExit(f"Frostbound prototype validation is not in Phase 4: {command}")
 
 record = (ROOT / "docs/v2/frost-voyage-model-iteration-1.md").read_text(encoding="utf-8")
+integration_record = (
+    ROOT / "docs/v2/frost-voyage-runtime-integration-iteration-1.md"
+).read_text(encoding="utf-8")
 plan = (ROOT / "docs/product-iteration-plan-v2.md").read_text(encoding="utf-8")
 log = (ROOT / "docs/product-iteration-log.md").read_text(encoding="utf-8")
 readme = (ROOT / "README.md").read_text(encoding="utf-8")
@@ -94,5 +92,17 @@ for marker in ("霜冻航线状态模型第 1 轮", "航道推进不足", "DEFER
         raise SystemExit(f"product records are missing Frostbound model marker: {marker}")
 if "frost-voyage-model-iteration-1.md" not in readme:
     raise SystemExit("README does not link the Frostbound model record")
+for marker in (
+    "Before / After / Why", "RUNTIME_INTEGRATED_UNEXPOSED", "Schema 5",
+    "6 个 QA 档", "tide_complete", "0 个操作", "runtime_exposed = false",
+    "专属英雄画面", "冰潮预告条", "DEFERRED_UNTIL_FINAL",
+):
+    if marker not in integration_record:
+        raise SystemExit(f"Frostbound integration record is missing: {marker}")
+for marker in ("霜冻航线运行集成第 1 轮", "入口未开放", "DEFERRED_UNTIL_FINAL"):
+    if marker not in plan or marker not in log:
+        raise SystemExit(f"product records are missing Frostbound integration marker: {marker}")
+if "frost-voyage-runtime-integration-iteration-1.md" not in readme:
+    raise SystemExit("README does not link the Frostbound runtime integration record")
 
-print("V2 Frost voyage model baseline OK: changing telegraph, six growth payoffs, retry boundary and runtime isolation passed")
+print("V2 Frost voyage baseline OK: pure mechanics and hidden runtime integration passed")

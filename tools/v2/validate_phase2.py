@@ -66,7 +66,7 @@ required_actions = {
 if not required_actions.issubset(action_ids):
     raise SystemExit("battle_action.csv does not retain the Phase 2 action set")
 for row in action_rows:
-    if row["stage"] not in {"naval", "boarding", "tide_guardian"}:
+    if row["stage"] not in {"naval", "boarding", "tide_guardian", "frost_hazard"}:
         raise SystemExit(f"battle action {row['id']} has invalid stage")
     for field in ("damage", "deck_damage", "gun_damage", "retaliation"):
         if int(row[field]) < 0:

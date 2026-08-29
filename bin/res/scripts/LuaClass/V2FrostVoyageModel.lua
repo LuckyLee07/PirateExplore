@@ -1,12 +1,11 @@
 -- Pure, non-Cocos prototype for the Frostbound third-voyage hazard.
 --
--- This module is intentionally not referenced by V2ChapterState yet. It proves
--- the decision model and recovery boundaries before any player entry, authored
--- runtime ids, or hero art are exposed.
+-- The formal state machine references this pure model for hidden QA profiles.
+-- Player entry remains closed until the dedicated art and forecast UI pass.
 
 local V2FrostVoyageModel = {}
 
-V2FrostVoyageModel.MODEL_STATUS = "prototype_only"
+V2FrostVoyageModel.MODEL_STATUS = "runtime_integrated_unexposed"
 
 V2FrostVoyageModel.RULES = {
     passage_target = 5,

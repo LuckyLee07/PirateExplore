@@ -8,6 +8,8 @@
 
 真机与发行：`DEFERRED_UNTIL_FINAL`
 
+> 后续状态更新（2026-08-29）：本记录中的 `design_candidate` 与“保留 ID 不得进入运行时”是候选阶段门槛。候选现已转入 [`frost-voyage-runtime-integration-iteration-1.md`](frost-voyage-runtime-integration-iteration-1.md) 所述的 `runtime_integration`；所有 ID 已进入正式数据或隐藏 QA，但 `runtime_exposed = false` 仍保持不变。
+
 ## 1. 本轮目标
 
 前两次远航已经证明 V2 可以做出真实成长、角色取舍、差异敌人和专属视觉，但每次增加内容仍需要人工记住节点、事件、选择、敌人、奖励、演出、遥测、QA 和生成 Lua 之间的全部关系。规模继续增加时，最危险的不是代码量，而是某张表漏填、运行时硬连、半成品入口提前出现，最后又回到旧项目多份数据互相分叉的状态。

@@ -3,3 +3,5 @@ safe_route,chapter_01,外海安全航线,2,1,,0,10,steady_approach,风险 1；�
 risky_shortcut,chapter_01,暗礁高风险近路,1,3,reward_salvage,10,0,exposed_hull,风险 3；船体受损；获得沉船战利品,以船体风险换取升级资源
 tide_breaker_channel,chapter_01,破潮水道,0,3,,30,0,hull_growth_route,基础航损 30；每级船体强化减免 20,用船体成长抵消墓场冲击
 tide_cannon_pass,chapter_01,炮门航道,2,3,,0,0,gun_growth_route,基础补给 2；每级火炮强化减免 2,用火炮成长压低航线补给
+frost_pack_channel,chapter_01,浮冰群航道,0,3,,0,0,frost_turn_route,不消耗补给；左右裂口连续变化；错误转向会碰撞浮冰,用读图与船体成长控制碰撞风险
+frost_flare_pass,chapter_01,信号焰航道,1,3,,0,0,frost_cannon_route,进入航道消耗 1 补给；中央窗口可用火炮快速推进,用补给与火炮成长抢占破冰窗口

@@ -31,6 +31,7 @@ all_runtime_values = {
 }
 config_text = (ROOT / "bin/res/scripts/LuaClass/V2Config.lua").read_text(encoding="utf-8")
 state_text = (ROOT / "bin/res/scripts/LuaClass/V2ChapterState.lua").read_text(encoding="utf-8")
+model_text = (ROOT / "bin/res/scripts/LuaClass/V2FrostVoyageModel.lua").read_text(encoding="utf-8")
 
 candidate_path = ROOT / "design/v2/content_slices/voyage-03-frostbound.json"
 candidate = json.loads(candidate_path.read_text(encoding="utf-8"))
@@ -44,8 +45,8 @@ required_top_level = {
 missing = required_top_level - set(candidate)
 if missing:
     raise SystemExit(f"third-voyage candidate is missing fields: {sorted(missing)}")
-if candidate["schema_version"] != 1 or candidate["status"] != "design_candidate":
-    raise SystemExit("third-voyage candidate must use schema 1 and remain a design_candidate")
+if candidate["schema_version"] != 1 or candidate["status"] != "runtime_integration":
+    raise SystemExit("third-voyage candidate must use schema 1 and remain in runtime_integration")
 if candidate["runtime_exposed"] is not False:
     raise SystemExit("unfinished third-voyage content cannot be exposed to players")
 if len(candidate["player_promise"]) < 30:
@@ -120,8 +121,11 @@ reserved = candidate["reserved_runtime_ids"]
 if len(reserved) != len(set(reserved)) or len(reserved) < 25:
     raise SystemExit("third-voyage reserved runtime ids are incomplete or duplicated")
 for identifier in reserved:
-    if identifier in all_runtime_values or identifier in config_text or identifier in state_text:
-        raise SystemExit(f"unfinished third-voyage id leaked into runtime: {identifier}")
+    if identifier not in all_runtime_values and identifier not in config_text \
+        and identifier not in state_text and identifier not in model_text:
+        raise SystemExit(
+            f"integrated third-voyage id is still missing from authored/runtime sources: {identifier}"
+        )
 if set(candidate["qa_profiles"]) - set(reserved):
     raise SystemExit("all planned third-voyage QA profiles must be reserved")
 if set(candidate["telemetry"]) - set(reserved):

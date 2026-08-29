@@ -7,7 +7,7 @@ V2Config = {
     VERSION = "2.0",
     CURRENT_PHASE = 4,
     CHAPTER_ID = "chapter_01",
-    SAVE_SCHEMA_VERSION = 4,
+    SAVE_SCHEMA_VERSION = 5,
     SAVE_NAMESPACE = "v2_chapter_01",
     DEFAULT_SAVE_PROFILE = "player",
 
@@ -60,6 +60,12 @@ local validSaveProfiles = {
     qa_tide_rune = true,
     qa_tide_settlement = true,
     qa_tide_complete = true,
+    qa_frost_route = true,
+    qa_frost_beacon_navigator = true,
+    qa_frost_beacon_medic = true,
+    qa_frost_hazard = true,
+    qa_frost_rune = true,
+    qa_frost_complete = true,
 }
 
 function V2Config:shouldPlayAudioCues()

@@ -4,6 +4,7 @@
 
 local ChapterData = require "LuaClass/V2ChapterData"
 local V2Config = require "LuaClass/V2Config"
+local V2FrostVoyageModel = require "LuaClass/V2FrostVoyageModel"
 
 local V2ChapterState = {}
 
@@ -62,8 +63,17 @@ local function startsTideVoyage(state)
         and (state.voyage_count or 0) + 1 >= 2
 end
 
+local function startsFrostVoyage(state)
+    return state.chapter_complete
+        and state.flags.tide_voyage_complete
+        and not state.flags.frost_voyage_complete
+        and (state.voyage_count or 0) + 1 >= 3
+end
+
 local function departureSupplyCost(state)
-    return edgeData(startsTideVoyage(state) and "edge_10" or "edge_01").supply_cost
+    local edgeId = startsFrostVoyage(state) and "edge_15"
+        or (startsTideVoyage(state) and "edge_10" or "edge_01")
+    return edgeData(edgeId).supply_cost
 end
 
 local function battleAction(actionId)
@@ -108,7 +118,7 @@ local function dialogueLine(nodeId, trigger, speaker)
     return ""
 end
 
-V2ChapterState.SCHEMA_VERSION = 4
+V2ChapterState.SCHEMA_VERSION = 5
 V2ChapterState.SAVE_RECOVERY_MESSAGE = "检测到损坏或不兼容的存档，已安全创建新的首章航程。"
 V2ChapterState.STAGES = {
     opening = true,
@@ -131,6 +141,12 @@ V2ChapterState.STAGES = {
     tide_rune_clue = true,
     tide_settlement = true,
     tide_complete = true,
+    frost_route_choice = true,
+    frost_character_event = true,
+    frost_hazard = true,
+    frost_rune_clue = true,
+    frost_settlement = true,
+    frost_complete = true,
     failed = true,
 }
 
@@ -310,6 +326,50 @@ local function resetTideGuardian(state)
     end
 end
 
+local function frostRules()
+    return {
+        passage_target = balanceValue("frost_passage_target"),
+        max_rounds = balanceValue("frost_max_rounds"),
+        pack_route_supply_cost = balanceValue("frost_pack_route_supply_cost"),
+        flare_route_supply_cost = balanceValue("frost_flare_route_supply_cost"),
+        correct_turn_progress = balanceValue("frost_correct_turn_progress"),
+        wrong_action_progress = balanceValue("frost_wrong_action_progress"),
+        cannon_progress = balanceValue("frost_cannon_progress"),
+        gun_level_progress_bonus = balanceValue("frost_gun_level_progress_bonus"),
+        gunner_first_cannon_bonus = balanceValue("frost_gunner_first_cannon_bonus"),
+        cannon_supply_cost = balanceValue("frost_cannon_supply_cost"),
+        collision_damage = balanceValue("frost_collision_damage"),
+        hull_level_collision_reduction = balanceValue("frost_hull_collision_reduction"),
+        sailor_first_collision_reduction = balanceValue("frost_sailor_collision_reduction"),
+        off_window_cannon_damage = balanceValue("frost_off_window_cannon_damage"),
+        medic_recovery_amount = balanceValue("frost_medic_recovery_amount"),
+        retry_supply_cost = balanceValue("retry_supply_cost"),
+    }
+end
+
+local function newFrostState(state, patternIndex)
+    state.ship.hull_max = calculateHullMax(state)
+    return V2FrostVoyageModel.new({
+        hull = math.max(1, state.ship.hull_max - (state.voyage_hull_damage or 0)),
+        hull_max = state.ship.hull_max,
+        hull_level = state.ship.hull_level,
+        gun_level = state.ship.gun_level,
+        chief = state.upgrades.crew,
+        provisions = state.resources.provisions,
+        pattern_index = patternIndex,
+        rules = frostRules(),
+    })
+end
+
+local function syncFrostState(state)
+    if type(state.frost) ~= "table" then return end
+    state.resources.provisions = state.frost.provisions
+    state.battle.player_hull = state.frost.hull
+    state.battle.player_hull_max = state.frost.hull_max
+    state.battle.total_hull_damage = math.max(0, state.frost.hull_max - state.frost.hull)
+    state.battle.frost_action_count = #(state.frost.action_log or {})
+end
+
 local function prepareTideQAState(state, stage)
     state.stage = stage
     state.current_node = stage == "tide_route_choice" and "node_tide_gate"
@@ -327,6 +387,62 @@ local function prepareTideQAState(state, stage)
     state.next_voyage_objective = "前往潮汐墓场寻找沉锚符文守卫"
     applyReward(state, "reward_battle")
     applyReward(state, "reward_rune_clue")
+end
+
+local function prepareFrostQAState(state, stage, route, beacon, patternIndex)
+    state.stage = stage
+    state.current_node = stage == "frost_route_choice" and "node_frost_gate"
+        or (stage == "frost_character_event" and "node_frost_beacon"
+        or (stage == "frost_hazard" and "node_frost_hazard"
+        or (stage == "frost_complete" and "node_port" or "node_frost_rune")))
+    state.active_event = stage == "frost_route_choice" and "event_frost_route_choice"
+        or (stage == "frost_character_event" and "event_frost_beacon"
+        or (stage == "frost_hazard" and "event_frost_hazard" or "event_frost_rune"))
+    state.flags = {
+        chapter_01_complete = true,
+        tide_route_chosen = true,
+        tide_signal_resolved = true,
+        tide_guardian_defeated = true,
+        tide_voyage_complete = true,
+    }
+    state.chapter_complete = true
+    state.voyage_count = 3
+    state.ship.hull_level = 1
+    state.ship.hull_max = calculateHullMax(state)
+    state.upgrades.hull = true
+    state.upgrades.crew = "crew_upgrade_sailor"
+    state.next_voyage_objective = "前往极地港读取移动冰潮并取得第三枚符文"
+    applyReward(state, "reward_battle")
+    applyReward(state, "reward_rune_clue")
+    applyReward(state, "reward_tide_guardian")
+    applyReward(state, "reward_tide_rune")
+    resetBattle(state)
+    state.frost = newFrostState(state, patternIndex or 1)
+
+    if route then
+        local ok, message = V2FrostVoyageModel.chooseRoute(state.frost, route)
+        assert(ok, message)
+        state.route = route
+        state.flags.frost_route_chosen = true
+        state.flags[route == "frost_pack_channel" and "frost_pack_chosen" or "frost_flare_chosen"] = true
+    end
+    if beacon then
+        local ok, message = V2FrostVoyageModel.chooseBeacon(state.frost, beacon)
+        assert(ok, message)
+        state.flags.frost_beacon_resolved = true
+        state.flags[beacon == "read_ice_chart" and "frost_chart_read" or "frost_team_warmed"] = true
+    end
+    if stage == "frost_rune_clue" or stage == "frost_settlement" or stage == "frost_complete" then
+        state.frost.phase = "complete"
+        state.frost.progress = state.frost.rules.passage_target
+        state.flags.frost_giant_passed = true
+        applyReward(state, "reward_frost_passage")
+    end
+    if stage == "frost_settlement" or stage == "frost_complete" then
+        state.flags.frost_voyage_complete = true
+        applyReward(state, "reward_frost_rune")
+    end
+    syncFrostState(state)
 end
 
 local function baseState(profile)
@@ -368,6 +484,7 @@ local function baseState(profile)
         voyage_count = 0,
         voyage_hull_damage = 0,
         route_intel = nil,
+        frost = nil,
         battle_report = nil,
         recovery_summary = nil,
         failure_reason = nil,
@@ -665,6 +782,37 @@ function V2ChapterState.new(profile)
         state.next_voyage_objective = "第二次远航已完成；后续海域仍在制作"
         state.objective = "查看潮汐墓场航程成果"
         state.last_result = "第二次远航完成：两次成长已经转化为路线和破盾优势。"
+    elseif profile == "qa_frost_route" then
+        prepareFrostQAState(state, "frost_route_choice")
+        state.objective = "比较浮冰转向与信号焰破冰的真实资源代价"
+        state.last_result = "第三次远航抵达极地港；冰潮会让下一轮安全裂口持续换位。"
+    elseif profile == "qa_frost_beacon_navigator" then
+        prepareFrostQAState(state, "frost_character_event", "frost_pack_channel")
+        state.objective = "决定由卡特琳娜精确读图还是由艾琳保住一次错误"
+        state.last_result = "浮冰群正在移动；卡特琳娜要求先把撞击数字写上冰图。"
+    elseif profile == "qa_frost_beacon_medic" then
+        prepareFrostQAState(state, "frost_character_event", "frost_flare_pass", nil, 2)
+        state.objective = "决定由卡特琳娜精确读图还是由艾琳保住一次错误"
+        state.last_result = "信号焰照出了冰下的探险队；艾琳请求先完成救援。"
+    elseif profile == "qa_frost_hazard" then
+        prepareFrostQAState(
+            state, "frost_hazard", "frost_pack_channel", "read_ice_chart", 1
+        )
+        state.objective = "读取本轮冰潮方向并选择匹配的空间操作"
+        state.last_result = "第一轮左舷裂口已经显现；所有操作后果均可在提交前核对。"
+    elseif profile == "qa_frost_rune" then
+        prepareFrostQAState(
+            state, "frost_rune_clue", "frost_pack_channel", "read_ice_chart", 1
+        )
+        state.objective = "确认第三枚寒冰符文揭示的新线索"
+        state.last_result = "船已穿过移动冰潮；寒冰符文正在探险队的信标旁共鸣。"
+    elseif profile == "qa_frost_complete" then
+        prepareFrostQAState(
+            state, "frost_complete", "frost_pack_channel", "read_ice_chart", 1
+        )
+        state.next_voyage_objective = "第三次远航已完成；后续内容尚未开放"
+        state.objective = "查看霜冻航线的决策与成长成果"
+        state.last_result = "第三次远航完成：冰图、成长和空间操作共同决定了穿越结果。"
     end
     return state
 end
@@ -700,6 +848,58 @@ local function hasBooleanFields(value, fields)
     return true
 end
 
+local function isRestorableFrostState(state)
+    local frost = state.frost
+    if type(frost) ~= "table"
+        or not hasNumberFields(frost, {
+            "pattern_index", "hull_level", "gun_level", "hull", "hull_max",
+            "provisions", "round", "progress",
+        })
+        or not hasBooleanFields(frost, {
+            "navigator_exact_forecast", "medic_recovery_available",
+            "sailor_bonus_used", "gunner_bonus_used",
+        })
+        or type(frost.action_log) ~= "table"
+        or not hasNumberFields(frost.rules, {
+            "passage_target", "max_rounds", "pack_route_supply_cost",
+            "flare_route_supply_cost", "correct_turn_progress", "wrong_action_progress",
+            "cannon_progress", "gun_level_progress_bonus", "gunner_first_cannon_bonus",
+            "cannon_supply_cost", "collision_damage", "hull_level_collision_reduction",
+            "sailor_first_collision_reduction", "off_window_cannon_damage",
+            "medic_recovery_amount", "retry_supply_cost",
+        }) then
+        return false
+    end
+    if frost.route ~= nil and frost.route ~= "frost_pack_channel"
+        and frost.route ~= "frost_flare_pass" then
+        return false
+    end
+    if frost.beacon_choice ~= nil and frost.beacon_choice ~= "read_ice_chart"
+        and frost.beacon_choice ~= "warm_rescue_team" then
+        return false
+    end
+    local expectedPhase = {
+        frost_route_choice = "route_choice",
+        frost_character_event = "beacon",
+        frost_hazard = "hazard",
+        frost_rune_clue = "complete",
+        frost_settlement = "complete",
+        frost_complete = "complete",
+    }
+    if state.stage == "failed" and state.flags.failed_frost_hazard then
+        expectedPhase.failed = "failed"
+    end
+    if expectedPhase[state.stage] ~= frost.phase then
+        return false
+    end
+    if state.stage ~= "frost_route_choice" and state.route ~= frost.route then
+        return false
+    end
+    return state.resources.provisions == frost.provisions
+        and state.battle.player_hull == frost.hull
+        and state.battle.player_hull_max == frost.hull_max
+end
+
 local routeRequiredStages = {
     route_event = true,
     black_tide = true,
@@ -717,6 +917,11 @@ local routeRequiredStages = {
     tide_rune_clue = true,
     tide_settlement = true,
     tide_complete = true,
+    frost_character_event = true,
+    frost_hazard = true,
+    frost_rune_clue = true,
+    frost_settlement = true,
+    frost_complete = true,
     failed = true,
 }
 
@@ -771,6 +976,11 @@ local function isRestorableState(state)
         and (type(state.failure_reason) ~= "string" or type(state.recovery_summary) ~= "string") then
         return false
     end
+    local isFrostStage = string.sub(state.stage, 1, 6) == "frost_"
+        or (state.stage == "failed" and state.flags.failed_frost_hazard == true)
+    if isFrostStage and not isRestorableFrostState(state) then
+        return false
+    end
     return true
 end
 
@@ -782,15 +992,19 @@ function V2ChapterState.normalize(savedState, profile)
 
     if type(savedState) == "table"
         and (savedState.schema_version == V2ChapterState.SCHEMA_VERSION
+            or savedState.schema_version == 4
             or savedState.schema_version == 3)
         and savedState.chapter_id == "chapter_01"
         and V2ChapterState.STAGES[savedState.stage] then
         local candidate = V2ChapterState.new(profile)
         overwrite(candidate, savedState)
         candidate.profile = profile or candidate.profile or "player"
+        if type(candidate.frost) == "table" then
+            candidate.frost.rules = frostRules()
+        end
         if isRestorableState(candidate) then
             -- New fields are seeded from the current profile baseline before the
-            -- saved values are overlaid, so compatible schema 3/4 saves retain
+            -- saved values are overlaid, so compatible schema 3/4/5 saves retain
             -- progress while newer battle fields receive safe defaults.
             candidate.schema_version = V2ChapterState.SCHEMA_VERSION
             return candidate, nil
@@ -990,6 +1204,76 @@ function V2ChapterState.getActions(state)
         }
     end
 
+    if state.stage == "frost_route_choice" then
+        local pack = routeData("frost_pack_channel")
+        local flare = routeData("frost_flare_pass")
+        local rules = state.frost.rules
+        local collision = math.max(0,
+            rules.collision_damage
+                - state.ship.hull_level * rules.hull_level_collision_reduction
+        )
+        local sailorReduction = crewUpgradeEffect(state, "crew_upgrade_sailor") > 0
+            and rules.sailor_first_collision_reduction or 0
+        return {
+            {
+                id = "choose_frost_pack",
+                label = string.format("%s｜转向路线\n补给-%d｜错舵船体-%d（首次再减%d）",
+                    pack.label, pack.supply_cost, collision, sailorReduction),
+            },
+            {
+                id = "choose_frost_flare",
+                label = string.format("%s｜破冰路线\n入场补给-%d｜开炮每次-%d",
+                    flare.label, flare.supply_cost, rules.cannon_supply_cost),
+            },
+        }
+    end
+
+    if state.stage == "frost_character_event" then
+        return {
+            {
+                id = "read_ice_chart",
+                label = "卡特琳娜 · 解读冰图\n显示每项指令的精确推进、船损与补给",
+            },
+            {
+                id = "warm_rescue_team",
+                label = string.format("艾琳 · 救援探险队\n首次错误后恢复 %d 船体｜其余后果显示范围",
+                    state.frost.rules.medic_recovery_amount),
+            },
+        }
+    end
+
+    if state.stage == "frost_hazard" then
+        local actions = {}
+        for _, preview in ipairs(V2FrostVoyageModel.getActionPreviews(state.frost)) do
+            local focus = preview.recommended and "【本轮窗口】" or ""
+            local consequence
+            if preview.exact then
+                consequence = string.format("推进+%d｜船体-%d｜补给-%d",
+                    preview.progress, preview.hull_damage, preview.supply_cost)
+            else
+                consequence = string.format("%s｜%s｜%s",
+                    preview.progress_text, preview.hull_text, preview.supply_text)
+            end
+            table.insert(actions, {
+                id = preview.id,
+                label = preview.label .. focus .. "\n" .. consequence,
+            })
+        end
+        return actions
+    end
+
+    if state.stage == "frost_rune_clue" then
+        return {
+            { id = "take_frost_rune", label = choiceLabel("take_frost_rune") },
+        }
+    end
+
+    if state.stage == "frost_settlement" then
+        return {
+            { id = "return_from_frost", label = "带寒冰符文返回皇家港" },
+        }
+    end
+
     if state.stage == "route_event" then
         if state.route == "risky_shortcut" then
             return {
@@ -1000,6 +1284,13 @@ function V2ChapterState.getActions(state)
         return {
             { id = "rest_at_cove", label = choiceLabel("rest_at_cove") },
             { id = "press_through_cove", label = choiceLabel("press_through_cove") },
+        }
+    end
+
+    if state.stage == "failed" and state.flags.failed_frost_hazard then
+        return {
+            { id = "retry_battle", label = "重试移动冰潮\n补给-" .. balanceValue("retry_supply_cost") .. "｜保留航道与信标" },
+            { id = "recover_at_port", label = "返港恢复\n金币-" .. balanceValue("port_recovery_gold_cost") .. "｜重选航道与信标" },
         }
     end
 
@@ -1093,6 +1384,12 @@ local stageTitles = {
     tide_rune_clue = "沉锚符文 · 新线索",
     tide_settlement = "潮汐墓场 · 结算",
     tide_complete = "第二次远航完成",
+    frost_route_choice = "极地港 · 航道抉择",
+    frost_character_event = "极地港 · 极地信标",
+    frost_hazard = "霜冻航线 · 移动冰潮",
+    frost_rune_clue = "寒冰符文 · 侵蚀线索",
+    frost_settlement = "极地港 · 结算",
+    frost_complete = "第三次远航完成",
     failed = "本次远航失败",
 }
 
@@ -1302,7 +1599,62 @@ function V2ChapterState.getNarrative(state)
         return "第二次远航：潮汐墓场已经完成。"
             .. "\n成长兑现｜船体或火炮强化同时改变了航线代价与破盾方案。"
             .. "\n主线进度｜已取得 2 枚符文；下一海域将在后续内容迭代中开放。"
+    elseif state.stage == "frost_route_choice" then
+        local pack = routeData("frost_pack_channel")
+        local flare = routeData("frost_flare_pass")
+        local rules = state.frost.rules
+        local collision = math.max(0,
+            rules.collision_damage
+                - state.ship.hull_level * rules.hull_level_collision_reduction
+        )
+        return dialogueBlock("node_frost_gate", { "node_enter", "choice_prompt" })
+            .. string.format("\n浮冰群航道｜入场补给 %d；正确转向推进 %d；当前错误转向船损 %d。",
+                pack.supply_cost, rules.correct_turn_progress, collision)
+            .. string.format("\n信号焰航道｜入场补给 %d；每次裂冰补给 %d；火炮成长增加推进。",
+                flare.supply_cost, rules.cannon_supply_cost)
+    elseif state.stage == "frost_character_event" then
+        return dialogueBlock("node_frost_beacon", { "node_enter", "choice_prompt" })
+            .. "\n卡特琳娜方案｜本轮三项指令全部显示精确后果。"
+            .. string.format("\n艾琳方案｜第一次错误后恢复 %d 船体；其余后果诚实显示范围。",
+                state.frost.rules.medic_recovery_amount)
+            .. "\n船长仍保留最终决定；选择后另一项窗口关闭。"
+    elseif state.stage == "frost_hazard" then
+        local forecast = V2FrostVoyageModel.currentForecast(state.frost)
+        local direction = forecast.window == "port" and "左舷裂口"
+            or (forecast.window == "starboard" and "右舷裂口" or "中央冰脊")
+        local certainty = forecast.exact
+            and "卡特琳娜已将所有真实后果写入指令。"
+            or "没有精确冰图；指令只显示诚实范围，艾琳可恢复一次错误。"
+        return dialogueBlock("node_frost_hazard", { "battle_start", "naval_hint" })
+            .. string.format("\n冰潮预告｜第 %d/%d 轮 · %s。航道推进 %d/%d。",
+                forecast.round, forecast.max_rounds, direction,
+                forecast.progress, forecast.target)
+            .. "\n" .. certainty
+    elseif state.stage == "frost_rune_clue" then
+        return dialogueBlock("node_frost_rune", { "chapter_complete", "choice_prompt" })
+            .. "\n冰潮复盘：" .. tostring(state.battle_report)
+    elseif state.stage == "frost_settlement" then
+        local passage = ChapterData.by_id.reward.reward_frost_passage
+        local rune = ChapterData.by_id.reward.reward_frost_rune
+        return string.format(
+            "极地探险队物资｜金币 +%d · 木材 +%d · 铁料 +%d · 补给 +%d。",
+            passage.gold, passage.timber, passage.iron, passage.provisions
+        ) .. string.format(
+            "\n寒冰符文｜符文尘 +%d；亡灵侵蚀已经沿海流抵达极地。",
+            passage.rune_dust + rune.rune_dust
+        ) .. "\n本轮目标已经完成，返港后保留三次航程的成长与收藏。"
+    elseif state.stage == "frost_complete" then
+        return "第三次远航：霜冻航线已经完成。"
+            .. "\n决策兑现｜冰潮方向每轮变化；船体、火炮、首席任命与信标选择均改变真实后果。"
+            .. "\n主线进度｜已取得 3 枚符文；后续海域尚未开放。"
     elseif state.stage == "failed" then
+        if state.flags.failed_frost_hazard then
+            return "失败原因：" .. tostring(state.failure_reason)
+                .. string.format("\n原地重试｜补给 -%d；保留极地航道与信标选择，重置三轮冰潮。",
+                    balanceValue("retry_supply_cost"))
+                .. string.format("\n返港恢复｜金币 -%d；清除本航程预告并重新选择航道与信标。",
+                    balanceValue("port_recovery_gold_cost"))
+        end
         if state.flags.failed_tide_guardian then
             return "失败原因：" .. tostring(state.failure_reason)
                 .. string.format("\n原地重试｜补给 -%d；保留墓场航道与成长，从完整潮盾重新开始。",
@@ -1607,6 +1959,7 @@ function V2ChapterState.apply(state, action)
     elseif action == "start_voyage" and state.stage == "harbor" then
         local capacity = supplyCapacity(state)
         state.resources.provisions = math.min(state.resources.provisions, capacity)
+        local beginsFrostVoyage = startsFrostVoyage(state)
         local beginsTideVoyage = startsTideVoyage(state)
         local departureCost = departureSupplyCost(state)
         if state.resources.provisions < departureCost then
@@ -1616,7 +1969,17 @@ function V2ChapterState.apply(state, action)
         state.voyage_count = state.voyage_count + 1
         state.flags.harbor_relief_used = nil
         grantFlag(state, "voyage_ready")
-        if beginsTideVoyage then
+        if beginsFrostVoyage then
+            state.voyage_hull_damage = 0
+            resetBattle(state)
+            local patternIndex = state.voyage_count % 2 == 1 and 1 or 2
+            state.frost = newFrostState(state, patternIndex)
+            state.stage = "frost_route_choice"
+            state.current_node = "node_frost_gate"
+            state.active_event = "event_frost_route_choice"
+            state.objective = "比较两条极地航道的转向、补给与成长后果"
+            addHistory(state, action, "船驶入极地港；移动浮冰正在左右航道间重新排列。")
+        elseif beginsTideVoyage then
             state.stage = "tide_route_choice"
             state.current_node = "node_tide_gate"
             state.active_event = "event_tide_route_choice"
@@ -1722,6 +2085,77 @@ function V2ChapterState.apply(state, action)
         local chiefResult = chief == nil and "；当前诊断状态未记录首席任命"
             or (followed and "；船长采纳了本次首席建议" or "；船长选择了另一名船员的方案")
         addHistory(state, action, result .. chiefResult)
+    elseif (action == "choose_frost_pack" or action == "choose_frost_flare")
+        and state.stage == "frost_route_choice" then
+        local routeId = action == "choose_frost_pack"
+            and "frost_pack_channel" or "frost_flare_pass"
+        local ok, message = V2FrostVoyageModel.chooseRoute(state.frost, routeId)
+        if not ok then return false, message end
+        local result = applyChoiceOutcome(state, action)
+        state.route = routeId
+        grantFlag(state, "frost_route_chosen")
+        syncFrostState(state)
+        state.stage = "frost_character_event"
+        state.current_node = "node_frost_beacon"
+        state.active_event = "event_frost_beacon"
+        state.objective = "在精确冰图与一次错误恢复之间选择信标方案"
+        addHistory(state, action, string.format(
+            "%s：入场补给 %d；下一步由船长决定信标方案。",
+            result, routeData(routeId).supply_cost
+        ))
+    elseif (action == "read_ice_chart" or action == "warm_rescue_team")
+        and state.stage == "frost_character_event" then
+        local ok, message = V2FrostVoyageModel.chooseBeacon(state.frost, action)
+        if not ok then return false, message end
+        local result = applyChoiceOutcome(state, action)
+        grantFlag(state, "frost_beacon_resolved")
+        syncFrostState(state)
+        state.stage = "frost_hazard"
+        state.current_node = "node_frost_hazard"
+        state.active_event = "event_frost_hazard"
+        state.objective = "读取本轮冰潮方向并核对指令后果"
+        addHistory(state, action, result .. "；移动冰潮的第一轮窗口已经显现。")
+    elseif (action == "frost_turn_port" or action == "frost_turn_starboard"
+        or action == "frost_break_ice") and state.stage == "frost_hazard" then
+        local ok, message, outcome = V2FrostVoyageModel.applyHazardAction(state.frost, action)
+        if not ok then return false, message end
+        syncFrostState(state)
+        table.insert(state.battle.actions_log, action)
+        local detail = string.format(
+            "%s：航道推进 +%d，船体 -%d，补给 -%d。",
+            outcome.label, outcome.progress, outcome.net_hull_damage, outcome.supply_cost
+        )
+        if outcome.medic_recovery > 0 then
+            detail = detail .. string.format("艾琳同时恢复 %d 船体。", outcome.medic_recovery)
+        end
+        if state.frost.phase == "failed" then
+            state.flags.failed_frost_hazard = true
+            failBattle(state, state.frost.failed_reason, action)
+        elseif state.frost.phase == "complete" then
+            grantFlag(state, "frost_giant_passed")
+            applyReward(state, "reward_frost_passage")
+            state.stage = "frost_rune_clue"
+            state.current_node = "node_frost_rune"
+            state.active_event = "event_frost_rune"
+            state.objective = "确认第三枚寒冰符文揭示的新线索"
+            local beaconLabel = state.frost.beacon_choice == "read_ice_chart"
+                and "卡特琳娜精确冰图" or "艾琳探险队救援"
+            state.battle_report = string.format(
+                "%s；%s；冰潮行动 %d 次；航道推进 %d/%d；船体剩余 %d/%d；补给剩余 %d。",
+                routeData(state.route).label,
+                beaconLabel,
+                #state.frost.action_log,
+                state.frost.progress,
+                state.frost.rules.passage_target,
+                state.frost.hull,
+                state.frost.hull_max,
+                state.frost.provisions
+            )
+            addHistory(state, action, detail .. "航道已经贯通，寒冰符文在信标旁显现。")
+        else
+            state.objective = "根据更新后的方向、船体与补给选择下一轮空间操作"
+            addHistory(state, action, detail .. "下一轮冰潮位置已经更新。")
+        end
     elseif (action == "rest_at_cove" or action == "press_through_cove")
         and state.stage == "route_event" and state.route == "safe_route" then
         local result = applyChoiceOutcome(state, action)
@@ -1870,6 +2304,12 @@ function V2ChapterState.apply(state, action)
         state.objective = "清点第二次远航收获并返回皇家港"
         state.next_voyage_objective = "第二次远航已完成；后续海域仍在制作"
         addHistory(state, action, result .. "：海盗王曾主动撕裂封印。")
+    elseif action == "take_frost_rune" and state.stage == "frost_rune_clue" then
+        local result = applyChoiceOutcome(state, action)
+        state.stage = "frost_settlement"
+        state.objective = "清点第三次远航收获并返回皇家港"
+        state.next_voyage_objective = "第三次远航已完成；后续海域尚未开放"
+        addHistory(state, action, result .. "：亡灵侵蚀已经沿海流抵达极地。")
     elseif action == "return_to_port" and state.stage == "settlement" then
         state.stage = "upgrade"
         state.current_node = "node_port"
@@ -1880,6 +2320,11 @@ function V2ChapterState.apply(state, action)
         state.current_node = "node_port"
         state.objective = "查看潮汐墓场航程成果"
         addHistory(state, action, "第二枚符文已带回皇家港；潮汐墓场航程完成。")
+    elseif action == "return_from_frost" and state.stage == "frost_settlement" then
+        state.stage = "frost_complete"
+        state.current_node = "node_port"
+        state.objective = "查看霜冻航线的决策与成长成果"
+        addHistory(state, action, "第三枚符文已带回皇家港；霜冻航线完成。")
     elseif action == "upgrade_hull" and state.stage == "upgrade" then
         local cost = balanceValue("hull_upgrade_timber_cost")
         if state.resources.timber < cost then
@@ -1920,39 +2365,67 @@ function V2ChapterState.apply(state, action)
         ))
     elseif action == "retry_battle" and state.stage == "failed" then
         local retryCost = balanceValue("retry_supply_cost")
-        if state.resources.provisions < retryCost then
-            return false, "补给不足，必须返回皇家港恢复"
-        end
-        state.resources.provisions = state.resources.provisions - retryCost
-        local retryTideGuardian = state.flags.failed_tide_guardian == true
-        if retryTideGuardian then
-            resetTideGuardian(state)
+        local retryFrostHazard = state.flags.failed_frost_hazard == true
+        if retryFrostHazard then
+            local ok, message = V2FrostVoyageModel.retry(state.frost)
+            if not ok then return false, message end
+            syncFrostState(state)
+            state.failure_reason = nil
+            state.flags.failed_frost_hazard = nil
+            state.stage = "frost_hazard"
+            state.current_node = "node_frost_hazard"
+            state.active_event = "event_frost_hazard"
+            state.objective = "从第一轮重新读取移动冰潮；航道与信标选择仍然保留"
+            addHistory(state, action, message)
         else
-            resetBattle(state)
+            if state.resources.provisions < retryCost then
+                return false, "补给不足，必须返回皇家港恢复"
+            end
+            state.resources.provisions = state.resources.provisions - retryCost
+            local retryTideGuardian = state.flags.failed_tide_guardian == true
+            if retryTideGuardian then
+                resetTideGuardian(state)
+            else
+                resetBattle(state)
+            end
+            state.failure_reason = nil
+            state.flags.failed_tide_guardian = nil
+            state.stage = retryTideGuardian and "tide_guardian" or "naval"
+            state.current_node = retryTideGuardian and "node_tide_guardian" or "node_raider"
+            state.active_event = retryTideGuardian and "event_tide_guardian" or "event_raider_encounter"
+            state.objective = retryTideGuardian
+                and "重新选择破盾方案；成长加成仍然生效"
+                or "重新进行舰炮战；先破坏甲板可削弱接舷敌军"
+            addHistory(state, action, string.format(
+                "消耗 %d 补给，战斗状态重置到%s开始前。",
+                retryCost, retryTideGuardian and "符文守卫战" or "舰炮战"
+            ))
         end
-        state.failure_reason = nil
-        state.flags.failed_tide_guardian = nil
-        state.stage = retryTideGuardian and "tide_guardian" or "naval"
-        state.current_node = retryTideGuardian and "node_tide_guardian" or "node_raider"
-        state.active_event = retryTideGuardian and "event_tide_guardian" or "event_raider_encounter"
-        state.objective = retryTideGuardian
-            and "重新选择破盾方案；成长加成仍然生效"
-            or "重新进行舰炮战；先破坏甲板可削弱接舷敌军"
-        addHistory(state, action, string.format(
-            "消耗 %d 补给，战斗状态重置到%s开始前。",
-            retryCost, retryTideGuardian and "符文守卫战" or "舰炮战"
-        ))
     elseif action == "recover_at_port" and state.stage == "failed" then
         local recoveryCost = balanceValue("port_recovery_gold_cost")
         if state.resources.gold < recoveryCost then
             return false, "金币不足，无法支付返港恢复"
         end
         state.resources.gold = state.resources.gold - recoveryCost
+        local recoveredFromFrost = state.flags.failed_frost_hazard == true
+        if recoveredFromFrost then
+            local ok, message = V2FrostVoyageModel.returnToPort(state.frost)
+            if not ok then return false, message end
+        end
         state.route = nil
         state.voyage_hull_damage = 0
         state.route_intel = nil
+        state.frost = nil
         resetBattle(state)
         state.failure_reason = nil
+        state.flags.failed_frost_hazard = nil
+        state.flags.frost_route_chosen = nil
+        state.flags.frost_pack_chosen = nil
+        state.flags.frost_flare_chosen = nil
+        state.flags.frost_beacon_resolved = nil
+        state.flags.frost_chart_read = nil
+        state.flags.frost_team_warmed = nil
+        state.flags.frost_giant_passed = nil
         state.flags.failed_tide_guardian = nil
         state.flags.tide_route_chosen = nil
         state.flags.tide_breaker_chosen = nil
@@ -1964,8 +2437,8 @@ function V2ChapterState.apply(state, action)
         state.flags.harbor_relief_used = nil
         state.stage = "harbor"
         state.current_node = "node_port"
-        state.active_event = state.chapter_complete
-            and "event_tide_route_choice" or "event_route_choice"
+        state.active_event = recoveredFromFrost and "event_frost_route_choice"
+            or (state.chapter_complete and "event_tide_route_choice" or "event_route_choice")
         state.objective = "重新整备后再次出航"
         addHistory(state, action, string.format("支付 %d 金币，船只与船员已在皇家港恢复。", recoveryCost))
     elseif action == "prepare_next_voyage" and state.stage == "complete" then

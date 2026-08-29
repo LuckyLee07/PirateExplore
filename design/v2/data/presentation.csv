@@ -20,3 +20,9 @@ presentation_tide_guardian,combat,tide_guardian,Images/V2/ui2_tide_guardian.png,
 presentation_tide_rune,rune,tide_rune_clue,Images/V2/ui2_rune.png,,,purple,rune_pulse,victory
 presentation_tide_settlement,rune,tide_settlement,Images/V2/ui2_rune.png,,,gold,reward_reveal,victory
 presentation_tide_complete,harbor,tide_complete,Images/V2/ui2_harbor.png,,,success,bottle_float,victory
+presentation_frost_route,map,frost_route_choice,Images/V2/ui2_exploration.png,,,sea,map_drift,wave
+presentation_frost_beacon,map,frost_character_event,Images/V2/ui2_exploration.png,,,gold,map_drift,wave
+presentation_frost_hazard,combat,frost_hazard,Images/V2/ui2_tide_guardian.png,,,danger,enemy_heave,cannon
+presentation_frost_rune,rune,frost_rune_clue,Images/V2/ui2_rune.png,,,purple,rune_pulse,victory
+presentation_frost_settlement,rune,frost_settlement,Images/V2/ui2_rune.png,,,gold,reward_reveal,victory
+presentation_frost_complete,harbor,frost_complete,Images/V2/ui2_harbor.png,,,success,bottle_float,victory

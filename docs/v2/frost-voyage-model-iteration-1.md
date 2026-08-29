@@ -10,6 +10,8 @@
 
 真机与发行：`DEFERRED_UNTIL_FINAL`
 
+> 后续状态更新（2026-08-29）：本记录描述当时的隔离原型门槛。模型现已按 [`frost-voyage-runtime-integration-iteration-1.md`](frost-voyage-runtime-integration-iteration-1.md) 接入正式数据、章节状态、Schema 5、QA 与遥测，状态为 `runtime_integrated_unexposed`；玩家入口仍关闭。
+
 ## 1. 本轮目标
 
 内容扩展候选已经提出“移动冰潮”，但一段文字并不能证明它真的不同于沉锚守卫。若先做冰雪背景和三个按钮，再发现最优解仍是重复点击伤害最高的动作，就只是更昂贵的背景换皮。

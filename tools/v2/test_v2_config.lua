@@ -84,6 +84,15 @@ for _, profile in ipairs({
     assert(config:isQAProfile())
 end
 
+for _, profile in ipairs({
+    "qa_frost_route", "qa_frost_beacon_navigator", "qa_frost_beacon_medic",
+    "qa_frost_hazard", "qa_frost_rune", "qa_frost_complete",
+}) do
+    zqV2SaveProfile = profile
+    assert(config:getSaveProfile() == profile)
+    assert(config:isQAProfile())
+end
+
 zqV2SaveProfile = "invalid_profile"
 assert(config:getSaveProfile() == "player")
 assert(not config:isQAProfile())

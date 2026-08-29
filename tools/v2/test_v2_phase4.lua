@@ -24,7 +24,7 @@ local function trackedApply(state, action)
     return event
 end
 
-equal(#Data.telemetry_event, 25, "Phase 4 exports the extended local event contract")
+equal(#Data.telemetry_event, 30, "Phase 4 exports the extended local event contract")
 equal(#Data.quality_gate, 10, "Phase 4 exports every decision and quality gate")
 
 local state = State.new("qa_fresh")
@@ -98,7 +98,7 @@ phase3Save.schema_version = 3
 phase3Save.stage = "route_choice"
 phase3Save.resources.provisions = 4
 local migrated = State.normalize(phase3Save, "qa_fresh")
-equal(migrated.schema_version, 4, "Phase 3 save migrates to the current schema")
+equal(migrated.schema_version, 5, "Phase 3 save migrates to the current schema")
 equal(migrated.stage, "route_choice", "Phase 3 save keeps chapter progress")
 equal(migrated.resources.provisions, 4, "Phase 3 save keeps resources")
 equal(migrated.telemetry, nil, "migration leaves telemetry initialization to the controller")

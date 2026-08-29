@@ -13,3 +13,8 @@ edge_11,chapter_01,node_tide_gate,node_tide_signal,tide_breaker_channel,3,0,tide
 edge_12,chapter_01,node_tide_gate,node_tide_signal,tide_cannon_pass,3,0,tide_route_chosen
 edge_13,chapter_01,node_tide_signal,node_tide_guardian,tide_signal_approach,3,0,tide_signal_resolved
 edge_14,chapter_01,node_tide_guardian,node_tide_rune,tide_goal,2,0,tide_guardian_defeated
+edge_15,chapter_01,node_port,node_frost_gate,frost_departure,2,1,tide_voyage_complete
+edge_16,chapter_01,node_frost_gate,node_frost_beacon,frost_pack_channel,3,0,frost_route_chosen
+edge_17,chapter_01,node_frost_gate,node_frost_beacon,frost_flare_pass,3,1,frost_route_chosen
+edge_18,chapter_01,node_frost_beacon,node_frost_hazard,frost_signal_approach,3,0,frost_beacon_resolved
+edge_19,chapter_01,node_frost_hazard,node_frost_rune,frost_goal,2,0,frost_giant_passed

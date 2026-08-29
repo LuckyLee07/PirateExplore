@@ -28,7 +28,8 @@ local function applyHazard(state, action)
     return outcome
 end
 
-equal(Frost.MODEL_STATUS, "prototype_only", "Frost model stays outside the player runtime")
+equal(Frost.MODEL_STATUS, "runtime_integrated_unexposed",
+    "Frost model is integrated for QA while player entry remains closed")
 
 local navigator = Frost.new({ hull = 140, hull_max = 140, hull_level = 1, pattern_index = 1 })
 applyRoute(navigator, "frost_pack_channel")

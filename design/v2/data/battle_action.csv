@@ -8,3 +8,6 @@ sailor_guard,boarding,米克：甲板守卫,0,0,0,0,sailor_guard_used,抵消下�
 medic_heal,boarding,艾琳：紧急包扎,0,0,0,0,medic_used,恢复接舷队状态
 tide_barrage,tide_guardian,远距齐射破盾,60,0,0,12,,保守破盾；火炮强化会显著提高伤害
 tide_ram,tide_guardian,撞断守卫潮锚,75,0,0,25,,快速破盾；船体强化会提高伤害并降低自损
+frost_turn_port,frost_hazard,切入左舷裂口,0,0,0,0,,根据当前冰潮预告切入左侧安全窗口
+frost_turn_starboard,frost_hazard,切入右舷裂口,0,0,0,0,,根据当前冰潮预告切入右侧安全窗口
+frost_break_ice,frost_hazard,炮击中央冰脊,0,0,0,0,,消耗补给抓住中央窗口并用火炮成长增加推进

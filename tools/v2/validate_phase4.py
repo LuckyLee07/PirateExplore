@@ -27,6 +27,8 @@ expected_events = {
     "next_voyage_prepared", "chapter_restarted",
     "invalid_action", "tide_character_event_choice", "tide_guardian_action", "tide_guardian_result",
     "second_rune_claimed", "second_voyage_completed",
+    "frost_route_selected", "frost_character_choice", "frost_hazard_action",
+    "third_rune_claimed", "third_voyage_completed",
 }
 if {row["id"] for row in telemetry} != expected_events:
     raise SystemExit("Phase 4 telemetry contract is incomplete")
@@ -65,9 +67,9 @@ for marker in ("V2Telemetry.snapshot", "V2Telemetry.record", "getTelemetrySummar
 
 config = (ROOT / "bin/res/scripts/LuaClass/V2Config.lua").read_text(encoding="utf-8")
 state = (ROOT / "bin/res/scripts/LuaClass/V2ChapterState.lua").read_text(encoding="utf-8")
-if "CURRENT_PHASE = 4" not in config or "SAVE_SCHEMA_VERSION = 4" not in config:
+if "CURRENT_PHASE = 4" not in config or "SAVE_SCHEMA_VERSION = 5" not in config:
     raise SystemExit("V2 config does not identify the Phase 4 baseline")
-if "V2ChapterState.SCHEMA_VERSION = 4" not in state:
+if "V2ChapterState.SCHEMA_VERSION = 5" not in state:
     raise SystemExit("V2 state schema was not advanced for persisted telemetry")
 
 app_delegate = (ROOT / "src/NewPirate/client/AppDelegate.cpp").read_text(encoding="utf-8")

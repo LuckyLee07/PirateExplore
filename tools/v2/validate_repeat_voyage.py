@@ -29,7 +29,7 @@ for marker in (
 
 if "再次体验第一章" in STATE:
     raise SystemExit("player completion still exposes the old destructive replay copy")
-if "V2ChapterState.SCHEMA_VERSION = 4" not in STATE:
+if "V2ChapterState.SCHEMA_VERSION = 5" not in STATE:
     raise SystemExit("repeat voyage unexpectedly changed the persisted save schema")
 
 for marker in (

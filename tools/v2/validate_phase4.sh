@@ -29,6 +29,7 @@ lua tools/v2/test_v2_crew_growth.lua
 lua tools/v2/test_v2_tide_character_event.lua
 python3 tools/v2/test_content_contract.py
 lua tools/v2/test_v2_frost_voyage_model.lua
+lua tools/v2/test_v2_frost_integration.lua
 python3 tools/v2/validate_frost_voyage_model.py
 python3 tools/v2/validate_second_voyage.py
 python3 tools/v2/validate_port_logistics.py

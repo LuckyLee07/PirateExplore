@@ -12,3 +12,7 @@ node_tide_gate,chapter_01,choice,潮汐墓场入口,2,visible,event_tide_route_c
 node_tide_signal,chapter_01,event,墓场求救火,3,fogged,event_tide_signal,,,tide_route_chosen,tide_signal_resolved
 node_tide_guardian,chapter_01,battle,沉锚符文守卫,3,fogged,event_tide_guardian,enemy_tide_warden,reward_tide_guardian,tide_signal_resolved,tide_guardian_defeated
 node_tide_rune,chapter_01,chapter_end,沉锚符文祭台,3,fogged,event_tide_rune,,reward_tide_rune,tide_guardian_defeated,tide_voyage_complete
+node_frost_gate,chapter_01,choice,极地港航道口,2,visible,event_frost_route_choice,,,,frost_route_chosen
+node_frost_beacon,chapter_01,event,极地信标,3,fogged,event_frost_beacon,,,frost_route_chosen,frost_beacon_resolved
+node_frost_hazard,chapter_01,battle,移动冰潮,3,fogged,event_frost_hazard,enemy_frost_giant,reward_frost_passage,frost_beacon_resolved,frost_giant_passed
+node_frost_rune,chapter_01,chapter_end,寒冰符文祭台,3,fogged,event_frost_rune,,reward_frost_rune,frost_giant_passed,frost_voyage_complete

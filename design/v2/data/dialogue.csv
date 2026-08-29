@@ -25,3 +25,11 @@ dialogue_026,chapter_01,node_tide_signal,米克,给我一条小艇，我能把�
 dialogue_021,chapter_01,node_tide_guardian,米克,那不是船壳——锚链织成的潮盾正在替它挡炮。,battle_start
 dialogue_022,chapter_01,node_tide_guardian,艾琳,远射保船但要多打一轮；撞断潮锚更快，也会伤到我们。,naval_hint
 dialogue_023,chapter_01,node_tide_rune,海盗王,第二道封印不是被岁月磨损的。是我亲手撕开的。,chapter_complete
+dialogue_027,chapter_01,node_frost_gate,卡特琳娜,冰层不是地图上的静物。左舷和右舷的裂口每一轮都在换位。,node_enter
+dialogue_028,chapter_01,node_frost_gate,罗克,走信号焰航道就把中央冰脊交给炮口；走浮冰群就别浪费补给。,choice_prompt
+dialogue_029,chapter_01,node_frost_beacon,卡特琳娜,给我信标和冰图。我能把下一轮撞击写成你下令前看得见的数字。,node_enter
+dialogue_030,chapter_01,node_frost_beacon,艾琳,冰下还有探险队。先把他们救上来，我能替全船挽回一次错误。,choice_prompt
+dialogue_031,chapter_01,node_frost_hazard,米克,巨人在推冰！看清裂口在哪一侧再转舵。,battle_start
+dialogue_032,chapter_01,node_frost_hazard,卡特琳娜,目标是穿出去。三轮之后还没推进五格就会被重新封死。,naval_hint
+dialogue_033,chapter_01,node_frost_rune,海盗王,寒冷没有挡住亡灵。它们比你更早抵达这里。,chapter_complete
+dialogue_034,chapter_01,node_frost_rune,艾琳,探险队认得这个符号。侵蚀正在沿海流向更北方扩散。,choice_prompt

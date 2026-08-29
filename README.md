@@ -66,7 +66,8 @@ set `CODE_SIGNING_ALLOWED=YES` only after selecting the App Store Connect team a
   [`docs/v2/tide-character-event-iteration-1.md`](docs/v2/tide-character-event-iteration-1.md),
   [`docs/v2/tide-guardian-visual-iteration-1.md`](docs/v2/tide-guardian-visual-iteration-1.md),
   [`docs/v2/content-expansion-pipeline-iteration-1.md`](docs/v2/content-expansion-pipeline-iteration-1.md),
-  [`docs/v2/frost-voyage-model-iteration-1.md`](docs/v2/frost-voyage-model-iteration-1.md)
+  [`docs/v2/frost-voyage-model-iteration-1.md`](docs/v2/frost-voyage-model-iteration-1.md),
+  [`docs/v2/frost-voyage-runtime-integration-iteration-1.md`](docs/v2/frost-voyage-runtime-integration-iteration-1.md)
 - iOS release engineering baseline and App Store metadata draft:
   [`docs/release/ios-release-readiness.md`](docs/release/ios-release-readiness.md),
   [`docs/release/app-store-metadata-zh-CN.md`](docs/release/app-store-metadata-zh-CN.md),

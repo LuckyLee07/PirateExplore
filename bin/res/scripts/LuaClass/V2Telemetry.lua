@@ -5,6 +5,7 @@
 -- without sending player data anywhere.
 
 local ChapterData = require "LuaClass/V2ChapterData"
+local V2FrostVoyageModel = require "LuaClass/V2FrostVoyageModel"
 
 local V2Telemetry = {}
 
@@ -91,6 +92,12 @@ function V2Telemetry.snapshot(state)
         route = state.route,
         resources = copyResources(state.resources),
         battle = battleSnapshot(state.battle),
+        frost_round = state.frost and state.frost.round,
+        frost_progress = state.frost and state.frost.progress,
+        frost_window = state.frost
+            and state.frost.phase == "hazard"
+            and V2FrostVoyageModel.currentForecast(state.frost).window
+            or nil,
         turn = state.turn,
     }
 end
@@ -147,6 +154,22 @@ local tideCharacterActions = {
     rescue_anchor_keeper = true,
 }
 
+local frostRouteActions = {
+    choose_frost_pack = true,
+    choose_frost_flare = true,
+}
+
+local frostCharacterActions = {
+    read_ice_chart = true,
+    warm_rescue_team = true,
+}
+
+local frostHazardActions = {
+    frost_turn_port = true,
+    frost_turn_starboard = true,
+    frost_break_ice = true,
+}
+
 local function classify(action, before, state, success)
     if not success then return "invalid_action" end
     if (before.stage == "naval" or before.stage == "boarding")
@@ -161,6 +184,9 @@ local function classify(action, before, state, success)
     if moduleActions[action] then return "module_selected" end
     if action == "start_voyage" then return "voyage_started" end
     if action == "reveal_route_intel" then return "route_intel_revealed" end
+    if frostRouteActions[action] then return "frost_route_selected" end
+    if frostCharacterActions[action] then return "frost_character_choice" end
+    if frostHazardActions[action] then return "frost_hazard_action" end
     if routeActions[action] then return "route_selected" end
     if tideCharacterActions[action] then return "tide_character_event_choice" end
     if voyageEventActions[action] then return "voyage_event_choice" end
@@ -173,8 +199,10 @@ local function classify(action, before, state, success)
     if action == "port_resupply" or action == "claim_harbor_relief" then return "port_logistics_used" end
     if action == "take_rune_clue" then return "rune_claimed" end
     if action == "take_tide_rune" then return "second_rune_claimed" end
+    if action == "take_frost_rune" then return "third_rune_claimed" end
     if action == "return_to_port" then return "return_completed" end
     if action == "return_from_tide" then return "second_voyage_completed" end
+    if action == "return_from_frost" then return "third_voyage_completed" end
     if action == "upgrade_hull" or action == "upgrade_guns" then return "upgrade_completed" end
     if action == "promote_gunner" or action == "promote_sailor" then return "crew_upgrade_selected" end
     if action == "prepare_next_voyage" then return "next_voyage_prepared" end
@@ -216,6 +244,12 @@ function V2Telemetry.record(state, action, before, success, message)
         crew_hp = battle.crew_hp,
         enemy_boarding_hp = battle.enemy_boarding_hp,
         tide_shield = battle.tide_shield,
+        frost_round = state.frost and state.frost.round,
+        frost_progress = state.frost and state.frost.progress,
+        frost_window = state.frost
+            and state.frost.phase == "hazard"
+            and V2FrostVoyageModel.currentForecast(state.frost).window
+            or nil,
     }
     table.insert(telemetry.events, event)
     while #telemetry.events > V2Telemetry.MAX_EVENTS do
@@ -237,11 +271,17 @@ function V2Telemetry.getSummary(state)
         port_logistics_actions = 0,
         crew_growth_decisions = 0,
         tide_character_choices = 0,
+        frost_route_choices = 0,
+        frost_character_choices = 0,
+        frost_hazard_actions = 0,
         invalid_actions = 0,
         battle_results = 0,
-        completed = state.stage == "complete" or state.stage == "tide_complete",
+        completed = state.stage == "complete" or state.stage == "tide_complete"
+            or state.stage == "frost_complete",
         second_voyage_complete = state.stage == "tide_complete"
             or (state.flags and state.flags.tide_voyage_complete == true),
+        third_voyage_complete = state.stage == "frost_complete"
+            or (state.flags and state.flags.frost_voyage_complete == true),
         chapter_complete = state.chapter_complete == true,
         route = state.route,
     }
@@ -261,11 +301,26 @@ function V2Telemetry.getSummary(state)
         if event.event_id == "tide_character_event_choice" then
             summary.tide_character_choices = summary.tide_character_choices + 1
         end
+        if event.event_id == "frost_route_selected" then
+            summary.frost_route_choices = summary.frost_route_choices + 1
+        end
+        if event.event_id == "frost_character_choice" then
+            summary.frost_character_choices = summary.frost_character_choices + 1
+        end
+        if event.event_id == "frost_hazard_action" then
+            summary.frost_hazard_actions = summary.frost_hazard_actions + 1
+        end
         if event.event_id == "battle_result" or event.event_id == "tide_guardian_result" then
+            summary.battle_results = summary.battle_results + 1
+        end
+        if event.event_id == "frost_hazard_action"
+            and (event.stage_after == "failed" or event.stage_after == "frost_rune_clue") then
             summary.battle_results = summary.battle_results + 1
         end
         if event.event_id == "route_selected" or event.event_id == "voyage_event_choice"
             or event.event_id == "tide_character_event_choice"
+            or event.event_id == "frost_route_selected"
+            or event.event_id == "frost_character_choice"
             or event.event_id == "curse_decision" then
             summary.decisions = summary.decisions + 1
         end
