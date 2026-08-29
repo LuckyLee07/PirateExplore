@@ -3,6 +3,12 @@
   "id": "voyage_03_frostbound",
   "status": "design_candidate",
   "runtime_exposed": false,
+  "prototype_evidence": {
+    "module": "bin/res/scripts/LuaClass/V2FrostVoyageModel.lua",
+    "test": "tools/v2/test_v2_frost_voyage_model.lua",
+    "validated": true,
+    "runtime_wiring": false
+  },
   "title": "极地港 · 霜冻航线",
   "player_promise": "读懂正在移动的冰潮，在保船、保人和抓住破冰窗口之间作出可预判的航海决定。",
   "source_trace": [
@@ -151,9 +157,9 @@
     "choose_frost_flare",
     "read_ice_chart",
     "warm_rescue_team",
-    "frost_hold_course",
+    "frost_turn_port",
+    "frost_turn_starboard",
     "frost_break_ice",
-    "frost_dash_window",
     "enemy_frost_giant",
     "reward_frost_passage",
     "reward_frost_rune",
