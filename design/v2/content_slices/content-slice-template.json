@@ -1,0 +1,100 @@
+{
+  "schema_version": 1,
+  "id": "voyage_nn_slug",
+  "status": "design_candidate",
+  "runtime_exposed": false,
+  "title": "玩家可读航程名称",
+  "player_promise": "一句话说明这段航程带来的新体验，而不是新页面数量",
+  "source_trace": [
+    {
+      "path": "原策划相对或绝对路径",
+      "record": "表行、章节或资产名",
+      "adopt": "本轮保留的世界观或视觉元素",
+      "reject": "明确不恢复的旧机制"
+    }
+  ],
+  "non_goals": [
+    "本轮明确不做的系统"
+  ],
+  "structure": {
+    "target_minutes": 10,
+    "meaningful_nodes": 5,
+    "stages": [
+      "slug_route_choice",
+      "slug_character_event",
+      "slug_encounter",
+      "slug_rune_clue",
+      "slug_settlement",
+      "slug_complete"
+    ]
+  },
+  "routes": [
+    {
+      "id": "route_a",
+      "label": "路线 A",
+      "visible_cost": "可量化代价",
+      "growth_payoff": "兑现已有成长的方式",
+      "why_not_dominant": "为什么不会成为无脑最优解"
+    },
+    {
+      "id": "route_b",
+      "label": "路线 B",
+      "visible_cost": "可量化代价",
+      "growth_payoff": "兑现已有成长的方式",
+      "why_not_dominant": "为什么不会成为无脑最优解"
+    }
+  ],
+  "character_event": {
+    "title": "角色事件名称",
+    "focus_characters": ["crew_id_a", "crew_id_b"],
+    "agency_rule": "角色表达立场，但玩家保留最终决定",
+    "choices": [
+      {
+        "id": "choice_a",
+        "consequence": "立即进入后续玩法的可见结果"
+      },
+      {
+        "id": "choice_b",
+        "consequence": "立即进入后续玩法的可见结果"
+      }
+    ]
+  },
+  "encounter": {
+    "name": "差异敌人或环境挑战",
+    "mechanic": "不能只把前一航程数值和名称替换掉",
+    "difference_from_previous": "可被测试验证的差异",
+    "telegraph": "玩家操作前可以观察的下一步后果",
+    "failure_recovery": "失败、重试和返港分别保留/清除什么"
+  },
+  "growth_payoffs": [
+    {
+      "growth": "已有成长 ID 或角色",
+      "payoff": "本航程中的可见作用"
+    }
+  ],
+  "ui_contract": {
+    "stable_shell": "复用 UI 3.x 的空间骨架",
+    "new_focus": "只新增一个与新机制对应的主视觉焦点",
+    "decision_preview": "提交前展示实际代价与收益",
+    "result_feedback": "提交后在因果发生位置显示真实状态差",
+    "motion": "短促、一次性、不循环"
+  },
+  "asset_budget": [
+    {
+      "slot": "hero_map",
+      "purpose": "探索场景",
+      "required_before_runtime": true
+    }
+  ],
+  "reserved_runtime_ids": [
+    "所有规划中的 stage、node、event、action、enemy、reward、presentation、telemetry 与 QA ID"
+  ],
+  "qa_profiles": ["qa_slug_route", "qa_slug_encounter", "qa_slug_rune"],
+  "telemetry": ["slug_route_selected", "slug_encounter_action", "slug_voyage_completed"],
+  "acceptance_gates": [
+    "状态机正反路径测试",
+    "主流 iPhone 运行截图",
+    "完整 Phase 4 回归",
+    "iOS Simulator Debug 构建"
+  ]
+}

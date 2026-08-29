@@ -15,7 +15,7 @@ local data = {
     map_node = {
         { id = "node_port", chapter_id = "chapter_01", type = "port", name = "皇家港", risk = 0, visibility = "visible", grants_flag = "voyage_ready" },
         { id = "node_fog_gate", chapter_id = "chapter_01", type = "choice", name = "第一片迷雾", risk = 1, visibility = "visible", event_id = "event_route_choice", grants_flag = "route_chosen" },
-        { id = "node_wreck", chapter_id = "chapter_01", type = "resource", name = "沉船残骸", risk = 1, visibility = "fogged", reward_id = "reward_salvage", required_flag = "route_chosen", grants_flag = "salvage_found" },
+        { id = "node_wreck", chapter_id = "chapter_01", type = "resource", name = "沉船残骸", risk = 1, visibility = "fogged", event_id = "event_wreck_survivors", reward_id = "reward_salvage", required_flag = "route_chosen", grants_flag = "salvage_found" },
         { id = "node_safe_cove", chapter_id = "chapter_01", type = "event", name = "避风海湾", risk = 1, visibility = "fogged", event_id = "event_safe_cove", grants_flag = "crew_restored" },
         { id = "node_black_tide", chapter_id = "chapter_01", type = "event", name = "黑潮浪墙", risk = 2, visibility = "fogged", event_id = "event_black_tide", required_flag = "route_chosen", grants_flag = "black_tide_crossed" },
         { id = "node_whisper", chapter_id = "chapter_01", type = "event", name = "海盗王低语", risk = 2, visibility = "fogged", event_id = "event_whisper", required_flag = "black_tide_crossed", grants_flag = "curse_heard" },

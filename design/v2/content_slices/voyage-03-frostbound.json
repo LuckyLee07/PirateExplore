@@ -1,0 +1,201 @@
+{
+  "schema_version": 1,
+  "id": "voyage_03_frostbound",
+  "status": "design_candidate",
+  "runtime_exposed": false,
+  "title": "极地港 · 霜冻航线",
+  "player_promise": "读懂正在移动的冰潮，在保船、保人和抓住破冰窗口之间作出可预判的航海决定。",
+  "source_trace": [
+    {
+      "path": "/Users/lizi/Desktop/Pirate/策划/客户端数据/CSV文件/strongholdDistribution.csv",
+      "record": "地图 6 极地港；地图 7 霜冻海湾",
+      "adopt": "冰雪世界、极地探险者基地、浮冰与冰棱海的地域身份",
+      "reject": "逐格体力消耗、大量同质据点、传送钥匙与材料刷取"
+    },
+    {
+      "path": "/Users/lizi/Desktop/Pirate/策划/客户端数据/CSV文件/soilderAttribute.csv",
+      "record": "10126 冰霜巨人；10127 冰霜雪蟒",
+      "adopt": "缓慢但能改变战场地形的冰霜巨兽轮廓",
+      "reject": "直接照搬旧数值、旧星级和普通陆战模板"
+    },
+    {
+      "path": "/Users/lizi/Desktop/Pirate/策划/客户端数据/CSV文件/plot.csv",
+      "record": "主线 9～14：亡灵持续侵蚀、卡特琳娜与海洋女神线索",
+      "adopt": "海盗王低语继续诱导玩家，卡特琳娜第一次成为航程核心人物",
+      "reject": "一次塞入迈克、塞壬、女神和龙骑士等多条未铺垫角色线"
+    }
+  ],
+  "non_goals": [
+    "不恢复十六张逐格大地图",
+    "不新增制造、钥匙、星级装备和材料刷取",
+    "不把第三航程做成换名的潮盾战",
+    "不在完整闭环可运行前暴露出航按钮",
+    "不提前制作真机、签名或 App Store 内容"
+  ],
+  "structure": {
+    "target_minutes": 10,
+    "meaningful_nodes": 5,
+    "stages": [
+      "frost_route_choice",
+      "frost_character_event",
+      "frost_hazard",
+      "frost_rune_clue",
+      "frost_settlement",
+      "frost_complete"
+    ]
+  },
+  "routes": [
+    {
+      "id": "frost_pack_channel",
+      "label": "浮冰群航道",
+      "visible_cost": "连续两次可预告的船体碰撞风险",
+      "growth_payoff": "船体等级降低碰撞；大副米克降低一次转向代价",
+      "why_not_dominant": "保留补给但需要准确应对冰潮方向，选错两次会迫使返港"
+    },
+    {
+      "id": "frost_flare_pass",
+      "label": "信号焰航道",
+      "visible_cost": "消耗补给维持火盆并暴露船位",
+      "growth_payoff": "火炮等级缩短破冰窗口；炮术长罗克强化一次远距裂冰",
+      "why_not_dominant": "船体风险较低，但补给不足时不能完成全部火盆轮次"
+    }
+  ],
+  "character_event": {
+    "title": "极地信标",
+    "focus_characters": ["crew_navigator", "crew_medic"],
+    "agency_rule": "卡特琳娜与艾琳各自提出方案，当前首席只补充战术意见，船长保留最终决定。",
+    "choices": [
+      {
+        "id": "read_ice_chart",
+        "consequence": "卡特琳娜标出下一轮冰潮方向，危险操作在提交前显示真实碰撞值。"
+      },
+      {
+        "id": "warm_rescue_team",
+        "consequence": "艾琳保住受困探险队，并获得一次在错误操作后恢复船员状态的机会。"
+      }
+    ]
+  },
+  "encounter": {
+    "name": "冰霜巨人 · 移动冰潮",
+    "mechanic": "三轮可预告危险序列；每轮先展示巨人将推动的冰潮方向，再在稳舵避险、炮击裂冰和抢行之间选择。目标是穿过航道，不是把单一护盾打到零。",
+    "difference_from_previous": "沉锚守卫比较一次攻击的伤害与代价；冰潮挑战比较当前预告、剩余船体/补给和下一轮位置。至少一项最优动作会随预告方向变化。",
+    "telegraph": "日志板上方增加唯一的冰潮预告条，只显示下一轮方向、可能损失和可利用窗口；选择后用真实状态差更新航道位置。",
+    "failure_recovery": "原地重试保留航线与信标选择但重置三轮序列；返港清除本航程临时预告并允许重新选择航道。"
+  },
+  "growth_payoffs": [
+    {
+      "growth": "ship_hull_level",
+      "payoff": "减少浮冰碰撞的实际船体损失"
+    },
+    {
+      "growth": "ship_gun_level",
+      "payoff": "炮击裂冰时一次推进两个航道位置，但仍消耗补给"
+    },
+    {
+      "growth": "crew_upgrade_sailor",
+      "payoff": "第一次危险转向的船体代价降低"
+    },
+    {
+      "growth": "crew_upgrade_gunner",
+      "payoff": "第一次远距裂冰不触发巨人的反向冰浪"
+    },
+    {
+      "growth": "crew_navigator",
+      "payoff": "信标选择后完整揭示下一轮冰潮代价"
+    },
+    {
+      "growth": "crew_medic",
+      "payoff": "信标选择后提供一次可见、一次性的错误恢复"
+    }
+  ],
+  "ui_contract": {
+    "stable_shell": "保留章节铭牌、航令、资源仪表、纵向航程、船长日志和编号指令，不另起一套冰雪 UI。",
+    "new_focus": "只新增一条位于场景与日志之间的冰潮预告条，并把方向映射到场景中的左/右冰带。",
+    "decision_preview": "每个操作在提交前显示本轮实际船体、补给和推进变化；未知代价明确显示为未知，不用模糊安全词。",
+    "result_feedback": "碰撞落在我方船位，裂冰落在目标冰带，航道推进只在预告条中更新真实位置。",
+    "motion": "冰裂和航道推进各使用一次小于 300ms 的短反馈；不循环播放飘雪、呼吸和镜头摇摆。"
+  },
+  "asset_budget": [
+    {
+      "slot": "hero_frost_route",
+      "purpose": "极地港与移动浮冰探索背景",
+      "required_before_runtime": true
+    },
+    {
+      "slot": "hero_frost_giant",
+      "purpose": "左右冰带、我方船与冰霜巨人均可辨认的挑战背景",
+      "required_before_runtime": true
+    },
+    {
+      "slot": "hero_frost_rune",
+      "purpose": "第三枚寒冰符文结果背景",
+      "required_before_runtime": true
+    }
+  ],
+  "reserved_runtime_ids": [
+    "frost_route_choice",
+    "frost_character_event",
+    "frost_hazard",
+    "frost_rune_clue",
+    "frost_settlement",
+    "frost_complete",
+    "node_frost_gate",
+    "node_frost_beacon",
+    "node_frost_hazard",
+    "node_frost_rune",
+    "event_frost_route_choice",
+    "event_frost_beacon",
+    "event_frost_hazard",
+    "event_frost_rune",
+    "choose_frost_pack",
+    "choose_frost_flare",
+    "read_ice_chart",
+    "warm_rescue_team",
+    "frost_hold_course",
+    "frost_break_ice",
+    "frost_dash_window",
+    "enemy_frost_giant",
+    "reward_frost_passage",
+    "reward_frost_rune",
+    "presentation_frost_route",
+    "presentation_frost_beacon",
+    "presentation_frost_hazard",
+    "presentation_frost_rune",
+    "frost_route_selected",
+    "frost_character_choice",
+    "frost_hazard_action",
+    "third_rune_claimed",
+    "third_voyage_completed",
+    "qa_frost_route",
+    "qa_frost_beacon_navigator",
+    "qa_frost_beacon_medic",
+    "qa_frost_hazard",
+    "qa_frost_rune",
+    "qa_frost_complete"
+  ],
+  "qa_profiles": [
+    "qa_frost_route",
+    "qa_frost_beacon_navigator",
+    "qa_frost_beacon_medic",
+    "qa_frost_hazard",
+    "qa_frost_rune",
+    "qa_frost_complete"
+  ],
+  "telemetry": [
+    "frost_route_selected",
+    "frost_character_choice",
+    "frost_hazard_action",
+    "third_rune_claimed",
+    "third_voyage_completed"
+  ],
+  "acceptance_gates": [
+    "完整新档可连续完成三次航程，已有两条成长路线都不软锁",
+    "两条极地航道、两项信标选择和至少两种冰潮序列具备状态机正反路径测试",
+    "普通未终结动作与最终穿越动作使用不同的真实状态反馈",
+    "失败原地重试与返港恢复的保留/清除边界通过测试",
+    "六个 QA 档可恢复且不污染玩家存档",
+    "三个新英雄画面均完成主流 iPhone 1206×2622 运行复核",
+    "完整 Phase 4 回归与 iOS Simulator Debug 构建通过",
+    "完整闭环未通过前 tide_complete 不出现第三航程出航动作"
+  ]
+}
