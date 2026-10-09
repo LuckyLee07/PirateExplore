@@ -67,7 +67,7 @@ local function selectedBrush(width, height)
 end
 -- Missing assets keep the already-tested native-symbol compatibility fallback.
 local function nativeIcon(kind)
-    local painted = detailSprite(kind == "coin" and "coin-detail.png" or "gem-detail.png", 40, 40)
+    local painted = detailSprite(kind == "coin" and "coin-detail.png" or "gem-detail.png", 34, 34)
     if painted then return painted end
     local node = cc.DrawNode:create()
     if kind == "coin" then
@@ -728,7 +728,7 @@ function MainMenuLayer:applyHomeNavigationAppearance()
     end
     for index, button in ipairs(self.navigationButtons) do
         self.navigationBrushes[index]:setVisible(index == group)
-        button.bLabel:setFontName(headingFont())
+        button.bLabel:setFontName(MasterTheme.headingFont(true))
         button.bLabel:setColor(MENU_COLORS.paper)
     end
     -- The guide may fade or hide legacy targets; it never controls these nodes.
@@ -922,9 +922,9 @@ function MainMenuLayer:setHomePresentation(active)
             local centerY = size.height - 121
             local paper = masterGraphic("currency-paper.png", width, 52)
             paper:setPosition(cc.p(x, centerY - 26)); header:addChild(paper)
-            local icon = nativeIcon(kind); icon:setPosition(cc.p(x + 23, centerY)); header:addChild(icon)
+            local icon = nativeIcon(kind); icon:setPosition(cc.p(x + 28, centerY)); header:addChild(icon)
             local number = menuLabel(value, 27, MENU_COLORS.ink, x + 56, centerY, false)
-            number:setFontName(headingFont()); header:addChild(number)
+            number:setFontName(MasterTheme.headingFont(true)); header:addChild(number)
             local add = transparentMenuItem("+", 59, 59, callback, 36, MENU_COLORS.sea)
             add:setPosition(cc.p(plusX, centerY))
             local chip = MasterTheme.material("currency-paper.png", 34, 34, cc.c3b(224, 225, 202))

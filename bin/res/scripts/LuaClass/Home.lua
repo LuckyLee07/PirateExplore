@@ -34,16 +34,18 @@ function HomeLayer:init()
     self.shipTitleWidth=plaqueW-86
     self.shipLabel=M.label('',28,c.paper,106*ux,plaqueH-55*uy,true);plaque:addChild(self.shipLabel)
     plaque:addChild(M.label('货舱',25,c.paper,47*ux,plaqueH-117*uy,true))
-    self.cargoLabel=M.label('',26,c.paper,139*ux,plaqueH-117*uy,'regular');plaque:addChild(self.cargoLabel)
+    self.cargoLabel=M.label('',27,c.white,139*ux,plaqueH-117*uy,true);plaque:addChild(self.cargoLabel)
     local barW=324*ux;local barH=15*uy;local barX=46*ux;local barY=plaqueH-162*uy
     local frame=HomeTheme.rounded(barW+2,barH+2,c.sea,5);frame:setPosition(cc.p(barX-1,barY-1));plaque:addChild(frame)
     local track=HomeTheme.rounded(barW,barH,c.ink,4);track:setPosition(cc.p(barX,barY));plaque:addChild(track)
     self.cargoBar=HomeTheme.rounded(barW,barH,c.sea,4);self.cargoBar:setPosition(cc.p(barX,barY));plaque:addChild(self.cargoBar)
-    local rule=cc.DrawNode:create();rule:drawSegment(cc.p(46*ux,plaqueH-180*uy),cc.p(369*ux,plaqueH-180*uy),.45,HomeTheme.rgba(c.paper,.55));plaque:addChild(rule)
+    local rule=cc.DrawNode:create();rule:drawSegment(cc.p(46*ux,plaqueH-180*uy),cc.p(369*ux,plaqueH-180*uy),.65,HomeTheme.rgba(c.paper,.9));plaque:addChild(rule)
     local foodIcon=M.icon('food',29,c.paper);foodIcon:setPosition(cc.p(43*ux,plaqueH-237*uy));plaque:addChild(foodIcon)
-    self.foodLabel=M.label('',20,c.paper,96*ux,plaqueH-217*uy,'regular');plaque:addChild(self.foodLabel)
+    self.foodLabel=M.label('',21,c.white,96*ux,plaqueH-217*uy,true);plaque:addChild(self.foodLabel)
     local keyIcon=M.icon('key',31,c.paper);keyIcon:setPosition(cc.p(240*ux,plaqueH-239*uy));plaque:addChild(keyIcon)
-    self.keyLabel=M.label('',20,c.paper,287*ux,plaqueH-217*uy,'regular');plaque:addChild(self.keyLabel)
+    self.keyLabel=M.label('',21,c.white,287*ux,plaqueH-217*uy,true);plaque:addChild(self.keyLabel)
+
+    rule:drawSegment(cc.p(221*ux,plaqueH-198*uy),cc.p(221*ux,plaqueH-240*uy),.65,HomeTheme.rgba(c.paper,.9))
 
     -- The roster is one paper object over the dock, with three genuine unit
     -- positions. No additional white cards, legacy shortcuts or feature tiles.
@@ -52,7 +54,7 @@ function HomeLayer:init()
     local people=M.icon('crew',36,c.ink);people:setPosition(cc.p(42*ux,self.rosterHeight-61*uy));self.roster:addChild(people)
     self.crewLabel=M.label('',26,c.ink,112*ux,self.rosterHeight-46*uy,true);self.roster:addChild(self.crewLabel)
     self.crewNode=cc.Node:create();self.roster:addChild(self.crewNode)
-    self.slotWidth=272*ux;self.slotPortraitHeight=229*uy;self.slotBaseY=58*uy
+    self.slotWidth=272*ux;self.slotPortraitHeight=229*uy;self.slotBaseY=70*uy
     self.slotStartX=38*ux;self.slotStep=292*ux
 
     local statusW,statusH=308*ux,87*uy
@@ -145,7 +147,7 @@ function HomeLayer:renderCrew()
         if slot.locked then holder:setCascadeOpacityEnabled(true);holder:setOpacity(95) end
         self.crewNode:addChild(holder)
         local text=slot.name..(slot.num>1 and (' ×'..slot.num) or '')
-        local label=M.label(text,22,slot.empty and c.muted or c.ink,x+self.slotWidth/2,31*self.masterScaleY,true,.5)
+        local label=M.label(text,22,slot.empty and c.muted or c.ink,x+self.slotWidth/2,39*self.masterScaleY,true,.5)
         M.fit(label,self.slotWidth+6);self.crewNode:addChild(label)
     end
 end

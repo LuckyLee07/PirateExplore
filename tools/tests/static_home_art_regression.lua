@@ -101,14 +101,14 @@ for _, mode in ipairs(modes) do
         equal(compass:isVisible(), not painted, context..' no duplicate native compass')
 
         for _, currency in ipairs({
-            {name='coin-detail.png', x=58, number=menu.homeCoinLabel, add=menu.homeCoinAddButton, plusX=199},
-            {name='gem-detail.png', x=253, number=menu.homeDiamondLabel, add=menu.homeDiamondAddButton, plusX=382},
+            {name='coin-detail.png', x=63, number=menu.homeCoinLabel, add=menu.homeCoinAddButton, plusX=199},
+            {name='gem-detail.png', x=258, number=menu.homeDiamondLabel, add=menu.homeDiamondAddButton, plusX=382},
         }) do
             local icon = assert(findChild(menu.homeHeader, function(child)
                 return child:getPositionX() == currency.x and child:getPositionY() == height - 121
             end))
             equal(icon.kind, painted and 'Sprite' or 'DrawNode', context..' '..currency.name..' fallback kind')
-            if painted then fitted(icon, 40, 40, context..' '..currency.name) end
+            if painted then fitted(icon, 34, 34, context..' '..currency.name) end
             equal(currency.number.kind, 'LabelTTF', context..' live amount remains native label')
             equal(currency.add.kind, 'MenuItemSprite', context..' add remains native menu item')
             equal(currency.add:getContentSize().width, 59, context..' plus width')

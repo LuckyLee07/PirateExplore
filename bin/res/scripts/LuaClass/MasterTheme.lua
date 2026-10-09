@@ -30,14 +30,30 @@ function M.material(name,w,h,color)
     local rects={['ink-brush.png']={27,244,630,364},['coral-brush.png']={667,356,565,169},
         ['crew-paper.png']={23,787,688,300},['currency-paper.png']={756,867,474,127}}
     local path=M.path..name;local rect=rects[name]
+    if name=='coral-brush.png' and cc.FileUtils:getInstance():isFileExist(M.path..'Polish/coral-action.png') then
+        path=M.path..'Polish/coral-action.png';rect=nil
+    end
     if rect then path=M.path..'materials.png' end
     if cc.FileUtils:getInstance():isFileExist(path) then
-        local s=rect and cc.Sprite:create(path,cc.rect(unpack(rect))) or cc.Sprite:create(path);local z=s:getContentSize()
+        local s=rect and cc.Sprite:create(path,cc.rect(unpack(rect))) or cc.Sprite:create(path)
+        local z=s and s:getContentSize()
+        if z and z.width>0 and z.height>0 then
         s:setScaleX(w/z.width);s:setScaleY(h/z.height);s:setAnchorPoint(cc.p(0,0))
+        if name=='coral-brush.png' and cc.ClippingNode then
+            -- Use the generated brush only as an edge stencil. The action's
+            -- interior stays a quiet native coral field behind real lettering.
+            local clip=cc.ClippingNode:create();clip:setContentSize(cc.size(w,h))
+            clip:setStencil(s);clip:setAlphaThreshold(.5)
+            local base=cc.c3b(235,94,62)
+            if color then base=cc.c3b(base.r*color.r/255,base.g*color.g/255,base.b*color.b/255) end
+            clip:addChild(cc.LayerColor:create(cc.c4b(base.r,base.g,base.b,255),w,h));return clip
+        end
         if color then s:setColor(color) end
         local n=cc.Node:create();n:setContentSize(cc.size(w,h));n:addChild(s);return n
+        end
     end
     local fallback=(name=='coral-brush.png') and M.colors.coral or ((name=='ink-brush.png') and M.colors.ink or M.colors.paper)
+    if name=='Polish/roster-blue.png' then fallback=cc.c3b(117,168,195) end
     return HomeTheme.rounded(w,h,color or fallback,5)
 end
 function M.button(text,w,h,callback,opts)
@@ -56,8 +72,14 @@ function M.icon(kind,size,color)
     local function poly(points)local a={} for _,v in ipairs(points) do a[#a+1]=p(v[1],v[2]) end;d:drawPolygon(a,#a,c,0,c)end
     local function line(x,y,a,b,w)d:drawSegment(p(x,y),p(a,b),(w or .026)*size,c)end
     if kind=='sail' or kind=='ship' then
-        poly({{.48,.95},{.12,.24},{.48,.3}});poly({{.56,.79},{.56,.3},{.85,.25}})
-        line(.52,.95,.52,.15,.018);poly({{.08,.18},{.92,.18},{.73,.04},{.23,.04}})
+        -- Unequal wind-filled sails, drawn as quiet broad shapes rather than
+        -- two symmetric triangles. Sampled curvature stays resolution-free.
+        poly({{.47,.88},{.42,.71},{.34,.53},{.23,.36},{.13,.28},{.28,.31},{.47,.31}})
+        poly({{.55,.94},{.65,.83},{.73,.68},{.77,.51},{.78,.36},{.73,.28},{.64,.3},{.55,.31}})
+        line(.52,.97,.52,.21,.015);poly({{.08,.22},{.92,.25},{.73,.09},{.24,.08}})
+        line(.16,.025,.76,.025,.012)
+        local dark=HomeTheme.rgba(M.colors.ink)
+        d:drawSegment(p(.24,.17),p(.75,.18),.008*size,dark)
     elseif kind=='crew' then
         for _,v in ipairs({{.24,.72,.105},{.76,.72,.105},{.50,.82,.12}}) do d:drawDot(p(v[1],v[2]),v[3]*size,c) end
         poly({{.04,.13},{.09,.47},{.24,.54},{.35,.49},{.39,.1}})
@@ -65,11 +87,21 @@ function M.icon(kind,size,color)
         poly({{.31,.06},{.35,.54},{.5,.64},{.65,.54},{.7,.06}})
     elseif kind=='port' then
         poly({{.05,.7},{.48,.98},{.89,.7}});poly({{.13,.06},{.13,.67},{.29,.67},{.29,.06}});poly({{.64,.06},{.64,.67},{.8,.67},{.8,.06}});poly({{.13,.56},{.8,.56},{.8,.67},{.13,.67}})
-        line(.03,.03,.96,.03,.025);line(.87,.11,.87,.44,.025);line(.76,.44,.97,.44,.025)
+        line(.03,.03,.96,.03,.025)
+        local dark=HomeTheme.rgba(M.colors.ink)
+        d:drawDot(p(.48,.79),size*.045,dark)
+        poly({{.68,.06},{.98,.06},{.98,.39},{.68,.39}})
+        d:drawSegment(p(.71,.1),p(.95,.36),.018*size,dark)
+        d:drawSegment(p(.71,.36),p(.95,.1),.013*size,dark)
+        line(.05,.2,.05,.46,.025);line(.01,.48,.11,.48,.025)
     elseif kind=='anchor' then
         d:drawDot(p(.5,.84),size*.115,c);d:drawDot(p(.5,.84),size*.052,HomeTheme.rgba(M.colors.ink))
         line(.5,.76,.5,.18,.04);line(.23,.6,.77,.6,.032)
-        line(.19,.27,.5,.08,.045);line(.5,.08,.81,.27,.045)
+        local left={{.15,.32},{.18,.24},{.23,.18},{.31,.13},{.40,.1},{.5,.085}}
+        for i=1,#left-1 do
+            local a,b=left[i],left[i+1]
+            line(a[1],a[2],b[1],b[2],.037);line(1-a[1],a[2],1-b[1],b[2],.037)
+        end
         poly({{.06,.39},{.3,.33},{.16,.15}});poly({{.94,.39},{.7,.33},{.84,.15}})
     elseif kind=='key' then
         d:drawDot(p(.73,.78),size*.16,c);d:drawDot(p(.73,.78),size*.085,HomeTheme.rgba(M.colors.ink))
@@ -78,11 +110,16 @@ function M.icon(kind,size,color)
         poly({{.23,.1},{.15,.37},{.15,.65},{.24,.87},{.76,.87},{.85,.65},{.85,.37},{.77,.1}})
         local dark=HomeTheme.rgba(M.colors.ink)
         d:drawSegment(p(.18,.64),p(.82,.64),.032*size,dark);d:drawSegment(p(.2,.34),p(.8,.34),.032*size,dark)
-        d:drawSegment(p(.41,.17),p(.41,.8),.014*size,dark);d:drawSegment(p(.61,.17),p(.61,.8),.014*size,dark)
+        d:drawSegment(p(.41,.17),p(.41,.8),.013*size,dark);d:drawSegment(p(.61,.17),p(.61,.8),.013*size,dark)
+        d:drawSegment(p(.28,.8),p(.71,.8),.032*size,dark)
+        d:drawDot(p(.28,.65),size*.018,dark);d:drawDot(p(.72,.65),size*.018,dark)
     end
     return n
 end
 function M.portraitBrush(w,h)
+    if cc.FileUtils:getInstance():isFileExist(M.path..'Polish/roster-blue.png') then
+        return M.material('Polish/roster-blue.png',w,h)
+    end
     -- Reuse the ink brush's irregular alpha as a stencil for a pale-blue wash.
     -- No lettering/characters are embedded in this native material treatment.
     if cc.ClippingNode then
