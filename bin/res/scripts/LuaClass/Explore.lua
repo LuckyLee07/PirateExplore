@@ -13,6 +13,7 @@ require "LuaClass/GuideController"
 require "LuaClass/ExploreGuideComponent"
 require "LuaClass/RandomEventMode"
 require "LuaClass/SkirmishLogicManagers"
+require "LuaClass/BTheme"
 
 
 playerOrderLevel = 5
@@ -376,6 +377,13 @@ end
 
 -- zoomCenter = cc.p(0,0)
 local function onTouchesBegan( target,touch, event )
+
+    if target.adventureHudTop and target.adventureHudBottom then
+        local point = target:convertToNodeSpace(touch:getLocation())
+        if point.y >= target.adventureHudTop or point.y <= target.adventureHudBottom then
+            return false
+        end
+    end
 
 	-- print("onTouchesBeganExplo",target.statue)
 
@@ -1107,34 +1115,76 @@ function Explore:startMapGuide( dirction )
 
 end
 
-function Explore:initTipLayer(  )
+-- The chart remains the live TMX scene. Only the screen-space controls use the
+-- adventure theme; all resource labels retain their original update references.
+function Explore:initTipLayer()
+    local winSize = screenSize
+    local u = winSize.width / 640
+    local colors = BTheme.colors
+    local topHeight, bottomHeight = 110 * u, 160 * u
+    self.adventureHudTop = winSize.height - topHeight
+    self.adventureHudBottom = bottomHeight
 
-	-- print("initTipLayer")
-	
-	local winSize = screenSize
-	
-	local tipLayer = cc.Layer:create()
-    tipLayer:setPosition(cc.p(0,0))
-    self:addChild(tipLayer,topButtonOrderLevel)
+    local tipLayer = cc.Layer:create()
+    self:addChild(tipLayer, topButtonOrderLevel)
+    self.tipLayer = tipLayer
 
-    -- 添加下边的点点承载节点
+    tipLayer:addChild(BTheme.panel(winSize.width, topHeight, colors.ink, 0, self.adventureHudTop))
+    tipLayer:addChild(BTheme.panel(winSize.width, bottomHeight, colors.sand, 0, 0))
+    tipLayer:addChild(BTheme.panel(winSize.width, 4 * u, colors.sea, 0, bottomHeight - 4 * u))
+    tipLayer:addChild(BTheme.panel(winSize.width, 2 * u, colors.line, 0, self.adventureHudTop))
 
-    -- 添加信息框
-    local tempSpr = cc.Sprite:create("Images/Map/mask.png")
-    local mapMask = cc.Scale9Sprite:create("Images/Map/mask.png",cc.rect(0, 0, tempSpr:getContentSize().width, tempSpr:getContentSize().height), cc.rect(50, 50, tempSpr:getContentSize().width - 100, tempSpr:getContentSize().height - 100))
-    mapMask:setContentSize(winSize)
-    mapMask:setPosition(cc.p(winSize.width / 2, winSize.height / 2))
-    tipLayer:addChild(mapMask)
+    local function label(text, size, color, x, y)
+        local node = BTheme.label(text, size * u, color, x * u, y)
+        tipLayer:addChild(node, 1)
+        return node
+    end
 
-    -- local mapMask = cc.Sprite:create("Images/Map/mask.png")
-    -- local scaleX = winSize.width / mapMask:getContentSize().width
-    -- local scaleY = winSize.height / mapMask:getContentSize().height
-    -- mapMask:setScaleX(scaleX)
-    -- mapMask:setScaleY(scaleY)
-    
-    local tempData = DataManager:getInstance():getRoleData(roleMapInfo)
+    -- Native sail mark and type stay sharp at every viewport size.
+    local sail = cc.DrawNode:create()
+    local sailColor = cc.c4f(colors.sand.r / 255, colors.sand.g / 255, colors.sand.b / 255, 1)
+    sail:drawTriangle(cc.p(0, 0), cc.p(13 * u, 24 * u), cc.p(13 * u, 0), sailColor)
+    sail:drawTriangle(cc.p(17 * u, 0), cc.p(17 * u, 17 * u), cc.p(29 * u, 0), sailColor)
+    sail:drawSegment(cc.p(0, -5 * u), cc.p(29 * u, -5 * u), 2 * u, sailColor)
+    sail:setPosition(cc.p(22 * u, winSize.height - 47 * u))
+    tipLayer:addChild(sail, 1)
+    label("探索海图", 30, colors.white, 63, winSize.height - 35 * u)
 
-    local backBtn = SDButton:create("Images/btn/ann05_b.png", "Images/btn/ann05_b.png", function() 
+    self.breadNum = self.bagController:getBreads()
+    self.breadtitile = label("食物", 18, colors.sand, 326, winSize.height - 35 * u)
+    self.bread = label(tostring(self.breadNum), 22,
+        self.breadNum < 10 and colors.coral or colors.white, 374, winSize.height - 35 * u)
+    label("货舱", 18, colors.sand, 454, winSize.height - 35 * u)
+    self.capacityTips = label(string.format("%d/%d", self.bagController.costSpace, self.bagController.limited),
+        21, colors.white, 500, winSize.height - 35 * u)
+
+    self.chapterTitle = label("", 18, colors.sand, 22, winSize.height - 82 * u)
+    label("总探索", 15, colors.sand, 152, winSize.height - 82 * u)
+    self.occupation = DataManager:getInstance():getRoleData(roleExtents) or 0
+    self.occupationNum = label(tostring(self.occupation), 18, colors.white, 210, winSize.height - 82 * u)
+    label("本图", 15, colors.sand, 317, winSize.height - 82 * u)
+    self.extentTip = label(tostring(self.extent) .. "%", 18, colors.white, 356, winSize.height - 82 * u)
+    tipLayer:addChild(BTheme.panel(170 * u, 8 * u, colors.muted, 448 * u, winSize.height - 87 * u))
+    self.adventureExtentBar = BTheme.panel(170 * u, 8 * u, colors.sea, 448 * u, winSize.height - 87 * u)
+    self.adventureExtentBar:setScaleX(math.max(0, math.min(1, self.extent / 100)))
+    tipLayer:addChild(self.adventureExtentBar, 1)
+
+    label("航线目标", 15, colors.muted, 22, 133 * u)
+    -- MapLayoutManagers:initEnemyInfo writes the real chapter/map name here.
+    self.nameTitle = label("", 28, colors.ink, 22, 102 * u)
+    label("逐格探索，揭开迷雾", 14, colors.muted, 22, 75 * u)
+
+    local function button(text, width, height, x, y, callback, coral)
+        local node = BTheme.button(text, width * u, height * u, callback, {
+            color = coral and colors.coral or colors.ink,
+            selectedColor = colors.sea, textColor = colors.white, fontSize = 22 * u
+        })
+        node:setPosition(cc.p(x * u, y * u))
+        tipLayer:addChild(node, 2)
+        return node
+    end
+
+    local backBtn = button("返航", 108, 54, 561, 82, function()
         if self.isNeedGuide then
         	return
         end
@@ -1193,224 +1243,46 @@ function Explore:initTipLayer(  )
         -- print("showLabel1 will add")
         _alert:addChild(showLabel1)
         -- print("showLabel1 inited")
-    end)
-    backBtn:setScale(0.8)
-    backBtn:setPosition(cc.p(winSize.width - backBtn:getContentSize().width / 2 , winSize.height * 0.1 - backBtn:getContentSize().height * backBtn:getScaleY() / 2))
-    tipLayer:addChild(backBtn)
+    end, true)
+    self.adventureReturnButton = backBtn
+    button("货舱", 122, 42, 178, 30, function() self:goBag() end)
+    button("攻略", 88, 42, 66, 30, function() self:showCurMapStrategy() end)
 
-    -- local buttons = {}
-
-    -- local button = cc.MenuItemImage:create("Images/btn/ann05_b.png", "Images/btn/ann05_b.png");
-   	-- --cc.Menu:create(unpack(buttonArr))
-   	-- buttons[1] = button
-   	-- button:registerScriptTapHandler(function() 
-        
-    --     if self.mapLayoutManagers:checkReturnBase() then
-    --     	self:returnToBase()
-    --     end
-    -- end)
-    -- button:setScale(0.8)
-   	-- button:setPosition(cc.p(winSize.width - button:getContentSize().width / 2 , winSize.height * 0.1 - button:getContentSize().height * button:getScaleY() / 2))
-
-   
-   	local buttonTips = cc.LabelTTF:create("返 航", BoldFont, winSize.height * 0.03)
-   	buttonTips:setPosition(cc.p(backBtn:getPositionX() ,backBtn:getPositionY()))
-   	buttonTips:setColor(opColorPrimroseYellow)
-   	tipLayer:addChild(buttonTips, 1)
-
-
-
-
-   	local BagBtn = SDButton:create("Images/btn/ann05_b.png", "Images/btn/ann05_b.png", function() 
-        
-        self:goBag()
-    end)
-    BagBtn:setScale(0.8)
-    BagBtn:setPosition(cc.p(backBtn:getPositionX() - winSize.width * 0.1 - BagBtn:getContentSize().width / 2,backBtn:getPositionY()))
-    tipLayer:addChild(BagBtn)
-
-
-
-    
-   	-- button = cc.MenuItemImage:create("Images/btn/ann05_b.png", "Images/btn/ann05_b.png");
-   	-- --cc.Menu:create(unpack(buttonArr))
-   	-- button:setScale(0.8)
-   	-- button:setPosition(cc.p(buttons[1]:getPositionX() - winSize.width * 0.1 - button:getContentSize().width / 2,buttons[1]:getPositionY()))
-   	-- buttons[2] = button
-
-   	-- button:registerScriptTapHandler(function() 
-    --     self:goBag()
-    -- end)
-
-
-   	buttonTips = cc.LabelTTF:create("货 舱", BoldFont, winSize.height * 0.03)
-   	buttonTips:setPosition(cc.p(BagBtn:getPositionX() ,BagBtn:getPositionY()))
-   	buttonTips:setColor(opColorPrimroseYellow)
-   	tipLayer:addChild(buttonTips, 1)
-
---货仓空间提示
-	self.capacityTips = cc.LabelTTF:create(string.format("%d/%d",self.bagController.costSpace,self.bagController.limited), BoldFont, winSize.height * 0.025)
-   	self.capacityTips:setPosition(cc.p(BagBtn:getPositionX() ,BagBtn:getPositionY() + BagBtn:getContentSize().height * BagBtn:getScaleY() * 0.5 + self.capacityTips:getContentSize().height * self.capacityTips:getScaleY() / 2))
-   	self.capacityTips:setColor(opColorPrimroseYellow)
-   	tipLayer:addChild(self.capacityTips, 1)
-
-
-   	--攻略
-  	local strategyButton = SDButton:create("Images/Map/strategyBtn.png", "Images/Map/strategyBtn_select.png", function() 
-        self:showCurMapStrategy()
-    end)
-    strategyButton:setScale(0.9)
-    strategyButton:setPosition(cc.p(winSize.width * 0.05 + strategyButton:getContentSize().width / 2,backBtn:getPositionY()))
-    tipLayer:addChild(strategyButton)
-
-
-   -- 	local buttonController = cc.Menu:create(unpack(buttons))
-  	-- buttonController:setPosition(cc.p(0,0))
-  	-- tipLayer:addChild(buttonController)
-  	self.chapterTitle = cc.LabelTTF:create("第一章", BoldFont, winSize.height * 0.03)
-  	self.chapterTitle:setAnchorPoint(cc.p(1,0.5))
-  	self.chapterTitle:setPosition(cc.p(winSize.width  ,winSize.height * 0.99 - self.chapterTitle:getContentSize().height / 2))
-  	self.chapterTitle:setHorizontalAlignment(cc.TEXT_ALIGNMENT_RIGHT)
-  	self.chapterTitle:setColor(opColorPrimroseYellow)
-  	tipLayer:addChild(self.chapterTitle)
-
-
-  	local title = cc.LabelTTF:create("测试地图", BoldFont, winSize.height * 0.05)
-  	title:setAnchorPoint(cc.p(1,0.5))
-  	title:setPosition(cc.p(winSize.width  ,winSize.height * 0.95 - title:getContentSize().height / 2))
-  	title:setHorizontalAlignment(cc.TEXT_ALIGNMENT_RIGHT)
-  	title:setColor(cc.c3b(255, 255, 0))
-  	tipLayer:addChild(title)
-  	self.nameTitle = title
-
---本图探索度
-  	local extenttitle = cc.LabelTTF:create("本图探索:",BoldFont,winSize.height * 0.03)
-  	local extentBg = cc.Sprite:create("Images/Map/shuzk_01.png")
-  	local extentBgSize = cc.size(extenttitle:getContentSize().width + winSize.height * 0.15,extenttitle:getContentSize().height * 1.1)
-
-  	extenttitle:setPosition(cc.p(winSize.width * 0.2,winSize.height * 0.995 - extentBgSize.height * 2 - winSize.height * 0.005 * 2 - extenttitle:getContentSize().height / 2))
-  	extenttitle:setHorizontalAlignment(cc.TEXT_ALIGNMENT_RIGHT)
-  	extenttitle:setColor(opColorPrimroseYellow)
-  	extenttitle:setAnchorPoint(cc.p(1,0.5))
-  	tipLayer:addChild(extenttitle,1)
-
-  	--适配问题
-  	if extenttitle:getContentSize().width > winSize.width * 0.2 then
-  		extenttitle:setPositionX(extenttitle:getContentSize().width)
-  		-- breadtitile:setPositionX(extenttitle:getPositionX())
-  		-- self.bread:setPositionX(extenttitle:getPositionX())
-  	end
-
-  	self.extentTip = cc.LabelTTF:create(string.format("  %d",self.extent).."%",BoldFont,winSize.height * 0.03)
-  	self.extentTip:setPosition(cc.p(extenttitle:getPositionX(),extenttitle:getPositionY()))
-  	self.extentTip:setAnchorPoint(0,0.5)
-  	self.extentTip:setHorizontalAlignment(cc.TEXT_ALIGNMENT_LEFT)
-  	self.extentTip:setColor(opColorPrimroseYellow)
-  	tipLayer:addChild(self.extentTip,1)
-
-	local scaleX = extentBgSize.width / extentBg:getContentSize().width
-  	local scaleY = extentBgSize.height / extentBg:getContentSize().height
-  	extentBg:setScaleX(scaleX)
-  	extentBg:setPosition(cc.p(extentBgSize.width / 2,self.extentTip:getPositionY()))
-  	tipLayer:addChild(extentBg)
---探索度
-	local occupation = cc.LabelTTF:create("探索度:",BoldFont,winSize.height * 0.03)
-  	occupation:setPosition(cc.p(extenttitle:getPositionX(),extenttitle:getPositionY() + extentBgSize.height / 2 + winSize.height * 0.005 + extentBgSize.height / 2))
-  	occupation:setHorizontalAlignment(cc.TEXT_ALIGNMENT_RIGHT)
-  	occupation:setColor(opColorPrimroseYellow)
-  	occupation:setAnchorPoint(cc.p(1,0.5))
-  	tipLayer:addChild(occupation,1)
-
-  	local roleExtentNum = DataManager:getInstance():getRoleData(roleExtents)
-	if roleExtentNum == nil then
-		roleExtentNum = 0
-	end
-
-  	self.occupation = roleExtentNum
-
-  	self.occupationNum = cc.LabelTTF:create(string.format("  %d",self.occupation),BoldFont,winSize.height * 0.03)
-  	self.occupationNum:setPosition(cc.p(occupation:getPositionX(),occupation:getPositionY()))
-  	self.occupationNum:setAnchorPoint(0,0.5)
-  	self.occupationNum:setHorizontalAlignment(cc.TEXT_ALIGNMENT_LEFT)
-  	self.occupationNum:setColor(opColorPrimroseYellow)
-  	tipLayer:addChild(self.occupationNum,1)
-
-  	extentBg:setPosition(cc.p(extentBgSize.width / 2,self.occupationNum:getPositionY()))
-
-  	-- local occupationBg = cc.Sprite:create("Images/Map/explore_tip_button_bg.png")
-  	-- occupationBg:setScaleX(scaleX)
-  	-- occupationBg:setScaleY(scaleY)
-  	-- occupationBg:setPosition(cc.p(extentBgSize.width / 2,self.occupationNum:getPositionY()))
-  	-- tipLayer:addChild(occupationBg)
-
---给养
-  	local breadtitile = cc.LabelTTF:create("食 物:",BoldFont,winSize.height * 0.03)
-  	breadtitile:setPosition(cc.p(extenttitle:getPositionX(),winSize.height * 0.995 - breadtitile:getContentSize().height * breadtitile:getScaleY() * 0.5))
-  	breadtitile:setHorizontalAlignment(cc.TEXT_ALIGNMENT_RIGHT)
-  	breadtitile:setColor(opColorPrimroseYellow)
-  	breadtitile:setAnchorPoint(cc.p(1,0.5))
-
-  	self.breadtitile = breadtitile
-  	tipLayer:addChild(breadtitile,1)
-
-  	self.breadNum = self.bagController:getBreads()
-
-  	extentBgSize.height = breadtitile:getPositionY() + breadtitile:getContentSize().height / 2 + 5 - ( extenttitle:getPositionY() - extenttitle:getContentSize().height / 2 - 5)
-  	scaleY = extentBgSize.height / extentBg:getContentSize().height
-  	extentBg:setScaleY(scaleY)
-
-
-  	-- self.breadNum = 10000
-  	-- print("战斗背包")
-  	-- for k,v in pairs(DataManager:getInstance():getRoleData(roleBattlePack)) do
-  		-- print(k,v)
-  	-- 	for k,j in pairs(v) do
-  			-- print(k,j)
-  	-- 	end
-  	-- end
-
-  	self.bread = cc.LabelTTF:create(string.format("  %d",self.breadNum),BoldFont,winSize.height * 0.03)
-  	self.bread:setPosition(cc.p(breadtitile:getPositionX(),breadtitile:getPositionY()))
-  	self.bread:setAnchorPoint(0,0.5)
-  	breadtitile:setHorizontalAlignment(cc.TEXT_ALIGNMENT_LEFT)
-    if self.breadNum < 10 then
-        self.bread:setColor(opColorRed)
-    else
-        self.bread:setColor(opColorPrimroseYellow)
+    -- These are explicit controls for the same movement queue and tutorial gate
+    -- used by tapping the sea; no movement or event rules are duplicated here.
+    local function steer(direction)
+        if not self.jointed or self.statue ~= "ready" or not self.jointed.enable then return end
+        if self.eventManger and self.eventManger.layer and self.eventManger.layer:isVisible() then return end
+        self.jointed.dirction = direction
+        self:jointedCalBack(direction)
     end
+    local function directionButton(direction, x, y, angle)
+        local node = button("", 44, 42, x, y, function() steer(direction) end)
+        local arrow = cc.DrawNode:create()
+        arrow:drawTriangle(cc.p(-9 * u, -6 * u), cc.p(9 * u, -6 * u), cc.p(0, 9 * u),
+            cc.c4f(colors.white.r / 255, colors.white.g / 255, colors.white.b / 255, 1))
+        arrow:setPosition(cc.p(22 * u, 21 * u))
+        arrow:setRotation(angle)
+        node.item:addChild(arrow, 3)
+    end
+    directionButton(UpDiriction, 403, 130, 0)
+    directionButton(LeftDirction, 353, 80, -90)
+    directionButton(RightDircion, 453, 80, 90)
+    directionButton(BottomDirction, 403, 30, 180)
 
-  	tipLayer:addChild(self.bread,1)
-
-
-  	-- local breadBg = cc.Sprite:create("Images/Map/explore_tip_button_bg.png")
-  	-- scaleX = extentBgSize.width / breadBg:getContentSize().width
-  	-- scaleY = extentBgSize.height / breadBg:getContentSize().height
-  	-- breadBg:setScaleX(scaleX)
-  	-- breadBg:setScaleY(scaleY)
-  	-- breadBg:setPosition(cc.p(extentBgSize.width / 2,self.bread:getPositionY()))
-  	-- tipLayer:addChild(breadBg)
-
-  	
-  	--贫血警告字
-  	self.warnningTips = cc.LabelTTF:create("食物将耗尽\n速回出发点补充食物",BoldFont,winSize.height * 0.03)
-  	self.warnningTips:setPosition(cc.p(winSize.width / 2,winSize.height * 0.6))
-  	self.warnningTips:setColor(opColorRed)
-  	tipLayer:addChild(self.warnningTips)
-  	self.warnningTips:runAction(cc.FadeOut:create(0))
-
-  	--贫血警告框
-  	local warnningBox = cc.Sprite:create("Images/Map/anemia_warnning.png")
-  	scaleX = winSize.width / warnningBox:getContentSize().width
-  	scaleY = winSize.height / warnningBox:getContentSize().height
-  	warnningBox:setScaleX(scaleX)
-  	warnningBox:setScaleY(scaleY)
-  	warnningBox:setPosition(cc.p(winSize.width / 2,winSize.height / 2))
-  	tipLayer:addChild(warnningBox,3)
-  	self.warnningBox = warnningBox
-
-  	self.warnningBox:setVisible(false)
-
-  	self.tipLayer = tipLayer
+    -- Keep the existing food-warning actions, but use a restrained chart border.
+    self.warnningTips = BTheme.label("食物将耗尽\n请返回出发点补充食物", 24 * u,
+        colors.coral, winSize.width / 2, winSize.height * 0.6, 0.5, 0.5)
+    tipLayer:addChild(self.warnningTips, 3)
+    self.warnningTips:runAction(cc.FadeOut:create(0))
+    self.warnningBox = cc.Node:create()
+    self.warnningBox:setCascadeOpacityEnabled(true)
+    self.warnningBox:addChild(BTheme.panel(4 * u, winSize.height - topHeight - bottomHeight,
+        colors.coral, 0, bottomHeight))
+    self.warnningBox:addChild(BTheme.panel(4 * u, winSize.height - topHeight - bottomHeight,
+        colors.coral, winSize.width - 4 * u, bottomHeight))
+    tipLayer:addChild(self.warnningBox, 3)
+    self.warnningBox:setVisible(false)
 end
 
 function Explore:checkBread(  )
@@ -1659,6 +1531,9 @@ function Explore:initMapByMapIndex( mapIndex,isclear )
    	self.mapLayoutManagers:setOwner(self)
    	self.mapLayoutManagers:tryToLayoutMapByMapIndex()
 
+    BTheme.fitLabel(self.nameTitle, screenSize.width * 0.44)
+    BTheme.fitLabel(self.chapterTitle, screenSize.width * 0.18)
+
    
 
     -- scrollview:ignoreAnchorPointForPosition(true)
@@ -1805,9 +1680,29 @@ function Explore:initPlayer( )
 
 
 
-		local player = cc.Sprite:create(shipStr)
-		self.map:addChild(player,playerOrderLevel)
-		self.player = player;
+        local player = nil
+        local adventureShipPath = "Images/UI/Adventure/ship.png"
+        if cc.FileUtils:getInstance():isFileExist(adventureShipPath) then
+            local ship = cc.Sprite:create(adventureShipPath)
+            if ship then
+                -- Logical footprint stays identical to the original ship; the new
+                -- transparent art is uniformly scaled inside its own child node.
+                local tileSize = self.map:getTileSize().width
+                player = cc.Sprite:create()
+                player:setContentSize(cc.size(tileSize, tileSize))
+                local artSize = ship:getContentSize()
+                ship:setScale(tileSize * 1.35 / math.max(artSize.width, artSize.height))
+                ship:setPosition(cc.p(tileSize / 2, tileSize / 2))
+                player:addChild(ship)
+                self.adventureShipVisual = ship
+            end
+        end
+        if not player then
+            player = cc.Sprite:create(shipStr)
+            self.adventureShipVisual = nil
+        end
+        self.map:addChild(player,playerOrderLevel)
+        self.player = player;
 
 		--添加虚拟摇杆
 	    local jointed = Jointed:create(self.player,function ( dirction )
@@ -2628,12 +2523,12 @@ function Explore:costbread( )
 		self:checkBread()
 	end
 	-- print("costbreadover",self.breadCostDecimal)
-	self.bread:setString(string.format("  %d",self.breadNum))
+	self.bread:setString(tostring(self.breadNum))
 
     if self.breadNum < 10 then
-        self.bread:setColor(opColorRed)
+        self.bread:setColor(BTheme.colors.coral)
     else
-        self.bread:setColor(opColorPrimroseYellow)
+        self.bread:setColor(BTheme.colors.white)
     end
 
 	if self.breadNum == 0 and self.breadCostDecimal ~= 0 then
@@ -2661,7 +2556,7 @@ function Explore:updataOccupation(  )
 
   	self.occupation = roleExtentNum
 
-  	self.occupationNum:setString(" "..tostring(self.occupation))
+	self.occupationNum:setString(tostring(self.occupation))
 
   	--探索成就进度触发且添加探索度
 	achievementValue = DataManager:getInstance():getAchievementInfo(achievement_Exploration)
@@ -2706,7 +2601,10 @@ function Explore:updataExtent( isUpdateTotalExtent )
 	local dis = self.extent - lastExtent
 
 	-- print(self.extent)
-	self.extentTip:setString(string.format("  %d",self.extent).."%")
+    self.extentTip:setString(tostring(self.extent) .. "%")
+    if self.adventureExtentBar then
+        self.adventureExtentBar:setScaleX(math.max(0, math.min(1, self.extent / 100)))
+    end
 end
 
 function Explore:minesweeperTip( )

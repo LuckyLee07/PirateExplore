@@ -1,5 +1,6 @@
 require "LuaClass/Header"
 require "LuaClass/MainMenu"
+require "LuaClass/Home"
 require "LuaClass/Talent"
 require "LuaClass/Expedition"
 require "LuaClass/Repository"
@@ -179,7 +180,7 @@ function Dispatch:init(bIsDead)
     -- 设置仓库为接受信息的主界面
     -- self:setUpdateSystemInfoLayer(self.repository)
 
-    self:moveToRepository()
+    self:moveToHome()
 
     -- 设置点点选中仓库
     -- self.mainMenu:setPointWithIndex(3, 4)
@@ -195,6 +196,17 @@ function Dispatch:init(bIsDead)
     end)
 
     return true
+end
+
+-- Read-only harbor dashboard: no ExpeditionLayer construction on entry.
+function Dispatch:moveToHome()
+    if self.rightNode and self.rightNode.isAdventureHome then
+        self.rightNode:refreshSummary()
+        self.mainMenu:activeButtonWithIndex(0)
+        return
+    end
+    self:setViewWithDirection(HomeLayer:create(), true, 1)
+    self.mainMenu:activeButtonWithIndex(0)
 end
 
 -- 移动到天赋界面
@@ -462,7 +474,9 @@ function Dispatch:backToLastView()
         return
     end
     local index = self.mainMenu:getSelectedIndex()
-    if index == 1 then
+    if index == 0 then
+        self:moveToHome()
+    elseif index == 1 then
         self:moveToExpedition()
     elseif index == 2 then
         self:gotoTrain()
@@ -683,18 +697,21 @@ end
 function Dispatch:gotoBuild()
     require "LuaClass/BuildMode"
     self:setViewWithDirection(BuildLayer:create(), true, 1)
+    self.mainMenu:activeButtonWithIndex(3)
 end
 
 -- 跳转到建造模块
 function Dispatch:gotoMake()
     require "LuaClass/MakeMode"
     self:setViewWithDirection(MakeLayer:create(), true, 1)
+    self.mainMenu:activeButtonWithIndex(5)
 end
 
 -- 跳转到建造模块
 function Dispatch:gotoTrain()
     require "LuaClass/TrainMode"
     self:setViewWithDirection(TrainLayer:create(), true, 1)
+    self.mainMenu:activeButtonWithIndex(2)
 end
 
 -- 跳转到建造模块

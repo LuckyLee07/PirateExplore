@@ -94,8 +94,20 @@ function ToastUtil:downString(str, bIsLimit)
         -- title
         local title = cc.LabelTTF:create(self.infoQueue[1], BoldFont, 38.0)
         title:setPosition(0.0, 0.0)
-        title:setColor(cc.c3b(229, 229, 229))
-        -- title:enableStroke(cc.c4b(8, 8, 8, 255), 1)
+        title:setColor(cc.c3b(255, 250, 237))
+        -- Keep feedback readable over both parchment and bright harbor artwork.
+        local maxTextWidth = math.max(100, visibleSize.width - 96)
+        if title:getContentSize().width > maxTextWidth then
+            title:setDimensions(cc.size(maxTextWidth, 0))
+            title:setHorizontalAlignment(cc.TEXT_ALIGNMENT_CENTER)
+        end
+        local textSize = title:getContentSize()
+        local backdrop = cc.LayerColor:create(cc.c4b(22, 53, 62, 240),
+            textSize.width + 48, textSize.height + 28)
+        backdrop:setAnchorPoint(cc.p(0.5, 0.5))
+        backdrop:ignoreAnchorPointForPosition(false)
+        backdrop:setPosition(0.0, 0.0)
+        rootNode:addChild(backdrop)
         rootNode:addChild(title)
 
         -- action
@@ -124,6 +136,7 @@ function ToastUtil:downString(str, bIsLimit)
         -- rootNode:runAction(cc.Sequence:create(cc.DelayTime:create(0.6), cleanUp))
         rootNode:runAction(cc.Sequence:create(cc.EaseExponentialIn:create(cc.ScaleTo:create(0.2, 1.6)), cc.ScaleTo:create(0.1, 1.0)))
         title:runAction(cc.Sequence:create(cc.DelayTime:create(1.0), cc.EaseExponentialIn:create(cc.FadeOut:create(2.0))))
+        backdrop:runAction(cc.Sequence:create(cc.DelayTime:create(1.0), cc.EaseExponentialIn:create(cc.FadeOut:create(2.0))))
 
         table.remove(self.infoQueue, 1)
     end

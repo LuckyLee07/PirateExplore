@@ -6,6 +6,7 @@ require "LuaClass/ChargeMode"
 require "LuaClass/GuideController"
 require "LuaClass/DiamondStore"
 require "LuaClass/UIKit"
+require "LuaClass/BTheme"
 
 
 MainMenuLayer = class("MainMenuLayer", function ()
@@ -65,353 +66,92 @@ function MainMenuLayer:init()
     local visibleSize = cc.Director:getInstance():getVisibleSize()
     local origin = cc.Director:getInstance():getVisibleOrigin()
 
-    -- 添加顶部菜单背景
-    cc.Texture2D:setDefaultAlphaPixelFormat(kCCTexture2DPixelFormat_RGB5A1)
-    local TopBg = cc.Sprite:create("Images/UI/TopBg.png")
-    TopBg:setPosition(origin.x + visibleSize.width * 0.5, origin.y + visibleSize.height - (TopBg:getContentSize().height * 0.5))
+    local colors = BTheme.colors
+    self.selectedIndex = -1
+    self.storyQueue = {}
+    self.bIsStartStory = false
+
+    -- Keep the legacy safe areas so existing views retain their layout.
+    UITopHeight = 100
+    UIBottomHeight = 136
+    local TopBg = BTheme.panel(visibleSize.width, UITopHeight, colors.ink,
+        origin.x, origin.y + visibleSize.height - UITopHeight)
     self:addChild(TopBg)
+    TopBg:addChild(BTheme.label("海盗 · 远航日志", 29, colors.white, 24, 71))
+    TopBg:addChild(BTheme.label("PIRATE EXPLORE", 14, colors.pale, visibleSize.width - 24, 70, 1))
+    TopBg:addChild(BTheme.panel(visibleSize.width - 48, 1, colors.sea, 24, 48))
 
-    -- 记录顶部UI的高度，以备其他类使用
-    UITopHeight = TopBg:getContentSize().height
-
-    -- 添加金币节点
+    local function moneyString(value)
+        value = tonumber(value) or 0
+        return value > 1000000 and math.floor(value / 10000) .. "万" or tostring(value)
+    end
     self.coinNode = cc.Node:create()
     self.coinNode:setCascadeOpacityEnabled(true)
-    self.coinNode:setPosition(cc.p(visibleSize.width * 0.17, TopBg:getPositionY()))
+    self.coinNode:setPosition(cc.p(origin.x + 24, origin.y + visibleSize.height - 77))
     self:addChild(self.coinNode)
-
-    -- 添加金币底条
-    local coinBg = cc.Sprite:create("Images/UI/ditiao_01.png")
-    coinBg:setPosition(cc.p(0, 0))
-    self.coinNode:addChild(coinBg)
-
-    -- 添加金币图标
-    local coinIcon = cc.Sprite:create("Images/UI/CoinBg.png")
-    coinIcon:setPosition(cc.p(coinBg:getContentSize().width * 0.5, 0))
-    self.coinNode:addChild(coinIcon)
-
-    -- 添加金币的数字
-    local money = DataManager:getInstance():getRoleData(roleMoney)
-    if money > 1000000 then
-        money = math.floor(money / 10000) .. "万"
-    else
-        money = money..""
-    end
-    local coinLabel = cc.LabelTTF:create(money, BoldFont, 30.0)
-    coinLabel:setPosition(0.0, 150.0)
-    coinLabel:setColor(WriteColor)
-    coinLabel:setAnchorPoint(cc.p(1, 0.5))
-    -- coinLabel:enableStroke(cc.c4b(8, 8, 8, 255), 1)
-    coinLabel:setPosition(cc.p(coinBg:getContentSize().width * 0.5 - 30, 0))
+    self.coinNode:addChild(BTheme.label("金币", 19, colors.gold, 0, 0))
+    local coinLabel = BTheme.label(moneyString(DataManager:getInstance():getRoleData(roleMoney)), 23, colors.white, 56, 0)
     self.coinNode:addChild(coinLabel)
-
     DataManager:getInstance():registerEvent(roleMoney, "mainmenu", function()
-        cclog("mainMenu:刷新金币数据")
-        money = DataManager:getInstance():getRoleData(roleMoney)
-        if money > 1000000 then
-            coinLabel:setString(math.floor(money / 10000) .. "万")
-        else
-            coinLabel:setString(money.."")
-        end
+        coinLabel:setString(moneyString(DataManager:getInstance():getRoleData(roleMoney)))
+        BTheme.fitLabel(coinLabel, 142)
     end)
-
-    -- 添加金币增加按钮
-    local addCoinBtn = SDButton:create("Images/UI/AddMoneyBtn.png", "Images/UI/AddMoneyBtn1.png", function()
+    BTheme.fitLabel(coinLabel, 142)
+    local addCoinBtn = BTheme.button("+", 34, 30, function()
         DataManager:getInstance():showBuyGoldBox()
-    end)
-    addCoinBtn:setPosition(cc.p(-coinBg:getContentSize().width * 0.5, 0))
-    addCoinBtn:addClickArea(cc.rect(-20, -20, 220, 40))
+    end, {color = colors.sea, selectedColor = colors.coral, fontSize = 26})
+    addCoinBtn:setPosition(cc.p(224, 0))
     self.coinNode:addChild(addCoinBtn)
 
-
-    -- 添加钻石节点
     self.diamondNode = cc.Node:create()
-    self.diamondNode:setPosition(cc.p(visibleSize.width * 0.83, TopBg:getPositionY()))
     self.diamondNode:setCascadeOpacityEnabled(true)
+    self.diamondNode:setPosition(cc.p(origin.x + visibleSize.width * 0.53, self.coinNode:getPositionY()))
     self:addChild(self.diamondNode)
-
-    -- 添加钻石底条
-    local diamondBg = cc.Sprite:create("Images/UI/ditiao_01.png")
-    diamondBg:setPosition(cc.p(0, 0))
-    self.diamondNode:addChild(diamondBg)
-
-    -- 添加钻石图标
-    local diamondIcon = cc.Sprite:create("Images/UI/DiamondBg.png")
-    diamondIcon:setPosition(cc.p(-diamondBg:getContentSize().width * 0.5, 0))
-    self.diamondNode:addChild(diamondIcon)
-
-    -- 添加钻石Label
-    local diamond = DataManager:getInstance():getRoleData(roleDiamond)
-    local diamondLabel = cc.LabelTTF:create(diamond.."", BoldFont, 30.0)
-    diamondLabel:setPosition(0.0, 150.0)
-    diamondLabel:setColor(WriteColor)
-    diamondLabel:setCascadeOpacityEnabled(true)
-    diamondLabel:setAnchorPoint(cc.p(0, 0.5))
-    -- diamondLabel:enableStroke(cc.c4b(8, 8, 8, 255), 1)
-    diamondLabel:setPosition(cc.p(-diamondBg:getContentSize().width * 0.5 + 30, 0))
+    self.diamondNode:addChild(BTheme.label("钻石", 19, colors.pale, 0, 0))
+    local diamondLabel = BTheme.label(moneyString(DataManager:getInstance():getRoleData(roleDiamond)), 23, colors.white, 56, 0)
     self.diamondNode:addChild(diamondLabel)
-
     DataManager:getInstance():registerEvent(roleDiamond, "mainmenu", function()
-        cclog("mainMenu:刷新钻石数据")
-        diamond = DataManager:getInstance():getRoleData(roleDiamond)
-        diamondLabel:setString(diamond.."")
+        diamondLabel:setString(moneyString(DataManager:getInstance():getRoleData(roleDiamond)))
+        BTheme.fitLabel(diamondLabel, 142)
     end)
-
-    -- 添加钻石按钮
-    local addDiamondBtn = SDButton:create("Images/UI/AddMoneyBtn.png", "Images/UI/AddMoneyBtn1.png", function() 
-        cclog("点击了增加钻石按钮")
-        
-        local time = os.time()
-        local recommended = {}
-        for i=1,5 do
-            local temp = {}
-            temp["ID"] = tostring(1000 + i)
-            temp["diamond"] = 20 * i
-            temp["money"] = 10 * i
-            -- temp["extraDiamod"] = i * 5
-
-            if (i > 1) then
-                temp["countdown"] = time + 1000 * (i - 1) + 5
-            else
-                temp["countdown"] = time + 20 * i
-            end
-            
-            recommended[tostring(i)] = temp
-        end
-
-        local goodsInfo = {}
-        for i=1,10 do
-             local temp = {}
-             temp["ID"] = tostring(2001 + i)
-             temp["diamond"] = 30 * i
-             temp["money"] = 40 * i
-             temp["extraDiamond"] = 50 * i
-             goodsInfo[tostring(i)] = temp
-        end
-
-        local tableData = {}
-        tableData["1"] = recommended
-        tableData["2"] = goodsInfo
-        -- ChargingView:create(tableData)
-        ChargeLayer:create()
-    end)
-    addDiamondBtn:addClickArea(cc.rect(-220, -20, 240, 40))
-    addDiamondBtn:setPosition(cc.p(diamondBg:getContentSize().width * 0.5, 0))
+    BTheme.fitLabel(diamondLabel, 142)
+    local addDiamondBtn = BTheme.button("+", 34, 30, function() ChargeLayer:create() end,
+        {color = colors.sea, selectedColor = colors.coral, fontSize = 26})
+    addDiamondBtn:setPosition(cc.p(224, 0))
     self.diamondNode:addChild(addDiamondBtn)
 
-    -- 添加底部背景图
-    cc.Texture2D:setDefaultAlphaPixelFormat(kCCTexture2DPixelFormat_RGBA8888)
-    local BottomBg = cc.Sprite:create("Images/UI/BottomBg.png")
-    BottomBg:setPosition(TopBg:getPositionX(), origin.y + (BottomBg:getContentSize().height * 0.5))
+    local BottomBg = BTheme.panel(visibleSize.width, UIBottomHeight, colors.ink, origin.x, origin.y)
     self:addChild(BottomBg)
-
-    -- 添加点点承载节点
+    BottomBg:addChild(BTheme.panel(visibleSize.width, 4, colors.sea, 0, UIBottomHeight - 4))
+    BottomBg:addChild(BTheme.label("港口设施", 15, colors.pale, 24, 118))
     self.pointNode = cc.Node:create()
-    self.pointNode:setPosition(cc.p(visibleSize.width * 0.5, BottomBg:getContentSize().height * 0.89))
     BottomBg:addChild(self.pointNode)
-
-    -- 添加底部的七个个按钮
-    local buttonSplitPosX = 1.08
-    local bottomPadding = visibleSize.width / 7
-    local bottomBtnPosX = bottomPadding * 0.5
-
     self.MainMenuButtonGroup = cc.Node:create()
-    self.MainMenuButtonGroup:setPosition(0, 0)
+    self.MainMenuButtonGroup:setCascadeOpacityEnabled(true)
     BottomBg:addChild(self.MainMenuButtonGroup)
 
-    -- 创建按钮光效图
-    self.btnHLBg = cc.Sprite:create("Images/MainMenu/an_difg.png")
-    self.btnHLBg:setPosition(cc.p(visibleSize.width * 0.5, BottomBg:getContentSize().height * 0.5 - 20))
-    -- self.btnHLBg:setBlendFunc(GL_DST_COLOR, GL_SRC_ALPHA)
-    self.MainMenuButtonGroup:addChild(self.btnHLBg)
-
-
-    self.expeditionBtn = cc.MenuItemImage:create("Images/MainMenu/chuz_a.png", "Images/MainMenu/chuz_c.png");
-    self.expeditionBtn:registerScriptTapHandler(function() 
-        cclog("点击了出征按钮")
-        if DataManager:getInstance():getSound_off() == 0 then
-            AudioEngine.playEffect(EFFECT_Button, false)
-        end
-        if GuideController:getInstance():getIsHaveStep(8) then
-            if self:activeButtonWithIndex(1) then
-                zqDispatch:moveToExpedition()
-            end
-        else
-            ToastUtil:downString("您需要建造船坞，可激活该功能")
-        end
-    end)
-    self.expeditionBtn:setPosition(bottomBtnPosX, self.btnHLBg:getPositionY())
-
-    splitSpr = cc.Sprite:create("Images/UI/ButtonSplit.png")
-    splitSpr:setPosition(cc.p(self.expeditionBtn:getContentSize().width * buttonSplitPosX, self.expeditionBtn:getContentSize().height * 0.5))
-    self.expeditionBtn:addChild(splitSpr)
-
-
-    bottomBtnPosX = bottomBtnPosX + bottomPadding
-    self.trainBtn = cc.MenuItemImage:create("Images/MainMenu/zhaom_a.png", "Images/MainMenu/zhaom_c.png");
-    self.trainBtn:registerScriptTapHandler(function() 
-        cclog("点击了招募按钮")
-        if DataManager:getInstance():getSound_off() == 0 then
-            AudioEngine.playEffect(EFFECT_Button, false)
-        end
-        if GuideController:getInstance():getIsHaveStep(103, true) then
-            if self:activeButtonWithIndex(2) then
-                zqDispatch:gotoTrain()
-                -- 增加红点隐藏操作
-                GuideController:getInstance():addStep(3, true)
-            end
-        else
-            ToastUtil:downString("您需要建造训练营，可激活该功能")
-        end
-    end)
-    self.trainBtn:setPosition(bottomBtnPosX, self.expeditionBtn:getPositionY())
-    self.trainBtn:setVisible(false)
-
-    splitSpr = cc.Sprite:create("Images/UI/ButtonSplit.png")
-    splitSpr:setPosition(cc.p(self.trainBtn:getContentSize().width * buttonSplitPosX, self.trainBtn:getContentSize().height * 0.5))
-    self.trainBtn:addChild(splitSpr)
-
-
-    bottomBtnPosX = bottomBtnPosX + bottomPadding
-    self.buildBtn = cc.MenuItemImage:create("Images/MainMenu/jians_a.png", "Images/MainMenu/jians_c.png");
-    self.buildBtn:registerScriptTapHandler(function() 
-        cclog("点击了建设按钮")
-        if DataManager:getInstance():getSound_off() == 0 then
-            AudioEngine.playEffect(EFFECT_Button, false)
-        end
-        if self:activeButtonWithIndex(3) then
-            zqDispatch:gotoBuild()
-        end
-    end)
-    self.buildBtn:setPosition(bottomBtnPosX, self.expeditionBtn:getPositionY())
-    self.buildBtn:setVisible(false)
-
-    splitSpr = cc.Sprite:create("Images/UI/ButtonSplit.png")
-    splitSpr:setPosition(cc.p(self.buildBtn:getContentSize().width * buttonSplitPosX, self.buildBtn:getContentSize().height * 0.5))
-    self.buildBtn:addChild(splitSpr)
-
-
-    bottomBtnPosX = bottomBtnPosX + bottomPadding
-    self.repositoryBtn = cc.MenuItemImage:create("Images/MainMenu/cangk_a.png", "Images/MainMenu/cangk_c.png");
-    self.repositoryBtn:registerScriptTapHandler(function() 
-        cclog("点击了仓库按钮")
-        if DataManager:getInstance():getSound_off() == 0 then
-            AudioEngine.playEffect(EFFECT_Button, false)
-        end
-        if GuideController:getInstance():getIsHaveStep(2) then
-            if self:activeButtonWithIndex(4) then
-                zqDispatch:moveToRepository()
-            end
-        else
-            ToastUtil:downString("您需要建造仓库，可激活该功能")
-        end
-    end)
-    self.repositoryBtn:setPosition(bottomBtnPosX, self.expeditionBtn:getPositionY())
-
-    local splitSpr = cc.Sprite:create("Images/UI/ButtonSplit.png")
-    splitSpr:setPosition(cc.p(self.repositoryBtn:getContentSize().width * buttonSplitPosX, self.repositoryBtn:getContentSize().height * 0.5))
-    self.repositoryBtn:addChild(splitSpr)
-
-
-    bottomBtnPosX = bottomBtnPosX + bottomPadding
-    self.makeBtn = cc.MenuItemImage:create("Images/MainMenu/zhiz_a.png", "Images/MainMenu/zhiz_c.png");
-    self.makeBtn:registerScriptTapHandler(function() 
-        cclog("点击了制造按钮")
-        if DataManager:getInstance():getSound_off() == 0 then
-            AudioEngine.playEffect(EFFECT_Button, false)
-        end
-        if GuideController:getInstance():getIsHaveStep(102, true) then
-            if self:activeButtonWithIndex(5) then
-                zqDispatch:gotoMake()
-                -- 增加红点隐藏操作
-                GuideController:getInstance():addStep(2, true)
-            end
-        else
-            ToastUtil:downString("您需要建造铁匠铺或船工厂\n可激活该功能")
-        end
-    end)
-    self.makeBtn:setPosition(bottomBtnPosX, self.expeditionBtn:getPositionY())
-    self.makeBtn:setVisible(false)
-
-    splitSpr = cc.Sprite:create("Images/UI/ButtonSplit.png")
-    splitSpr:setPosition(cc.p(self.makeBtn:getContentSize().width * buttonSplitPosX, self.makeBtn:getContentSize().height * 0.5))
-    self.makeBtn:addChild(splitSpr)
-
-
-    bottomBtnPosX = bottomBtnPosX + bottomPadding
-    self.resourceBtn = cc.MenuItemImage:create("Images/MainMenu/caij_a.png", "Images/MainMenu/caij_c.png");
-    self.resourceBtn:registerScriptTapHandler(function() 
-        cclog("点击了采集按钮")
-        if DataManager:getInstance():getSound_off() == 0 then
-            AudioEngine.playEffect(EFFECT_Button, false)
-        end
-        if GuideController:getInstance():getIsHaveStep(2) then
-            if self:activeButtonWithIndex(6) then
-                zqDispatch:moveToResource()
-            end
-        else
-            ToastUtil:downString("您需要建造仓库，可激活该功能")
-        end
-    end)
-    self.resourceBtn:setPosition(bottomBtnPosX, self.expeditionBtn:getPositionY())
-
-    splitSpr = cc.Sprite:create("Images/UI/ButtonSplit.png")
-    splitSpr:setPosition(cc.p(self.resourceBtn:getContentSize().width * buttonSplitPosX, self.resourceBtn:getContentSize().height * 0.5))
-    self.resourceBtn:addChild(splitSpr)
-
-
-    bottomBtnPosX = bottomBtnPosX + bottomPadding
-    self.storeBtn = cc.MenuItemImage:create("Images/MainMenu/shic_a.png", "Images/MainMenu/shic_c.png");
-    self.storeBtn:registerScriptTapHandler(function() 
-        cclog("点击了市场按钮")
-        if DataManager:getInstance():getSound_off() == 0 then
-            AudioEngine.playEffect(EFFECT_Button, false)
-        end
-        if GuideController:getInstance():getIsHaveStep(104, true) then
-            if self:activeButtonWithIndex(7) then
-                zqDispatch:gotoStore()
-                -- 增加红点隐藏操作
-                GuideController:getInstance():addStep(4, true)
-            end
-        else
-            ToastUtil:downString("您需要建造市场，可激活该功能")
-        end
-    end)
-    self.storeBtn:setPosition(bottomBtnPosX, self.expeditionBtn:getPositionY())
-    self.storeBtn:setVisible(false)
-
-    -- local backLabel = cc.LabelTTF:create("返     回", BoldFont, 46.0)
-    -- backLabel:setColor(BaseColor)
-    -- -- backLabel:enableStroke(cc.c4b(16, 16, 16, 255), 2)
-
-    -- local backBtn = cc.MenuItemLabel:create(backLabel)
-    -- backBtn:registerScriptTapHandler(function() 
-    --     cclog("点击了返回按钮")
-    --     if DataManager:getInstance():getSound_off() == 0 then
-    --         AudioEngine.playEffect(EFFECT_Button, false)
-    --     end
-    --     zqDispatch:moveToMain()
-    --     -- 增加红点隐藏操作
-    --     GuideController:getInstance():addStep(7, true)
-    -- end)
-    -- backBtn:setPosition(visibleSize.width * 1.5, self.buildBtn:getPositionY())
-
-    -- splitSpr = cc.Sprite:create("Images/UI/ButtonSplit.png")
-    -- splitSpr:setPosition(cc.p(backBtn:getContentSize().width * 1.16, backBtn:getContentSize().height * 0.5))
-    -- backBtn:addChild(splitSpr)
-
-    -- splitSpr = cc.Sprite:create("Images/UI/ButtonSplit.png")
-    -- splitSpr:setPosition(cc.p(-backBtn:getContentSize().width * 0.16, backBtn:getContentSize().height * 0.5))
-    -- backBtn:addChild(splitSpr)
-
-    local buttonArr = {self.repositoryBtn, self.resourceBtn, self.expeditionBtn, self.buildBtn, self.makeBtn, self.trainBtn, self.storeBtn}
-
-    local mainMenuButton = cc.Menu:create(unpack(buttonArr))
-    mainMenuButton:setPosition(0, 0)
+    local spacing = visibleSize.width / 8
+    local names = {"整备", "招募", "建设", "仓库", "制造", "采集", "市场"}
+    local fields = {"expeditionBtn", "trainBtn", "buildBtn", "repositoryBtn", "makeBtn", "resourceBtn", "storeBtn"}
+    local buttons = {}
+    for index = 0, 7 do
+        local route = index
+        local button = BTheme.menuItem(index == 0 and "基地" or names[index], spacing - 4, 86,
+            function() self:openRoute(route) end,
+            {color = colors.ink, selectedColor = colors.sea, fontSize = 23})
+        button:setPosition(cc.p(spacing * (index + 0.5), 56))
+        button.bLabel:setPositionY(43)
+        button:addChild(BTheme.panel(18, 3, index == 0 and colors.coral or colors.sea,
+            (spacing - 4) * 0.5 - 9, 66))
+        if index == 0 then self.homeBtn = button else self[fields[index]] = button end
+        table.insert(buttons, button)
+    end
+    local mainMenuButton = cc.Menu:create(unpack(buttons))
+    mainMenuButton:setPosition(cc.p(0, 0))
     self.MainMenuButtonGroup:addChild(mainMenuButton)
-
-    -- 默认选中仓库
-    self:activeButtonWithIndex(4)
+    self.btnHLBg = BTheme.panel(spacing - 18, 4, colors.coral)
+    self.MainMenuButtonGroup:addChild(self.btnHLBg)
+    self:activeButtonWithIndex(0)
 
     -- 单独添加一个建造按钮的气泡提示
     -- local buildBtnAlertSpr = cc.Sprite:create("Images/UI/BuildAlert.png")
@@ -777,27 +517,46 @@ end
 处理按钮点击效果的函数
 ]]
 function MainMenuLayer:activeButtonWithIndex(index)
-    if index == self.selectedIndex then
-        return false
-    end
-    -- 处理按钮高亮状态，先把所有按钮的normalImage变为正常
-    local buttons = {self.expeditionBtn, self.trainBtn, self.buildBtn, self.repositoryBtn, self.makeBtn, self.resourceBtn, self.storeBtn}
-    local normalImages = {"Images/MainMenu/chuz_a.png", "Images/MainMenu/zhaom_a.png", "Images/MainMenu/jians_a.png", "Images/MainMenu/cangk_a.png", "Images/MainMenu/zhiz_a.png", "Images/MainMenu/caij_a.png", "Images/MainMenu/shic_a.png"}
-    local selectedImages = {"Images/MainMenu/chuz_c.png", "Images/MainMenu/zhaom_c.png", "Images/MainMenu/jians_c.png", "Images/MainMenu/cangk_c.png", "Images/MainMenu/zhiz_c.png", "Images/MainMenu/caij_c.png", "Images/MainMenu/shic_c.png"}
-    for i=1,#buttons do
-        if buttons[i] ~= nil then
-            buttons[i]:setNormalImage(cc.Sprite:create(normalImages[i]))
-        end
-    end
-    -- 然后把指定的按钮高亮处理
-    if buttons[index] ~= nil then
-        buttons[index]:setNormalImage(cc.Sprite:create(selectedImages[index]))
+    if index == self.selectedIndex then return false end
+    local buttons = {self.expeditionBtn, self.trainBtn, self.buildBtn, self.repositoryBtn,
+        self.makeBtn, self.resourceBtn, self.storeBtn}
+    for _, button in ipairs(buttons) do BTheme.setActive(button, false) end
+    BTheme.setActive(self.homeBtn, false)
+    local button = index == 0 and self.homeBtn or buttons[index]
+    if button then
+        BTheme.setActive(button, true)
         self.selectedIndex = index
         self.btnHLBg:stopAllActions()
-        local pos = cc.p(buttons[index]:getPositionX(), buttons[index]:getPositionY())
-        self.btnHLBg:runAction(cc.EaseExponentialOut:create(cc.MoveTo:create(0.3, pos)))
+        self.btnHLBg:setPosition(cc.p(button:getPositionX() - self.btnHLBg:getContentSize().width * 0.5, 13))
     end
     return true
+end
+
+-- Shared navigation keeps the same unlock gates and guide side effects for
+-- both the footer and the new read-only harbor dashboard.
+function MainMenuLayer:openRoute(index)
+    local guide = GuideController:getInstance()
+    local required = {[1] = {8, false, "船坞"}, [2] = {103, true, "训练营"},
+        [3] = {1, false, "炼金"}, [4] = {2, false, "仓库"},
+        [5] = {102, true, "铁匠铺或船工厂"}, [6] = {2, false, "仓库"}, [7] = {104, true, "市场"}}
+    local rule = required[index]
+    if rule and not guide:getIsHaveStep(rule[1], rule[2]) then
+        ToastUtil:downString(index == 3 and "先使用炼金法阵制造10枚金币" or "您需要建造" .. rule[3] .. "，可激活该功能")
+        return
+    end
+    if index == self.selectedIndex and index ~= 0 then return end
+    if index == 0 and zqDispatch.rightNode and zqDispatch.rightNode.isAdventureHome then return end
+    if DataManager:getInstance():getSound_off() == 0 then AudioEngine.playEffect(EFFECT_Button, false) end
+    if index == 0 then zqDispatch:moveToHome()
+    elseif index == 1 then zqDispatch:moveToExpedition()
+    elseif index == 2 then zqDispatch:gotoTrain(); guide:addStep(3, true)
+    elseif index == 3 then zqDispatch:gotoBuild()
+    elseif index == 4 then zqDispatch:moveToRepository()
+    elseif index == 5 then zqDispatch:gotoMake(); guide:addStep(2, true)
+    elseif index == 6 then zqDispatch:moveToResource()
+    elseif index == 7 then zqDispatch:gotoStore(); guide:addStep(4, true)
+    end
+    self:activeButtonWithIndex(index)
 end
 
 --[[
