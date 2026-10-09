@@ -510,6 +510,7 @@ function Dispatch:setViewWithDirection(view, bIsMove, direction)
     self.rightNode:setPosition(cc.p(0, 0))
     self.BaseNode:addChild(self.rightNode)
     self:setUpdateSystemInfoLayer(self.rightNode)
+    self.mainMenu:setHomePresentation(self.rightNode.isAdventureHome == true)
 
     -- -- 如果正在移动中，那么禁止移动
     -- if self.bIsMoving then

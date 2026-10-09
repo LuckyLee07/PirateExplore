@@ -196,7 +196,7 @@ local function HTTPCallback_getLasttime(event)
                         local resname = produceCsv[k]["name"]
                         local resnum = v
                         showstr = showstr..resname.."+"..resnum
-                        ToastUtil:downString(resname.."+"..resnum)
+                        ToastUtil:productionString(resname.."+"..resnum)
                     end
                 end
                 -- 没有离线资源的时候不加入空话
@@ -407,13 +407,13 @@ function NotificationNode:getResource()
                 for k,v in pairs(floatTable) do
                     if v > 0 then
                         if k == "1001" then
-                            ToastUtil:downString("金币+"..v)
+                            ToastUtil:productionString("金币+"..v)
                         else
                             if k == "1005" then
                                 -- 如果产出给养的话，发通知更新数据
                                 DataManager:getInstance():postEvent("breadBirth", nil)
                             end
-                            ToastUtil:downString(produceCsv[k]["name"].."+"..v)
+                            ToastUtil:productionString(produceCsv[k]["name"].."+"..v)
                         end
                     end
                 end

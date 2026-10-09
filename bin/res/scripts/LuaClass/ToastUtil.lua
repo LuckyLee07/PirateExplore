@@ -17,6 +17,7 @@ ToastUtil = class("ToastUtil", function ()
 end)
 ToastUtil.__index = ToastUtil
 ToastUtil.infoQueue = {}
+ToastUtil.infoKinds = {}
 ToastUtil.bIsPlaying = false
 ToastUtil.schduler = nil
 
@@ -64,7 +65,24 @@ end
 str：飘字的文本
 bIsLimit：限制是否同一时间允许入栈多条数据
 ]]
-function ToastUtil:downString(str, bIsLimit)
+-- Routine production is still calculated, saved, and logged by NotificationNode.
+-- Only its floating presentation is quiet while the read-only harbor is active.
+-- Errors, unlocks, rewards and all other pages retain the existing toast path.
+function ToastUtil:productionString(str)
+    if pNeedUpdateLayer and pNeedUpdateLayer.isAdventureHome then return end
+    self:downString(str, false, 'production')
+end
+
+-- Remove only already-visible routine production when entering Home.
+function ToastUtil:quietHomeProductionToasts()
+    local notification=cc.Director:getInstance():getNotificationNode()
+    if not notification then return end
+    for _,node in ipairs(notification:getChildren()) do
+        if node.isRoutineProductionToast then node:removeFromParent() end
+    end
+end
+
+function ToastUtil:downString(str, bIsLimit, kind)
     if bIsLimit == nil then
         bIsLimit = false
     end
@@ -73,7 +91,9 @@ function ToastUtil:downString(str, bIsLimit)
     end
     -- printn("self.infoQueue",self.infoQueue)
     -- printn("str",str)
+    if #self.infoQueue == 0 then self.infoKinds = {} end
     table.insert(self.infoQueue, str)
+    table.insert(self.infoKinds, kind or false)
     -- printn("self.infoQueue",self.infoQueue)
     -- body
     local visibleSize = cc.Director:getInstance():getVisibleSize()
@@ -82,9 +102,16 @@ function ToastUtil:downString(str, bIsLimit)
         if self.bIsPlaying then
             return
         end
+        if #self.infoQueue == 0 then return end
+        if self.infoKinds[1] == 'production' and pNeedUpdateLayer and pNeedUpdateLayer.isAdventureHome then
+            table.remove(self.infoQueue, 1);table.remove(self.infoKinds, 1)
+            if #self.infoQueue > 0 then playAnimation() end
+            return
+        end
         self.bIsPlaying = true
 
         local rootNode = cc.Node:create()
+        rootNode.isRoutineProductionToast = self.infoKinds[1] == 'production'
         rootNode:setPosition(0.5*visibleSize.width, 0.5*visibleSize.height + 120.0)
         rootNode:setScale(0.1)
         if cc.Director:getInstance():getNotificationNode() then
@@ -139,6 +166,7 @@ function ToastUtil:downString(str, bIsLimit)
         backdrop:runAction(cc.Sequence:create(cc.DelayTime:create(1.0), cc.EaseExponentialIn:create(cc.FadeOut:create(2.0))))
 
         table.remove(self.infoQueue, 1)
+        table.remove(self.infoKinds, 1)
     end
 
     cc.Director:getInstance():getNotificationNode():runAction(cc.Sequence:create(cc.DelayTime:create(0.1), cc.CallFunc:create(playAnimation)))

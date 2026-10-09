@@ -1,171 +1,170 @@
-require "LuaClass/Header"
-require "LuaClass/DataManager"
-require "LuaClass/GuideController"
-require "LuaClass/BTheme"
+require 'LuaClass/Header'
+require 'LuaClass/DataManager'
+require 'LuaClass/GuideController'
+require 'LuaClass/MasterTheme'
 
--- The harbor is a read-only dashboard. Only explicit navigation opens gameplay
--- layers, particularly ExpeditionLayer whose initialization awards supplies.
-HomeLayer = class("HomeLayer", function() return cc.Layer:create() end)
-HomeLayer.__index = HomeLayer
-
+-- Read-only harbor. Coordinates follow the approved 941x1672 master artwork;
+-- no role data, tutorial reward, or expedition initialization is performed here.
+HomeLayer=class('HomeLayer',function() return cc.Layer:create() end)
+HomeLayer.__index=HomeLayer
+local HOME_EVENTS={rolePack,roleSelectUnit,roleSoildierQueue,rolePackSize,roleCabinSize,roleGuideStep,roleShipId}
 function HomeLayer:create()
-    local view = HomeLayer.new()
-    if view and view:init() then return view end
-    return nil
+    local view=HomeLayer.new();if view and view:init() then return view end
 end
-
 function HomeLayer:init()
-    self.isAdventureHome = true
-    local size = cc.Director:getInstance():getVisibleSize()
-    local origin = cc.Director:getInstance():getVisibleOrigin()
-    local c = BTheme.colors
-    self:addChild(BTheme.panel(size.width, size.height, c.sand, origin.x, origin.y))
-    local content = cc.Node:create()
-    local height = size.height - UITopHeight - UIBottomHeight
-    local scale = math.min(size.width / 640, height / 900)
-    content:setScale(scale)
-    content:setPosition(cc.p(origin.x + (size.width - 640 * scale) * 0.5,
-        origin.y + UIBottomHeight + (height - 900 * scale) * 0.5))
-    self:addChild(content)
-
-    content:addChild(BTheme.label("海盗基地", 38, c.ink, 24, 866))
-    content:addChild(BTheme.label("港口 · 冒险从这里启程", 19, c.muted, 616, 862, 1))
-
-    content:addChild(BTheme.panel(592, 320, c.sea, 24, 520))
-    local harborPath = "Images/UI/Adventure/harbor.png"
-    if cc.FileUtils:getInstance():isFileExist(harborPath) then
-        local harbor = cc.Sprite:create(harborPath)
-        harbor:setAnchorPoint(cc.p(0, 0))
-        harbor:setPosition(cc.p(24, 520))
-        harbor:setScaleX(592 / harbor:getContentSize().width)
-        harbor:setScaleY(320 / harbor:getContentSize().height)
-        content:addChild(harbor)
-    else
-        -- Native sea and sail shapes keep the screen usable while art loads.
-        content:addChild(BTheme.panel(592, 126, cc.c3b(125, 190, 195), 24, 714))
-        content:addChild(BTheme.panel(270, 10, c.white, 210, 615))
-        content:addChild(BTheme.panel(8, 172, c.ink, 331, 600))
-        content:addChild(BTheme.panel(100, 130, c.sand, 345, 636))
-        content:addChild(BTheme.panel(72, 108, c.white, 251, 644))
-        content:addChild(BTheme.panel(236, 28, c.ink, 222, 590))
+    self.isAdventureHome=true;self.homeDisposed=false
+    local M=MasterTheme;local c=M.colors
+    local size=cc.Director:getInstance():getVisibleSize();local origin=cc.Director:getInstance():getVisibleOrigin()
+    self.viewport=size
+    local root=cc.Node:create();root:setPosition(origin);self:addChild(root);self.content=root
+    local bg=M.cover(M.path..'harbor-full.png',size.width,size.height)
+    if bg then root:addChild(bg) else
+        local sky=cc.LayerColor:create(cc.c4b(68,151,181,255),size.width,size.height);root:addChild(sky)
     end
-    content:addChild(BTheme.panel(592, 40, cc.c4b(22, 53, 62, 220), 24, 520))
-    content:addChild(BTheme.label("停泊港湾", 21, c.white, 42, 540))
-    content:addChild(BTheme.label("准备船员与补给，驶向未知海域", 18, c.white, 598, 540, 1))
-
-    content:addChild(BTheme.label("出航准备", 30, c.ink, 24, 484))
-    self.readyLabel = BTheme.label("", 19, c.muted, 616, 482, 1)
-    content:addChild(self.readyLabel)
-    self.crewLabel = self:addStat(content, 24, "船员", c.ink)
-    self.cargoLabel = self:addStat(content, 226, "货舱", c.sea)
-    self.stockLabel = self:addStat(content, 428, "待命成员", c.ink)
-    self.hintLabel = BTheme.label("", 19, c.muted, 24, 344)
-    content:addChild(self.hintLabel)
-
-    local sail = BTheme.button("整备出航  ›", 592, 68, function()
-        self:openRoute(1)
-    end, {color = c.coral, selectedColor = cc.c3b(194, 85, 57), fontSize = 31})
-    sail:setPosition(cc.p(320, 292))
-    content:addChild(sail)
-
-    self:addFeature(content, "成长", "提升天赋与战力", 24, function()
-        zqDispatch:gotoTalent()
-    end, c.sea)
-    self:addFeature(content, "建设", "扩建你的海盗基地", 328, function()
-        self:openRoute(3)
-    end, c.ink)
-
-    local shortcuts = {
-        {"仓库", function() self:openRoute(4) end},
-        {"采集", function() self:openRoute(6) end},
-        {"炼金", function() zqDispatch:moveToRepository() end}
-    }
-    for i, entry in ipairs(shortcuts) do
-        local button = BTheme.button(entry[1] .. "  ›", 188, 44, entry[2],
-            {color = c.pale, selectedColor = c.line, textColor = c.ink, fontSize = 22})
-        button:setPosition(cc.p(118 + (i - 1) * 202, 80))
-        content:addChild(button)
+    -- x and widths follow the 941px master; y and heights follow its 1672px
+    -- portrait. On the shorter target, type remains legible at native size.
+    local ux=size.width/941;local uy=size.height/1672
+    local function place(n,x,top,w,h)
+        n:setPosition(cc.p(x*ux,size.height-(top+h)*uy));root:addChild(n);return n
     end
+    self.masterScaleX=ux;self.masterScaleY=uy
+    local plaqueW,plaqueH=399*ux,264*uy
+    local plaque=place(M.material('ink-brush.png',plaqueW,plaqueH),36,541,399,264)
+    local shipIcon=M.icon('sail',34,c.paper);shipIcon:setPosition(cc.p(31*ux,plaqueH-83*uy));plaque:addChild(shipIcon)
+    self.shipTitleWidth=plaqueW-86
+    self.shipLabel=M.label('',28,c.paper,106*ux,plaqueH-55*uy,true);plaque:addChild(self.shipLabel)
+    plaque:addChild(M.label('货舱',25,c.paper,47*ux,plaqueH-117*uy,true))
+    self.cargoLabel=M.label('',26,c.paper,139*ux,plaqueH-117*uy,'regular');plaque:addChild(self.cargoLabel)
+    local barW=324*ux;local barH=15*uy;local barX=46*ux;local barY=plaqueH-162*uy
+    local frame=HomeTheme.rounded(barW+2,barH+2,c.sea,5);frame:setPosition(cc.p(barX-1,barY-1));plaque:addChild(frame)
+    local track=HomeTheme.rounded(barW,barH,c.ink,4);track:setPosition(cc.p(barX,barY));plaque:addChild(track)
+    self.cargoBar=HomeTheme.rounded(barW,barH,c.sea,4);self.cargoBar:setPosition(cc.p(barX,barY));plaque:addChild(self.cargoBar)
+    local rule=cc.DrawNode:create();rule:drawSegment(cc.p(46*ux,plaqueH-180*uy),cc.p(369*ux,plaqueH-180*uy),.45,HomeTheme.rgba(c.paper,.55));plaque:addChild(rule)
+    local foodIcon=M.icon('food',29,c.paper);foodIcon:setPosition(cc.p(43*ux,plaqueH-237*uy));plaque:addChild(foodIcon)
+    self.foodLabel=M.label('',20,c.paper,96*ux,plaqueH-217*uy,'regular');plaque:addChild(self.foodLabel)
+    local keyIcon=M.icon('key',31,c.paper);keyIcon:setPosition(cc.p(240*ux,plaqueH-239*uy));plaque:addChild(keyIcon)
+    self.keyLabel=M.label('',20,c.paper,287*ux,plaqueH-217*uy,'regular');plaque:addChild(self.keyLabel)
 
-    self.infoLabel = BTheme.label("", 17, c.muted, 24, 28)
-    self.infoLabel:setDimensions(cc.size(592, 46))
-    content:addChild(self.infoLabel)
+    -- The roster is one paper object over the dock, with three genuine unit
+    -- positions. No additional white cards, legacy shortcuts or feature tiles.
+    self.rosterWidth=900*ux;self.rosterHeight=370*uy
+    self.roster=place(M.material('crew-paper.png',self.rosterWidth,self.rosterHeight),20,975,900,370)
+    local people=M.icon('crew',36,c.ink);people:setPosition(cc.p(42*ux,self.rosterHeight-61*uy));self.roster:addChild(people)
+    self.crewLabel=M.label('',26,c.ink,112*ux,self.rosterHeight-46*uy,true);self.roster:addChild(self.crewLabel)
+    self.crewNode=cc.Node:create();self.roster:addChild(self.crewNode)
+    self.slotWidth=272*ux;self.slotPortraitHeight=229*uy;self.slotBaseY=58*uy
+    self.slotStartX=38*ux;self.slotStep=292*ux
+
+    local statusW,statusH=308*ux,87*uy
+    local status=place(M.material('ink-brush.png',statusW,statusH),71,1366,308,87)
+    self.hintLabel=M.label('',25,c.paper,statusW/2,statusH/2,true,.5);status:addChild(self.hintLabel)
+    self.readyLabel=self.hintLabel
+    local actionW,actionH=498*ux,125*uy
+    self.departureButton=M.button('整备出航  ›',actionW,actionH,function() self:openPrimary() end,
+        {material='coral-brush.png',fontSize=38,textColor=c.white,bold=true})
+    self.departureButton:setPosition(cc.p((423+249)*ux,size.height-(1345+62.5)*uy));root:addChild(self.departureButton)
+    local actionSail=M.icon('sail',57,c.paper);actionSail:setPosition(cc.p(39*ux,actionH/2-28));self.departureButton.item:addChild(actionSail,4)
+    self.departureButton.label:setPositionX(actionW*.61)
+    self.infoLabel=M.label('',20,c.paper,0,0);self.infoLabel:setVisible(false);root:addChild(self.infoLabel)
     self:refreshSummary()
-    for _, key in ipairs({rolePack, roleSelectUnit, roleSoildierQueue, rolePackSize, roleCabinSize, roleGuideStep}) do
-        DataManager:getInstance():registerEvent(key, "adventureHome", function() self:refreshSummary() end)
+    for _,key in ipairs(HOME_EVENTS) do
+        DataManager:getInstance():registerEvent(key,'adventureHome',function() if not self.homeDisposed then self:refreshSummary() end end)
     end
     return true
 end
-
-function HomeLayer:addStat(parent, x, title, accent)
-    local c = BTheme.colors
-    parent:addChild(BTheme.panel(188, 82, c.white, x, 374))
-    parent:addChild(BTheme.panel(4, 82, accent, x, 374))
-    parent:addChild(BTheme.label(title, 19, c.muted, x + 16, 435))
-    local value = BTheme.label("0", 28, c.ink, x + 16, 401)
-    parent:addChild(value)
-    return value
-end
-
-function HomeLayer:addFeature(parent, title, subtitle, x, callback, color)
-    local button = BTheme.button("", 288, 112, callback,
-        {color = color, selectedColor = BTheme.colors.coral})
-    button:setPosition(cc.p(x + 144, 184))
-    button.item:addChild(BTheme.label(title, 31, BTheme.colors.white, 20, 75))
-    button.item:addChild(BTheme.label(subtitle, 19, BTheme.colors.white, 20, 33))
-    button.item:addChild(BTheme.label("›", 39, BTheme.colors.white, 263, 61, 0.5))
-    parent:addChild(button)
-end
-
 function HomeLayer:refreshSummary()
-    local dm = DataManager:getInstance()
-    local selected = dm:getRoleData(roleSelectUnit) or {}
-    local resources = dm:getCSVByID(csvOfResourceInfo) or {}
-    local crew, cargo, available = 0, 0, 0
-    for key, count in pairs(selected) do
-        local id, num = tonumber(key) or 0, tonumber(count) or 0
-        if id >= 10000 then
-            crew = crew + num
-        else
-            local resource = resources[tostring(key)] or {}
-            cargo = cargo + num * (tonumber(resource.cubage) or 1)
+    if self.homeDisposed then return end
+    local dm=DataManager:getInstance();local T=MasterTheme;local c=T.colors
+    local selected=dm:getRoleData(roleSelectUnit) or {};local resources=dm:getCSVByID(csvOfResourceInfo) or {}
+    local soldiers=dm:getCSVByID(csvOfSoilderAttribute) or {};local stock=dm:getRoleData(roleSoildierQueue) or {}
+    local s={crew=0,cargo=0,food=0,keys=0,standby=0,unlocked=GuideController:getInstance():getIsHaveStep(8)}
+    local entries={}
+    for key,count in pairs(selected) do
+        local id,num=tonumber(key) or 0,math.max(0,tonumber(count) or 0)
+        if id>=10000 and num>0 then
+            local realId=tostring(id-10000);local data=soldiers[realId] or {}
+            entries[#entries+1]={id=realId,name=data.name or ('船员 '..realId),num=num}
+            s.crew=s.crew+num
+        elseif id<10000 then
+            s.cargo=s.cargo+num*(tonumber((resources[tostring(key)] or {}).cubage) or 1)
+            if tostring(key)=='1005' then s.food=num end
+            if tostring(key)=='1037' or tostring(key)=='1038' or tostring(key)=='1061' then s.keys=s.keys+num end
         end
     end
-    for _, unit in pairs(dm:getRoleData(roleSoildierQueue) or {}) do
-        if type(unit) == "table" then available = available + (tonumber(unit[dataKeyNum]) or 0) end
+    table.sort(entries,function(a,b) return tonumber(a.id)<tonumber(b.id) end)
+    for id,unit in pairs(stock) do
+        if type(unit)=='table' then s.standby=s.standby+math.max(0,(tonumber(unit[dataKeyNum]) or 0)-(tonumber(selected[tostring((tonumber(id) or 0)+10000)]) or 0)) end
     end
-    self.crewLabel:setString(crew .. " / " .. tostring(dm:getRoleData(roleCabinSize) or 0))
-    self.cargoLabel:setString(cargo .. " / " .. tostring(dm:getRoleData(rolePackSize) or 0))
-    self.stockLabel:setString(tostring(available) .. " 人")
-    local ready = GuideController:getInstance():getIsHaveStep(8)
-    self.readyLabel:setString(ready and "船坞已就绪" or "等待建设船坞")
-    self.hintLabel:setString(ready and "已选物资与成员可在整备页调整" or "从建设开始，解锁船坞后即可整备出航")
-    if not GuideController:getInstance():getIsHaveStep(1) then
-        self.hintLabel:setString("先前往炼金，使用神秘法阵制造 10 枚金币")
+    s.cabinCapacity=tonumber(dm:getRoleData(roleCabinSize)) or 0
+    self.summary=s;self.crewEntries=entries
+    self.crewLabel:setString(string.format('船员  %d/%s',s.crew,tostring(dm:getRoleData(roleCabinSize) or 0)))
+    local ship=resources[tostring(dm:getRoleData(roleShipId) or '')] or {}
+    self.shipLabel:setString(ship.name or '战船');MasterTheme.fit(self.shipLabel,self.shipTitleWidth)
+    local capacity=tonumber(dm:getRoleData(rolePackSize)) or 0
+    self.cargoLabel:setString(string.format('%d / %d',s.cargo,capacity));self.cargoBar:setScaleX(capacity>0 and math.min(1,s.cargo/capacity) or 0)
+    self.foodLabel:setString('食物 '..s.food);self.keyLabel:setString('钥匙 '..s.keys)
+    if not s.unlocked then
+        self.hintLabel:setString('先建设船坞')
+        self.departureButton.label:setString('前往建设  ›')
+        if not GuideController:getInstance():getIsHaveStep(1) then
+            self.hintLabel:setString('先炼金，再建港')
+            self.departureButton.label:setString('前往炼金  ›')
+        end
+    elseif s.crew==0 then self.hintLabel:setString(s.standby>0 and '请编入船员' or '请招募船员');self.departureButton.label:setString('整备出航  ›')
+    elseif s.food==0 then self.hintLabel:setString('请装入食物');self.departureButton.label:setString('整备出航  ›')
+    else self.hintLabel:setString('补给已备妥');self.departureButton.label:setString('整备出航  ›') end
+    self:renderCrew()
+end
+function HomeLayer:renderCrew()
+    self.crewNode:removeAllChildren();local M=MasterTheme;local c=M.colors
+    local slots={};local total=self.summary.crew
+    -- Expand actual unit counts for the master's three-person roster. Large
+    -- formations use per-type quantities, without inventing additional people.
+    if total<=3 then
+        for _,e in ipairs(self.crewEntries) do
+            for i=1,e.num do slots[#slots+1]={id=e.id,name=e.name,num=1,empty=false} end
+        end
+    else
+        for i=1,math.min(3,#self.crewEntries) do
+            local e=self.crewEntries[i];slots[#slots+1]={id=e.id,name=e.name,num=e.num,empty=false}
+        end
+    end
+    for i=#slots+1,3 do
+        local locked=i>self.summary.cabinCapacity
+        slots[i]={empty=true,locked=locked,name=locked and '未解锁' or (total>3 and '更多船员' or '待编入'),num=0}
+    end
+    self.crewSlots=slots
+    for i=1,3 do
+        local slot=slots[i];local x=self.slotStartX+(i-1)*self.slotStep
+        local art=not slot.empty and M.portrait(slot.id,self.slotWidth,self.slotPortraitHeight) or nil
+        slot.neutral=not art
+        if not art then art=M.silhouette(self.slotWidth*.75,self.slotPortraitHeight*.88,slot.locked);art:setPositionX(self.slotWidth*.125) end
+        local holder=cc.Node:create();holder:setPosition(cc.p(x,self.slotBaseY))
+        if not slot.empty then holder:addChild(M.portraitBrush(self.slotWidth,self.slotPortraitHeight)) end
+        holder:addChild(art)
+        if slot.locked then holder:setCascadeOpacityEnabled(true);holder:setOpacity(95) end
+        self.crewNode:addChild(holder)
+        local text=slot.name..(slot.num>1 and (' ×'..slot.num) or '')
+        local label=M.label(text,22,slot.empty and c.muted or c.ink,x+self.slotWidth/2,31*self.masterScaleY,true,.5)
+        M.fit(label,self.slotWidth+6);self.crewNode:addChild(label)
     end
 end
-
+function HomeLayer:openPrimary()
+    if self.summary.unlocked then self:openRoute(1)
+    elseif GuideController:getInstance():getIsHaveStep(1) then self:openRoute(3)
+    else zqDispatch:moveToRepository() end
+end
 function HomeLayer:openRoute(index)
     if zqDispatch and zqDispatch.mainMenu then zqDispatch.mainMenu:openRoute(index) end
 end
-
 function HomeLayer:updateInfoLabel(text)
-    if not self.infoLabel then return end
-    -- DataManager supplies the entire newest-first log. Keep the latest two
-    -- entries readable here; existing gameplay pages retain the full history.
-    local lines = {}
-    for line in tostring(text or ""):gmatch("[^\r\n]+") do
-        table.insert(lines, line)
-        if #lines == 2 then break end
-    end
-    self.infoLabel:setString(table.concat(lines, "\n"))
+    self.latestInfo=tostring(text or ''):match('[^\r\n]+') or ''
+    if self.infoLabel then self.infoLabel:setString(self.latestInfo) end
 end
-
 function HomeLayer:viewWillDestory() end
-
 function HomeLayer:destory()
-    for _, key in ipairs({rolePack, roleSelectUnit, roleSoildierQueue, rolePackSize, roleCabinSize, roleGuideStep}) do
-        DataManager:getInstance():unregisterEvent(key, "adventureHome")
-    end
-    if pNeedUpdateLayer == self then pNeedUpdateLayer = nil end
+    if self.homeDisposed then return end
+    self.homeDisposed=true
+    for _,key in ipairs(HOME_EVENTS) do DataManager:getInstance():unregisterEvent(key,'adventureHome') end
+    if pNeedUpdateLayer==self then pNeedUpdateLayer=nil end
 end
