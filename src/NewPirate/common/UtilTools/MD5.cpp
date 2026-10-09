@@ -1,4 +1,5 @@
 #include "MD5.h"
+#include <cstring>
 
 /* system implementation headers */
 #include <stdio.h>
