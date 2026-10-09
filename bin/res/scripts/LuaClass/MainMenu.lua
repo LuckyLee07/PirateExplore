@@ -42,9 +42,33 @@ local function transparentMenuItem(text, width, height, callback, size, color)
     item:registerScriptTapHandler(callback)
     return item
 end
--- Small currency symbols are native, so amounts and purchase controls stay
--- independent of the painted paper assets.
+-- Only these approved static ornaments use detail sprites. Dynamic amounts,
+-- purchase targets, navigation hitboxes and callbacks remain native components.
+local DETAIL_PATH = "Images/UI/Adventure/Master/Details/"
+local function detailSprite(name, width, height)
+    local path = DETAIL_PATH .. name
+    if not cc.FileUtils:getInstance():isFileExist(path) then return nil end
+    local sprite = cc.Sprite:create(path)
+    if not sprite then return nil end
+    -- These small ornaments use bilinear filtering; source crops are already
+    -- Lanczos-prefiltered to production resolution (no NPOT mipmap dependency).
+    if sprite.getTexture then sprite:getTexture():setAntiAliasTexParameters() end
+    local size = sprite:getContentSize()
+    sprite:setScale(math.min(width / size.width, height / size.height))
+    sprite:setAnchorPoint(cc.p(0.5, 0.5))
+    return sprite
+end
+local function selectedBrush(width, height)
+    local sprite = detailSprite("nav-selected-stroke.png", width, height)
+    if not sprite then return masterGraphic("coral-brush.png", width, height) end
+    local node = cc.Node:create(); node:setContentSize(cc.size(width, height))
+    sprite:setPosition(cc.p(width / 2, height / 2)); node:addChild(sprite)
+    return node
+end
+-- Missing assets keep the already-tested native-symbol compatibility fallback.
 local function nativeIcon(kind)
+    local painted = detailSprite(kind == "coin" and "coin-detail.png" or "gem-detail.png", 40, 40)
+    if painted then return painted end
     local node = cc.DrawNode:create()
     if kind == "coin" then
         local gold = menuRGBA(cc.c3b(221,164,47)); local light = menuRGBA(cc.c3b(255,222,125))
@@ -232,7 +256,7 @@ function MainMenuLayer:init()
         item.bLabel:setPosition(cc.p(spacing / 2, 38))
         local icon = MasterTheme.icon(groupIcons[index], 48, MENU_COLORS.paper)
         icon:setPosition(cc.p(spacing / 2 - 24, 62)); item:addChild(icon)
-        local brush = masterGraphic("coral-brush.png", 50, 7)
+        local brush = selectedBrush(50, 7)
         brush:setPosition(cc.p(spacing / 2 - 25, 54)); item:addChild(brush)
         self.navigationButtons[index] = item; self.navigationBrushes[index] = brush
         if index < 4 then
@@ -876,6 +900,11 @@ function MainMenuLayer:setHomePresentation(active)
         self:addChild(header); self.homeHeader = header
         local title = menuLabel("海盗基地", 46, MENU_COLORS.ink, 42, size.height - 55, false)
         title:setFontName(MasterTheme.headingFont(true)); header:addChild(title)
+        local titleArt = detailSprite("home-title-art.png", 240, 58)
+        if titleArt then
+            title:setVisible(false) -- Retain semantic/native text fallback without a duplicate visible title.
+            titleArt:setPosition(cc.p(42 + 120, size.height - 55)); header:addChild(titleArt)
+        end
         local compass = cc.DrawNode:create(); local ink = menuRGBA(MENU_COLORS.ink, 0.85)
         for segment = 0, 23 do
             local first, last = segment * math.pi / 12, (segment + 1) * math.pi / 12
@@ -888,7 +917,7 @@ function MainMenuLayer:setHomePresentation(active)
         compass:drawSegment(cc.p(-7,7),cc.p(7,-7),0.4,ink)
         compass:drawPolygon({cc.p(0,15),cc.p(-3,0),cc.p(0,-15),cc.p(3,0)},4,
             cc.c4f(0,0,0,0),0.5,ink)
-        compass:setPosition(cc.p(262, size.height - 57)); header:addChild(compass)
+        compass:setPosition(cc.p(262, size.height - 57)); compass:setVisible(titleArt == nil); header:addChild(compass)
         local function currency(kind, value, x, width, plusX, callback)
             local centerY = size.height - 121
             local paper = masterGraphic("currency-paper.png", width, 52)

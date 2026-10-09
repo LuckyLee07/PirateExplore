@@ -22,6 +22,6 @@ if [[ -z "$LUA" ]]; then
   LUA="$BUILD/tests/lua-ui-tests"
 fi
 "$LUA" -e 'for _,f in ipairs({"BTheme","HomeTheme","MasterTheme","Home","MainMenu","Dispatch","Expedition","Explore","ToastUtil","NotificationNode"}) do assert(loadfile("bin/res/scripts/LuaClass/"..f..".lua")); print("PARSE PASS "..f) end'
-for test in home_master_regression expedition_ui_regression explore_hud_smoke; do
+for test in home_master_regression static_home_art_regression expedition_ui_regression explore_hud_smoke; do
   "$LUA" "tools/tests/$test.lua"
 done
