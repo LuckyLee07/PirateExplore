@@ -376,11 +376,11 @@ function ResourceLayer:init()
             self.bIsCenterBtnCanClick = false
             self.setBtnLight:setVisible(false)
             self.setButtonProgrees:stopAllActions()
-            local persent = nowTime - BaseViewLastClickCDTime
-            if persent > progressTime then
-                persent = 0
-            end
-            local act3 = cc.ProgressTo:create(progressTime, 100)
+            -- Resume only the unelapsed cooldown. Reopening this page or
+            -- foregrounding the app must not start another full gather wait.
+            local persent = math.max(0, nowTime - BaseViewLastClickCDTime)
+            local remaining = math.max(0, progressTime - persent)
+            local act3 = cc.ProgressTo:create(remaining, 100)
             local act4 = cc.CallFunc:create(openclick)
             local newPersent = math.floor((persent / progressTime) * 100)
             -- print("新的百分比：", newPersent, persent, progressTime)

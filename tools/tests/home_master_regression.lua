@@ -310,6 +310,7 @@ ExpeditionLayer={create=function()expeditionCreates=expeditionCreates+1;error('H
 dofile(root..'BTheme.lua')
 dofile(root..'HomeTheme.lua')
 dofile(root..'MasterTheme.lua')
+dofile(root..'HarborGoals.lua')
 dofile(root..'Home.lua')
 dofile(root..'MainMenu.lua')
 dofile(root..'Dispatch.lua')
@@ -319,7 +320,7 @@ function HomeLayer:refreshSummary(...)
     return refresh(self,...)
 end
 
-local HOME_EVENTS={rolePack,roleSelectUnit,roleSoildierQueue,rolePackSize,roleCabinSize,roleGuideStep,roleShipId}
+local HOME_EVENTS={rolePack,roleSelectUnit,roleSoildierQueue,rolePackSize,roleCabinSize,roleGuideStep,roleShipId,roleMake,roleBuilding,roleAlchemyUnit,roleMoney}
 local function fixture()
     data={
         [roleMoney]=1250,[roleDiamond]=213,[roleCabinSize]=3,[rolePackSize]=60,[roleShipId]='1299',
@@ -448,7 +449,7 @@ equal(pNeedUpdateLayer,nil,'Home releases active-log pointer')
 local stopped=home.refreshCount;dm:postEvent(roleSelectUnit,nil)
 equal(home.refreshCount,stopped,'destroyed Home does not receive events')
 home:destory();equal(countListeners(),0,'idempotent destroy')
-print('PASS Master Home real packaged CSV, 107 x 3 identical slots, ship title, read-only refresh and seven-event lifecycle')
+print('PASS Master Home real packaged CSV, 107 x 3 identical slots, ship title, read-only refresh and eleven-event lifecycle')
 
 for selected=0,2 do
     fixture();data[roleSelectUnit]=selected>0 and {['10107']=selected} or {}
@@ -474,7 +475,7 @@ for capacity=1,2 do
     assertReadonly(before,'capacity-aware slots');home:destory();equal(countListeners(),0,'capacity slots cleanup')
 end
 -- The actual starting profession must not look like an unfilled berth. Use
--- the same packaged 100/101 portraits as loadout/combat, without altering data.
+-- identity-matched100/101 art without altering data or the existing slot box.
 for _,id in ipairs({'100','101'}) do
     fixture();data[roleCabinSize]=1
     data[roleSelectUnit]={[tostring(10000+tonumber(id))]=1}
@@ -486,10 +487,13 @@ for _,id in ipairs({'100','101'}) do
     equal(home.summary.crew,1,'starter selected count');equal(home.summary.standby,0,'starter standby count')
     local artCount=0
     walkTree(home.crewNode,function(v)
-        if v.path=='Images/Icon/B/crew-'..id..'.png' then
+        local high='Images/UI/Adventure/Master/Portraits/crew-'..id..'.png'
+        local expected=fileExists(high) and high or ('Images/Icon/B/crew-'..id..'.png')
+        if v.path==expected then
             artCount=artCount+1
             equal(v:getScaleX(),v:getScaleY(),'starter portrait uniform aspect')
-            equal(v:getScaleX(),math.min(home.slotWidth/64,home.slotPortraitHeight/64),'original slot fit')
+            local z=v:getContentSize()
+            equal(v:getScaleX(),math.min(home.slotWidth/z.width,home.slotPortraitHeight/z.height),'original slot fit')
         end
     end)
     equal(artCount,1,'one portrait for exactly one selected starter/sailor')
@@ -826,7 +830,7 @@ equal(ToastUtil.infoQueue[4],'木材+1','no-view production still uses original 
 local sourceFile=assert(io.open(root..'NotificationNode.lua','rb'))
 local source=sourceFile:read('*a');sourceFile:close()
 local _,productionCalls=source:gsub('ToastUtil:productionString%(', '')
-equal(productionCalls,3,'only the three routine production call sites use the filter')
+equal(productionCalls,1,'the shared local production notification uses the routine filter')
 assert(source:find('ToastUtil:downString("支付失败，请重试！")',1,true),'payment failure must retain direct error feedback')
 assertReadonly(before,'toast filter final state')
 -- Visible native modal ownership suppresses only routine production. No global

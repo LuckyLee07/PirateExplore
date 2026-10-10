@@ -67,6 +67,26 @@ function M.button(text,w,h,callback,opts)
     node.item=item;node.label=label;node.menu=menu;return node
 end
 function M.icon(kind,size,color)
+    -- Selected generated silhouettes use separate padded textures, avoiding
+    -- atlas UV bleed. White-RGB alpha masks retain the caller's exact tint.
+    -- The existing native geometry below remains the missing/failed-art fallback.
+    local refined={port='port',food='barrel'}
+    local path=refined[kind] and (M.path..'Icons/'..refined[kind]..'.png')
+    if path and cc.FileUtils:getInstance():isFileExist(path) then
+        local art=cc.Sprite:create(path)
+        local z=art and art:getContentSize()
+        if z and z.width>0 and z.height>0 then
+            local n=cc.Node:create();n:setContentSize(cc.size(size,size))
+            art:setScale(math.min(size/z.width,size/z.height))
+            art:setAnchorPoint(cc.p(.5,.5));art:setPosition(cc.p(size/2,size/2))
+            art:setColor(color or M.colors.paper)
+            local texture=art.getTexture and art:getTexture()
+            if texture and texture.setTexParameters then
+                texture:setTexParameters(9729,9729,33071,33071)
+            end
+            n:addChild(art);return n
+        end
+    end
     local n=cc.Node:create();n:setContentSize(cc.size(size,size));local d=cc.DrawNode:create();n:addChild(d)
     local c=HomeTheme.rgba(color or M.colors.paper);local function p(x,y)return cc.p(x*size,y*size)end
     local function triangle(a,b,e)d:drawTriangle(p(a[1],a[2]),p(b[1],b[2]),p(e[1],e[2]),c)end
@@ -206,11 +226,27 @@ function M.portrait(id,w,h)
     -- loadout/combat. Reuse those exact assets, keeping empty slots neutral.
     local singles={['100']='Images/Icon/B/crew-100.png',['101']='Images/Icon/B/crew-101.png'}
     local r=cells[tostring(id)];local path=singles[tostring(id)] or (r and M.path..'crew-trio.png')
-    if not path or not cc.FileUtils:getInstance():isFileExist(path) then return nil end
+    if not path then return nil end
     local s
-    if r then s=cc.Sprite:create(path,cc.rect(unpack(r))) else s=cc.Sprite:create(path) end
+    -- Only large100/101 portraits load the new masters. Lists/combat keep their
+    -- existing64px identity-matched icons and memory footprint. A failed large
+    -- asset falls back to the original small portrait, never another profession.
+    if singles[tostring(id)] and (w>64 or h>64) then
+        local high=M.path..'Portraits/crew-'..tostring(id)..'.png'
+        if cc.FileUtils:getInstance():isFileExist(high) then
+            s=cc.Sprite:create(high)
+            local z=s and s:getContentSize()
+            if not z or z.width<=0 or z.height<=0 then s=nil end
+        end
+    end
+    if not s then
+        if not cc.FileUtils:getInstance():isFileExist(path) then return nil end
+        if r then s=cc.Sprite:create(path,cc.rect(unpack(r))) else s=cc.Sprite:create(path) end
+    end
     if not s then return nil end
     local z=s:getContentSize();if z.width<=0 or z.height<=0 then return nil end
+    local texture=s.getTexture and s:getTexture()
+    if texture and texture.setTexParameters then texture:setTexParameters(9729,9729,33071,33071) end
     local n=cc.Node:create();n:setContentSize(cc.size(w,h))
     s:setScale(math.min(w/z.width,h/z.height));s:setAnchorPoint(cc.p(.5,0));s:setPosition(cc.p(w/2,0));n:addChild(s)
     return n

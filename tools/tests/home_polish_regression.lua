@@ -110,6 +110,9 @@ for _, mode in ipairs(modes) do
     cc.FileUtils.getInstance = function()
         return {isFileExist = function(_, path)
             fileQueries = fileQueries + 1
+            -- Retain every geometry/negative-space assertion for the fallback.
+            -- The optional refined sprites are exercised in refined_icons_regression.
+            if path and path:find('/Master/Icons/',1,true) then return false end
             if polishName(path) then
                 if mode == 'missing' then return false end
                 if mode ~= 'packaged' then return true end
@@ -139,7 +142,7 @@ for _, mode in ipairs(modes) do
             local filesBefore, spritesBefore = fileQueries, spriteQueries
             local icon = assert(MasterTheme.icon(kind, 43, color))
             checkBox(icon, 43, 43, mode..' '..kind..' icon container')
-            equal(fileQueries, filesBefore, mode..' '..kind..' no icon file dependency')
+            equal(fileQueries, filesBefore+((kind=='port' or kind=='food') and 1 or 0), mode..' '..kind..' optional icon probe')
             equal(spriteQueries, spritesBefore, mode..' '..kind..' no raster icon dependency')
             equal(icon:getChildren()[1].kind, 'DrawNode', mode..' '..kind..' native vector')
             assert(#icon:getChildren()[1].draws > 0, mode..' '..kind..' native vector is visible')

@@ -19,10 +19,10 @@ LZSS::LZSS()
 }
 LZSS::~LZSS()
 {
-    delete buffer;
-    delete lson;
-    delete rson;
-    delete dad;
+    delete[] buffer;
+    delete[] lson;
+    delete[] rson;
+    delete[] dad;
 }
 int LZSS::GetByte()
 {

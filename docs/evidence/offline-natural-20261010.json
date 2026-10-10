@@ -1,0 +1,19 @@
+{
+  "scope": "Natural isolated profile, two farmers and one cook, no injected time or resources",
+  "period_seconds": 20,
+  "formula": "elapsed >= remaining ? floor((elapsed - remaining) / period) + 1 : 0",
+  "before_food": 122,
+  "after_food": 141,
+  "before_ledger": {
+    "wall": 1791595531,
+    "remaining": 20
+  },
+  "after_ledger": {
+    "wall": 1791595916,
+    "remaining": 15
+  },
+  "elapsed_seconds": 385,
+  "expected_food_gain": 19,
+  "actual_food_gain": 19,
+  "passed": true
+}

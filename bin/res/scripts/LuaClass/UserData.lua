@@ -542,3 +542,16 @@ end
 function UserData:saveMission()
 	SaveDataManager:getInstance():SaveData(json.encode(self._missionData), "mission")
 end
+
+-- Build an encrypted candidate without touching the live proxy. Publish only
+-- after the complete inventory + local production ledger is safely replaced.
+function UserData:commitLocalProduction(fields)
+    local candidate = {}
+    for key, value in pairs(realDatas) do candidate[key] = value end
+    for key, value in pairs(fields) do candidate[key] = simpleclone(value, -1, key) end
+    if not SaveDataManager:getInstance():saveDataAtomic(json.encode(candidate), "gameRole") then
+        return false
+    end
+    realDatas = candidate
+    return true
+end

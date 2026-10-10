@@ -280,55 +280,21 @@ function BaseView:updateInfoLabel(infoString)
         return
     end
 
-    local oldcontentHeight = self.infoLabel:getContentSize().height
-    local oldInfoString = self.infoLabel:getString()
-    -- 开始设置信息
+    -- SystemInfoData is newest-first. Stop previous scroll/label actions before
+    -- measuring the real LabelTTF: a second tutorial line can arrive while the
+    -- previous insertion is still animating. Always reveal the latest entry;
+    -- older entries remain available by dragging the history below it.
+    self.infoLabel:stopAllActions()
+    self.infoScrollView:stopAllActions()
+    self.infoScrollViewContainer:stopAllActions()
     self.infoLabel:setString(infoString)
-    local contentHeight = self.infoLabel:getContentSize().height
-    -- printn("文字高度",contentHeight)
-    -- printn("infoScrollView高度",self.infoScrollView:getViewSize().height)
-    if contentHeight < self.infoScrollView:getViewSize().height then
-        contentHeight = self.infoScrollView:getViewSize().height
-    end
-    if oldcontentHeight < self.infoScrollView:getViewSize().height then
-        oldcontentHeight = self.infoScrollView:getViewSize().height
-    end
-
-    local oldoffset = self.infoScrollView:getContentOffset()
-    -- printn("聊天窗口老的offset",oldoffset)
-
-    -- printn("oldPositionY",self.infoScrollViewContainer:getPositionY())
-    -- 重新设置scrollView的高度
-    self.infoScrollView:setContentSize(cc.size(self.infoScrollViewContainer:getContentSize().width, contentHeight))
-    -- 如果移动到可以自己往上推的区间，那么保证scrollView的位置永远是在顶部
-    -- print("固定值：", (-(contentHeight - self.infoScrollView:getViewSize().height - 24.0) + 20.0), contentHeight)
-    -- print("oldcontentHeight:::::::", oldcontentHeight, oldoffset.y)
-    local duration = 0.3
-    if contentHeight - oldcontentHeight > 30.0 then
-        duration = 0.0
-    end
-    if contentHeight > self.infoScrollView:getViewSize().height then
-        if oldoffset.y < (-(contentHeight - self.infoScrollView:getViewSize().height) + 27.0) then
-            -- print("走了这里了哦~~~~~~~~~")
-            self.infoScrollView:setContentOffsetInDuration(cc.p(0, -(contentHeight - self.infoScrollView:getViewSize().height)), duration)
-        else
-            if contentHeight > oldcontentHeight then
-                -- print("走了这里，所以出错了~！~~~~~")
-                self.infoScrollView:setContentOffsetInDuration(cc.p(0, oldoffset.y - (contentHeight - oldcontentHeight)), duration)
-            end
-        end
-    end
-    -- 为了表现效果一致，当高度固定的时候，再次做一次label的虚拟移动
-    if self.infoScrollView:getViewSize().height == contentHeight and oldInfoString ~= infoString and oldInfoString ~= " " then
-        self.infoLabel:setPositionY(contentHeight + 26.0)
-        self.infoLabel:runAction(cc.MoveTo:create(duration, cc.p(0, contentHeight)))
-    else
-        self.infoLabel:setPosition(cc.p(0, contentHeight))
-    end
-    -- local newoffset = self.infoScrollView:getContentOffset()
-    -- printn("聊天窗口xin的offset",newoffset)
-    
-    self.infoScrollView:setTouchEnabled(self.infoLabel:getContentSize().height > self.infoScrollView:getViewSize().height)
+    local viewSize = self.infoScrollView:getViewSize()
+    local labelHeight = self.infoLabel:getContentSize().height
+    local contentHeight = math.max(viewSize.height, labelHeight)
+    self.infoScrollView:setContentSize(cc.size(viewSize.width, contentHeight))
+    self.infoLabel:setPosition(cc.p(0, contentHeight))
+    self.infoScrollView:setContentOffset(cc.p(0, viewSize.height - contentHeight))
+    self.infoScrollView:setTouchEnabled(labelHeight > viewSize.height)
 end
 
 --[[
@@ -467,6 +433,17 @@ function BaseView:addInfoNode(leftTitle, leftFunc, rightTitle, rightFunc, middle
 
     -- 添加顶部的炼金按钮及其装饰
     local btnDecor = cc.Sprite:create("Images/MainMenu/di_a.png")
+    if self.managementTheme then
+        -- Reserve two native-font lines below the 144-point action dock.
+        -- Grow the existing footer into the page's available body, rather than
+        -- overlaying the controls or shrinking the tutorial's readable font.
+        local probe = cc.LabelTTF:create("建设已解锁！\n点击港务，再选择建设。", ManagementTheme.bodyFont(), 24)
+        probe:setDimensions(cc.size(self.areaWidth, 0))
+        self.infoMinimumTextHeight = probe:getContentSize().height + 4
+        local minimum = btnDecor:getContentSize().height * 0.55 + 72 + 20 + self.infoMinimumTextHeight
+        self.infoNode:setContentSize(cc.size(self.areaWidth, math.max(self.infoNode:getContentSize().height, minimum)))
+        topSplit:setPositionY(self.infoNode:getContentSize().height)
+    end
     btnDecor:setPosition(cc.p(visibleSize.width * 0.5, self.infoNode:getContentSize().height - btnDecor:getContentSize().height * 0.55))
     self.infoNode:addChild(btnDecor, 1)
 
@@ -558,11 +535,11 @@ function BaseView:addInfoNode(leftTitle, leftFunc, rightTitle, rightFunc, middle
             end
             self.bIsCenterBtnCanClick = false
             self.setButtonProgrees:stopAllActions()
-            local persent = nowTime - BaseViewLastClickCDTime
-            if persent > progressTime then
-                persent = 0
-            end
-            local act3 = cc.ProgressTo:create(progressTime, 100)
+            -- Resume only the unelapsed cooldown. Reopening this page or
+            -- foregrounding the app must not start another full gather wait.
+            local persent = math.max(0, nowTime - BaseViewLastClickCDTime)
+            local remaining = math.max(0, progressTime - persent)
+            local act3 = cc.ProgressTo:create(remaining, 100)
             local act4 = cc.CallFunc:create(openclick)
             local newPersent = math.floor((persent / progressTime) * 100)
             -- print("新的百分比：", newPersent, persent, progressTime)
@@ -655,6 +632,9 @@ function BaseView:addInfoNode(leftTitle, leftFunc, rightTitle, rightFunc, middle
     self.infoScrollViewContainer = cc.Layer:create()
     -- self.scrollViewContainer:setContentSize(bigInfoSize)
     local scrollViewSize = cc.size(self.areaWidth, self.setBtn:getPositionY() - self.setBtn:getContentSize().height * 0.6)
+    if self.managementTheme then
+        scrollViewSize.height = self.setBtn:getPositionY() - 72 - 20
+    end
     self.infoScrollView = cc.ScrollView:create(scrollViewSize)
     self.infoScrollView:setPosition(cc.p(self.originPos.x, 10.0))
     self.infoScrollView:setContainer(self.infoScrollViewContainer) -- 設置容器

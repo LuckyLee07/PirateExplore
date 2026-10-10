@@ -696,16 +696,16 @@ end
 ]]
 
 -- 跳转到建造模块
-function Dispatch:gotoBuild()
+function Dispatch:gotoBuild(focusBuildId)
     require "LuaClass/BuildMode"
-    self:setViewWithDirection(BuildLayer:create(), true, 1)
+    self:setViewWithDirection(BuildLayer:create(focusBuildId), true, 1)
     self.mainMenu:activeButtonWithIndex(3)
 end
 
 -- 跳转到建造模块
-function Dispatch:gotoMake()
+function Dispatch:gotoMake(focusResourceId)
     require "LuaClass/MakeMode"
-    self:setViewWithDirection(MakeLayer:create(), true, 1)
+    self:setViewWithDirection(MakeLayer:create(focusResourceId), true, 1)
     self.mainMenu:activeButtonWithIndex(5)
 end
 

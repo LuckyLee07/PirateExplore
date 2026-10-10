@@ -1,5 +1,6 @@
 require 'LuaClass/DialogTheme'
 require 'LuaClass/CombatTheme'
+require 'LuaClass/ItemIcon'
 --
 -- Created by IntelliJ IDEA.
 -- User: sunxy
@@ -3269,14 +3270,17 @@ function FightRewardScene:init(haveDatas, dropDatas)
 
 
     -- tableview1
-    self.tableview1 = cc.TableView:create(cc.size(250.0, visibleSize.height-300.0))
+    self.tableview1 = cc.TableView:create(cc.size(250.0, visibleSize.height-350.0))
     self.tableview1:setDirection(cc.SCROLLVIEW_DIRECTION_VERTICAL)
     self.tableview1:setVerticalFillOrder(cc.TABLEVIEW_FILL_TOPDOWN)
-    self.tableview1:setPosition(50.0, 150.0)
+    self.tableview1:setPosition(50.0, 200.0)
     self.tableview1:setDelegate()
     self.tableview1:registerScriptHandler(function(view, cell)
+        if self.isClosed then return end
         local idx = cell:getTag()
         local item = self.package[idx]
+        if not item or (tonumber(item.num) or 0)<=0 then return end
+        if tostring(item.id)=='1005' then self.foodWasMoved=true end
         local resourceCsv = DataManager:getInstance():getCSVByID(csvOfResourceInfo)
         local data = resourceCsv[tostring(item.id)]
         self.packageSize = self.packageSize-tonumber(data.cubage)
@@ -3305,11 +3309,9 @@ function FightRewardScene:init(haveDatas, dropDatas)
         cell:addChild(bg)
 
         -- icon
-        if data and data.iconName and string.len(data.iconName) > 1 then
-            local icon = cc.Sprite:create("Images/Icon/"..data.iconName)
-            icon:setPosition(50.0, 60.0)
-            cell:addChild(icon)
-        end
+        local icon = ItemIcon.sprite(data and data.iconName)
+        icon:setPosition(50.0, 60.0)
+        cell:addChild(icon)
 
         if data then
             -- labe
@@ -3341,14 +3343,16 @@ function FightRewardScene:init(haveDatas, dropDatas)
     self:addChild(self.tableview1)
 
     -- tableview2
-    self.tableview2 = cc.TableView:create(cc.size(250.0, visibleSize.height-300.0))
+    self.tableview2 = cc.TableView:create(cc.size(250.0, visibleSize.height-350.0))
     self.tableview2:setDirection(cc.SCROLLVIEW_DIRECTION_VERTICAL)
     self.tableview2:setVerticalFillOrder(cc.TABLEVIEW_FILL_TOPDOWN)
-    self.tableview2:setPosition(visibleSize.width-50.0-250.0, 150.0)
+    self.tableview2:setPosition(visibleSize.width-50.0-250.0, 200.0)
     self.tableview2:setDelegate()
     self.tableview2:registerScriptHandler(function(view, cell)
+        if self.isClosed then return end
         local idx = cell:getTag()
         local item = self.rewardItems[idx]
+        if not item or (tonumber(item.num) or 0)<=0 then return end
         local isGold = "1001" == tostring(item.id)
         local resourceCsv = DataManager:getInstance():getCSVByID(csvOfResourceInfo)
         local data = resourceCsv[tostring(item.id)]
@@ -3369,7 +3373,7 @@ function FightRewardScene:init(haveDatas, dropDatas)
             self.tableview1:reloadData()
             self.tableview2:reloadData()
         else
-            ToastUtil:downString("您货舱已满，无法拾取更多物品", true)
+            ToastUtil:downString("空间不足：点左侧物品腾位，再点右侧拾取", true)
         end
 
     end, cc.TABLECELL_TOUCHED)
@@ -3393,11 +3397,9 @@ function FightRewardScene:init(haveDatas, dropDatas)
         cell:addChild(bg)
 
         -- icon
-        if data and data.iconName and string.len(data.iconName) > 1 then
-            local icon = cc.Sprite:create("Images/Icon/"..data.iconName)
-            icon:setPosition(50.0, 60.0)
-            cell:addChild(icon)
-        end
+        local icon = ItemIcon.sprite(data and data.iconName)
+        icon:setPosition(50.0, 60.0)
+        cell:addChild(icon)
 
         -- labe
         if data then
@@ -3500,9 +3502,23 @@ function FightRewardScene:init(haveDatas, dropDatas)
     shiqu:setPosition(shiquBtn:getPosition())
     self:addChild(shiqu)
 
+    -- Reserve the bottom 50px of the old list viewport for two readable lines.
+    -- List tops and action hitboxes stay fixed; text clears the ragged paper edge.
+    -- They explain the reversible exchange; no item is moved by this guidance.
+    self.cargoHintWidth=visibleSize.width-32
+    self.cargoHintLines={}
+    for i,y in ipairs({184,156}) do
+        local hint=CombatTheme.label("", nil, 20)
+        hint:setColor(MasterTheme.colors.ink)
+        hint:setPosition(cc.p(visibleSize.width*.5,y))
+        self:addChild(hint)
+        self.cargoHintLines[i]=hint
+    end
     local function update()
         capacity:setString("("..tostring(self.packageSize).."/"..tostring(self.packageCapicity)..")")
+        self:refreshCargoHint()
     end
+    update()
     self:scheduleUpdateWithPriorityLua(update, 0)
 
     return true
@@ -3519,6 +3535,7 @@ function FightRewardScene:initData(haveDatas, dropDatas)
 --    end
 
     self.isClosed = false
+    self.foodWasMoved = false
     self.package = {}
     self.rewardItems = {}
     self.reservedItems = {}
@@ -3600,6 +3617,7 @@ end
 
 -- pickUpAllRewards
 function FightRewardScene:pickUpAllRewards()
+    if self.isClosed then return end
     local resourceCsv = DataManager:getInstance():getCSVByID(csvOfResourceInfo)
     local pick = function()
         -- 有可拾取物品
@@ -3633,9 +3651,11 @@ function FightRewardScene:pickUpAllRewards()
             if 0 >= tonumber(data.cubage) then
                 getNum = num
             else
-                getNum = math.ceil(capLeft/tonumber(data.cubage))
-                if capLeft <= 0 then
-                    ToastUtil:downString("您货舱已满，无法拾取更多物品", true)
+                -- Only complete units fit. Rounding up could overfill a
+                -- nearly full hold with the real 2- or 5-space resources.
+                getNum = math.floor(capLeft/tonumber(data.cubage))
+                if getNum <= 0 then
+                    ToastUtil:downString("空间不足：点左侧物品腾位，再点右侧拾取", true)
                     return false
                 end
             end
@@ -3671,3 +3691,34 @@ end
 
 
 
+
+-- This screen stages left/right transfers; only closing abandons the right side.
+function FightRewardScene:getCargoHint()
+    if #self.rewardItems==0 then return '战利品已收妥','',false end
+    if self.foodWasMoved then
+        local food=0
+        for _,item in ipairs(self.package) do
+            if tostring(item.id)=='1005' then food=food+(tonumber(item.num) or 0) end
+        end
+        return '船上食物剩 '..food..'，请留足返航补给',
+            '点右侧拾取；关闭会丢弃右侧物品',food==0
+    end
+    local first=self.packageSize>=self.packageCapicity and
+        '货舱已满：点左侧腾位，点右侧拾取' or '点左侧移出，点右侧拾取'
+    return first,'关闭后，右侧物品将被丢弃',false
+end
+function FightRewardScene:refreshCargoHint()
+    if not self.cargoHintLines then return end
+    local first,second,noFood=self:getCargoHint()
+    for i,text in ipairs({first,second}) do
+        local label=self.cargoHintLines[i]
+        if label:getString()~=text then
+            label:setString(text)
+            local size=label:getContentSize()
+            -- Natural CJK line metrics can exceed the nominal font size.
+            -- Keep each line within its 26px slot, with unchanged action hitboxes.
+            label:setScale(math.min(1,self.cargoHintWidth/math.max(1,size.width),26/math.max(1,size.height)))
+        end
+        label:setColor(i==1 and noFood and cc.c3b(156,58,43) or MasterTheme.colors.ink)
+    end
+end

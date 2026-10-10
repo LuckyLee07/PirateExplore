@@ -1,6 +1,7 @@
 require "LuaClass/Header"
 require "LuaClass/BaseView"
 require "LuaClass/ManagementTheme"
+require "LuaClass/HarborGoals"
 require "LuaClass/AlertView"
 require "LuaClass/Lackmaterial"
 
@@ -15,8 +16,9 @@ MakeLayer.ResoucecsvData = nil
 MakeLayer.dataIndex = nil
 
 
-function MakeLayer:create()
+function MakeLayer:create(focusResourceId)
     local view = MakeLayer.new()
+    view.focusTargetId = focusResourceId
     if view and view:init() then
         return view
     end
@@ -321,6 +323,7 @@ function MakeLayer:init()
 
     self:addChild(self.tableview)
     self.tableview:reloadData()
+    self:focusEntry(self.focusTargetId)
 
     return true
 end
@@ -442,4 +445,17 @@ function MakeLayer:getDataNum()
     -- cclog("_num = ".._num)
     _num = #self.workerData
     return _num
+end
+
+-- Optional read-only navigation target; ordinary entry keeps its old scroll state.
+function MakeLayer:focusEntry(id)
+    if not id then return false end
+    for index,row in ipairs(self.workerData or {}) do
+        if tostring(row[dataKeyID])==tostring(id) then
+            local offset=HarborGoals.focusOffset(#self.workerData,index,self.areaHeight,self.cellhight)
+            self.tableview:setContentOffset(cc.p(0,offset),false)
+            return true
+        end
+    end
+    return false
 end

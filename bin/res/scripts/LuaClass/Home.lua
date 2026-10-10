@@ -2,12 +2,13 @@ require 'LuaClass/Header'
 require 'LuaClass/DataManager'
 require 'LuaClass/GuideController'
 require 'LuaClass/MasterTheme'
+require 'LuaClass/HarborGoals'
 
 -- Read-only harbor. Coordinates follow the approved 941x1672 master artwork;
 -- no role data, tutorial reward, or expedition initialization is performed here.
 HomeLayer=class('HomeLayer',function() return cc.Layer:create() end)
 HomeLayer.__index=HomeLayer
-local HOME_EVENTS={rolePack,roleSelectUnit,roleSoildierQueue,rolePackSize,roleCabinSize,roleGuideStep,roleShipId}
+local HOME_EVENTS={rolePack,roleSelectUnit,roleSoildierQueue,rolePackSize,roleCabinSize,roleGuideStep,roleShipId,roleMake,roleBuilding,roleAlchemyUnit,roleMoney}
 function HomeLayer:create()
     local view=HomeLayer.new();if view and view:init() then return view end
 end
@@ -58,8 +59,10 @@ function HomeLayer:init()
     self.slotStartX=38*ux;self.slotStep=292*ux
 
     local statusW,statusH=308*ux,87*uy
-    local status=place(M.material('ink-brush.png',statusW,statusH),71,1366,308,87)
-    self.hintLabel=M.label('',25,c.paper,statusW/2,statusH/2,true,.5);status:addChild(self.hintLabel)
+    local status=M.button('',statusW,statusH,function() self:openGoals() end,
+        {fontSize=25,textColor=c.paper,bold=true})
+    status:setAnchorPoint(cc.p(0,0));place(status,71,1366,308,87)
+    self.goalButton=status;self.hintLabel=status.label
     self.readyLabel=self.hintLabel
     local actionW,actionH=498*ux,125*uy
     self.departureButton=M.button('整备出航  ›',actionW,actionH,function() self:openPrimary() end,
@@ -115,6 +118,12 @@ function HomeLayer:refreshSummary()
     elseif s.crew==0 then self.hintLabel:setString(s.standby>0 and '请编入船员' or '请招募船员');self.departureButton.label:setString('整备出航  ›')
     elseif s.food==0 then self.hintLabel:setString('请装入食物');self.departureButton.label:setString('整备出航  ›')
     else self.hintLabel:setString('补给已备妥');self.departureButton.label:setString('整备出航  ›') end
+    self.goals=HarborGoals.list(dm,GuideController:getInstance():getIsHaveStep(60))
+    local canSuggest=s.unlocked and s.crew>0 and s.food>0 and #self.goals>0
+    self.goalButton.item:setEnabled(canSuggest)
+    if canSuggest then self.hintLabel:setString('回港升级  ›') end
+    MasterTheme.fit(self.hintLabel,280*self.masterScaleX)
+    self:refreshGoalsDialog()
     self:renderCrew()
 end
 function HomeLayer:renderCrew()
@@ -151,6 +160,56 @@ function HomeLayer:renderCrew()
         M.fit(label,self.slotWidth+6);self.crewNode:addChild(label)
     end
 end
+-- The existing status plaque is the only new entry point. Details are opt-in.
+function HomeLayer:openGoals()
+    if self.homeDisposed or not self.goals or #self.goals==0 or self.goalDialog then return end
+    require 'LuaClass/AlertView'
+    local dialog=AlertView:create(1,0,'回港升级',nil,nil,nil,'关 闭')
+    self.goalDialog=dialog;self.goalRows={}
+    dialog:registerScriptHandler(function(event)
+        if event=='exit' or event=='cleanup' then
+            if self.goalDialog==dialog then self.goalDialog=nil;self.goalRows=nil end
+        end
+    end)
+    local M=MasterTheme;local w,h=dialog.s_size.width,dialog.s_size.height
+    for i=1,2 do
+        local holder=cc.Node:create();dialog.s_bg:addChild(holder)
+        local y=h-112-(i-1)*125
+        local title=M.label('',26,M.colors.white,30,y,true)
+        holder:addChild(title)
+        local detail=M.label('',22,M.colors.paper,30,y-33,false)
+        detail:setAnchorPoint(cc.p(0,1));detail:setDimensions(cc.size(w-60,65))
+        detail:setHorizontalAlignment(cc.TEXT_ALIGNMENT_LEFT);holder:addChild(detail)
+        local button=M.button('查看',124,43,function() self:openGoalAt(i) end,
+            {material='coral-brush.png',fontSize=22,textColor=M.colors.white})
+        button:setPosition(cc.p(w-92,y));holder:addChild(button)
+        self.goalRows[i]={holder=holder,title=title,detail=detail,button=button}
+    end
+    self:refreshGoalsDialog()
+end
+function HomeLayer:refreshGoalsDialog()
+    if not self.goalDialog or not self.goalRows then return end
+    for i,row in ipairs(self.goalRows) do
+        local goal=self.goals[i];row.holder:setVisible(goal~=nil)
+        if goal then
+            row.title:setString(goal.title);MasterTheme.fit(row.title,self.goalDialog.s_size.width-194)
+            row.detail:setString(goal.detail)
+            row.button.label:setString(goal.action);row.button.item:setEnabled(goal.route~=nil)
+        end
+    end
+end
+function HomeLayer:openGoalAt(index)
+    if self.homeDisposed then return end
+    -- Re-read the state at the actual click; a stale preview cannot buy or unlock.
+    local goals=HarborGoals.list(DataManager:getInstance(),GuideController:getInstance():getIsHaveStep(60))
+    local shown=self.goals and self.goals[index];local goal
+    for _,candidate in ipairs(goals) do if shown and candidate.id==shown.id then goal=candidate end end
+    if not goal or not goal.route then self.goals=goals;self:refreshGoalsDialog();return end
+    local dialog=self.goalDialog;self.goalDialog=nil;self.goalRows=nil
+    if dialog then dialog:removeFromParent(true) end
+    if goal.route=='make' then zqDispatch:gotoMake(goal.routeId)
+    elseif goal.route=='build' then zqDispatch:gotoBuild(goal.routeId) end
+end
 function HomeLayer:openPrimary()
     if self.summary.unlocked then self:openRoute(1)
     elseif GuideController:getInstance():getIsHaveStep(1) then self:openRoute(3)
@@ -167,6 +226,7 @@ function HomeLayer:viewWillDestory() end
 function HomeLayer:destory()
     if self.homeDisposed then return end
     self.homeDisposed=true
+    if self.goalDialog then self.goalDialog:removeFromParent(true);self.goalDialog=nil;self.goalRows=nil end
     for _,key in ipairs(HOME_EVENTS) do DataManager:getInstance():unregisterEvent(key,'adventureHome') end
     if pNeedUpdateLayer==self then pNeedUpdateLayer=nil end
 end
