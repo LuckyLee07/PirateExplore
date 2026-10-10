@@ -210,6 +210,41 @@ tolua_lerror:
 }
 #endif //#ifndef TOLUA_DISABLE
 
+/* method: saveDataAtomic of class  Record */
+#ifndef TOLUA_DISABLE_tolua_TOLUA_LuaRecord_Record_saveDataAtomic00
+static int tolua_TOLUA_LuaRecord_Record_saveDataAtomic00(lua_State* tolua_S)
+{
+#ifndef TOLUA_RELEASE
+    tolua_Error tolua_err;
+    if (
+        !tolua_isusertype(tolua_S,1,"Record",0,&tolua_err) ||
+        !tolua_isstring(tolua_S,2,0,&tolua_err) ||
+        !tolua_isstring(tolua_S,3,0,&tolua_err) ||
+        !tolua_isnoobj(tolua_S,4,&tolua_err)
+        )
+        goto tolua_lerror;
+    else
+#endif
+    {
+        Record* self = (Record*)  tolua_tousertype(tolua_S,1,0);
+        char* buff = ((char*)  tolua_tostring(tolua_S,2,0));
+        char* fileName = ((char*)  tolua_tostring(tolua_S,3,0));
+#ifndef TOLUA_RELEASE
+        if (!self) tolua_error(tolua_S,"invalid 'self' in function 'saveDataAtomic'", NULL);
+#endif
+        {
+            tolua_pushboolean(tolua_S, self->saveDataAtomic(buff,fileName));
+        }
+    }
+    return 1;
+#ifndef TOLUA_RELEASE
+tolua_lerror:
+    tolua_error(tolua_S,"#ferror in function 'saveDataAtomic'.",&tolua_err);
+    return 0;
+#endif
+}
+#endif //#ifndef TOLUA_DISABLE
+
 /* method: loadData of class  Record */
 #ifndef TOLUA_DISABLE_tolua_TOLUA_LuaRecord_Record_loadData00
 static int tolua_TOLUA_LuaRecord_Record_loadData00(lua_State* tolua_S)
@@ -401,6 +436,7 @@ TOLUA_API int tolua_TOLUA_LuaRecord_open (lua_State* tolua_S)
     tolua_function(tolua_S,"delete",tolua_TOLUA_LuaRecord_Record_delete00);
     tolua_function(tolua_S,"GetInstance",tolua_TOLUA_LuaRecord_Record_GetInstance00);
     tolua_function(tolua_S,"saveData",tolua_TOLUA_LuaRecord_Record_saveData00);
+    tolua_function(tolua_S,"saveDataAtomic",tolua_TOLUA_LuaRecord_Record_saveDataAtomic00);
     tolua_function(tolua_S,"loadData",tolua_TOLUA_LuaRecord_Record_loadData00);
 	tolua_function(tolua_S,"loadDataFromPackage", tolua_TOLUA_LuaRecord_Record_loadDataFromPackage00);
     tolua_function(tolua_S,"deleteBuf",tolua_TOLUA_LuaRecord_Record_deleteBuf00);

@@ -1,0 +1,21 @@
+{
+  "tool": "built-in imagegen",
+  "reference_roles": {
+    "b-adventure.png": "approved B direction and painterly palette",
+    "06-approved-vs-final.png": "left half exact approved Home composition",
+    "r_2.png": "existing ID1005 loaf+slice identity",
+    "r_3.png": "existing ID1006 stone identity",
+    "r_4.png": "existing ID1007 tied-log identity"
+  },
+  "masters": {
+    "food-master.png": "exec-66d17f7a-e1f2-473f-a6b5-9b5a03b9a440.png",
+    "stone-master.png": "exec-9867f344-a160-4a87-9518-ed33f16d6fc4.png",
+    "wood-master.png": "exec-0f06d021-590e-4978-a776-2812b59fbcfd.png",
+    "port-master.png": "exec-60b1feb8-9c6c-4629-b6a4-ba527aa6be47.png",
+    "barrel-master.png": "exec-76a03929-9cce-4152-b6f8-e74e200273c4.png"
+  },
+  "runtime": "tools/import_refined_icons.py",
+  "transparent_background": true,
+  "scope": "Only three identity-matched 64px inventory icons and two optional monochrome UI masks. No CSV, economy, save or hitbox changes.",
+  "port_revision": "After540px native review, increase optical weight with broader walls/arch/crate. Keep same128px padded canvas and48px native box."
+}

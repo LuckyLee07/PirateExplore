@@ -1,0 +1,123 @@
+{
+  "failedCandidate": "f1273a226eb00b531fa47ee2f1a10d406a4dc396",
+  "passedRuntime": "ab38e1b5b17c84deadf4008880e9992b6b0e6485",
+  "binarySha256": "14cbe4972a550dfaab8b9583c4513a9f1ab194f4e8ed8c453ac7defc177b370c",
+  "allProtectionChecks": true,
+  "purchaseClosedReadback": {
+    "gold": 11,
+    "diamond": 0,
+    "owned": 1,
+    "sha256": "2dc8ab981a7ff368f2fec4c415776b365734f13cf334afabb97b34be8ef3bcee"
+  },
+  "coldStartFirstObservation": {
+    "diamond": 0,
+    "money": 11,
+    "confirmation": false,
+    "guideReady": true,
+    "count": 87,
+    "tick": 1,
+    "wall": 1791604974,
+    "mode": "alchemy-persist",
+    "owned": 1,
+    "synthetic": true
+  },
+  "cancelLast": {
+    "diamond": 398,
+    "money": 11,
+    "confirmation": false,
+    "guideReady": true,
+    "count": 87,
+    "tick": 370,
+    "wall": 1791604814,
+    "mode": "alchemy-cancel",
+    "owned": 0,
+    "synthetic": true
+  },
+  "insufficientLast": {
+    "diamond": 397,
+    "money": 11,
+    "confirmation": true,
+    "guideReady": true,
+    "count": 87,
+    "tick": 190,
+    "wall": 1791604886,
+    "mode": "alchemy-397",
+    "owned": 0,
+    "synthetic": true
+  },
+  "guideLockedLast": {
+    "diamond": 398,
+    "money": 11,
+    "confirmation": false,
+    "guideReady": false,
+    "count": 87,
+    "tick": 170,
+    "wall": 1791604848,
+    "mode": "alchemy-locked",
+    "owned": 0,
+    "synthetic": true
+  },
+  "threshold100Last": {
+    "diamond": 1,
+    "money": 13,
+    "confirmation": false,
+    "show": 1,
+    "guideReady": true,
+    "count": 1,
+    "tick": 110,
+    "wall": 1791605047,
+    "mode": "alchemy-threshold100",
+    "owned": 0,
+    "synthetic": true
+  },
+  "threshold300Last": {
+    "diamond": 1,
+    "money": 13,
+    "confirmation": false,
+    "show": 5,
+    "guideReady": true,
+    "count": 1,
+    "tick": 190,
+    "wall": 1791605081,
+    "mode": "alchemy-threshold300",
+    "owned": 0,
+    "synthetic": true
+  },
+  "releaseAndNavigationLast": {
+    "diamond": 0,
+    "money": 17,
+    "confirmation": false,
+    "guideReady": true,
+    "count": 87,
+    "tick": 420,
+    "wall": 1791605021,
+    "mode": "alchemy-persist",
+    "owned": 1,
+    "synthetic": true
+  },
+  "nativeScreens": {
+    "118-alchemy-fixed-confirm-480.jpg": "f3222ae125d968df14a0506904c02bb57877c82bff3ef44c713688e5d4546c19",
+    "119-alchemy-offers-540.jpg": "cfa6fd98b37fdb9553bff58ff0e3b9369917a9432814fcaa13763c565915fd0d",
+    "129-alchemy-threshold300-540.jpg": "bc51607817909714b9111ecdcf2f3561789439566260c582b266b301f8223adb",
+    "120-alchemy-fixed-confirm-540.jpg": "fb58653a2c1a2c99a8a290787da156be345f7fa2a5c69a9a27635ea9d6b01bea",
+    "123-alchemy-397-blocked-480.jpg": "88400cad5f32ff3eeddb518595a5ad07de0ae2cc4b0c52eaf44db925dc380ee7",
+    "126-alchemy-persisted-owned-540.jpg": "9697ae09c9c141916d1671734c5b053e75962d72b5b2381065cfb09ff5abc3a2",
+    "127-alchemy-held-release-540.jpg": "ba956530477c8bd3e2d285be5309601d53999daa122df0dd7096836c42de64ab",
+    "116-alchemy-offers-480.jpg": "f9b4a4a017d436ebf8e0c6d3aa2da518bc8e32c564f228d0810337bf647cfac6",
+    "124-alchemy-398-purchased-540.jpg": "a2e7d6d1d23bc9216e246b144169b13104c3e01001e01a60ebe539c08510954c",
+    "121-alchemy-guide-locked-480.jpg": "b918ed3ff884ac4b87d85ac1173408ccda589ccb807c17c9d4f2d1ca5032f169",
+    "125-alchemy-owned-entry-540.jpg": "5df3e61654ba0d101eccb82a3e0670329fe0ec8e6100d65c21160cedc6196225",
+    "117-alchemy-confirm-480.jpg": "93f949d5d7a63df5615c298eb735c92dc785616afc42828993182eff75024741",
+    "122-alchemy-guide-blocked-480.jpg": "a41770d01622de4f0fde6b2877c62f8ccec95056ca63e9f13d3868034167b38c",
+    "128-alchemy-threshold100-480.jpg": "052209a95907116d3828ea159d67697406920646dbb1ed394b527feb3cfecd3c"
+  },
+  "sourceScreenshot": {
+    "name": "130-final-gather-source-copy-480.jpg",
+    "sha256": "35affa7c6bf34080ae2acbd5f68423b0a4f403e3d35a0269a7b6e47856132fc0"
+  },
+  "finalDesktopStop": {
+    "atUTC": "2026-10-10T04:05:42Z",
+    "verifiedNoGameProcess": true,
+    "executableMatchedFrozenTestBinary": true
+  }
+}

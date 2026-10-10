@@ -1,11 +1,12 @@
 require "AudioEngine"
 require "LuaClass/Header"
+require "LuaClass/DialogTheme"
 
 
 local winSize = cc.Director:getInstance():getVisibleSize()
 
 PlotLayer = class("PlotLayer",function ()
-	 return cc.LayerColor:create(cc.c4b(0,0,0,0),winSize.width , winSize.height )
+	 return cc.LayerColor:create(cc.c4b(8,53,68,0),winSize.width , winSize.height )
 end)
 
 PlotLayer.__index = PlotLayer
@@ -65,6 +66,7 @@ function PlotLayer:init(plotId,otherPlots)
     listener:registerScriptHandler(function ( touch,event )
 
     print("PlotLayer")
+    return true
 
     end,cc.Handler.EVENT_TOUCH_BEGAN)
     listener:setSwallowTouches(true)
@@ -164,7 +166,9 @@ function PlotLayer:plotsPlay(  )
     end
 
     --添加新的文字
-    self.curTTf = cc.LabelTTF:create(self.plots[1][1],BoldFont,winSize.height * 0.03)
+    self.curTTf = cc.LabelTTF:create(self.plots[1][1],MasterTheme.headingFont(false),winSize.height * 0.03)
+    self.curTTf:setColor(MasterTheme.colors.white)
+    DialogTheme.fit(self.curTTf, winSize.width - 70)
     self.curTTf:setPosition(cc.p(winSize.width / 2,self.startY))
     self:addChild(self.curTTf)
     

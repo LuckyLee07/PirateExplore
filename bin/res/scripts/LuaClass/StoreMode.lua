@@ -1,5 +1,7 @@
 require "LuaClass/Header"
 require "LuaClass/BaseView"
+require "LuaClass/ManagementTheme"
+require "LuaClass/HarborGoals"
 require "LuaClass/AlertView"
 require "LuaClass/SDButton"
 
@@ -14,9 +16,9 @@ StoreLayer.csvData = nil
 StoreLayer.ResoucecsvData = nil
 StoreLayer.dataIndex = nil
 
-function StoreLayer:create(bIsMoveToBottom)
+function StoreLayer:create(bIsMoveToBottom, focusResourceId)
     local view = StoreLayer.new()
-    if view and view:init(bIsMoveToBottom) then
+    if view and view:init(bIsMoveToBottom, focusResourceId) then
         return view
     end
     return nil
@@ -29,7 +31,8 @@ function StoreLayer:destory()
     self:superDestory()
 end
 
-function StoreLayer:init(bIsMoveToBottom)
+function StoreLayer:init(bIsMoveToBottom, focusResourceId)
+    self:applyManagementTheme()
 
     local visibleSize = cc.Director:getInstance():getVisibleSize()
     local origin = cc.Director:getInstance():getVisibleOrigin()
@@ -83,9 +86,7 @@ function StoreLayer:init(bIsMoveToBottom)
         cell:setTag(idx)
         cell:removeAllChildren()
 
-        local temp = cc.Sprite:create("Images/UI/dibantiao_02.png")
-        local _backGround = cc.Scale9Sprite:create("Images/UI/dibantiao_02.png", cc.rect(0, 0, temp:getContentSize().width, temp:getContentSize().height), cc.rect(17, 17, 30, 30));
-        _backGround:setPreferredSize(cc.size(visibleSize.width, 100))
+        local _backGround = ManagementTheme.panel(visibleSize.width-24,100,'paper')
 
         _backGround:setPosition(cc.p(cellSize.width/2,cellSize.height/2))
         cell:addChild(_backGround)
@@ -145,29 +146,31 @@ function StoreLayer:init(bIsMoveToBottom)
         local _centerY = _HeadSprite:getPositionY() + _HeadSprite:getContentSize().height/2
 
         local _name_str = self.ResoucecsvData[tostring(_csvID)]["name"]
-        local _name = cc.LabelTTF:create(_name_str,BoldFont,_fontSize+4);
+        local _name = cc.LabelTTF:create(_name_str,ManagementTheme.bodyFont(),_fontSize+4);
         _name:setPosition(cc.p(_xLeft,_centerY + 5))
-        _name:setColor(BaseColor)
+        _name:setFontSize(28)
+        ManagementTheme.styleLabel(_name,'body',330)
         -- _name:enableStroke(cc.c4b(255, 255, 255, 255), 1)
         _name:setAnchorPoint(cc.p(0,1))
         cell:addChild(_name)
 
          --price
-        local _price = cc.LabelTTF:create(self.ResoucecsvData[tostring(_csvID)]["comment"],BoldFont,_fontSize - 2);
+        local _price = cc.LabelTTF:create(self.ResoucecsvData[tostring(_csvID)]["comment"],ManagementTheme.bodyFont(),_fontSize - 2);
         _price:setPosition(cc.p(_xLeft,_centerY - _HeadSprite:getContentSize().height - 5))
         -- _price:enableStroke(cc.c4b(255, 255, 255, 255), 1)
-        _price:setColor(WriteColor)
+        _price:setColor(ManagementTheme.colors.ink)
         _price:setAnchorPoint(cc.p(0,0))
         cell:addChild(_price)
 
 
 
         local _resStarNum_str = self.ResoucecsvData[tostring(_csvID)]["starNum"]
-        local _rightX = _backGround:getPositionX() - 40
+        local _rightX = cellSize.width - 94
         for i=1,tostring(_resStarNum_str) do
             local _starSprite = cc.Sprite:create("Images/UI/xingxing01.png")
-            _starSprite:setPosition(cc.p(_rightX+i*_starSprite:getContentSize().width,_centerY))
-            _starSprite:setAnchorPoint(cc.p(0,1))
+            _starSprite:setScale(16/_starSprite:getContentSize().width)
+                _starSprite:setPosition(cc.p(_rightX+(i-(tonumber(_resStarNum_str)+1)/2)*18,15))
+            _starSprite:setAnchorPoint(cc.p(.5,.5))
             cell:addChild(_starSprite)
         end
 
@@ -177,49 +180,56 @@ function StoreLayer:init(bIsMoveToBottom)
 
         function showmorebuy()
             -- body
+            -- SDButton repeats its long-press callback. A live bulk dialog is
+            -- one interaction; repeating the hold must not stack identical modals.
+            for _,dialog in ipairs(cc.Director:getInstance():getRunningScene():getChildren()) do
+                if dialog.bulkBuyOwner == self then return end
+            end
             cclog("长按购买")
             local _alert = AlertView:create(0,0, "批量购买",nil)
+            _alert.bulkBuyOwner = self
+            _alert:usePaperBody()
 
             
 
-            local _menuButton1 = cc.MenuItemImage:create("Images/btn/ann05_a.png", "Images/btn/ann05_b.png")
+            local _menuButton1 = ManagementTheme.menuItem(190,64,'ink')
             _menuButton1:registerScriptTapHandler(function ()
                 -- body
                 print("self:buy(_csvID,_sortID,10,_alert)",_csvID)
                 self:buy(_csvID,_sortID,10,_alert)
             end)
 
-            local _menuButton2 = cc.MenuItemImage:create("Images/btn/ann05_a.png", "Images/btn/ann05_b.png")
+            local _menuButton2 = ManagementTheme.menuItem(190,64,'ink')
             _menuButton2:registerScriptTapHandler(function ()
                 -- body
                 self:buy(_csvID,_sortID,100,_alert)
             end)
 
-            local _menuButton3 = cc.MenuItemImage:create("Images/btn/ann05_a.png", "Images/btn/ann05_b.png")
+            local _menuButton3 = ManagementTheme.menuItem(190,64,'ink')
             _menuButton3:registerScriptTapHandler(function ()
                 -- body
                 self:buy(_csvID,_sortID,1000,_alert)
             end)
 
-            local _menuButton1Lable = cc.LabelTTF:create("买10个", BoldFont, 30.0)
+            local _menuButton1Lable = cc.LabelTTF:create("买10个", ManagementTheme.bodyFont(), 30.0)
             _menuButton1Lable:setPosition(cc.p(_menuButton1:getContentSize().width * 0.5,_menuButton1:getContentSize().height * 0.5))
             -- _menuButton1Lable:enableStroke(cc.c4b(255, 255, 255, 255), 2)
             _menuButton1:addChild(_menuButton1Lable,1)
 
-            local _menuButton2Lable = cc.LabelTTF:create("买100个", BoldFont, 30.0)
+            local _menuButton2Lable = cc.LabelTTF:create("买100个", ManagementTheme.bodyFont(), 30.0)
             _menuButton2Lable:setPosition(cc.p(_menuButton2:getContentSize().width * 0.5,_menuButton2:getContentSize().height * 0.5))
             -- _menuButton2Lable:enableStroke(cc.c4b(255, 255, 255, 255), 2)
             _menuButton2:addChild(_menuButton2Lable,1)
 
-            local _menuButton3Lable = cc.LabelTTF:create("买1000个", BoldFont, 30.0)
+            local _menuButton3Lable = cc.LabelTTF:create("买1000个", ManagementTheme.bodyFont(), 30.0)
             _menuButton3Lable:setPosition(cc.p(_menuButton3:getContentSize().width * 0.5,_menuButton3:getContentSize().height * 0.5))
             -- _menuButton3Lable:enableStroke(cc.c4b(255, 255, 255, 255), 2)
             _menuButton3:addChild(_menuButton3Lable,1)
 
 
-            _menuButton1:setPosition(cc.p(_alert.s_position.x, _alert.s_position.y + _menuButton1:getContentSize().height * 2 - 20))
-            _menuButton2:setPosition(cc.p(_alert.s_position.x, _alert.s_position.y - 20))
-            _menuButton3:setPosition(cc.p(_alert.s_position.x, _alert.s_position.y - _menuButton1:getContentSize().height * 2 - 20))
+            _menuButton1:setPosition(cc.p(_alert.s_position.x, _alert.s_position.y + 74))
+            _menuButton2:setPosition(cc.p(_alert.s_position.x, _alert.s_position.y - 38))
+            _menuButton3:setPosition(cc.p(_alert.s_position.x, _alert.s_position.y - 150))
             local menu = cc.Menu:create(_menuButton1,_menuButton2,_menuButton3)
             menu:setPosition(0.0, 0.0)
             _alert:addChild(menu)
@@ -234,6 +244,7 @@ function StoreLayer:init(bIsMoveToBottom)
                 -- print("SDButton:create",tostring(_csvID))
                 self:buy(_csvID,_sortID,1,nil)
             end)
+        ManagementTheme.skinSDButton(_menuButton,'coral')
         if tonumber(self.ResoucecsvData[tostring(_csvID)]["limits"]) ~= 1 then
             _menuButton:registerLongPressedActiveOnce(showmorebuy)
         end
@@ -248,7 +259,7 @@ function StoreLayer:init(bIsMoveToBottom)
         -- --end
         -- local function test()
         -- end
-        -- local _menuButton = cc.MenuItemImage:create("Images/btn/ann01_a.png", "Images/btn/ann01_b.png")
+        -- local _menuButton = ManagementTheme.menuItem(128,59,'coral')
         -- _menuButton:registerScriptTapHandler(function()
 
 
@@ -286,7 +297,8 @@ function StoreLayer:init(bIsMoveToBottom)
         -- menu:setPosition(0.0, 0.0)
         -- cell:addChild(menu)
 
-        local _zz = cc.LabelTTF:create("购 买", BoldFont, 30.0)
+        local _zz = cc.LabelTTF:create("购 买", ManagementTheme.bodyFont(), 26.0)
+        ManagementTheme.styleLabel(_zz,'action')
         _zz:setPosition(_menuButton:getPosition())
         -- _zz:enableStroke(cc.c4b(255, 255, 255, 255), 2)
         cell:addChild(_zz,1)
@@ -316,7 +328,21 @@ function StoreLayer:init(bIsMoveToBottom)
         self.tableview:setContentOffset(cc.p(0, 0), false);
     end
 
+    self:focusEntry(focusResourceId)
     return true
+end
+
+-- Read-only optional focus; the original bottom-entry flag remains supported.
+function StoreLayer:focusEntry(id)
+    if not id then return false end
+    for index,row in ipairs(self.roleStoreData or {}) do
+        if tostring(row[dataKeyID])==tostring(id) then
+            local offset=HarborGoals.focusOffset(#self.roleStoreData,index,self.areaHeight,self.cellhight)
+            self.tableview:setContentOffset(cc.p(0,offset),false)
+            return true
+        end
+    end
+    return false
 end
 
 -- 检查资源是否充足
@@ -368,14 +394,14 @@ function StoreLayer:buy(_csvID,_sortID,num,_oldalert)
             DataManager:getInstance():showBuyGoldBox()
         end, nil)
 
-        local showLabel1 = cc.LabelTTF:create("金币不足!", BoldFont, 36.0)
-        showLabel1:setColor(cc.c3b(255, 255, 255))
+        local showLabel1 = cc.LabelTTF:create("金币不足!", ManagementTheme.bodyFont(), 36.0)
+        showLabel1:setColor(ManagementTheme.colors.white)
         -- showLabel1:enableStroke(cc.c4b(16, 16, 16, 255), 2)
         showLabel1:setPosition(cc.p(_alert.s_position.x, _alert.s_position.y + showLabel1:getContentSize().height * 1.0))
         _alert:addChild(showLabel1)
 
-        local showLabel2 = cc.LabelTTF:create("你可以通过充值获得钻石购买金币", BoldFont, 36.0)
-        showLabel2:setColor(cc.c3b(255, 255, 255))
+        local showLabel2 = cc.LabelTTF:create("你可以通过充值获得钻石购买金币", ManagementTheme.bodyFont(), 36.0)
+        showLabel2:setColor(ManagementTheme.colors.white)
         -- showLabel2:enableStroke(cc.c4b(16, 16, 16, 255), 2)
         showLabel2:setPosition(cc.p(_alert.s_position.x, _alert.s_position.y - showLabel1:getContentSize().height * 0.2))
         _alert:addChild(showLabel2)

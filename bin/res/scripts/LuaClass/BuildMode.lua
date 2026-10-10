@@ -1,5 +1,7 @@
 require "LuaClass/Header"
 require "LuaClass/BaseView"
+require "LuaClass/ManagementTheme"
+require "LuaClass/HarborGoals"
 require "LuaClass/AlertView"
 require "LuaClass/DataManager"
 require "LuaClass/Lackmaterial"
@@ -15,8 +17,9 @@ BuildLayer.ResoucecsvData = nil
 BuildLayer.dataIndex = nil
 
 
-function BuildLayer:create()
+function BuildLayer:create(focusBuildId)
     local view = BuildLayer.new()
+    view.focusTargetId = focusBuildId
     if view and view:init() then
         return view
     end
@@ -36,6 +39,7 @@ function BuildLayer:viewWillDestory()
 end
 
 function BuildLayer:init()
+    self:applyManagementTheme()
     DataManager:getInstance():registerEvent(roleMapInfo, "BuildLayer", function()
         -- body
         local flag = DataManager:getInstance():checkDiamondStoreNewGoods()
@@ -133,9 +137,7 @@ function BuildLayer:init()
         cell:setTag(idx)
         cell:removeAllChildren()
 
-        local temp = cc.Sprite:create("Images/UI/dibantiao_02.png")
-        local _backGround = cc.Scale9Sprite:create("Images/UI/dibantiao_02.png", cc.rect(0, 0, temp:getContentSize().width, temp:getContentSize().height), cc.rect(17, 17, 30, 30));
-        _backGround:setPreferredSize(cc.size(visibleSize.width, 100))
+        local _backGround = ManagementTheme.panel(visibleSize.width-24,100,'paper')
 
         _backGround:setPosition(cc.p(cellSize.width/2,cellSize.height/2))
         cell:addChild(_backGround)
@@ -200,9 +202,10 @@ function BuildLayer:init()
         local _centerY = _HeadSprite:getPositionY() + _HeadSprite:getContentSize().height/2
 
         local _name_str = self.csvData[tostring(_csvID)]["name"]
-        local _name = cc.LabelTTF:create(_name_str,BoldFont,_fontSize+4);
+        local _name = cc.LabelTTF:create(_name_str,ManagementTheme.bodyFont(),_fontSize+4);
         _name:setPosition(cc.p(_xLeft,_centerY + 5))
-        _name:setColor(BaseColor)
+        _name:setFontSize(28)
+        ManagementTheme.styleLabel(_name,'body',300)
         -- _name:enableStroke(cc.c4b(255, 255, 255, 255), 1)
         _name:setAnchorPoint(cc.p(0,1))
         cell:addChild(_name)
@@ -222,7 +225,7 @@ function BuildLayer:init()
         basenode:setPosition(cc.p(0,0))
         cell:addChild(basenode)
         for i = 1,neednum do
-            local _price = cc.LabelTTF:create(s_templacktable[i]["mtname"],BoldFont,_fontSize - 2);
+            local _price = cc.LabelTTF:create(s_templacktable[i]["mtname"],ManagementTheme.bodyFont(),_fontSize - 2);
             _price:setPosition(cc.p(s_p,_centerY - _HeadSprite:getContentSize().height - 5))
             -- _price:enableStroke(cc.c4b(255, 255, 255, 255), 1)
             _price:setColor(s_templacktable[i]["mtcolor"])
@@ -231,7 +234,7 @@ function BuildLayer:init()
             s_p = s_p + _price:getContentSize().width
         end
         
-            local _menuButton = cc.MenuItemImage:create("Images/btn/ann01_a.png", "Images/btn/ann01_b.png")
+            local _menuButton = ManagementTheme.menuItem(128,59,'coral')
 
             _menuButton:registerScriptTapHandler(function()
                 if DataManager:getInstance():getSound_off() == 0 then
@@ -323,12 +326,14 @@ function BuildLayer:init()
                 resok:setVisible(false)
             end
 
-            local _zz = cc.LabelTTF:create("建 设", BoldFont, 30.0)
+            local _zz = cc.LabelTTF:create("建 设", ManagementTheme.bodyFont(), 26.0)
+            ManagementTheme.styleLabel(_zz,'action')
             _zz:setPosition(_menuButton:getPosition())
             -- _zz:enableStroke(cc.c4b(255, 255, 255, 255), 2)
             cell:addChild(_zz)
         else
-            local _zz = cc.LabelTTF:create("已建设", BoldFont, 30.0)
+            local _zz = cc.LabelTTF:create("已建设", ManagementTheme.bodyFont(), 26.0)
+            ManagementTheme.styleLabel(_zz,'muted')
             -- _zz:enableStroke(cc.c4b(255, 255, 255, 255), 2)
             _zz:setPosition(cc.p(cellSize.width-_zz:getContentSize().width * 0.5 - 30,cellSize.height/2))
             cell:addChild(_zz)
@@ -349,6 +354,7 @@ function BuildLayer:init()
 
     self:addChild(self.tableview)
     self.tableview:reloadData()
+    self:focusEntry(self.focusTargetId)
 
     return true
 end
@@ -380,9 +386,9 @@ function BuildLayer:getResouceshowtable(csvID)
             local lacktablecell = {}
             lacktablecell.mtname = self.ResoucecsvData[tostring(keystring)]["name"].."x"..keynum.." "
             if tonumber(havenum) < tonumber(keynum) then
-                lacktablecell.mtcolor = RedColor
+                lacktablecell.mtcolor = ManagementTheme.colors.danger
             else
-                lacktablecell.mtcolor = WriteColor
+                lacktablecell.mtcolor = ManagementTheme.colors.ink
             end
             table.insert(Lacktable,1,lacktablecell)
             if tonumber(havenum) < tonumber(keynum) then
@@ -467,3 +473,16 @@ function BuildLayer:getDataNum()
 end
 
 
+
+-- Optional read-only navigation target; ordinary entry keeps its old scroll state.
+function BuildLayer:focusEntry(id)
+    if not id then return false end
+    for index,row in ipairs(self.roleBuildingData or {}) do
+        if tostring(row[dataKeyID])==tostring(id) then
+            local offset=HarborGoals.focusOffset(#self.roleBuildingData,index,self.areaHeight,self.cellhight)
+            self.tableview:setContentOffset(cc.p(0,offset),false)
+            return true
+        end
+    end
+    return false
+end

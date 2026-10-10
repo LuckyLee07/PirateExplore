@@ -27,6 +27,7 @@ THE SOFTWARE.
 #include "CCTouch.h"
 #include "CCDirector.h"
 #include "CCEventDispatcher.h"
+#include <cmath>
 
 NS_CC_BEGIN
 
@@ -193,10 +194,13 @@ Point GLViewProtocol::getVisibleOrigin() const
 
 void GLViewProtocol::setViewPortInPoints(float x , float y , float w , float h)
 {
-    glViewport((GLint)(x * _scaleX + _viewPortRect.origin.x),
-               (GLint)(y * _scaleY + _viewPortRect.origin.y),
-               (GLsizei)(w * _scaleX),
-               (GLsizei)(h * _scaleY));
+    // SHOW_ALL can produce 479.99997 for a 480px window after a fractional
+    // design-height calculation. Truncation leaves an unrendered edge column.
+    // Quantize to the nearest device pixel, including negative subview origins.
+    glViewport((GLint)std::round(x * _scaleX + _viewPortRect.origin.x),
+               (GLint)std::round(y * _scaleY + _viewPortRect.origin.y),
+               (GLsizei)std::round(w * _scaleX),
+               (GLsizei)std::round(h * _scaleY));
 }
 
 void GLViewProtocol::setScissorInPoints(float x , float y , float w , float h)

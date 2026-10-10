@@ -1,4 +1,5 @@
 require "LuaClass/Header"
+require "LuaClass/DialogTheme"
 
 -- 按钮类型
 -- 1代表只有确定按钮的对话框
@@ -27,6 +28,7 @@ function AlertView:create(dtype, boxtype, title, callbackfunc, callbackcancelfun
     end
     local layer = AlertView.new(dtype, boxtype, title, callbackfunc, callbackcancelfunc, leftBtnStr, rightBtnStr)
     cc.Director:getInstance():getRunningScene():addChild(layer, 1000)
+    if ToastUtil and ToastUtil.quietHomeProductionToasts then ToastUtil:quietHomeProductionToasts() end
     return layer
 end
 
@@ -34,6 +36,7 @@ end
 function AlertView:ctor(dtype, boxtype, title, callbackfunc, callbackcancelfunc, leftBtnStr, rightBtnStr)
     -- print("AlertView:dtype=",dtype,"AlertView:title=",title,"AlertView:callback",callbackfunc)
     self.dtype = dtype
+    self.isAdventureModal = true
     self.title = title
     self.isAutoClose = true
     self.callbackfunc = callbackfunc
@@ -75,9 +78,19 @@ function AlertView:setOkRemove(isremove)
 
 end
 
+-- Explicit opt-in for prose dialogs. Caller labels stay real, and their colors
+-- are chosen by that caller rather than guessed by traversing the node tree.
+function AlertView:usePaperBody()
+    local z=self.s_size
+    local paper=DialogTheme.paperSheet(z.width-16,z.height-82)
+    paper:setPosition(cc.p(z.width*.5,(z.height-82)*.5+4))
+    self.s_bg:addChild(paper)
+    return paper
+end
+
 -- 招募弹出框
 function AlertView:createBaseBox(boxtype, leftBtnStr, rightBtnStr)
-    local layerbg = cc.LayerColor:create(cc.c4b(0,0,0,64));
+    local layerbg = cc.LayerColor:create(cc.c4b(3,20,29,166));
     self:addChild(layerbg)
 
     local pngname = "Images/UI/tankuang_01.png"
@@ -91,7 +104,7 @@ function AlertView:createBaseBox(boxtype, leftBtnStr, rightBtnStr)
     else
         pngname = "Images/UI/tankuang_03.png"
     end
-    local background = cc.Scale9Sprite:create(pngname)
+    local background = DialogTheme.panelFromLegacy(pngname)
     local labelContentSize = cc.size(350,0)
 
     self.s_position = cc.p(self.winSize.width * 0.5,self.winSize.height * 0.5)
@@ -107,7 +120,7 @@ function AlertView:createBaseBox(boxtype, leftBtnStr, rightBtnStr)
 
     if self.title ~= nil and self.title ~= "" then
         -- local label = ccui.Text:create()
-        local label = cc.LabelTTF:create(self.title, BoldFont, 36.0)
+        local label = cc.LabelTTF:create(self.title, MasterTheme.headingFont(true), 36.0)
         -- label:setDimensions(cc.size(350,0))
         -- label:enableStroke(cc.c4b(16, 16, 16, 255), 2)
         -- label:enableGlow(cc.c4b(255, 255, 255, 255))
@@ -117,6 +130,7 @@ function AlertView:createBaseBox(boxtype, leftBtnStr, rightBtnStr)
         -- label:setText(self.title)
         -- label:setFontSize(36)
         -- local labelContentSize = label:getTextAreaSize();
+        DialogTheme.fit(label, msgBoxWidth - 160)
         label:setPosition(cc.p(msgBoxWidth * 0.5,msgBoxHeight-40))
         background:addChild(label,1)
     end
@@ -146,7 +160,7 @@ function AlertView:createBaseBox(boxtype, leftBtnStr, rightBtnStr)
     end
     
 
-    self.closeBtn = SDButton:create("Images/UI/cancel_button.png", "Images/UI/cancel_button.png", function()
+    self.closeBtn = DialogTheme.closeSD(function()
         cclog("点了按钮")
         cancelMsgBoxEvent(nil, ccui.TouchEventType.ended)
     end)
@@ -157,60 +171,63 @@ function AlertView:createBaseBox(boxtype, leftBtnStr, rightBtnStr)
     --创建只有确定按钮的弹出框
     if self.dtype == MSG_BOX_OK then
       
-        local okButton = ccui.Button:create()
-        background:addChild(okButton)
-        okButton:loadTextures("Images/btn/ann03_a.png","Images/btn/ann03_b.png","")
+        local okButton = DialogTheme.menuItem("Images/btn/ann03_a.png", "Images/btn/ann03_b.png")
+        local okMenu = cc.Menu:create(okButton)
+        okMenu:setPosition(cc.p(0, 0))
+        background:addChild(okMenu)
         okButton:setPosition(cc.p(contentSize.width/2,50))
-        okButton:setTouchEnabled(true)
-        okButton:addTouchEventListener(cancelMsgBoxEvent)
+        okButton:registerScriptTapHandler(function() cancelMsgBoxEvent(nil, ccui.TouchEventType.ended) end)
         local okButtonSize = okButton:getContentSize()
-        local okButtonLabel = cc.LabelTTF:create(rightBtnStr, BoldFont, 32.0)
+        local okButtonLabel = cc.LabelTTF:create(rightBtnStr, MasterTheme.headingFont(false), 32.0)
         -- okButtonLabel:enableStroke(cc.c4b(16, 16, 16, 255), 2)
         okButtonLabel:setColor(cc.c3b(255,255,255))
         okButtonLabel:setPosition(cc.p(okButtonSize.width/2,okButtonSize.height/2))
+        DialogTheme.fit(okButtonLabel, okButtonSize.width - 24)
         okButton:addChild(okButtonLabel)
         
     --创建具有确定和取消按钮的弹出框 
     elseif self.dtype == MSG_BOX_OK_CANCEL then
-        local okButton = ccui.Button:create()
-        background:addChild(okButton)
-        okButton:loadTextures("Images/btn/ann03_a.png","Images/btn/ann03_b.png","")
-        okButton:setTouchEnabled(true)
+        local okButton = DialogTheme.menuItem("Images/btn/ann03_a.png", "Images/btn/ann03_b.png")
+        local okMenu = cc.Menu:create(okButton)
+        okMenu:setPosition(cc.p(0, 0))
+        background:addChild(okMenu)
         okButton:setPosition(cc.p(contentSize.width * 0.75,50))
-        okButton:addTouchEventListener(okMsgBoxEvent)
+        okButton:registerScriptTapHandler(function() okMsgBoxEvent(nil, ccui.TouchEventType.ended) end)
         local okButtonSize = okButton:getContentSize()
-        local okButtonLabel = cc.LabelTTF:create(rightBtnStr, BoldFont, 32.0)
+        local okButtonLabel = cc.LabelTTF:create(rightBtnStr, MasterTheme.headingFont(false), 32.0)
         -- okButtonLabel:enableStroke(cc.c4b(16, 16, 16, 255), 2)
         okButtonLabel:setColor(cc.c3b(255,255,255))
         okButtonLabel:setPosition(cc.p(okButtonSize.width/2,okButtonSize.height/2))
+        DialogTheme.fit(okButtonLabel, okButtonSize.width - 24)
         okButton:addChild(okButtonLabel)
         
-        local cancelButton = ccui.Button:create()
-        background:addChild(cancelButton)
-        cancelButton:loadTextures("Images/btn/ann04_a.png","Images/btn/ann04_b.png","")
-        cancelButton:setTouchEnabled(true)
+        local cancelButton = DialogTheme.menuItem("Images/btn/ann04_a.png", "Images/btn/ann04_b.png", "secondary")
+        local cancelMenu = cc.Menu:create(cancelButton)
+        cancelMenu:setPosition(cc.p(0, 0))
+        background:addChild(cancelMenu)
         cancelButton:setPosition(cc.p(contentSize.width * 0.25,50))
-        cancelButton:addTouchEventListener(cancelMsgBoxEvent)
+        cancelButton:registerScriptTapHandler(function() cancelMsgBoxEvent(nil, ccui.TouchEventType.ended) end)
         local cancelButtonSize = cancelButton:getContentSize()
-        local cancelButtonLabel = cc.LabelTTF:create(leftBtnStr, BoldFont, 32.0)
+        local cancelButtonLabel = cc.LabelTTF:create(leftBtnStr, MasterTheme.headingFont(false), 32.0)
         -- cancelButtonLabel:enableStroke(cc.c4b(16, 16, 16, 255), 2)
         cancelButtonLabel:setColor(cc.c3b(255,255,255))
         cancelButtonLabel:setPosition(cc.p(cancelButtonSize.width/2,cancelButtonSize.height/2))
+        DialogTheme.fit(cancelButtonLabel, cancelButtonSize.width - 24)
         cancelButton:addChild(cancelButtonLabel)
     end
 end
 
 
 function AlertView:createMsgBox()
-    local layerbg = cc.LayerColor:create(cc.c4b(0,0,0,64));
+    local layerbg = cc.LayerColor:create(cc.c4b(3,20,29,166));
     self:addChild(layerbg)
 
 
-    local background = cc.Scale9Sprite:create("Images/UI/tankuang_04.png")
+    local background = DialogTheme.panel(450, 400)
     self.s_bg = background  
     self.s_size = background:getContentSize()
     -- local label = ccui.Text:create()
-    local label = cc.LabelTTF:create(self.title, BoldFont, 36.0)
+    local label = cc.LabelTTF:create(self.title, MasterTheme.headingFont(true), 36.0)
     label:setDimensions(cc.size(350,0))
     -- label:enableStroke(cc.c4b(16, 16, 16, 255), 2)
     label:setColor(cc.c3b(255,255,255))
@@ -252,40 +269,49 @@ function AlertView:createMsgBox()
     --创建只有确定按钮的弹出框
     if self.dtype == MSG_BOX_OK then
       
-        local okButton = ccui.Button:create()
-        background:addChild(okButton)
-        okButton:loadTextures("Images/btn/ann02_a.png","Images/btn/ann02_b.png","")
+        local okButton = DialogTheme.menuItem("Images/btn/ann03_a.png", "Images/btn/ann03_b.png")
+        local okMenu = cc.Menu:create(okButton)
+        okMenu:setPosition(cc.p(0, 0))
+        background:addChild(okMenu)
         okButton:setPosition(cc.p(contentSize.width/2,50))
-        okButton:setTouchEnabled(true)
-        okButton:addTouchEventListener(cancelMsgBoxEvent)
+        okButton:registerScriptTapHandler(function() cancelMsgBoxEvent(nil, ccui.TouchEventType.ended) end)
         local okButtonSize = okButton:getContentSize()
+        local caption = DialogTheme.label("确 定", 30)
+        caption:setPosition(cc.p(okButtonSize.width*.5, okButtonSize.height*.5))
+        okButton:addChild(caption)
         -- local okButtonLabel = cc.Sprite:create()
         -- okButtonLabel:setTexture("confirm.png")
-        -- local okButtonLabel = cc.LabelTTF:create("确 定", BoldFont, 32.0)
+        -- local okButtonLabel = cc.LabelTTF:create("确 定", MasterTheme.headingFont(false), 32.0)
         -- okButtonLabel:setPosition(cc.p(okButtonSize.width/2,okButtonSize.height/2))
         -- okButton:addChild(okButtonLabel)
         
     --创建具有确定和取消按钮的弹出框 
     elseif self.dtype == MSG_BOX_OK_CANCEL then
-        local okButton = ccui.Button:create()
-        background:addChild(okButton)
-        okButton:loadTextures("Images/btn/ann02_a.png","Images/btn/ann02_b.png","")
-        okButton:setTouchEnabled(true)
+        local okButton = DialogTheme.menuItem("Images/btn/ann03_a.png", "Images/btn/ann03_b.png")
+        local okMenu = cc.Menu:create(okButton)
+        okMenu:setPosition(cc.p(0, 0))
+        background:addChild(okMenu)
         okButton:setPosition(cc.p(contentSize.width/2-100,50))
-        okButton:addTouchEventListener(okMsgBoxEvent)
+        okButton:registerScriptTapHandler(function() okMsgBoxEvent(nil, ccui.TouchEventType.ended) end)
         local okButtonSize = okButton:getContentSize()
+        local caption = DialogTheme.label("确 定", 30)
+        caption:setPosition(cc.p(okButtonSize.width*.5, okButtonSize.height*.5))
+        okButton:addChild(caption)
         -- local okButtonLabel = cc.Sprite:create()
         -- okButtonLabel:setTexture("confirm.png")
         -- okButtonLabel:setPosition(cc.p(okButtonSize.width/2,okButtonSize.height/2))
         -- okButton:addChild(okButtonLabel)
         
-        local cancelButton = ccui.Button:create()
-        background:addChild(cancelButton)
-        cancelButton:loadTextures("Images/btn/ann02_a.png","Images/btn/ann02_b.png","")
-        cancelButton:setTouchEnabled(true)
+        local cancelButton = DialogTheme.menuItem("Images/btn/ann04_a.png", "Images/btn/ann04_b.png", "secondary")
+        local cancelMenu = cc.Menu:create(cancelButton)
+        cancelMenu:setPosition(cc.p(0, 0))
+        background:addChild(cancelMenu)
         cancelButton:setPosition(cc.p(contentSize.width/2+100,50))
-        cancelButton:addTouchEventListener(cancelMsgBoxEvent)
+        cancelButton:registerScriptTapHandler(function() cancelMsgBoxEvent(nil, ccui.TouchEventType.ended) end)
         local cancelButtonSize = cancelButton:getContentSize()
+        local caption = DialogTheme.label("取 消", 30)
+        caption:setPosition(cc.p(cancelButtonSize.width*.5, cancelButtonSize.height*.5))
+        cancelButton:addChild(caption)
         -- local cancelButtonLabel = cc.Sprite:create()
         -- cancelButtonLabel:setTexture("cancel.png")
         -- cancelButtonLabel:setPosition(cc.p(cancelButtonSize.width/2,cancelButtonSize.height/2))

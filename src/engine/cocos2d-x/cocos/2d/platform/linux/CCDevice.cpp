@@ -45,6 +45,7 @@ using namespace std;
 
 // as FcFontMatch is quite an expensive call, cache the results of getFontFile
 static std::map<std::string, std::string> fontCache;
+static std::map<std::string, int> fontFaceIndexCache;
 
 struct LineBreakGlyph {
     FT_UInt glyphIndex;
@@ -114,6 +115,8 @@ void Device::setAccelerometerInterval(float interval)
 
 class BitmapDC
 {
+    int textAscent = 0;
+    int textDescent = 0;
 public:
 	BitmapDC() {
 		libError = FT_Init_FreeType( &library );
@@ -180,6 +183,7 @@ public:
 
 	bool divideString(FT_Face face, const char* sText, int iMaxWidth, int iMaxHeight) {
 		const char* pText = sText;
+        textAscent = textDescent = 0;
 		textLines.clear();
 		iMaxLineWidth = 0;
 
@@ -215,7 +219,8 @@ public:
 				return false;
 			}
 
-			if (isspace(unicode)) {
+			// ctype accepts only unsigned-char values; Unicode codepoints cause UB.
+            if (unicode <= 0x7f && isspace(static_cast<unsigned char>(unicode))) {
 				currentPaintPosition += face->glyph->metrics.horiAdvance >> 6;
 				prevGlyphIndex = glyphIndex;
 				prevCharacter = unicode;
@@ -223,7 +228,10 @@ public:
 				continue;
 			}
 
-			LineBreakGlyph glyph;
+			textAscent = std::max(textAscent, static_cast<int>((face->glyph->metrics.horiBearingY + 63) >> 6));
+            textDescent = std::max(textDescent, static_cast<int>((face->glyph->metrics.height - face->glyph->metrics.horiBearingY + 63) >> 6));
+
+            LineBreakGlyph glyph;
 			glyph.glyphIndex = glyphIndex;
 			glyph.glyphWidth = face->glyph->metrics.width >> 6;
 			glyph.bearingX = face->glyph->metrics.horiBearingX >> 6;
@@ -309,7 +317,7 @@ public:
 	}
 
 	int computeLineStartY( FT_Face face, Device::TextAlign eAlignMask, int txtHeight, int borderHeight ){
-		int baseLinePos = ceilf(FT_MulFix( face->bbox.yMax, face->size->metrics.y_scale )/64.0f);
+		int baseLinePos = textAscent;
 		if (eAlignMask == Device::TextAlign::CENTER || eAlignMask == Device::TextAlign::LEFT || eAlignMask == Device::TextAlign::RIGHT) {
 			//vertical center
 			return (borderHeight - txtHeight) / 2 + baseLinePos;
@@ -344,8 +352,16 @@ public:
     		}
     	}
 
-    	// use fontconfig to match the parameter against the fonts installed on the system
-    	FcPattern *pattern = FcPatternBuild (0, FC_FAMILY, FcTypeString, family_name, (char *) 0);
+        // Apple Arial names rely on CoreText CJK fallback. The legacy Linux
+        // bitmap renderer loads a single face, so use an installed CJK family.
+        const char* matchFamily = family_name;
+        if (fontPath == "Arial" || fontPath == "Arial-BoldMT")
+            matchFamily = "Noto Sans CJK SC";
+
+        // use fontconfig to match the parameter against the fonts installed on the system
+        FcPattern *pattern = FcPatternBuild (0, FC_FAMILY, FcTypeString, matchFamily, (char *) 0);
+        if (fontPath == "Arial-BoldMT")
+            FcPatternAddInteger(pattern, FC_WEIGHT, FC_WEIGHT_BOLD);
     	FcConfigSubstitute(0, pattern, FcMatchPattern);
     	FcDefaultSubstitute(pattern);
 
@@ -355,6 +371,9 @@ public:
     		FcChar8 *s = NULL;
     		if ( FcPatternGetString(font, FC_FILE, 0, &s) == FcResultMatch ) {
     			fontPath = (const char*)s;
+                int faceIndex = 0;
+                FcPatternGetInteger(font, FC_INDEX, 0, &faceIndex);
+                fontFaceIndexCache[family_name] = faceIndex;
 
     			FcPatternDestroy(font);
     			FcPatternDestroy(pattern);
@@ -376,7 +395,8 @@ public:
 
 		FT_Face face;
 		std::string fontfile = getFontFile(pFontName);
-		if ( FT_New_Face(library, fontfile.c_str(), 0, &face) ) {
+		const int faceIndex = fontFaceIndexCache[pFontName];
+        if ( FT_New_Face(library, fontfile.c_str(), faceIndex, &face) ) {
 			//no valid font found use default
 			if ( FT_New_Face(library, "/usr/share/fonts/truetype/freefont/FreeSerif.ttf", 0, &face) ) {
 				return false;
@@ -403,7 +423,9 @@ public:
 		iMaxLineWidth = MAX(iMaxLineWidth, nWidth);
 
 		//compute the final line height
-		iMaxLineHeight = ceilf(FT_MulFix( face->bbox.yMax - face->bbox.yMin, face->size->metrics.y_scale )/64.0f);
+		// Measure this text run, not the entire font's global bounding box.
+        // CJK font-wide bounds include unrelated tall glyphs and break HUD baselines.
+        iMaxLineHeight = std::max(1, textAscent + textDescent);
 		int lineHeight = face->size->metrics.height>>6;
 		if ( textLines.size() > 0 ) {
 			iMaxLineHeight += (lineHeight * (textLines.size() -1));
@@ -440,7 +462,8 @@ public:
                     }
                     iY *= iMaxLineWidth;
 
-                    int bitmap_y = y * bitmap.width;
+                    if (iY < 0) continue;
+                    int bitmap_y = y * bitmap.pitch;
 
 					for (int x = 0; x < bitmap.width; ++x) {
 						unsigned char cTemp = bitmap.buffer[bitmap_y + x];
@@ -449,6 +472,7 @@ public:
 						}
 
 						int iX = xoffset + x;
+                    if (iX < 0 || iX >= iMaxLineWidth) continue;
 
 						int iTemp = cTemp << 24 | cTemp << 16 | cTemp << 8 | cTemp;
 						*(int*) &_data[(iY + iX) * 4 + 0] = iTemp;

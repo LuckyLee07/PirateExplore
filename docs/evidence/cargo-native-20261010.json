@@ -1,0 +1,564 @@
+{
+  "synthetic": true,
+  "description": "Disposable profiles; real native UI clicks after synthetic setup; no natural drops or recruits claimed.",
+  "testedSourceFinal": "000f1291a9317016c4a7a20bafe44e23ca6d8f0e",
+  "capacityTests": {
+    "cargo2": [
+      {
+        "step": "cargo2-step1-no-fraction",
+        "state": {
+          "diamond": 1,
+          "battlePack": {
+            "1005": {
+              "id": "1005",
+              "num": 19
+            }
+          },
+          "package": [
+            {
+              "id": "1005",
+              "num": 19
+            }
+          ],
+          "closed": false,
+          "capacity": 20,
+          "gold": 2,
+          "size": 19,
+          "mode": "cargo2",
+          "rewardItems": [
+            {
+              "id": "1012",
+              "num": 2
+            }
+          ],
+          "synthetic": true
+        }
+      },
+      {
+        "step": "cargo2-step2-space",
+        "state": {
+          "diamond": 1,
+          "battlePack": {
+            "1005": {
+              "id": "1005",
+              "num": 19
+            }
+          },
+          "package": [
+            {
+              "id": "1005",
+              "num": 18
+            }
+          ],
+          "closed": false,
+          "capacity": 20,
+          "gold": 2,
+          "size": 18,
+          "mode": "cargo2",
+          "rewardItems": [
+            {
+              "id": "1005",
+              "num": 1
+            },
+            {
+              "id": "1012",
+              "num": 2
+            }
+          ],
+          "synthetic": true
+        }
+      },
+      {
+        "step": "cargo2-step3-full",
+        "state": {
+          "diamond": 1,
+          "battlePack": {
+            "1005": {
+              "id": "1005",
+              "num": 19
+            }
+          },
+          "package": [
+            {
+              "id": "1005",
+              "num": 18
+            },
+            {
+              "id": "1012",
+              "num": 1
+            }
+          ],
+          "closed": false,
+          "capacity": 20,
+          "gold": 2,
+          "size": 20,
+          "mode": "cargo2",
+          "rewardItems": [
+            {
+              "id": "1005",
+              "num": 1
+            },
+            {
+              "id": "1012",
+              "num": 1
+            }
+          ],
+          "synthetic": true
+        }
+      },
+      {
+        "step": "cargo2-step4-food-blocked",
+        "state": {
+          "diamond": 1,
+          "battlePack": {
+            "1005": {
+              "id": "1005",
+              "num": 19
+            }
+          },
+          "package": [
+            {
+              "id": "1005",
+              "num": 18
+            },
+            {
+              "id": "1012",
+              "num": 1
+            }
+          ],
+          "closed": false,
+          "capacity": 20,
+          "gold": 2,
+          "size": 20,
+          "mode": "cargo2",
+          "rewardItems": [
+            {
+              "id": "1005",
+              "num": 1
+            },
+            {
+              "id": "1012",
+              "num": 1
+            }
+          ],
+          "synthetic": true
+        }
+      },
+      {
+        "step": "cargo2-step5-reversed",
+        "state": {
+          "diamond": 1,
+          "battlePack": {
+            "1005": {
+              "id": "1005",
+              "num": 19
+            }
+          },
+          "package": [
+            {
+              "id": "1005",
+              "num": 19
+            }
+          ],
+          "closed": false,
+          "capacity": 20,
+          "gold": 2,
+          "size": 19,
+          "mode": "cargo2",
+          "rewardItems": [
+            {
+              "id": "1012",
+              "num": 2
+            }
+          ],
+          "synthetic": true
+        }
+      },
+      {
+        "step": "cargo2-step6-closed",
+        "state": {
+          "diamond": 1,
+          "battlePack": {
+            "1005": {
+              "id": "1005",
+              "num": 19
+            }
+          },
+          "mode": "cargo2",
+          "gold": 2,
+          "synthetic": true
+        }
+      }
+    ],
+    "cargo5": [
+      {
+        "step": "cargo5-step1-no-fraction",
+        "state": {
+          "diamond": 1,
+          "battlePack": {
+            "1005": {
+              "id": "1005",
+              "num": 19
+            }
+          },
+          "package": [
+            {
+              "id": "1005",
+              "num": 19
+            }
+          ],
+          "closed": false,
+          "capacity": 20,
+          "gold": 2,
+          "size": 19,
+          "mode": "cargo5",
+          "rewardItems": [
+            {
+              "id": "1039",
+              "num": 2
+            }
+          ],
+          "synthetic": true
+        }
+      },
+      {
+        "step": "cargo5-step2-space",
+        "state": {
+          "diamond": 1,
+          "battlePack": {
+            "1005": {
+              "id": "1005",
+              "num": 19
+            }
+          },
+          "package": [
+            {
+              "id": "1005",
+              "num": 15
+            }
+          ],
+          "closed": false,
+          "capacity": 20,
+          "gold": 2,
+          "size": 15,
+          "mode": "cargo5",
+          "rewardItems": [
+            {
+              "id": "1005",
+              "num": 4
+            },
+            {
+              "id": "1039",
+              "num": 2
+            }
+          ],
+          "synthetic": true
+        }
+      },
+      {
+        "step": "cargo5-step3-full",
+        "state": {
+          "diamond": 1,
+          "battlePack": {
+            "1005": {
+              "id": "1005",
+              "num": 19
+            }
+          },
+          "package": [
+            {
+              "id": "1005",
+              "num": 15
+            },
+            {
+              "id": "1039",
+              "num": 1
+            }
+          ],
+          "closed": false,
+          "capacity": 20,
+          "gold": 2,
+          "size": 20,
+          "mode": "cargo5",
+          "rewardItems": [
+            {
+              "id": "1005",
+              "num": 4
+            },
+            {
+              "id": "1039",
+              "num": 1
+            }
+          ],
+          "synthetic": true
+        }
+      },
+      {
+        "step": "cargo5-step4-food-blocked",
+        "state": {
+          "diamond": 1,
+          "battlePack": {
+            "1005": {
+              "id": "1005",
+              "num": 19
+            }
+          },
+          "package": [
+            {
+              "id": "1005",
+              "num": 15
+            },
+            {
+              "id": "1039",
+              "num": 1
+            }
+          ],
+          "closed": false,
+          "capacity": 20,
+          "gold": 2,
+          "size": 20,
+          "mode": "cargo5",
+          "rewardItems": [
+            {
+              "id": "1005",
+              "num": 4
+            },
+            {
+              "id": "1039",
+              "num": 1
+            }
+          ],
+          "synthetic": true
+        }
+      },
+      {
+        "step": "cargo5-step5-reversed",
+        "state": {
+          "diamond": 1,
+          "battlePack": {
+            "1005": {
+              "id": "1005",
+              "num": 19
+            }
+          },
+          "package": [
+            {
+              "id": "1005",
+              "num": 19
+            }
+          ],
+          "closed": false,
+          "capacity": 20,
+          "gold": 2,
+          "size": 19,
+          "mode": "cargo5",
+          "rewardItems": [
+            {
+              "id": "1039",
+              "num": 2
+            }
+          ],
+          "synthetic": true
+        }
+      },
+      {
+        "step": "cargo5-step6-closed",
+        "state": {
+          "diamond": 1,
+          "battlePack": {
+            "1005": {
+              "id": "1005",
+              "num": 19
+            }
+          },
+          "mode": "cargo5",
+          "gold": 2,
+          "synthetic": true
+        }
+      }
+    ]
+  },
+  "scrollTest": {
+    "before": {
+      "diamond": 1,
+      "battlePack": {
+        "1005": {
+          "id": "1005",
+          "num": 1
+        }
+      },
+      "package": [
+        {
+          "id": "1005",
+          "num": 1
+        }
+      ],
+      "closed": false,
+      "capacity": 20,
+      "gold": 2,
+      "size": 1,
+      "mode": "cargoMany",
+      "rewardItems": [
+        {
+          "id": "1004",
+          "num": 1
+        },
+        {
+          "id": "1013",
+          "num": 1
+        },
+        {
+          "id": "1014",
+          "num": 1
+        },
+        {
+          "id": "1015",
+          "num": 1
+        },
+        {
+          "id": "1016",
+          "num": 1
+        },
+        {
+          "id": "1011",
+          "num": 1
+        },
+        {
+          "id": "1017",
+          "num": 1
+        },
+        {
+          "id": "1006",
+          "num": 1
+        },
+        {
+          "id": "1009",
+          "num": 1
+        },
+        {
+          "id": "1007",
+          "num": 1
+        },
+        {
+          "id": "1008",
+          "num": 1
+        },
+        {
+          "id": "1012",
+          "num": 1
+        }
+      ],
+      "synthetic": true
+    },
+    "after": {
+      "diamond": 1,
+      "battlePack": {
+        "1005": {
+          "id": "1005",
+          "num": 1
+        }
+      },
+      "package": [
+        {
+          "id": "1005",
+          "num": 1
+        },
+        {
+          "id": "1012",
+          "num": 1
+        }
+      ],
+      "closed": false,
+      "capacity": 20,
+      "gold": 2,
+      "size": 3,
+      "mode": "cargoMany",
+      "rewardItems": [
+        {
+          "id": "1004",
+          "num": 1
+        },
+        {
+          "id": "1013",
+          "num": 1
+        },
+        {
+          "id": "1014",
+          "num": 1
+        },
+        {
+          "id": "1015",
+          "num": 1
+        },
+        {
+          "id": "1016",
+          "num": 1
+        },
+        {
+          "id": "1011",
+          "num": 1
+        },
+        {
+          "id": "1017",
+          "num": 1
+        },
+        {
+          "id": "1006",
+          "num": 1
+        },
+        {
+          "id": "1009",
+          "num": 1
+        },
+        {
+          "id": "1007",
+          "num": 1
+        },
+        {
+          "id": "1008",
+          "num": 1
+        }
+      ],
+      "synthetic": true
+    }
+  },
+  "protection": {
+    "originalFilesUnchanged": 8,
+    "naturalProfileUnchangedDuringFixtures": true
+  },
+  "finalFallbackState": {
+    "diamond": 1,
+    "battlePack": {
+      "1005": {
+        "id": "1005",
+        "num": 19
+      }
+    },
+    "package": [
+      {
+        "id": "1005",
+        "num": 15
+      },
+      {
+        "id": "1039",
+        "num": 1
+      }
+    ],
+    "closed": false,
+    "capacity": 20,
+    "gold": 2,
+    "size": 20,
+    "mode": "cargo5",
+    "rewardItems": [
+      {
+        "id": "1005",
+        "num": 4
+      },
+      {
+        "id": "1039",
+        "num": 1
+      }
+    ],
+    "synthetic": true
+  }
+}

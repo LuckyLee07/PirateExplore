@@ -1,3 +1,4 @@
+require 'LuaClass/MasterTheme'
 require "AudioEngine"
 require "LuaClass/Header"
 
@@ -30,7 +31,7 @@ function TransformLayer:init(tips)
     self.name = "transformLayer"
     self.touchCount = 0
     self.statue = "ready"
-    local abord = cc.LabelTTF:create(tips, BoldFont, 30.0)
+    local abord = cc.LabelTTF:create(tips, MasterTheme.headingFont(false), 30.0)
     abord:setPosition(0.5*winSize.width, 0.5*winSize.height-15.0)
     self:addChild(abord)
 
@@ -99,14 +100,14 @@ function TransformLayer:transform( delayTime,transformType )
 
             self.tips:setPositionY(self.tips:getPositionY() + self.tips:getContentSize().height * 3)
 
-            local othertips = cc.LabelTTF:create("您可以：\n\t\t1.增加船舱容量，可携带更多食物\n\t\t2.攻打下来的据点，就是你最好的补给站",BoldFont, 30.0)
+            local othertips = cc.LabelTTF:create("您可以：\n\t\t1.增加船舱容量，可携带更多食物\n\t\t2.攻打下来的据点，就是你最好的补给站",MasterTheme.headingFont(false), 30.0)
             othertips:setPosition(cc.p(self.tips:getPositionX() - self.tips:getContentSize().width / 2 + othertips:getContentSize().width / 2,self.tips:getPositionY() - self.tips:getContentSize().height * 1.5 - othertips:getContentSize().height / 2))
             -- othertips:setAnchorPoint(cc.p(0,1))
             othertips:setHorizontalAlignment(cc.TEXT_ALIGNMENT_LEFT)
             -- othertips:setDimensions(cc.size(0,0))
             self:addChild(othertips)
 
-            -- local othertips1 = cc.LabelTTF:create("\n1.增加船舱容量，可携带更多食物\n2.攻打下来的据点，就是你最好的补给站",BoldFont, 30.0)
+            -- local othertips1 = cc.LabelTTF:create("\n1.增加船舱容量，可携带更多食物\n2.攻打下来的据点，就是你最好的补给站",MasterTheme.headingFont(false), 30.0)
             -- othertips:setPosition(cc.p(self.tips:getPositionX() - self.tips:getContentSize().width / 2 + othertips:getContentSize().width / 2,self.tips:getPositionY() - self.tips:getContentSize().height / 2 - othertips:getContentSize().height / 2))
             -- -- othertips:setAnchorPoint(cc.p(0,1))
             -- othertips:setHorizontalAlignment(cc.TEXT_ALIGNMENT_LEFT)
@@ -117,7 +118,7 @@ function TransformLayer:transform( delayTime,transformType )
             self.tips:setVisible(true)
             self.statue = "ready"
             print("othertips",othertips:getString())
-            local touchTips = cc.LabelTTF:create("点击屏幕可继续......", BoldFont, 30.0)
+            local touchTips = cc.LabelTTF:create("点击屏幕可继续......", MasterTheme.headingFont(false), 30.0)
             touchTips:setPosition(cc.p(self.tips:getPositionX(),othertips:getPositionY() - othertips:getContentSize().height - touchTips:getContentSize().height * 6))
             self:addChild(touchTips)
             local seq = cc.Sequence:create(cc.FadeOut:create(0.5),cc.FadeIn:create(0.5))

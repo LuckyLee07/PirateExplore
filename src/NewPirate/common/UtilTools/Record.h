@@ -13,6 +13,7 @@ public:
 	static Record* GetInstance();
 public:
 	void saveData(char* buff, char*fileName);
+    bool saveDataAtomic(char* buff, char*fileName);
 //	void executeEncipherment(char* buff, const char* fileName);
 	
 	const char* loadData(const char*fileName);

@@ -37,7 +37,11 @@ static int os_pushresult (lua_State *L, int i, const char *filename) {
 
 static int os_execute (lua_State *L) {
   //lua_pushinteger(L, system(luaL_optstring(L, 1, NULL)));
+#if defined(LINUX)
+  lua_pushinteger(L, system(luaL_optstring(L, 1, NULL)));
+#else
   lua_pushinteger(L, popen(luaL_optstring(L, 1, NULL), "r"));
+#endif
   return 1;
 }
 

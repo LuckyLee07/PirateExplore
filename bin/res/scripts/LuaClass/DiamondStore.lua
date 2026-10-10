@@ -1,9 +1,11 @@
 require "LuaClass/Header"
+require "LuaClass/DialogTheme"
 require "LuaClass/BaseView"
 require "LuaClass/UIKit"
 require "LuaClass/ChargeMode"
 require "LuaClass/CCall"
 require "LuaClass/DialogueView"
+local PurchaseAvailability = require "LuaClass/PurchaseAvailability"
 
 
 DiamondStore = class("DiamondStore", function ()
@@ -143,6 +145,8 @@ function DiamondStore:init()
         end
         
     end
+
+    DialogTheme.applyBase(self)
 
     local pngname = "Images/UI/tankuang_01.png"
     local background = cc.Sprite:create(pngname)
@@ -296,9 +300,9 @@ function DiamondStore:loadData(storeData)
     local gapBottom = 60
 
     -- 滚动图片
-    local banner = cc.Sprite:create("Images/DiamondStore/banner_02.png")
+    local banner = DialogTheme.cardFromLegacy("Images/DiamondStore/banner_02.png")
 
-    local temp = cc.Sprite:create("Images/DiamondStore/banner_04.png")
+    local temp = DialogTheme.badgeFromLegacy("Images/DiamondStore/banner_04.png", "推荐", MasterTheme.colors.coral)
 
     local pageSize = cc.size(banner:getContentSize().width, banner:getContentSize().height + temp:getContentSize().height * 0.5)
 
@@ -344,8 +348,8 @@ function DiamondStore:loadData(storeData)
             layout:setTag(i)
             layout:setSize(pageSize)
 
-            local normalSprite = cc.Sprite:create("Images/DiamondStore/banner_02.png")
-            local selectedSprite = cc.Sprite:create("Images/DiamondStore/banner_02.png")
+            local normalSprite = DialogTheme.cardFromLegacy("Images/DiamondStore/banner_02.png")
+            local selectedSprite = DialogTheme.cardFromLegacy("Images/DiamondStore/banner_02.png", "card", true)
             local menuItem = cc.MenuItemSprite:create(normalSprite, selectedSprite)
             menuItem:setTag(i)
 
@@ -370,11 +374,11 @@ function DiamondStore:loadData(storeData)
                     local giftData = giftCSV[giftId]
                     -- DataManager:getInstance():diamondStoreBuySomethingSuccess(giftData[dataKeyPayType])
 
-                    purchase(giftData[dataKeyPayType])
+                    PurchaseAvailability.request(giftData[dataKeyPayType])
                     print("购买礼包---------",giftId)
                 end, nil, "取 消", "购 买")
                 -- print("_alert inited")
-                local showLabel1 = cc.LabelTTF:create(alertContent, BoldFont, 30)
+                local showLabel1 = cc.LabelTTF:create(alertContent, MasterTheme.headingFont(false), 30)
                 showLabel1:setColor(cc.c3b(255, 255, 255))
                 showLabel1:setDimensions(cc.size(0, 800))
                 showLabel1:setVerticalAlignment(cc.VERTICAL_TEXT_ALIGNMENT_CENTER)
@@ -389,16 +393,16 @@ function DiamondStore:loadData(storeData)
 
             pageView:addPage(layout)
 
-            local recommended = cc.Sprite:create("Images/DiamondStore/banner_04.png")
+            local recommended = DialogTheme.badgeFromLegacy("Images/DiamondStore/banner_04.png", "推荐", MasterTheme.colors.coral)
             recommended:setPosition(cc.p(recommended:getContentSize().width * 0.5 - 10, menuItem:getContentSize().height - recommended:getContentSize().height * 0.5 + 28))
             menuItem:addChild(recommended)
 
-            local titleBar = cc.LabelTTF:create(tempTableData[dataKeyName], BoldFont, 38.0)
+            local titleBar = cc.LabelTTF:create(tempTableData[dataKeyName], MasterTheme.headingFont(false), 38.0)
             titleBar:setColor(WriteColor)
             titleBar:setPosition(cc.p(pageSize.width * 0.5, menuItem:getContentSize().height - titleBar:getContentSize().height * 0.5 - 2))
             menuItem:addChild(titleBar)
 
-            local titleLable = cc.LabelTTF:create("礼包内包含：", BoldFont, 24.0)
+            local titleLable = cc.LabelTTF:create("礼包内包含：", MasterTheme.headingFont(false), 24.0)
             titleLable:setAnchorPoint(cc.p(0.0, 0.5))
             titleLable:setColor(WriteColor)
             titleLable:setPosition(cc.p(recommended:getContentSize().width * 0.5 + 20, recommended:getPositionY() - recommended:getContentSize().height * 0.5 + 3))
@@ -412,25 +416,25 @@ function DiamondStore:loadData(storeData)
                 local goodInfoID = itemData[i][1]
                 local goodInfoNum = itemData[i][2]
                 local goodInfoData = goodsDataTemp[goodInfoID]
-                local goodInfo= cc.LabelTTF:create(goodInfoData[dataKeyName] .. "：" .. tempTableData[dataKeyDesc][i], BoldFont, 20)
+                local goodInfo= cc.LabelTTF:create(goodInfoData[dataKeyName] .. "：" .. tempTableData[dataKeyDesc][i], MasterTheme.headingFont(false), 20)
                 goodInfo:setAnchorPoint(cc.p(0.0, 0.5))
                 goodInfo:setPosition(cc.p(baseX, baseY - (i - 1) * (goodInfo:getContentSize().height)))
                 menuItem:addChild(goodInfo)
             end
 
-            local sellPre = cc.LabelTTF:create("仅售", BoldFont, 30.0)
+            local sellPre = cc.LabelTTF:create("仅售", MasterTheme.headingFont(false), 30.0)
             sellPre:setAnchorPoint(cc.p(0.0, 0.0))
             sellPre:setColor(WriteColor)
             sellPre:setPosition(cc.p(layout:getContentSize().width - 140, titleBar:getPositionY() - titleBar:getContentSize().height + 10))
             menuItem:addChild(sellPre)
 
-            local sellNum = cc.LabelTTF:create(tempTableData[dataKeyPrice], BoldFont, 43)
+            local sellNum = cc.LabelTTF:create(tempTableData[dataKeyPrice], MasterTheme.headingFont(false), 43)
             sellNum:setAnchorPoint(cc.p(0.0, 0.0))
             sellNum:setColor(YellowColor)
             sellNum:setPosition(cc.p(sellPre:getPositionX() + sellPre:getContentSize().width, sellPre:getPositionY()))
             menuItem:addChild(sellNum)
 
-            local sellUnit = cc.LabelTTF:create("元", BoldFont, 30.0)
+            local sellUnit = cc.LabelTTF:create("元", MasterTheme.headingFont(false), 30.0)
             sellUnit:setAnchorPoint(cc.p(0.0, 0.0))
             sellUnit:setColor(YellowColor)
             sellUnit:setPosition(cc.p(sellNum:getPositionX() + sellNum:getContentSize().width, sellPre:getPositionY()))
@@ -438,14 +442,14 @@ function DiamondStore:loadData(storeData)
 
             if limitRecommended[i][2] > 0 then
                 -- 倒计时
-                local countdownTitle = cc.LabelTTF:create("倒计时:", BoldFont, 25.0)
+                local countdownTitle = cc.LabelTTF:create("倒计时:", MasterTheme.headingFont(false), 25.0)
                 countdownTitle:setColor(WriteColor)
                 countdownTitle:setAnchorPoint(cc.p(0.0, 0.5))
                 countdownTitle:setPosition(cc.p(layout:getContentSize().width - 130, countdownTitle:getContentSize().height * 0.5 + 45))
                 menuItem:addChild(countdownTitle)
 
                 local countdownTemp = self:getSurplusSecond(nowSecond, limitRecommended[i][2])
-                local surplus = cc.LabelTTF:create(getTimeStr(countdownTemp), BoldFont, 27.0)
+                local surplus = cc.LabelTTF:create(getTimeStr(countdownTemp), MasterTheme.headingFont(false), 27.0)
                 surplus:setTag(100)
                 surplus:setAnchorPoint(cc.p(0.0, 0.5))
                 surplus:setColor(YellowColor)
@@ -457,7 +461,7 @@ function DiamondStore:loadData(storeData)
              surplus:setString("")
              end
              ]]--
-            local buyFlag = cc.Sprite:create("Images/DiamondStore/banner_06.png")
+            local buyFlag = DialogTheme.badgeFromLegacy("Images/DiamondStore/banner_06.png", "已购买", MasterTheme.colors.sea)
             buyFlag:setPosition(cc.p(layout:getContentSize().width - 130 - buyFlag:getContentSize().width * 0.5, buyFlag:getContentSize().height * 0.5 + 2))
             menuItem:addChild(buyFlag)
             if (limitRecommended[i][3] == 1) then
@@ -472,12 +476,12 @@ function DiamondStore:loadData(storeData)
             layout:setPosition(cc.p(layout:getContentSize().width * 0.5, banner:getContentSize().height * 0.5))
             pageView:addPage(layout)
             
-            local preSprite = cc.Sprite:create("Images/DiamondStore/banner_02.png")
+            local preSprite = DialogTheme.cardFromLegacy("Images/DiamondStore/banner_02.png")
             preSprite:setPosition(cc.p(0, banner:getContentSize().height * 0.5))
             preSprite:setAnchorPoint(cc.p(0, 0.5))
             layout:addChild(preSprite, 1)
             
-            local preLabel = cc.LabelTTF:create("礼包筹备中。。。", BoldFont, 38.0)
+            local preLabel = cc.LabelTTF:create("礼包筹备中。。。", MasterTheme.headingFont(false), 38.0)
             preLabel:setPosition(cc.p(layout:getContentSize().width * 0.5, banner:getContentSize().height * 0.5))
             preLabel:setAnchorPoint(cc.p(0.5, 0.5))
             preLabel:setColor(WriteColor)
@@ -538,8 +542,8 @@ function DiamondStore:loadData(storeData)
     end
 
     -- pageview上方充值按钮
-    local normalSprite = cc.Sprite:create("Images/btn/ann03_a.png")
-    local selectedSprite = cc.Sprite:create("Images/btn/ann03_b.png")
+    local normalSprite = DialogTheme.buttonFace("Images/btn/ann03_a.png", nil)
+    local selectedSprite = DialogTheme.buttonFace("Images/btn/ann03_b.png", nil, true)
     local menuItem = cc.MenuItemSprite:create(normalSprite, selectedSprite)
 
     menuItem:registerScriptTapHandler(function (tag, menuItem)
@@ -580,7 +584,7 @@ function DiamondStore:loadData(storeData)
         ChargeLayer:create()
     end)
 
-    local chargingStr = cc.LabelTTF:create("充 值", BoldFont, 38)
+    local chargingStr = cc.LabelTTF:create("充 值", MasterTheme.headingFont(false), 38)
     chargingStr:setColor(WriteColor)
     chargingStr:setPosition(cc.p(menuItem:getContentSize().width * 0.5, menuItem:getContentSize().height * 0.5))
     menuItem:addChild(chargingStr)
@@ -639,7 +643,7 @@ function DiamondStore:loadData(storeData)
     local goodsNum = getTableRowNum(goodsInfo)
     local col = 2
     local row = math.ceil(goodsNum / col)
-    local tempGoods = cc.Sprite:create("Images/DiamondStore/ann07_a.png")
+    local tempGoods = DialogTheme.cardFromLegacy("Images/DiamondStore/ann07_a.png")
     local rowHeight = 1
     local gapV = 5
     local gapH = 10
@@ -664,8 +668,8 @@ function DiamondStore:loadData(storeData)
 
                 -- printn(tempTableData)
 
-                local normalSprite = cc.Sprite:create("Images/DiamondStore/ann07_a.png")
-                local selectedSprite = cc.Sprite:create("Images/DiamondStore/ann07_b.png")
+                local normalSprite = DialogTheme.cardFromLegacy("Images/DiamondStore/ann07_a.png")
+                local selectedSprite = DialogTheme.cardFromLegacy("Images/DiamondStore/ann07_b.png", "card", true)
                 local item = cc.MenuItemSprite:create(normalSprite, selectedSprite)
                 item:setTag(index)
                 item:registerScriptTapHandler(function (tag, menuItem)
@@ -695,13 +699,13 @@ function DiamondStore:loadData(storeData)
                     icon:setPosition(cc.p(_alert.s_position.x, _alert.s_position.y + _alert.s_size.height * 0.5 - icon:getContentSize().height * 0.5 - 95))
                     _alert:addChild(icon)
 
-                    local goodNameLabel = cc.LabelTTF:create(goodDataTemp[dataKeyName], BoldFont, 26.0)
+                    local goodNameLabel = cc.LabelTTF:create(goodDataTemp[dataKeyName], MasterTheme.headingFont(false), 26.0)
                     goodNameLabel:setPosition(cc.p(icon:getPositionX() + icon:getContentSize().width * 0.5 + 2, icon:getPositionY() - icon:getContentSize().height * 0.5))
                     goodNameLabel:setAnchorPoint(cc.p(0.0, 0.0))
                     goodNameLabel:setColor(WriteColor)
                     _alert:addChild(goodNameLabel)
 
-                    local goodDesc = cc.LabelTTF:create(goodDataTemp[dataKeyDesc], BoldFont, 24.0)
+                    local goodDesc = cc.LabelTTF:create(goodDataTemp[dataKeyDesc], MasterTheme.headingFont(false), 24.0)
                     goodDesc:setPosition(cc.p(_alert.s_position.x - _alert.s_size.width * 0.5 + 20, goodNameLabel:getPositionY() - 25))
                     goodDesc:setDimensions(cc.size(_alert.s_size.width - (20 * 2), goodDesc:getContentSize().height * 3))
                     goodDesc:setColor(WriteColor)
@@ -710,20 +714,20 @@ function DiamondStore:loadData(storeData)
                     goodDesc:setVerticalAlignment(cc.VERTICAL_TEXT_ALIGNMENT_TOP)
                     _alert:addChild(goodDesc)
 
-                    local needLabel = cc.LabelTTF:create("需消耗：" .. goodDataTemp[dataKeyPrice] .. "钻石", BoldFont, 26.0)
+                    local needLabel = cc.LabelTTF:create("需消耗：" .. goodDataTemp[dataKeyPrice] .. "钻石", MasterTheme.headingFont(false), 26.0)
                     needLabel:setPosition(cc.p(goodDesc:getPositionX(), goodDesc:getPositionY() - goodDesc:getDimensions().height - needLabel:getContentSize().height * 0.5))
                     needLabel:setAnchorPoint(cc.p(0.0, 0.5))
                     needLabel:setColor(BaseColor)
                     _alert:addChild(needLabel)
 
-                    local curLabel = cc.LabelTTF:create("当前拥有：" .. DataManager:getInstance():getRoleData(roleDiamond) .. "钻石", BoldFont, 26.0)
+                    local curLabel = cc.LabelTTF:create("当前拥有：" .. DataManager:getInstance():getRoleData(roleDiamond) .. "钻石", MasterTheme.headingFont(false), 26.0)
                     curLabel:setPosition(cc.p(needLabel:getPositionX(), needLabel:getPositionY() - needLabel:getContentSize().height - 5))
                     curLabel:setAnchorPoint(cc.p(0.0, 0.5))
                     curLabel:setColor(BaseColor)
                     _alert:addChild(curLabel)
 
-                    local normalSpriteL = cc.Sprite:create("Images/btn/ann01_a.png")
-                    local selectedSpriteL = cc.Sprite:create("Images/btn/ann01_b.png")
+                    local normalSpriteL = DialogTheme.buttonFace("Images/btn/ann01_a.png", "secondary")
+                    local selectedSpriteL = DialogTheme.buttonFace("Images/btn/ann01_b.png", "secondary", true)
                     local menuItemL = cc.MenuItemSprite:create(normalSpriteL, selectedSpriteL)
                     menuItemL:setPosition(cc.p(-normalSpriteL:getContentSize().width * 0.5 - 35, 0))
                     menuItemL:registerScriptTapHandler(function (tag, menuItem)
@@ -731,13 +735,13 @@ function DiamondStore:loadData(storeData)
                         _alert:removeFromParent()
                     end)
 
-                    local labelL = cc.LabelTTF:create("取 消", BoldFont, 26.0)
+                    local labelL = cc.LabelTTF:create("取 消", MasterTheme.headingFont(false), 26.0)
                     labelL:setPosition(cc.p(menuItemL:getContentSize().width * 0.5, menuItemL:getContentSize().height * 0.5))
                     labelL:setColor(WriteColor)
                     menuItemL:addChild(labelL)
 
-                    local normalSpriteR = cc.Sprite:create("Images/btn/ann01_a.png")
-                    local selectedSpriteR = cc.Sprite:create("Images/btn/ann01_b.png")
+                    local normalSpriteR = DialogTheme.buttonFace("Images/btn/ann01_a.png", nil)
+                    local selectedSpriteR = DialogTheme.buttonFace("Images/btn/ann01_b.png", nil, true)
                     local menuItemR = cc.MenuItemSprite:create(normalSpriteR, selectedSpriteR)
                     menuItemR:setPosition(cc.p(normalSpriteL:getContentSize().width * 0.5 + 35, 0))
                     menuItemR:registerScriptTapHandler(function (tag, menuItem)
@@ -819,7 +823,7 @@ function DiamondStore:loadData(storeData)
                         _alert:removeFromParent()
                     end)
 
-                    local labelR = cc.LabelTTF:create("购 买", BoldFont, 26.0)
+                    local labelR = cc.LabelTTF:create("购 买", MasterTheme.headingFont(false), 26.0)
                     labelR:setPosition(cc.p(menuItemR:getContentSize().width * 0.5, menuItemR:getContentSize().height * 0.5))
                     labelR:setColor(WriteColor)
                     menuItemR:addChild(labelR)
@@ -848,28 +852,30 @@ function DiamondStore:loadData(storeData)
                 icon:setPosition(cc.p(icon:getContentSize().width * 0.5 + 10, icon:getContentSize().height * 0.5 + (normalSprite:getContentSize().height - icon:getContentSize().height) * 0.5))
                 item:addChild(icon)
 
-                local goodName = cc.LabelTTF:create(tempTableData[dataKeyName], BoldFont, 26.0)
+                local goodName = cc.LabelTTF:create(tempTableData[dataKeyName], MasterTheme.headingFont(false), 26.0)
                 goodName:setAnchorPoint(cc.p(0.0, 1.0))
                 goodName:setColor(BaseColor)
                 goodName:setPosition(cc.p(icon:getPositionX() + icon:getContentSize().width * 0.5 + 10, icon:getPositionY() + icon:getContentSize().height * 0.5))
+                DialogTheme.fit(goodName, item:getContentSize().width - goodName:getPositionX() - 10)
                 item:addChild(goodName)
 
-                local needDiamond = cc.LabelTTF:create("钻石x" .. tempTableData[dataKeyPrice], BoldFont, 26.0)
+                local needDiamond = cc.LabelTTF:create("钻石x" .. tempTableData[dataKeyPrice], MasterTheme.headingFont(false), 26.0)
                 needDiamond:setAnchorPoint(cc.p(0.0, 0.0))
                 needDiamond:setColor(WriteColor)
                 needDiamond:setPosition(cc.p(goodName:getPositionX(), icon:getPositionY() - icon:getContentSize().height * 0.5))
+                DialogTheme.fit(needDiamond, item:getContentSize().width - needDiamond:getPositionX() - 10)
                 item:addChild(needDiamond)
 
                 -- 右上角购买标记
                 local flag = goodsInfo[index][2]
                 if (flag == 1) then
-                    local buySprite = cc.Sprite:create("Images/DiamondStore/banner_05.png")
+                    local buySprite = DialogTheme.badgeFromLegacy("Images/DiamondStore/banner_05.png", "已购买", MasterTheme.colors.sea)
                     buySprite:setPosition(cc.p(normalSprite:getContentSize().width - buySprite:getContentSize().width * 0.5, normalSprite:getContentSize().height - buySprite:getContentSize().height * 0.5))
                     item:addChild(buySprite)
 
                     item:unregisterScriptTapHandler()
                 elseif (flag == 4) then
-                    local newFlag = cc.LabelTTF:create("new", BoldFont, 25.0)
+                    local newFlag = cc.LabelTTF:create("new", MasterTheme.headingFont(false), 25.0)
                     newFlag:setColor(GreenColor)
                     newFlag:setPosition(cc.p(newFlag:getContentSize().width * 0.5 + 2, item:getContentSize().height - newFlag:getContentSize().height * 0.5 + 8))
                     item:addChild(newFlag)
@@ -1089,11 +1095,14 @@ function PushGiftView:init()
     print("data = "..json.encode(data))
     print("shopData = "..json.encode(shopData))
 
-    local bg = cc.Sprite:create("Images/DiamondStore/dazhe_04.png")
+    local bg = DialogTheme.panelFromLegacy("Images/DiamondStore/dazhe_04.png")
     bg:setPosition(cc.p(0.5*visibleSize.width, 0.5*visibleSize.height))
     self:addChild(bg)
+    local giftTitle = DialogTheme.label("海神的馈赠", 34)
+    giftTitle:setPosition(cc.p(bg:getContentSize().width*.5,bg:getContentSize().height-40))
+    bg:addChild(giftTitle)
     -- closeBtn
-    local closeBtn = cc.MenuItemImage:create("Images/UI/cancel_button.png", "Images/UI/cancel_button.png")
+    local closeBtn = DialogTheme.closeItem()
     closeBtn:registerScriptTapHandler(function()
         self:close()
     end)
@@ -1104,7 +1113,7 @@ function PushGiftView:init()
     self:addChild(menu)
 
     if data and shopData then
-        local titleLabel = cc.LabelTTF:create(data.name, BoldFont, 30.0)
+        local titleLabel = cc.LabelTTF:create(data.name, MasterTheme.headingFont(false), 30.0)
         titleLabel:setPosition(0.5*visibleSize.width, 0.5*(visibleSize.height+bg:getContentSize().height)-130.0+20.0)
 --        self:addChild(titleLabel)
 
@@ -1142,9 +1151,10 @@ function PushGiftView:init()
                 background:setPosition(cc.p(0.5*visibleSize.width, startY-i*70.0))
             end
             background:setContentSize(cc.size(bg:getContentSize().width-50.0, h))
+            DialogTheme.surfaceAfterSizing(background)
             cellNode:addChild(background)
 
-            local titleLabel = cc.LabelTTF:create(data.title[i][1], BoldFont, 30.0)
+            local titleLabel = cc.LabelTTF:create(data.title[i][1], MasterTheme.headingFont(false), 30.0)
             titleLabel:setColor(BaseColor)
             titleLabel:setAnchorPoint(cc.p(0.0, 0.5))
             titleLabel:setPosition(cc.p(0.5*(visibleSize.width-bg:getContentSize().width)+50.0, background:getPositionY()))
@@ -1153,14 +1163,14 @@ function PushGiftView:init()
             if isFull and i == 1 then
                 titleLabel:setPosition(cc.p(0.5*(visibleSize.width-bg:getContentSize().width)+90.0, background:getPositionY()+20.0))
 
-                local desc = cc.LabelTTF:create(data.bestDesc, BoldFont, 20.0)
+                local desc = cc.LabelTTF:create(data.bestDesc, MasterTheme.headingFont(false), 20.0)
                 desc:setColor(BaseColor)
                 desc:setAnchorPoint(cc.p(0.0, 0.5))
                 desc:setPosition(cc.p(0.5*(visibleSize.width-bg:getContentSize().width)+90.0, background:getPositionY()-20.0))
                 cellNode:addChild(desc)
             end
 
-            local priceLabel = cc.LabelTTF:create(data.price[i][1], BoldFont, 30.0)
+            local priceLabel = cc.LabelTTF:create(data.price[i][1], MasterTheme.headingFont(false), 30.0)
             priceLabel:setAnchorPoint(cc.p(1.0, 0.5))
             priceLabel:setPosition(cc.p(0.5*(visibleSize.width+bg:getContentSize().width)-50.0, background:getPositionY()))
             cellNode:addChild(priceLabel)
@@ -1169,7 +1179,7 @@ function PushGiftView:init()
 
         self.timeLine = self.timeLine + 0.1
 
-        local oldPriceLabel = cc.LabelTTF:create(data.allPrice, BoldFont, 28.0)
+        local oldPriceLabel = cc.LabelTTF:create(data.allPrice, MasterTheme.headingFont(false), 28.0)
         oldPriceLabel:setPosition(0.5*(visibleSize.width+bg:getContentSize().width)-150.0, startY-(num+1)*70.0)
         if isFull then
             oldPriceLabel:setPosition(0.5*(visibleSize.width+bg:getContentSize().width)-150.0, startY-(num+1)*70.0-20.0)
@@ -1195,10 +1205,10 @@ function PushGiftView:init()
         coverSp:runAction(seq)
 
         -- buyBtn
-        local buyBtn = cc.MenuItemImage:create("Images/btn/ann01_a.png", "Images/btn/ann01_b.png")
+        local buyBtn = DialogTheme.menuItem("Images/btn/ann01_a.png", "Images/btn/ann01_b.png")
         buyBtn:registerScriptTapHandler(function()
             print("按了购买按钮--------")
-            purchase(data.payType)
+            PurchaseAvailability.request(data.payType)
         end)
         buyBtn:setPosition(0.5*visibleSize.width, 0.5*(visibleSize.height-bg:getContentSize().height)+60.0)
         buyBtn:setVisible(false)
@@ -1212,7 +1222,7 @@ function PushGiftView:init()
         menu:setPosition(cc.p(0, 0))
         self:addChild(menu)
 
-        local closeLabel = cc.LabelTTF:create("购 买", BoldFont, 36.0)
+        local closeLabel = cc.LabelTTF:create("购 买", MasterTheme.headingFont(false), 36.0)
         closeLabel:setPosition(buyBtn:getPosition())
         closeLabel:setVisible(false)
         self:addChild(closeLabel)
@@ -1222,7 +1232,7 @@ function PushGiftView:init()
         local seq = cc.Sequence:create(delay, show)
         closeLabel:runAction(seq)
 
-        local priceLabel = cc.LabelTTF:create("现价：", BoldFont, 30.0)
+        local priceLabel = cc.LabelTTF:create("现价：", MasterTheme.headingFont(false), 30.0)
         priceLabel:setAnchorPoint(cc.p(1.0, 0.0))
         priceLabel:setPosition(0.5*(visibleSize.width+bg:getContentSize().width)-150.0, 0.5*(visibleSize.height-bg:getContentSize().height)+130.0)
         priceLabel:setVisible(false)
@@ -1236,7 +1246,7 @@ function PushGiftView:init()
         local seq = cc.Sequence:create(delay, show, move)
         priceLabel:runAction(seq)
 
-        local priceNumLabel = cc.LabelTTF:create(data.nowPrice, BoldFont, 50.0)
+        local priceNumLabel = cc.LabelTTF:create(data.nowPrice, MasterTheme.headingFont(false), 50.0)
         priceNumLabel:setColor(YellowColor)
         priceNumLabel:setAnchorPoint(cc.p(0.0, 0.0))
         priceNumLabel:setPosition(0.5*(visibleSize.width+bg:getContentSize().width)-150.0, 0.5*(visibleSize.height-bg:getContentSize().height)+130.0)

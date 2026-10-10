@@ -22,6 +22,26 @@ USAGE
 ACTION="${1:-mac}"
 
 case "$ACTION" in
+  -h|--help|help) usage; exit 0 ;;
+  mac|ios-sim|ios|ios-device|open) ;;
+  *) usage; exit 1 ;;
+esac
+
+if [[ ! -f "$PROJECT_PATH/project.pbxproj" ]]; then
+  printf 'Apple application project is missing: %s\n' "$PROJECT_PATH" >&2
+  printf 'Restore the original projects/ios_mac application project before building. See README.md; this checkout currently provides a Linux build entry only.\n' >&2
+  exit 2
+fi
+if [[ "$(uname -s)" != "Darwin" ]]; then
+  printf 'Apple build/open actions require macOS and the original Xcode project.\n' >&2
+  exit 2
+fi
+if [[ "$ACTION" != "open" ]] && ! command -v xcodebuild >/dev/null 2>&1; then
+  printf 'xcodebuild is unavailable. Install/select Xcode on the Mac before building.\n' >&2
+  exit 2
+fi
+
+case "$ACTION" in
   mac)
     xcodebuild -quiet \
       -project "$PROJECT_PATH" \

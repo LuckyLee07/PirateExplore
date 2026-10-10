@@ -1,6 +1,8 @@
 #include "Record.h"
 #include "ZQCSVParse.h"
 #include "LZSS.h"
+#include "AtomicSave.h"
+#include <climits>
 
 Record* Record::m_instance = NULL;
 Record::Record()
@@ -83,10 +85,20 @@ Record::~Record()
 
 void Record::saveData(char*buff, char*fileName)
 {
+    saveDataAtomic(buff, fileName);
+}
+
+bool Record::saveDataAtomic(char*buff, char*fileName)
+{
 //	CCLOG("----------------存档：%s ** buff:%s----------------", fileName, buff);
-	unsigned long len = strlen(buff);
-	unsigned char* lzss_data = new unsigned char[len];
-	memset(lzss_data, 0, len);
+    if (!buff || !fileName) return false;
+    const size_t inputSize = strlen(buff);
+    if (inputSize > (ULONG_MAX - 32) / 2) return false;
+    const unsigned long len = static_cast<unsigned long>(inputSize);
+    // Worst case: one flag byte per eight literals, plus an empty-input byte.
+    const unsigned long capacity = len + (len + 7) / 8 + 1;
+	unsigned char* lzss_data = new unsigned char[capacity];
+	memset(lzss_data, 0, capacity);
 	//	AES aes((unsigned char*)keys.c_str());
 	//	aes.Cipher(buff, miwen_hex);
 	// 先使用lzss压缩
@@ -114,14 +126,11 @@ void Record::saveData(char*buff, char*fileName)
 //	CCLOG("--------------混淆完毕--------------");
 	string path = FileUtils::getInstance()->getWritablePath() + fileName;
 //	CCLOG("--------------路径：%s--------------", path.c_str());
-	FILE *pFile = fopen(path.c_str(),"wb");
-	//	printf("fileName:%s length:%ld", fileName, lzss_len);
-	fwrite(pSavaBuf, sizeof(unsigned char), saveLen, pFile);
-	fclose(pFile);
-//	CCLOG("--------------写入文件完毕--------------");
-	deleteBuf(fileName);
+    const bool saved = pirateAtomicSave(path, pSavaBuf, saveLen);
+    if (saved) deleteBuf(fileName);
 	delete []pSavaBuf;
 	delete []lzss_data;
+    return saved;
 //	CCLOG("saveData===%s",miwen_hex);
 }
 

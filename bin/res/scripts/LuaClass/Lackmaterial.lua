@@ -1,7 +1,9 @@
 require "LuaClass/Header"
+require "LuaClass/ManagementTheme"
 require "LuaClass/UIKit"
 require "LuaClass/DialogueView"
 require "LuaClass/DataManager"
+require "LuaClass/ProductionSources"
 require "AudioEngine"
 require "LuaClass/GuideController"
 
@@ -39,8 +41,7 @@ function Lackmaterial:init(lacktable,callback)
     local datanum = #lacktable
     print("datanum",datanum)
     local temp = cc.Sprite:create("Images/UI/tankuang_01.png")
-    local bg = cc.Scale9Sprite:create("Images/UI/tankuang_01.png")
-    bg:setPreferredSize(cc.size(temp:getContentSize().width, 460 + 120 * (datanum - 1)))
+    local bg = ManagementTheme.panel(temp:getContentSize().width,460+120*(datanum-1),'paper')
 
 
     bg:setAnchorPoint(cc.p(0.5, 0.5))
@@ -51,16 +52,17 @@ function Lackmaterial:init(lacktable,callback)
     --title
     local title = nil
 
-    title = cc.LabelTTF:create("材料获得",BoldFont,36)
+    title = cc.LabelTTF:create("材料获得",ManagementTheme.bodyFont(),36)
 
     title:setPosition(cc.p(bg:getPositionX(),bg:getPositionY()+bg:getContentSize().height/2-34))
-    title:setColor(WriteColor)
+    ManagementTheme.styleLabel(title,'heading')
     -- title:enableStroke(cc.c4b(255, 255, 255, 255), 2)
     self:addChild(title)
 
 
 
-    local btn = cc.MenuItemImage:create("Images/UI/cancel_button.png", "Images/UI/cancel_button.png")
+    local btn = ManagementTheme.menuItem(58,58,'ink')
+    btn:addChild(ManagementTheme.label('×',32,'action',29,29,.5),2)
     btn:registerScriptTapHandler(function()
 if DataManager:getInstance():getSound_off() == 0 then
 AudioEngine.playEffect(EFFECT_Button, false)
@@ -74,9 +76,9 @@ end
 
     local _fontSize = 26
 
-    local _title2 = cc.LabelTTF:create("您可以通过以下方式获得",BoldFont,_fontSize+2)
+    local _title2 = cc.LabelTTF:create("您可以通过以下方式获得",ManagementTheme.bodyFont(),_fontSize+2)
     _title2:setPosition(cc.p(title:getPositionX(),title:getPositionY()-62 - 30 * datanum))
-    _title2:setColor(WriteColor)
+    _title2:setColor(ManagementTheme.colors.ink)
     -- _title2:enableStroke(cc.c4b(255, 255, 255, 255), 1)
     self:addChild(_title2)
 
@@ -102,89 +104,92 @@ end
                 type = 4
             end
         end
+        local productionSource = type == 3 and ProductionSources.find(DataManager:getInstance(), GuideController:getInstance(), lacktable[i].mtId) or nil
         print("lacktable[i].mtID",lacktable[i].mtId)
-        local _title1 = cc.LabelTTF:create("当前缺少"..lacktable[i].mtnum.."个"..lacktable[i].mtname,BoldFont,_fontSize)
+        local _title1 = cc.LabelTTF:create("当前缺少"..lacktable[i].mtnum.."个"..lacktable[i].mtname,ManagementTheme.bodyFont(),_fontSize)
         _title1:setPosition(cc.p(title:getPositionX(),title:getPositionY()-62 - 30 * (i - 1)))
-        _title1:setColor(WriteColor)
+        _title1:setColor(ManagementTheme.colors.ink)
        -- _title1:enableStroke(cc.c4b(255, 255, 255, 255), 1)
         self:addChild(_title1)
 
 
         
 
-        local _back1 = cc.Sprite:create("Images/UI/dibantiao_03.png")
+        local _back1 = ManagementTheme.surfaceLike("Images/UI/dibantiao_03.png",'section')
         _back1:setPosition(cc.p(_title2:getPositionX(),_title2:getPositionY()-85 - 118 * (i - 1)))
         self:addChild(_back1)
         local needcoin
 
         if type == 0 then
-            local _back1Font1 = cc.LabelTTF:create("购买"..lacktable[i].mtnum.."个"..lacktable[i].mtname,BoldFont,_fontSize)
+            local _back1Font1 = cc.LabelTTF:create("购买"..lacktable[i].mtnum.."个"..lacktable[i].mtname,ManagementTheme.bodyFont(),_fontSize)
             _back1Font1:setAnchorPoint(cc.p(0,0))
-            _back1Font1:setColor(WriteColor)
+            _back1Font1:setColor(ManagementTheme.colors.ink)
             -- _back1Font1:enableStroke(cc.c4b(255, 255, 255, 255), 1)
             _back1Font1:setPosition(cc.p(_back1:getPositionX()-_back1:getContentSize().width/2+22,_back1:getPositionY()+6))
             self:addChild(_back1Font1)
 
             needcoin = tonumber(lacktable[i].mtnum) * tonumber(lacktable[i].mtprice)
-            local _back1Font2 = cc.LabelTTF:create("花费"..tostring(needcoin).."金币",BoldFont,_fontSize)
+            local _back1Font2 = cc.LabelTTF:create("花费"..tostring(needcoin).."金币",ManagementTheme.bodyFont(),_fontSize)
             _back1Font2:setAnchorPoint(cc.p(0,1))
-            _back1Font2:setColor(WriteColor)
+            _back1Font2:setColor(ManagementTheme.colors.ink)
             -- _back1Font2:enableStroke(cc.c4b(255, 255, 255, 255), 1)
             _back1Font2:setPosition(cc.p(_back1Font1:getPositionX(),_back1:getPositionY()-6))
             self:addChild(_back1Font2)
         elseif type == 1 then
-            local _back1Font1 = cc.LabelTTF:create("缺少"..lacktable[i].mtnum.."个"..lacktable[i].mtname,BoldFont,_fontSize)
+            local _back1Font1 = cc.LabelTTF:create("缺少"..lacktable[i].mtnum.."个"..lacktable[i].mtname,ManagementTheme.bodyFont(),_fontSize)
             _back1Font1:setAnchorPoint(cc.p(0,0))
-            _back1Font1:setColor(WriteColor)
+            _back1Font1:setColor(ManagementTheme.colors.ink)
             -- _back1Font1:enableStroke(cc.c4b(255, 255, 255, 255), 1)
             _back1Font1:setPosition(cc.p(_back1:getPositionX()-_back1:getContentSize().width/2+22,_back1:getPositionY()+6))
             self:addChild(_back1Font1)
 
-            local _back1Font2 = cc.LabelTTF:create("可通过炼金获得",BoldFont,_fontSize)
+            local _back1Font2 = cc.LabelTTF:create("可通过炼金获得",ManagementTheme.bodyFont(),_fontSize)
             _back1Font2:setAnchorPoint(cc.p(0,1))
-            _back1Font2:setColor(WriteColor)
+            _back1Font2:setColor(ManagementTheme.colors.ink)
             -- _back1Font2:enableStroke(cc.c4b(255, 255, 255, 255), 1)
             _back1Font2:setPosition(cc.p(_back1Font1:getPositionX(),_back1:getPositionY()-6))
             self:addChild(_back1Font2)
         elseif type == 2 then
-            local _back1Font1 = cc.LabelTTF:create("缺少"..lacktable[i].mtnum.."个"..lacktable[i].mtname,BoldFont,_fontSize)
+            local _back1Font1 = cc.LabelTTF:create("缺少"..lacktable[i].mtnum.."个"..lacktable[i].mtname,ManagementTheme.bodyFont(),_fontSize)
             _back1Font1:setAnchorPoint(cc.p(0,0))
-            _back1Font1:setColor(WriteColor)
+            _back1Font1:setColor(ManagementTheme.colors.ink)
             -- _back1Font1:enableStroke(cc.c4b(255, 255, 255, 255), 1)
             _back1Font1:setPosition(cc.p(_back1:getPositionX()-_back1:getContentSize().width/2+22,_back1:getPositionY()+6))
             self:addChild(_back1Font1)
 
-            local _back1Font2 = cc.LabelTTF:create("需要通过探索获得",BoldFont,_fontSize)
+            local _back1Font2 = cc.LabelTTF:create("需要通过探索获得",ManagementTheme.bodyFont(),_fontSize)
             _back1Font2:setAnchorPoint(cc.p(0,1))
-            _back1Font2:setColor(WriteColor)
+            _back1Font2:setColor(ManagementTheme.colors.ink)
             -- _back1Font2:enableStroke(cc.c4b(255, 255, 255, 255), 1)
             _back1Font2:setPosition(cc.p(_back1Font1:getPositionX(),_back1:getPositionY()-6))
             self:addChild(_back1Font2)
         elseif type == 3 then
-            local _back1Font1 = cc.LabelTTF:create("缺少"..lacktable[i].mtnum.."个"..lacktable[i].mtname,BoldFont,_fontSize)
+            local _back1Font1 = cc.LabelTTF:create("缺少"..lacktable[i].mtnum.."个"..lacktable[i].mtname,ManagementTheme.bodyFont(),_fontSize)
             _back1Font1:setAnchorPoint(cc.p(0,0))
-            _back1Font1:setColor(WriteColor)
+            _back1Font1:setColor(ManagementTheme.colors.ink)
             -- _back1Font1:enableStroke(cc.c4b(255, 255, 255, 255), 1)
             _back1Font1:setPosition(cc.p(_back1:getPositionX()-_back1:getContentSize().width/2+22,_back1:getPositionY()+6))
             self:addChild(_back1Font1)
 
-            local _back1Font2 = cc.LabelTTF:create("该物品只能通过生产获得",BoldFont,_fontSize)
+            local _back1Font2 = cc.LabelTTF:create(productionSource and "安排工人并备齐原料后生产" or ProductionSources.caption(nil),ManagementTheme.bodyFont(),_fontSize)
             _back1Font2:setAnchorPoint(cc.p(0,1))
-            _back1Font2:setColor(WriteColor)
+            _back1Font2:setColor(ManagementTheme.colors.ink)
             -- _back1Font2:enableStroke(cc.c4b(255, 255, 255, 255), 1)
             _back1Font2:setPosition(cc.p(_back1Font1:getPositionX(),_back1:getPositionY()-6))
+            _back1Font2:setDimensions(cc.size(_back1:getContentSize().width-(productionSource and 180 or 44),44))
+            _back1Font2:setHorizontalAlignment(cc.TEXT_ALIGNMENT_LEFT)
             self:addChild(_back1Font2)
         elseif type == 4 then
-            local _back1Font1 = cc.LabelTTF:create("缺少"..lacktable[i].mtnum.."个"..lacktable[i].mtname,BoldFont,_fontSize)
+            local _back1Font1 = cc.LabelTTF:create("缺少"..lacktable[i].mtnum.."个"..lacktable[i].mtname,ManagementTheme.bodyFont(),_fontSize)
             _back1Font1:setAnchorPoint(cc.p(0,0))
-            _back1Font1:setColor(WriteColor)
+            _back1Font1:setColor(ManagementTheme.colors.ink)
             -- _back1Font1:enableStroke(cc.c4b(255, 255, 255, 255), 1)
             _back1Font1:setPosition(cc.p(_back1:getPositionX()-_back1:getContentSize().width/2+22,_back1:getPositionY()+6))
             self:addChild(_back1Font1)
 
-            local _back1Font2 = cc.LabelTTF:create("当前无法获得，需出征探索海域",BoldFont,_fontSize)
+            local _back1Font2 = cc.LabelTTF:create("当前无法获得，需出征探索海域",ManagementTheme.bodyFont(),_fontSize)
             _back1Font2:setAnchorPoint(cc.p(0,1))
-            _back1Font2:setColor(WriteColor)
+            _back1Font2:setColor(ManagementTheme.colors.ink)
             -- _back1Font2:enableStroke(cc.c4b(255, 255, 255, 255), 1)
             _back1Font2:setPosition(cc.p(_back1Font1:getPositionX(),_back1:getPositionY()-6))
             self:addChild(_back1Font2)
@@ -196,7 +201,7 @@ end
         
 
         --button
-        local _buyButton = cc.MenuItemImage:create("Images/btn/ann01_a.png","Images/btn/ann01_b.png")
+        local _buyButton = ManagementTheme.menuItem(128,59,'coral')
         _buyButton:setPosition(cc.p(_back1:getPositionX()+_back1:getContentSize().width/2-90,_back1:getPositionY()))
         _buyButton:registerScriptTapHandler(function()
             --购买
@@ -242,6 +247,10 @@ end
                 zqDispatch:moveToExpedition()
                 -- 去出征
             elseif type == 3 then 
+                if not ProductionSources.find(DataManager:getInstance(), GuideController:getInstance(), lacktable[i].mtId) then
+                    self:reflush(lacktable,callback)
+                    return
+                end
                 self:close()
                 zqDispatch:moveToResource()
                 -- 去生产
@@ -252,6 +261,8 @@ end
             end
 
         end)
+        _buyButton:setEnabled(type ~= 3 or productionSource ~= nil)
+        _buyButton:setVisible(type ~= 3 or productionSource ~= nil)
 
 
         local menuIcon = cc.Menu:create(_buyButton)
@@ -271,28 +282,36 @@ end
         elseif type == 4 then 
             desstr = "出 征"
         end
-        local _buyLabel = cc.LabelTTF:create(desstr, BoldFont, 32.0)
+        local _buyLabel = cc.LabelTTF:create(desstr, ManagementTheme.bodyFont(), 32.0)
         -- _buyLabel:enableStroke(cc.c4b(16, 16, 16, 255), 2)
         _buyLabel:setColor(cc.c3b(255,255,255))
         _buyLabel:setPosition(_buyButton:getPosition())
+        _buyLabel:setVisible(type ~= 3 or productionSource ~= nil)
         self:addChild(_buyLabel)
 
     end
         
-    local _back2 = cc.Sprite:create("Images/UI/dibantiao_03.png")
+    local _back2 = ManagementTheme.surfaceLike("Images/UI/dibantiao_03.png",'section')
     _back2:setPosition(cc.p(_title2:getPositionX(),_title2:getPositionY()-85 - 118 * datanum  ))
     self:addChild(_back2)
-    local _back2Font1 = cc.LabelTTF:create("生产：需花费一些时间",BoldFont,_fontSize)
+    local source = ProductionSources.first(DataManager:getInstance(), GuideController:getInstance(), lacktable)
+    local _back2Font1 = cc.LabelTTF:create(ProductionSources.caption(source),ManagementTheme.bodyFont(),_fontSize)
     _back2Font1:setAnchorPoint(cc.p(0,0.5))
-    _back2Font1:setColor(WriteColor)
+    _back2Font1:setColor(ManagementTheme.colors.ink)
     -- _back2Font1:enableStroke(cc.c4b(255, 255, 255, 255), 1)
     _back2Font1:setPosition(cc.p(_back2:getPositionX()-_back2:getContentSize().width/2+22,_back2:getPositionY()))
+    _back2Font1:setDimensions(cc.size(_back2:getContentSize().width-(source and 180 or 44),72))
+    _back2Font1:setHorizontalAlignment(cc.TEXT_ALIGNMENT_LEFT)
     self:addChild(_back2Font1)
 
     
-    local _produceButton = cc.MenuItemImage:create("Images/btn/ann01_a.png","Images/btn/ann01_b.png")
+    local _produceButton = ManagementTheme.menuItem(128,59,'coral')
     _produceButton:setPosition(cc.p(_back2:getPositionX()+_back2:getContentSize().width/2-90,_back2:getPositionY()))
     _produceButton:registerScriptTapHandler(function()
+        if not ProductionSources.first(DataManager:getInstance(), GuideController:getInstance(), lacktable) then
+            self:reflush(lacktable,callback)
+            return
+        end
         --生产
         --关闭所有窗口
         --self:close()
@@ -302,6 +321,8 @@ end
         DialogueViewManager:sharedInstance():removeAllView()
         zqDispatch:moveToResource()
     end)
+    _produceButton:setEnabled(source ~= nil)
+    _produceButton:setVisible(source ~= nil)
     
     
 
@@ -309,10 +330,11 @@ end
     producemenuIcon:setPosition(0.0, 0.0)
     self:addChild(producemenuIcon)
 
-    local _produceButtonLabel = cc.LabelTTF:create("生 产", BoldFont, 32.0)
+    local _produceButtonLabel = cc.LabelTTF:create("查看生产", ManagementTheme.bodyFont(), 26.0)
     -- _produceButtonLabel:enableStroke(cc.c4b(16, 16, 16, 255), 2)
     _produceButtonLabel:setColor(cc.c3b(255,255,255))
     _produceButtonLabel:setPosition(_produceButton:getPosition())
+    _produceButtonLabel:setVisible(source ~= nil)
     self:addChild(_produceButtonLabel)
 
     return true

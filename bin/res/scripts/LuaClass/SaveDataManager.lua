@@ -49,3 +49,8 @@ end
 function SaveDataManager:loadRecourcesCSV(FileName)
 	Record:GetInstance():loadRecourcesCSV(FileName)
 end
+-- Explicit success is required before publishing a production transaction.
+function SaveDataManager:saveDataAtomic(data, name)
+    if zqUserId ~= nil then name = name .. "_" .. zqUserId end
+    return Record:GetInstance():saveDataAtomic(data, name) == true
+end

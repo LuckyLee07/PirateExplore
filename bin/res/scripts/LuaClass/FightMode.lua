@@ -1,3 +1,6 @@
+require 'LuaClass/DialogTheme'
+require 'LuaClass/CombatTheme'
+require 'LuaClass/ItemIcon'
 --
 -- Created by IntelliJ IDEA.
 -- User: sunxy
@@ -230,17 +233,17 @@ function FightBoxViewAlert:init()
     self:addChild(bg)
 
     -- title
-    local title = cc.LabelTTF:create("寻宝结束", BoldFont, 36.0)
+    local title = CombatTheme.label("寻宝结束", BoldFont, 36.0)
     title:setPosition(0.5*size.width, 0.5*(size.height+bgSize.height)-35.0)
     self:addChild(title)
 
     -- info
-    local info = cc.LabelTTF:create("您尚未发现全部神秘奖励\n \n是否使用7钻石继续寻宝", BoldFont, 30.0)
+    local info = CombatTheme.label("您尚未发现全部神秘奖励\n \n是否使用7钻石继续寻宝", BoldFont, 30.0)
     info:setPosition(0.5*size.width, 0.5*size.height+30.0)
     self:addChild(info)
 
     -- giveUpBtn
-    local giveUpBtn = cc.MenuItemImage:create("Images/btn/ann01_a.png", "Images/btn/ann01_b.png")
+    local giveUpBtn = DialogTheme.menuItem("Images/btn/ann01_a.png", "Images/btn/ann01_b.png")
     giveUpBtn:registerScriptTapHandler(function()
         if FightBoxView.instance then FightBoxView.instance:giveUpCallback() end
         self:close()
@@ -248,7 +251,7 @@ function FightBoxViewAlert:init()
     giveUpBtn:setPosition(0.5*(size.width-bgSize.width)+120.0, 0.5*(size.height-bgSize.height)+90.0)
 
     -- continueBtn
-    local continueBtn = cc.MenuItemImage:create("Images/btn/ann01_a.png", "Images/btn/ann01_b.png")
+    local continueBtn = DialogTheme.menuItem("Images/btn/ann01_a.png", "Images/btn/ann01_b.png")
     continueBtn:registerScriptTapHandler(function()
         -- to do use diamond
         if 1 == DataManager:getInstance():addDiamond(-7) then
@@ -265,11 +268,11 @@ function FightBoxViewAlert:init()
     self:addChild(menu)
 
     -- 放弃
-    local giveUp = cc.LabelTTF:create("放 弃", BoldFont, 30.0)
+    local giveUp = CombatTheme.label("放 弃", BoldFont, 30.0)
     giveUp:setPosition(giveUpBtn:getPosition())
     self:addChild(giveUp)
     -- 继续
-    local continue = cc.LabelTTF:create("继 续", BoldFont, 30.0)
+    local continue = CombatTheme.label("继 续", BoldFont, 30.0)
     continue:setPosition(continueBtn:getPosition())
     self:addChild(continue)
 
@@ -378,7 +381,7 @@ function FightBoxView:init()
     local size = cc.Director:getInstance():getVisibleSize()
 
     -- background
-    self.viewBg = cc.Sprite:create("Images/Fight/dikuang_07.png")
+    self.viewBg = DialogTheme.panelFromLegacy("Images/Fight/dikuang_07.png")
     self.viewBg:setPosition(0.5*size.width, 0.5*size.height)
     self:addChild(self.viewBg)
 
@@ -391,17 +394,17 @@ function FightBoxView:init()
     diamondSp:setPosition(30.0, 0.5*diamondBg:getContentSize().height)
     diamondSp:setScale(0.8)
     diamondBg:addChild(diamondSp)
-    self.diamondLabel = cc.LabelTTF:create(tostring(DataManager:getInstance():getRoleData(roleDiamond)), BoldFont, 28.0)
+    self.diamondLabel = CombatTheme.label(tostring(DataManager:getInstance():getRoleData(roleDiamond)), BoldFont, 28.0)
     self.diamondLabel:setPosition(30.0+0.5*(diamondBg:getContentSize().width-60.0), 0.5*diamondBg:getContentSize().height)
     diamondBg:addChild(self.diamondLabel)
 
     -- title
-    local title = cc.LabelTTF:create("发现神秘宝箱", BoldFont, 36.0)
+    local title = CombatTheme.label("发现神秘宝箱", BoldFont, 36.0)
     title:setPosition(0.5*size.width, 0.5*(size.height+self.viewBg:getContentSize().height)-35.0)
     self:addChild(title)
 
     -- info
-    local info = cc.LabelTTF:create("尝试从六个宝箱中找到三个神秘奖励\n发现骷髅则需花费钻石继续寻找", BoldFont, 25.0)
+    local info = CombatTheme.label("尝试从六个宝箱中找到三个神秘奖励\n发现骷髅则需花费钻石继续寻找", BoldFont, 25.0)
     info:setPosition(0.5*size.width, 0.5*(size.height+self.viewBg:getContentSize().height)-120.0)
     self:addChild(info)
 
@@ -412,12 +415,12 @@ function FightBoxView:init()
     self:addChild(self.costInfoNode)
 
     -- infofree
-    local infofree = cc.LabelTTF:create("点击免费开启宝箱", BoldFont, 25.0)
+    local infofree = CombatTheme.label("点击免费开启宝箱", BoldFont, 25.0)
     infofree:setPosition(0.5*size.width, 0.5*(size.height-self.viewBg:getContentSize().height)+70.0)
     self.freeInfoNode:addChild(infofree)
 
     -- info1
-    self.infoCost = cc.LabelTTF:create("花费"..tostring(FightBoxView.FailDiamond[self.failTime]).."    可再次开启宝箱", BoldFont, 25.0)
+    self.infoCost = CombatTheme.label("花费"..tostring(FightBoxView.FailDiamond[self.failTime]).."    可再次开启宝箱", BoldFont, 25.0)
     self.infoCost:setPosition(0.5*size.width-80.0, 0.5*(size.height-self.viewBg:getContentSize().height)+70.0)
     self.costInfoNode:addChild(self.infoCost)
     local diamondSp = cc.Sprite:create("Images/UI/DiamondBg.png")
@@ -435,13 +438,13 @@ function FightBoxView:init()
     bg9:setPosition(0.5*size.width, 0.5*(size.height-self.viewBg:getContentSize().height-bg9:getContentSize().height))
     self.showInfoNode:addChild(bg9)
 
-    local propName = cc.LabelTTF:create("物品名称", BoldFont, 25.0)
+    local propName = CombatTheme.label("物品名称", BoldFont, 25.0)
     propName:setTag(1)
     propName:setAnchorPoint(cc.p(0.0, 0.5))
     propName:setPosition(10.0+bg9:getPositionX()-0.5*bg9Size.width, bg9:getPositionY()+0.25*bg9Size.height)
     self.showInfoNode:addChild(propName)
 
-    local propDesc = cc.LabelTTF:create("物品详情描述", BoldFont, 25.0)
+    local propDesc = CombatTheme.label("物品详情描述", BoldFont, 25.0)
     propDesc:setTag(2)
     propDesc:setAnchorPoint(cc.p(0.0, 0.5))
     propDesc:setPosition(10.0+bg9:getPositionX()-0.5*bg9Size.width, bg9:getPositionY()-0.25*bg9Size.height)
@@ -451,7 +454,7 @@ function FightBoxView:init()
     self:reloadBoxes()
 
     -- closeBtn
-    self.closeBtn = cc.MenuItemImage:create("Images/btn/ann01_a.png", "Images/btn/ann01_b.png")
+    self.closeBtn = DialogTheme.menuItem("Images/btn/ann01_a.png", "Images/btn/ann01_b.png")
     self.closeBtn:registerScriptTapHandler(function()
         self:close()
         cc.UserDefault:getInstance():setBoolForKey("isFirtFightBox", false)
@@ -459,7 +462,7 @@ function FightBoxView:init()
     end)
     self.closeBtn:setPosition(0.5*(size.width+self.viewBg:getContentSize().width)-120.0, self.infoCost:getPositionY())
 
-    self.giveupBtn = cc.MenuItemImage:create("Images/btn/ann01_a.png", "Images/btn/ann01_b.png")
+    self.giveupBtn = DialogTheme.menuItem("Images/btn/ann01_a.png", "Images/btn/ann01_b.png")
     self.giveupBtn:registerScriptTapHandler(function()
         self:giveUpCallback()
     end)
@@ -470,10 +473,10 @@ function FightBoxView:init()
     menu:setPosition(cc.p(0, 0))
     self:addChild(menu)
 
-    self.closeLabel = cc.LabelTTF:create("关 闭", BoldFont, 36.0)
+    self.closeLabel = CombatTheme.label("关 闭", BoldFont, 36.0)
     self.closeLabel:setPosition(self.closeBtn:getPosition())
     self:addChild(self.closeLabel)
-    self.giveupLabel = cc.LabelTTF:create("放 弃", BoldFont, 36.0)
+    self.giveupLabel = CombatTheme.label("放 弃", BoldFont, 36.0)
     self.giveupLabel:setPosition(self.closeBtn:getPosition())
     self:addChild(self.giveupLabel)
 
@@ -508,10 +511,10 @@ function FightBoxView:reloadBoxes()
         local state = self.boxStates[i]
         local prop = self.props[i]
         if state ~= FightBoxView.BoxState.close or self.isUserGiveUp then
-            boxes[i] = cc.MenuItemImage:create("Images/Fight/baoxiang02.png", "Images/Fight/baoxiang02.png")
+            boxes[i] = cc.MenuItemImage:create(CombatTheme.chestPath(true), CombatTheme.chestPath(true))
             boxes[i]:setEnabled(prop ~= nil)
         else
-            boxes[i] = cc.MenuItemImage:create("Images/Fight/baoxiang01.png", "Images/Fight/baoxiang01.png")
+            boxes[i] = cc.MenuItemImage:create(CombatTheme.chestPath(false), CombatTheme.chestPath(false))
         end
         local row = math.floor((6-i)/3)+1  -- 下->上 1.2
         local column = ((i-1)%3)+1   -- 左->右 1.2.3
@@ -537,7 +540,7 @@ function FightBoxView:reloadBoxes()
                     local sp = cc.Sprite:create("Images/Icon/"..data.iconName)
                     sp:setPosition(0.5*boxes[i]:getContentSize().width-5.0, 0.5*boxes[i]:getContentSize().height+20.0)
                     boxes[i]:addChild(sp)
-                    local numLabel = cc.LabelTTF:create(""..tostring(prop[2]), BoldFont, 18.0)
+                    local numLabel = CombatTheme.label(""..tostring(prop[2]), BoldFont, 18.0)
                     numLabel:setAnchorPoint(cc.p(1.0, 0.0))
                     numLabel:setPosition(sp:getPositionX()+0.5*sp:getContentSize().width-5.0, sp:getPositionY()-0.5*sp:getContentSize().height+5.0)
                     boxes[i]:addChild(numLabel)
@@ -566,7 +569,7 @@ function FightBoxView:reloadBoxes()
                             local sp = cc.Sprite:create("Images/Icon/"..data.iconName)
                             sp:setPosition(0.5*boxes[i]:getContentSize().width-5.0, 0.5*boxes[i]:getContentSize().height+20.0)
                             boxes[i]:addChild(sp)
-                            local numLabel = cc.LabelTTF:create(""..tostring(prop[2]), BoldFont, 18.0)
+                            local numLabel = CombatTheme.label(""..tostring(prop[2]), BoldFont, 18.0)
                             numLabel:setAnchorPoint(cc.p(1.0, 0.0))
                             numLabel:setPosition(sp:getPositionX()+0.5*sp:getContentSize().width-5.0, sp:getPositionY()-0.5*sp:getContentSize().height+5.0)
                             boxes[i]:addChild(numLabel)
@@ -754,6 +757,9 @@ end
 function FightBoxView:giveUpCallback()
     -- 放弃
     self.isUserGiveUp = true
+    -- The reveal/close state no longer offers either free or paid opening.
+    self.freeInfoNode:setVisible(false)
+    self.costInfoNode:setVisible(false)
     local tb = clone(self.fakeIndexes)
     self.fakeIndexes = {}
     local num = 3-self.rewardTime
@@ -807,7 +813,7 @@ function FightTransitionScene:init(info, delay, callback)
     self:addChild(colorLayer)
 
     -- info
-    local infoLabel = cc.LabelTTF:create(info, BoldFont, 40.0)
+    local infoLabel = CombatTheme.label(info, BoldFont, 40.0)
     infoLabel:setPosition(0.5*visibleSize.width, 0.5*visibleSize.height)
     self:addChild(infoLabel)
 
@@ -1276,7 +1282,7 @@ function FightScene:initShipWarUIScene()
     self:addChild(colorLayer)
 
     -- 添加总背景
-    local mainBg = cc.Sprite:create("Images/Background/MainBackGround.png")
+    local mainBg = CombatTheme.background(visibleSize)
     mainBg:setAnchorPoint(cc.p(0, 0))
     mainBg:setPosition(cc.p(0, 0))
     self:addChild(mainBg)
@@ -1287,17 +1293,18 @@ function FightScene:initShipWarUIScene()
     self:addChild(self.shipNodePlayer, boat_layer)
 
     -- boat
-    local boat_down = cc.Sprite:create("Images/Fight/chuan_04.png")
+    local boat_down = cc.Sprite:create(CombatTheme.deckPath(false))
     boat_down:setPosition(0.5*visibleSize.width, 0.0)
     boat_down:setAnchorPoint(cc.p(0.5, 0.0))
     self.shipNodePlayer:addChild(boat_down, boat_layer)
-    local boatr_up = cc.Sprite:create("Images/Fight/chuan_04.png")
+    local boatr_up = cc.Sprite:create(CombatTheme.deckPath(false))
     boatr_up:setFlippedY(true)
     boatr_up:setAnchorPoint(cc.p(0.5, 1.0))
     boatr_up:setPosition(0.5*visibleSize.width, visibleSize.height)
     self.shipNodeEnemy:addChild(boatr_up, boat_layer)
     -- tip
-    local tip = cc.LabelTTF:create("一艘阴森森的海盗船对你发起了炮击", BoldFont, 25.0)
+    CombatTheme.captionPlate(self, visibleSize, top_layer)
+    local tip = CombatTheme.label("一艘阴森森的海盗船对你发起了炮击", BoldFont, 25.0)
     tip:setPosition(0.5*visibleSize.width, visibleSize.height-30.0)
     self:addChild(tip, top_layer)
 
@@ -1311,8 +1318,9 @@ function FightScene:initShipWarUIScene()
     end
 
 
+    CombatTheme.statusPlate(self,visibleSize.width*.5,visibleSize.height-170,top_layer)
     -- name
-    local name = cc.LabelTTF:create("海魂诅咒者", BoldFont, 35.0)
+    local name = CombatTheme.label("海魂诅咒者", BoldFont, 35.0)
     name:setPosition(0.5*visibleSize.width, visibleSize.height-130.0)
     self:addChild(name, top_layer)
     local mons = self.enemyTeam.fighters[1]
@@ -1320,16 +1328,16 @@ function FightScene:initShipWarUIScene()
 
 
     -- enemy hp
-    local bg_ehp = cc.Sprite:create("Images/Fight/xuetiao01.png")
+    local bg_ehp = CombatTheme.bar(false)
     bg_ehp:setPosition(0.5*visibleSize.width-0.5*bg_ehp:getContentSize().width, visibleSize.height-170.0)
     bg_ehp:setAnchorPoint(cc.p(0.0, 0.5));
     self:addChild(bg_ehp, top_layer)
-    self.ehp = cc.Sprite:create("Images/Fight/xuetiao02.png")
+    self.ehp = CombatTheme.bar(true)
     self.ehp:setPosition(bg_ehp:getPosition())
     self.ehp:setAnchorPoint(cc.p(0.0, 0.5));
     self:addChild(self.ehp, top_layer)
-    self.label_ehp = cc.LabelTTF:create(tostring(self.enemyTeam.hp).."/"..tostring(self.enemyTeam.m_hp), BoldFont, 20.0)
-    self.label_ehp:setPosition(0.5*visibleSize.width, bg_ehp:getPositionY())
+    self.label_ehp = CombatTheme.label(tostring(self.enemyTeam.hp).."/"..tostring(self.enemyTeam.m_hp), BoldFont, 20.0)
+    self.label_ehp:setPosition(0.5*visibleSize.width, bg_ehp:getPositionY()-23)
     self:addChild(self.label_ehp, top_layer)
 
     local paoPosX = {162.0, 486.0, 258.0, 391.0, 61.0, 588.0, 209.0, 437.0, 108.0, 540}
@@ -1359,22 +1367,23 @@ function FightScene:initShipWarUIScene()
     end
 
 
+    CombatTheme.statusPlate(self,visibleSize.width*.5,200,top_layer)
     -- wofang
-    local wofang = cc.LabelTTF:create("我方", BoldFont, 30.0)
+    local wofang = CombatTheme.label("我方", BoldFont, 30.0)
     wofang:setPosition(0.5*visibleSize.width, 230.0)
     self:addChild(wofang, top_layer)
 
     -- hp
-    local bg_hp = cc.Sprite:create("Images/Fight/xuetiao01.png")
+    local bg_hp = CombatTheme.bar(false)
     bg_hp:setPosition(0.5*visibleSize.width-0.5*bg_ehp:getContentSize().width, 200.0)
     bg_hp:setAnchorPoint(cc.p(0.0, 0.5));
     self:addChild(bg_hp, top_layer)
-    self.hp = cc.Sprite:create("Images/Fight/xuetiao02.png")
+    self.hp = CombatTheme.bar(true,nil,nil,"player")
     self.hp:setPosition(bg_hp:getPosition())
     self.hp:setAnchorPoint(cc.p(0.0, 0.5));
     self:addChild(self.hp, top_layer)
-    self.label_hp = cc.LabelTTF:create(tostring(self.playerTeam.hp).."/"..tostring(self.playerTeam.m_hp), BoldFont, 20.0)
-    self.label_hp:setPosition(0.5*visibleSize.width, bg_hp:getPositionY())
+    self.label_hp = CombatTheme.label(tostring(self.playerTeam.hp).."/"..tostring(self.playerTeam.m_hp), BoldFont, 20.0)
+    self.label_hp:setPosition(0.5*visibleSize.width, bg_hp:getPositionY()-23)
     self:addChild(self.label_hp, top_layer)
 
     self.playerAtkPgBar = {}
@@ -1395,7 +1404,7 @@ function FightScene:initShipWarUIScene()
         namebg:setVisible(false)
         headNode:addChild(namebg)
 
-        local name = cc.LabelTTF:create(fighter.name, BoldFont, 20.0)
+        local name = CombatTheme.label(fighter.name, BoldFont, 20.0)
         name:setPosition(namebg:getPosition())
         name:setVisible(false)
         headNode:addChild(name)
@@ -1451,7 +1460,7 @@ function FightScene:initShipWarUIScene()
         self.playerActors[i] = head
 
 
-        local hp = cc.LabelTTF:create(tostring(fighter.hp).."/"..tostring(fighter.m_hp), BoldFont, 20.0)
+        local hp = CombatTheme.label(tostring(fighter.hp).."/"..tostring(fighter.m_hp), BoldFont, 20.0)
         hp:setPosition(progbar1:getPositionX()+0.5*progbar1:getContentSize().width, progbar1:getPositionY())
         hp:setColor(cc.c4b(255, 0, 0, 255))
         hp:setVisible(false)
@@ -1523,7 +1532,7 @@ function FightScene:initAboardWarUIScene()
     self:addChild(colorLayer)
 
     -- 添加总背景
-    local mainBg = cc.Sprite:create("Images/Background/MainBackGround.png")
+    local mainBg = CombatTheme.background(visibleSize)
     mainBg:setAnchorPoint(cc.p(0, 0))
     mainBg:setPosition(cc.p(0, 0))
     self:addChild(mainBg)
@@ -1531,7 +1540,7 @@ function FightScene:initAboardWarUIScene()
     -- boat
     self.shipNodePlayer = cc.Node:create()
     self:addChild(self.shipNodePlayer)
-    local boat = cc.Sprite:create("Images/Fight/chuan_01.png")
+    local boat = cc.Sprite:create(CombatTheme.deckPath(true))
     boat:setPosition(0.5*visibleSize.width, 0.0)
     boat:setAnchorPoint(cc.p(0.5, 0.0))
     self.shipNodePlayer:addChild(boat)
@@ -1542,7 +1551,7 @@ function FightScene:initAboardWarUIScene()
 
     local mons = self.enemyTeam.fighters[1]
     -- tip
-    local tip = cc.LabelTTF:create("", BoldFont, 25.0)
+    local tip = CombatTheme.label("", BoldFont, 25.0)
     tip:setPosition(0.5*visibleSize.width, visibleSize.height-30.0)
     self:addChild(tip)
     if mons and mons.description then tip:setString(mons.description) end
@@ -1556,23 +1565,24 @@ function FightScene:initAboardWarUIScene()
         self:addChild(star)
     end
 
+    CombatTheme.statusPlate(self,visibleSize.width*.5,visibleSize.height-170)
     -- name
-    local name = cc.LabelTTF:create("海魂诅咒者", BoldFont, 35.0)
+    local name = CombatTheme.label("海魂诅咒者", BoldFont, 35.0)
     name:setPosition(0.5*visibleSize.width, visibleSize.height-130.0)
     self:addChild(name)
     if mons and mons.name then name:setString(mons.name) end
 
     -- enemy hp
-    local bg_ehp = cc.Sprite:create("Images/Fight/xuetiao01.png")
+    local bg_ehp = CombatTheme.bar(false)
     bg_ehp:setPosition(0.5*visibleSize.width-0.5*bg_ehp:getContentSize().width, visibleSize.height-170.0)
     bg_ehp:setAnchorPoint(cc.p(0.0, 0.5));
     self:addChild(bg_ehp)
-    self.ehp = cc.Sprite:create("Images/Fight/xuetiao02.png")
+    self.ehp = CombatTheme.bar(true)
     self.ehp:setPosition(bg_ehp:getPosition())
     self.ehp:setAnchorPoint(cc.p(0.0, 0.5));
     self:addChild(self.ehp)
-    self.label_ehp = cc.LabelTTF:create(tostring(self.enemyTeam.hp).."/"..tostring(self.enemyTeam.m_hp), BoldFont, 20.0)
-    self.label_ehp:setPosition(0.5*visibleSize.width, bg_ehp:getPositionY())
+    self.label_ehp = CombatTheme.label(tostring(self.enemyTeam.hp).."/"..tostring(self.enemyTeam.m_hp), BoldFont, 20.0)
+    self.label_ehp:setPosition(0.5*visibleSize.width, bg_ehp:getPositionY()-23)
     self:addChild(self.label_ehp)
 
     -- debufferNode
@@ -1617,27 +1627,28 @@ function FightScene:initAboardWarUIScene()
     local dlg = cc.Sprite:create("Images/Fight/fightDlg.png")
     self.dlgNode:addChild(dlg)
 
-    self.dlgLabel = cc.LabelTTF:create("...", BoldFont, 24.0)
+    self.dlgLabel = CombatTheme.label("...", BoldFont, 24.0)
     self.dlgLabel:setPosition(dlg:getPositionX(), dlg:getPositionY()+10.0)
     self.dlgNode:addChild(self.dlgLabel)
     self:hideMonasterDialogue()
 
+    CombatTheme.statusPlate(self,visibleSize.width*.5,490)
     -- wofang
-    local wofang = cc.LabelTTF:create("我方", BoldFont, 35.0)
+    local wofang = CombatTheme.label("我方", BoldFont, 35.0)
     wofang:setPosition(0.5*visibleSize.width, 530.0)
     self:addChild(wofang)
 
     -- hp
-    local bg_hp = cc.Sprite:create("Images/Fight/xuetiao01.png")
+    local bg_hp = CombatTheme.bar(false)
     bg_hp:setPosition(0.5*visibleSize.width-0.5*bg_ehp:getContentSize().width, 490.0)
     bg_hp:setAnchorPoint(cc.p(0.0, 0.5));
     self:addChild(bg_hp)
-    self.hp = cc.Sprite:create("Images/Fight/xuetiao02.png")
+    self.hp = CombatTheme.bar(true,nil,nil,"player")
     self.hp:setPosition(bg_hp:getPosition())
     self.hp:setAnchorPoint(cc.p(0.0, 0.5));
     self:addChild(self.hp)
-    self.label_hp = cc.LabelTTF:create(tostring(self.playerTeam.hp).."/"..tostring(self.playerTeam.m_hp), BoldFont, 20.0)
-    self.label_hp:setPosition(0.5*visibleSize.width, bg_hp:getPositionY())
+    self.label_hp = CombatTheme.label(tostring(self.playerTeam.hp).."/"..tostring(self.playerTeam.m_hp), BoldFont, 20.0)
+    self.label_hp:setPosition(0.5*visibleSize.width, bg_hp:getPositionY()-23)
     self:addChild(self.label_hp)
 
     -- bufferNode
@@ -1666,7 +1677,7 @@ function FightScene:initAboardWarUIScene()
 --        namebg:setPosition(40.0, 30.0)
 --        headNode:addChild(namebg)
 
-        local name = cc.LabelTTF:create(fighter.name, BoldFont, 24.0)
+        local name = CombatTheme.label(fighter.name, BoldFont, 24.0)
         name:setAnchorPoint(cc.p(0.0, 0.5))
         name:setPosition(-30.0, 30.0)
         headNode:addChild(name)
@@ -1705,7 +1716,7 @@ function FightScene:initAboardWarUIScene()
 --        headNode:addChild(progbar3)
 
         -- 技能名字
-        local skillName = cc.LabelTTF:create(tostring(skillData.name), BoldFont, 24.0)
+        local skillName = CombatTheme.label(tostring(skillData.name), BoldFont, 24.0)
         skillName:setPosition(progbar1:getPositionX()+0.5*progbar1:getContentSize().width, progbar1:getPositionY())
         headNode:addChild(skillName)
 
@@ -1733,7 +1744,7 @@ function FightScene:initAboardWarUIScene()
         headNode:addChild(head)
         self.playerActors[i] = head
 
-        local hp = cc.LabelTTF:create(tostring(fighter.hp).."/"..tostring(fighter.m_hp), BoldFont, 20.0)
+        local hp = CombatTheme.label(tostring(fighter.hp).."/"..tostring(fighter.m_hp), BoldFont, 20.0)
         hp:setPosition(progbar1:getPositionX()+0.5*progbar1:getContentSize().width, progbar1:getPositionY())
         hp:setColor(cc.c4b(255, 0, 0, 255))
         hp:setVisible(self.fightMode == FightScene.FightMode.oneByOne)
@@ -1776,7 +1787,7 @@ function FightScene:initAboardWarUIScene()
 --    self:addChild(menuf)
 
     -- miaoshaBtn
-    local miaoshaBtn = cc.MenuItemImage:create("Images/btn/ann03_a.png", "Images/btn/ann03_b.png")
+    local miaoshaBtn = DialogTheme.menuItem("Images/btn/ann03_a.png", "Images/btn/ann03_b.png")
     miaoshaBtn:registerScriptTapHandler(function()
         if self.isPause then return end
         if 1 == DataManager:getInstance():addDiamond(-5, false) then
@@ -1789,7 +1800,7 @@ function FightScene:initAboardWarUIScene()
     miaoshaBtn:setPosition(105.0, 35.5)
 
     -- jiyangBtn
-    local jiyangBtn = cc.MenuItemImage:create("Images/btn/ann03_a.png", "Images/btn/ann03_b.png")
+    local jiyangBtn = DialogTheme.menuItem("Images/btn/ann03_a.png", "Images/btn/ann03_b.png")
     jiyangBtn:setScaleX(-1.0)
     jiyangBtn:registerScriptTapHandler(function()
         if self.isPause then return end
@@ -1864,14 +1875,14 @@ function FightScene:initAboardWarUIScene()
     menu3:setPosition(cc.p(0, 0))
     self:addChild(menu3)
 
-    local miaosha = cc.LabelTTF:create("秒杀", BoldFont, 40.0)
+    local miaosha = CombatTheme.label("秒杀", BoldFont, 40.0)
     miaosha:setPosition(miaoshaBtn:getPositionX()+30.0, miaoshaBtn:getPositionY())
     self:addChild(miaosha)
 
     local diamomdSp = cc.Sprite:create("Images/UI/DiamondBg.png")
     diamomdSp:setPosition(miaoshaBtn:getPositionX()-50.0, miaoshaBtn:getPositionY())
     self:addChild(diamomdSp)
-    local diamomdNum = cc.LabelTTF:create("×5", BoldFont, 20.0)
+    local diamomdNum = CombatTheme.label("×5", BoldFont, 20.0)
     diamomdNum:setPosition(miaoshaBtn:getPositionX()-28.0, miaoshaBtn:getPositionY()-10.0)
     self:addChild(diamomdNum)
 
@@ -1883,7 +1894,7 @@ function FightScene:initAboardWarUIScene()
     self.jyProgress:setPosition(jiyangBtn:getPositionX()-0.5*self.jyProgress:getContentSize().width, jiyangBtn:getPositionY())
     self:addChild(self.jyProgress)
 
-    local jiyang = cc.LabelTTF:create("吃食物", BoldFont, 40.0)
+    local jiyang = CombatTheme.label("吃食物", BoldFont, 40.0)
     jiyang:setPosition(jiyangBtn:getPositionX(), jiyangBtn:getPositionY())
     self:addChild(jiyang)
     local breadBg = cc.Sprite:create("Images/Fight/shuzidi02.png")
@@ -1895,7 +1906,7 @@ function FightScene:initAboardWarUIScene()
     if self.breadData and self.breadData.num then
         num = tostring(self.breadData.num)
     end
-    self.breadNumLabel = cc.LabelTTF:create(tostring(num), BoldFont, 17.0)
+    self.breadNumLabel = CombatTheme.label(tostring(num), BoldFont, 17.0)
     self.breadNumLabel:setPosition(breadBg:getPosition())
     self:addChild(self.breadNumLabel)
 
@@ -2024,7 +2035,7 @@ function FightScene:update(deltaTime)
                 alertIcon:setPosition(cc.p(_alert.s_position.x - 180.0, _alert.s_position.y + 30.0))
                 _alert:addChild(alertIcon, 1)
 
-                local showLabel1 = cc.LabelTTF:create("花费50钻可复活", BoldFont, 30)
+                local showLabel1 = CombatTheme.label("花费50钻可复活", BoldFont, 30)
                 showLabel1:setColor(WriteColor)
                 showLabel1:setHorizontalAlignment(cc.TEXT_ALIGNMENT_LEFT)
                 -- showLabel1:enableStroke(cc.c4b(16, 16, 16, 255), 1)
@@ -2073,7 +2084,7 @@ function FightScene:update(deltaTime)
                 alertIcon:setPosition(cc.p(_alert.s_position.x - 180.0, _alert.s_position.y + 30.0))
                 _alert:addChild(alertIcon, 1)
 
-                local showLabel1 = cc.LabelTTF:create("花费50钻可复活", BoldFont, 30)
+                local showLabel1 = CombatTheme.label("花费50钻可复活", BoldFont, 30)
                 showLabel1:setColor(WriteColor)
                 showLabel1:setHorizontalAlignment(cc.TEXT_ALIGNMENT_LEFT)
                 -- showLabel1:enableStroke(cc.c4b(16, 16, 16, 255), 1)
@@ -2219,7 +2230,7 @@ function FightScene:showFailInfoAndReturn()
         spr:setColor(colors[i])
         colorLayer:addChild(spr)
 
-        tipLabel = cc.LabelTTF:create(tips[i], BoldFont, 20.0)
+        tipLabel = CombatTheme.label(tips[i], BoldFont, 20.0)
         tipLabel:setAnchorPoint(cc.p(0,0.5))
         tipLabel:setHorizontalAlignment(cc.TEXT_ALIGNMENT_LEFT)
         tipLabel:setPosition(cc.p(spr:getPositionX() + spr:getContentSize().width * spr:getScaleX() / 2 + 5,spr:getPositionY()))
@@ -2228,7 +2239,7 @@ function FightScene:showFailInfoAndReturn()
 
     y = y - intervalY * 1.5
 
-    tipLabel = cc.LabelTTF:create("建议从最低级开始攻打!", BoldFont, 20.0)
+    tipLabel = CombatTheme.label("建议从最低级开始攻打!", BoldFont, 20.0)
     tipLabel:setAnchorPoint(cc.p(0,0.5))
     tipLabel:setHorizontalAlignment(cc.TEXT_ALIGNMENT_LEFT)
     tipLabel:setPosition(cc.p(lastX,y - tipLabel:getContentSize().height / 2))
@@ -2240,25 +2251,25 @@ function FightScene:showFailInfoAndReturn()
         
         local abord
         if self.fightFailType == FightScene.FightFailType.eternal then
-            abord = cc.LabelTTF:create("挑战失败，本次挑战奖励被收回", BoldFont, 40.0)
+            abord = CombatTheme.label("挑战失败，本次挑战奖励被收回", BoldFont, 40.0)
             abord:setPosition(0.5*visibleSize.width, 0.5*visibleSize.height-15.0)
         else
-            abord = cc.LabelTTF:create("您的舰队已覆灭", BoldFont, 30.0)
+            abord = CombatTheme.label("您的舰队已覆灭", BoldFont, 30.0)
             abord:setPosition(0.5*visibleSize.width , 0.5*visibleSize.height + abord:getContentSize().height * 4)
 
-            local othertips = cc.LabelTTF:create("您可以：\n\t\t1.升级战船，增加携带海员数量\n\t\t2.升级战船炮筒威力及数量\n\t\t3.英雄转职，属性更强悍\n\t\t4.海上酒馆隐藏超强英雄",BoldFont, 30.0)
+            local othertips = CombatTheme.label("您可以：\n\t\t1.升级战船，增加携带海员数量\n\t\t2.升级战船炮筒威力及数量\n\t\t3.英雄转职，属性更强悍\n\t\t4.海上酒馆隐藏超强英雄",BoldFont, 30.0)
             othertips:setPosition(cc.p(visibleSize.width * 0.1 + othertips:getContentSize().width / 2,abord:getPositionY() - abord:getContentSize().height * 1.5 - othertips:getContentSize().height / 2))
             -- othertips:setAnchorPoint(cc.p(0,1))
             othertips:setHorizontalAlignment(cc.TEXT_ALIGNMENT_LEFT)
             -- othertips:setDimensions(cc.size(0,0))
             colorLayer:addChild(othertips)
 
-            local trapDes1 = cc.LabelTTF:create("您现在需要更加强悍的伙伴", BoldFont, 35.0)
+            local trapDes1 = CombatTheme.label("您现在需要更加强悍的伙伴", BoldFont, 35.0)
             trapDes1:setPosition(cc.p(visibleSize.width * 0.1 + 30 * 2  + trapDes1:getContentSize().width / 2,othertips:getPositionY() - othertips:getContentSize().height / 2 - trapDes1:getContentSize().height / 2 - 80))
             trapDes1:setColor(cc.c3b(255,127,39))
             colorLayer:addChild(trapDes1)
 
-            -- local trapDes2 = cc.LabelTTF:create("和天赋", BoldFont, 40.0)
+            -- local trapDes2 = CombatTheme.label("和天赋", BoldFont, 40.0)
             -- trapDes2:setPosition(cc.p(visibleSize.width * 0.1 + 30 * 2  + trapDes2:getContentSize().width / 2,trapDes1:getPositionY() - trapDes1:getContentSize().height / 2 - trapDes2:getContentSize().height / 2 - 15))
             -- colorLayer:addChild(trapDes2)
 
@@ -2269,10 +2280,10 @@ function FightScene:showFailInfoAndReturn()
 
             local buttonInterval = 80
 
-            local backBtnLabel = cc.LabelTTF:create("回 城", BoldFont, 35.0)
+            local backBtnLabel = CombatTheme.label("回 城", BoldFont, 35.0)
             backBtnLabel:setPosition(cc.p(abord:getPositionX() - buttonInterval - backBtnLabel:getContentSize().width / 2,trapDes1:getPositionY() - trapDes1:getContentSize().height - backBtnLabel:getContentSize().height))
             backBtnLabel:setColor(cc.c3b(255,255,255))
-            local backBtn = SDButton:create("Images/btn/ann04_a.png","Images/btn/ann04_b.png",function (  )
+            local backBtn = DialogTheme.sdButton("Images/btn/ann04_a.png","Images/btn/ann04_b.png",function (  )
                 fightOverCallback(fightResult)
             end)
             local scale = backBtnLabel:getContentSize().width * 1.6 / backBtn:getContentSize().width
@@ -2283,12 +2294,12 @@ function FightScene:showFailInfoAndReturn()
 
             colorLayer:addChild(backBtnLabel,100000)
 
-            local strengtheningBtnLabel = cc.LabelTTF:create("变 强", BoldFont, 35.0)
+            local strengtheningBtnLabel = CombatTheme.label("变 强", BoldFont, 35.0)
             -- strengtheningBtnLabel:setPosition(cc.p(trapDes2:getPositionX() + trapDes2:getContentSize().width / 2 + 10 + strengtheningBtnLabel:getContentSize().width / 2,trapDes2:getPositionY()))
             strengtheningBtnLabel:setColor(cc.c3b(255,255,255))
             strengtheningBtnLabel:setPosition(cc.p(abord:getPositionX() + buttonInterval + strengtheningBtnLabel:getContentSize().width / 2,trapDes1:getPositionY() - trapDes1:getContentSize().height - strengtheningBtnLabel:getContentSize().height))
 
-            local strengtheningBtn = SDButton:create("Images/btn/ann03_a.png","Images/btn/ann03_b.png",function (  )
+            local strengtheningBtn = DialogTheme.sdButton("Images/btn/ann03_a.png","Images/btn/ann03_b.png",function (  )
                 PushGiftView:create():show()
             end)
 
@@ -2299,7 +2310,7 @@ function FightScene:showFailInfoAndReturn()
             colorLayer:addChild(strengtheningBtn)
             colorLayer:addChild(strengtheningBtnLabel,100000)
 
-            -- touchTips = cc.LabelTTF:create("点击屏幕可继续......", BoldFont, 30.0)
+            -- touchTips = CombatTheme.label("点击屏幕可继续......", BoldFont, 30.0)
             -- touchTips:setPosition(cc.p(abord:getPositionX(),button:getPositionY() - button:getContentSize().height * scale - touchTips:getContentSize().height * 2))
             -- colorLayer:addChild(touchTips)
             -- touchTips:setVisible(false)
@@ -2533,7 +2544,7 @@ function FightScene:reloadBuffers()
             icon:setPosition(posx, 0.0)
             self.bufferNode:addChild(icon)
 
-            local bufferTime = cc.LabelTTF:create("", BoldFont, 20.0)
+            local bufferTime = CombatTheme.label("", BoldFont, 20.0)
             bufferTime:setPosition(icon:getPositionX(), icon:getPositionY()-50.0)
             self.bufferNode:addChild(bufferTime)
             self.bufferLabels[i] = bufferTime
@@ -2545,7 +2556,7 @@ function FightScene:reloadBuffers()
             icon:setPosition(posx, 0.0)
             self.debufferNode:addChild(icon)
 
-            local debufferTime = cc.LabelTTF:create("", BoldFont, 20.0)
+            local debufferTime = CombatTheme.label("", BoldFont, 20.0)
             debufferTime:setPosition(icon:getPositionX(), icon:getPositionY()-50.0)
             self.debufferNode:addChild(debufferTime)
             self.bufferLabels[i] = debufferTime
@@ -2947,7 +2958,7 @@ function FightScene:injuredEffect(actor, str, color)
         end
 
         -- 飘数字
-        local number = cc.LabelTTF:create(str, BoldFont, 50.0)
+        local number = CombatTheme.label(str, BoldFont, 50.0)
         number:setTag(2)
         number:setColor(color)
         number:setPosition(0.5*actor:getContentSize().width, 0.5*actor:getContentSize().height)
@@ -3012,7 +3023,7 @@ end
 function FightScene:missEffect(actor)
     if actor then
         -- miss
-        local number = cc.LabelTTF:create("miss", BoldFont, 35.0)
+        local number = CombatTheme.label("miss", BoldFont, 35.0)
         number:setPosition(0.5*actor:getContentSize().width, 0.5*actor:getContentSize().height)
         actor:addChild(number)
         local move = cc.MoveBy:create(1.0, cc.p(0.0, 80.0))
@@ -3192,13 +3203,13 @@ function FightRewardScene:init(haveDatas, dropDatas)
     local origin = cc.Director:getInstance():getVisibleOrigin()
 
     -- 添加总背景
-    local mainBg = cc.Sprite:create("Images/Background/MainBackGround.png")
+    local mainBg = CombatTheme.background(visibleSize)
     mainBg:setAnchorPoint(cc.p(0, 0))
     mainBg:setPosition(cc.p(0, 0))
     self:addChild(mainBg)
 
     -- 添加底部背景图
-    local topBg = cc.Sprite:create("Images/UI/TitleBg.png")
+    local topBg = DialogTheme.cardFromLegacy("Images/UI/TitleBg.png", "ink")
     topBg:setPosition(0.5*visibleSize.width, visibleSize.height)
     topBg:setAnchorPoint(0.5, 1.0)
     self:addChild(topBg)
@@ -3215,53 +3226,61 @@ function FightRewardScene:init(haveDatas, dropDatas)
     self:addChild(rightDector)
 
     -- 中间装饰条
-    local midDector = cc.Sprite:create("Images/Fight/shutiao03.png")
+    local midDector = cc.Node:create()
     midDector:setPosition(cc.p(0.5*visibleSize.width, 0.5*visibleSize.height))
     self:addChild(midDector)
 
     -- 添加底部背景图
-    local bottomBg = cc.Sprite:create("Images/UI/BottomBg.png")
+    local bottomBg = DialogTheme.cardFromLegacy("Images/UI/BottomBg.png", "ink")
     bottomBg:setPosition(0.5*visibleSize.width, 0.0)
     bottomBg:setAnchorPoint(0.5, 0.0)
     self:addChild(bottomBg)
 
     -- title
-    local title = cc.Sprite:create("Images/Fight/zhanlip.png")
+    local title = CombatTheme.label("战利品", nil, 36)
     title:setPosition(cc.p(0.5*visibleSize.width, visibleSize.height-33.0))
     self:addChild(title)
 
+    local ledger=DialogTheme.paperSheet(visibleSize.width-24,visibleSize.height-184)
+    ledger:setPosition(cc.p(visibleSize.width*.5,visibleSize.height*.5))
+    self:addChild(ledger)
+
     -- biaoti
 --    local biaoti1 = cc.Sprite:create("Images/UI/BottomBtn1_a.png")
---    biaoti1:setPosition(1/4*visibleSize.width, visibleSize.height-110.0)
+--    biaoti1:setPosition(1/4*visibleSize.width, visibleSize.height-150.0)
 --    self:addChild(biaoti1)
 --    local biaoti2 = cc.Sprite:create("Images/UI/BottomBtn2_a.png")
---    biaoti2:setPosition(3/4*visibleSize.width, visibleSize.height-110.0)
+--    biaoti2:setPosition(3/4*visibleSize.width, visibleSize.height-150.0)
 --    self:addChild(biaoti2)
-    local beibao = cc.LabelTTF:create("货 舱", BoldFont, 35.0)
-    beibao:setColor(BaseColor)
-    beibao:setPosition(1/4*visibleSize.width, visibleSize.height-110.0)
+    local beibao = CombatTheme.label("货 舱", BoldFont, 35.0)
+    beibao:setColor(MasterTheme.colors.ink)
+    beibao:setPosition(1/4*visibleSize.width, visibleSize.height-150.0)
     self:addChild(beibao)
-    local diaoluo = cc.LabelTTF:create("掉 落", BoldFont, 35.0)
-    diaoluo:setColor(BaseColor)
-    diaoluo:setPosition(3/4*visibleSize.width, visibleSize.height-110.0)
+    local diaoluo = CombatTheme.label("掉 落", BoldFont, 35.0)
+    diaoluo:setColor(MasterTheme.colors.ink)
+    diaoluo:setPosition(3/4*visibleSize.width, visibleSize.height-150.0)
     self:addChild(diaoluo)
 
     -- capacity
-    local capacity = cc.LabelTTF:create("("..tostring(self.packageSize).."/"..tostring(self.packageCapicity)..")", BoldFont, 30.0)
+    local capacity = CombatTheme.label("("..tostring(self.packageSize).."/"..tostring(self.packageCapicity)..")", BoldFont, 30.0)
+    capacity:setColor(MasterTheme.colors.ink)
     capacity:setAnchorPoint(cc.p(0.0, 0.5))
-    capacity:setPosition(beibao:getPositionX()+0.5*beibao:getContentSize().width+3.0, visibleSize.height-110.0)
+    capacity:setPosition(beibao:getPositionX()+0.5*beibao:getContentSize().width+3.0, visibleSize.height-150.0)
     self:addChild(capacity)
 
 
     -- tableview1
-    self.tableview1 = cc.TableView:create(cc.size(250.0, visibleSize.height-300.0))
+    self.tableview1 = cc.TableView:create(cc.size(250.0, visibleSize.height-350.0))
     self.tableview1:setDirection(cc.SCROLLVIEW_DIRECTION_VERTICAL)
     self.tableview1:setVerticalFillOrder(cc.TABLEVIEW_FILL_TOPDOWN)
-    self.tableview1:setPosition(50.0, 150.0)
+    self.tableview1:setPosition(50.0, 200.0)
     self.tableview1:setDelegate()
     self.tableview1:registerScriptHandler(function(view, cell)
+        if self.isClosed then return end
         local idx = cell:getTag()
         local item = self.package[idx]
+        if not item or (tonumber(item.num) or 0)<=0 then return end
+        if tostring(item.id)=='1005' then self.foodWasMoved=true end
         local resourceCsv = DataManager:getInstance():getCSVByID(csvOfResourceInfo)
         local data = resourceCsv[tostring(item.id)]
         self.packageSize = self.packageSize-tonumber(data.cubage)
@@ -3285,27 +3304,29 @@ function FightRewardScene:init(haveDatas, dropDatas)
         -- background
         local bg = cc.Scale9Sprite:create("Images/UI/MaskBg_1.png")
         bg:setPreferredSize(cc.size(250, 100.0))
+        DialogTheme.surfaceAfterSizing(bg, "ledger")
         bg:setPosition(125.0, 60.0)
         cell:addChild(bg)
 
         -- icon
-        if data and data.iconName and string.len(data.iconName) > 1 then
-            local icon = cc.Sprite:create("Images/Icon/"..data.iconName)
-            icon:setPosition(50.0, 60.0)
-            cell:addChild(icon)
-        end
+        local icon = ItemIcon.sprite(data and data.iconName)
+        icon:setPosition(50.0, 60.0)
+        cell:addChild(icon)
 
         if data then
             -- labe
-            local label = cc.LabelTTF:create(tostring(data.name), BoldFont, 30.0)
-            label:setColor(BaseColor)
+            local label = CombatTheme.label(tostring(data.name), BoldFont, 30.0)
+            label:setFontName(MasterTheme.headingFont(false))
+            label:setColor(MasterTheme.colors.ink)
             label:setPosition(100.0, 75.0)
             label:setAnchorPoint(cc.p(0.0, 0.5))
             cell:addChild(label)
         end
 
         -- num
-        local num = cc.LabelTTF:create("数量".."  +"..tostring(item.num), BoldFont, 30.0)
+        local num = CombatTheme.label("数量".."  +"..tostring(item.num), BoldFont, 30.0)
+        num:setFontName(MasterTheme.headingFont(false))
+        num:setColor(MasterTheme.colors.muted)
         num:setPosition(100.0, 40.0)
         num:setAnchorPoint(cc.p(0.0, 0.5))
         cell:addChild(num)
@@ -3322,14 +3343,16 @@ function FightRewardScene:init(haveDatas, dropDatas)
     self:addChild(self.tableview1)
 
     -- tableview2
-    self.tableview2 = cc.TableView:create(cc.size(250.0, visibleSize.height-300.0))
+    self.tableview2 = cc.TableView:create(cc.size(250.0, visibleSize.height-350.0))
     self.tableview2:setDirection(cc.SCROLLVIEW_DIRECTION_VERTICAL)
     self.tableview2:setVerticalFillOrder(cc.TABLEVIEW_FILL_TOPDOWN)
-    self.tableview2:setPosition(visibleSize.width-50.0-250.0, 150.0)
+    self.tableview2:setPosition(visibleSize.width-50.0-250.0, 200.0)
     self.tableview2:setDelegate()
     self.tableview2:registerScriptHandler(function(view, cell)
+        if self.isClosed then return end
         local idx = cell:getTag()
         local item = self.rewardItems[idx]
+        if not item or (tonumber(item.num) or 0)<=0 then return end
         local isGold = "1001" == tostring(item.id)
         local resourceCsv = DataManager:getInstance():getCSVByID(csvOfResourceInfo)
         local data = resourceCsv[tostring(item.id)]
@@ -3350,7 +3373,7 @@ function FightRewardScene:init(haveDatas, dropDatas)
             self.tableview1:reloadData()
             self.tableview2:reloadData()
         else
-            ToastUtil:downString("您货舱已满，无法拾取更多物品", true)
+            ToastUtil:downString("空间不足：点左侧物品腾位，再点右侧拾取", true)
         end
 
     end, cc.TABLECELL_TOUCHED)
@@ -3369,27 +3392,29 @@ function FightRewardScene:init(haveDatas, dropDatas)
         -- background
         local bg = cc.Scale9Sprite:create("Images/UI/MaskBg_1.png")
         bg:setPreferredSize(cc.size(250, 100.0))
+        DialogTheme.surfaceAfterSizing(bg, "ledger")
         bg:setPosition(125.0, 60.0)
         cell:addChild(bg)
 
         -- icon
-        if data and data.iconName and string.len(data.iconName) > 1 then
-            local icon = cc.Sprite:create("Images/Icon/"..data.iconName)
-            icon:setPosition(50.0, 60.0)
-            cell:addChild(icon)
-        end
+        local icon = ItemIcon.sprite(data and data.iconName)
+        icon:setPosition(50.0, 60.0)
+        cell:addChild(icon)
 
         -- labe
         if data then
-            local label = cc.LabelTTF:create(tostring(data.name), BoldFont, 30.0)
-            label:setColor(BaseColor)
+            local label = CombatTheme.label(tostring(data.name), BoldFont, 30.0)
+            label:setFontName(MasterTheme.headingFont(false))
+            label:setColor(MasterTheme.colors.ink)
             label:setPosition(100.0, 75.0)
             label:setAnchorPoint(cc.p(0.0, 0.5))
             cell:addChild(label)
         end
 
         -- num
-        local num = cc.LabelTTF:create("数量".."  +"..tostring(item.num), BoldFont, 30.0)
+        local num = CombatTheme.label("数量".."  +"..tostring(item.num), BoldFont, 30.0)
+        num:setFontName(MasterTheme.headingFont(false))
+        num:setColor(MasterTheme.colors.muted)
         num:setPosition(100.0, 40.0)
         num:setAnchorPoint(cc.p(0.0, 0.5))
         cell:addChild(num)
@@ -3407,7 +3432,7 @@ function FightRewardScene:init(haveDatas, dropDatas)
 
 
     -- closeBtn
-    local closeBtn = cc.MenuItemImage:create("Images/btn/ann03_a.png", "Images/btn/ann03_b.png")
+    local closeBtn = DialogTheme.menuItem("Images/btn/ann03_a.png", "Images/btn/ann03_b.png", "secondary")
     closeBtn:registerScriptTapHandler(function()
         if DataManager:getInstance():getSound_off() == 0 then
             AudioEngine.playEffect(EFFECT_Button, false)
@@ -3454,7 +3479,7 @@ function FightRewardScene:init(haveDatas, dropDatas)
     closeBtn:setPosition(1/3*visibleSize.width-40.0, 60.0)
 
     -- shiquBtn
-    local shiquBtn = cc.MenuItemImage:create("Images/btn/ann03_a.png", "Images/btn/ann03_b.png")
+    local shiquBtn = DialogTheme.menuItem("Images/btn/ann03_a.png", "Images/btn/ann03_b.png")
     shiquBtn:registerScriptTapHandler(function()
         if DataManager:getInstance():getSound_off() == 0 then
             AudioEngine.playEffect(EFFECT_Button, false)
@@ -3470,16 +3495,30 @@ function FightRewardScene:init(haveDatas, dropDatas)
     menu2:setPosition(cc.p(0, 0))
     self:addChild(menu2)
 
-    local close = cc.LabelTTF:create("关闭", BoldFont, 30.0)
+    local close = CombatTheme.label("关闭", BoldFont, 30.0)
     close:setPosition(closeBtn:getPosition())
     self:addChild(close)
-    local shiqu = cc.LabelTTF:create("全部拾取", BoldFont, 30.0)
+    local shiqu = CombatTheme.label("全部拾取", BoldFont, 30.0)
     shiqu:setPosition(shiquBtn:getPosition())
     self:addChild(shiqu)
 
+    -- Reserve the bottom 50px of the old list viewport for two readable lines.
+    -- List tops and action hitboxes stay fixed; text clears the ragged paper edge.
+    -- They explain the reversible exchange; no item is moved by this guidance.
+    self.cargoHintWidth=visibleSize.width-32
+    self.cargoHintLines={}
+    for i,y in ipairs({184,156}) do
+        local hint=CombatTheme.label("", nil, 20)
+        hint:setColor(MasterTheme.colors.ink)
+        hint:setPosition(cc.p(visibleSize.width*.5,y))
+        self:addChild(hint)
+        self.cargoHintLines[i]=hint
+    end
     local function update()
         capacity:setString("("..tostring(self.packageSize).."/"..tostring(self.packageCapicity)..")")
+        self:refreshCargoHint()
     end
+    update()
     self:scheduleUpdateWithPriorityLua(update, 0)
 
     return true
@@ -3496,6 +3535,7 @@ function FightRewardScene:initData(haveDatas, dropDatas)
 --    end
 
     self.isClosed = false
+    self.foodWasMoved = false
     self.package = {}
     self.rewardItems = {}
     self.reservedItems = {}
@@ -3577,6 +3617,7 @@ end
 
 -- pickUpAllRewards
 function FightRewardScene:pickUpAllRewards()
+    if self.isClosed then return end
     local resourceCsv = DataManager:getInstance():getCSVByID(csvOfResourceInfo)
     local pick = function()
         -- 有可拾取物品
@@ -3610,9 +3651,11 @@ function FightRewardScene:pickUpAllRewards()
             if 0 >= tonumber(data.cubage) then
                 getNum = num
             else
-                getNum = math.ceil(capLeft/tonumber(data.cubage))
-                if capLeft <= 0 then
-                    ToastUtil:downString("您货舱已满，无法拾取更多物品", true)
+                -- Only complete units fit. Rounding up could overfill a
+                -- nearly full hold with the real 2- or 5-space resources.
+                getNum = math.floor(capLeft/tonumber(data.cubage))
+                if getNum <= 0 then
+                    ToastUtil:downString("空间不足：点左侧物品腾位，再点右侧拾取", true)
                     return false
                 end
             end
@@ -3648,3 +3691,34 @@ end
 
 
 
+
+-- This screen stages left/right transfers; only closing abandons the right side.
+function FightRewardScene:getCargoHint()
+    if #self.rewardItems==0 then return '战利品已收妥','',false end
+    if self.foodWasMoved then
+        local food=0
+        for _,item in ipairs(self.package) do
+            if tostring(item.id)=='1005' then food=food+(tonumber(item.num) or 0) end
+        end
+        return '船上食物剩 '..food..'，请留足返航补给',
+            '点右侧拾取；关闭会丢弃右侧物品',food==0
+    end
+    local first=self.packageSize>=self.packageCapicity and
+        '货舱已满：点左侧腾位，点右侧拾取' or '点左侧移出，点右侧拾取'
+    return first,'关闭后，右侧物品将被丢弃',false
+end
+function FightRewardScene:refreshCargoHint()
+    if not self.cargoHintLines then return end
+    local first,second,noFood=self:getCargoHint()
+    for i,text in ipairs({first,second}) do
+        local label=self.cargoHintLines[i]
+        if label:getString()~=text then
+            label:setString(text)
+            local size=label:getContentSize()
+            -- Natural CJK line metrics can exceed the nominal font size.
+            -- Keep each line within its 26px slot, with unchanged action hitboxes.
+            label:setScale(math.min(1,self.cargoHintWidth/math.max(1,size.width),26/math.max(1,size.height)))
+        end
+        label:setColor(i==1 and noFood and cc.c3b(156,58,43) or MasterTheme.colors.ink)
+    end
+end

@@ -1,0 +1,36 @@
+{
+  "shipDeck": {
+    "prompt": "Use case: style-transfer. Asset type: transparent 2D mobile pirate-game combat foreground deck. Input image 1 is the exact target deck silhouette and perspective to preserve; image 2 is STYLE REFERENCE ONLY. Repaint image 1 as polished hand-painted gouache matching image 2: honey oak, warm golden edges, blue-gray shadows, chunky expressive brushwork, tasteful nautical materials. Preserve image 1 framing, camera, continuous left/right edges, top rail at the same height with transparent sky above, bottom opaque planks, exact rail silhouette and open battle space. Keep sparse small cannonballs and barrels at similar places, make the deck warmer and cleaner. No figures, no UI, no text, no ocean or sky painted into transparent areas. Output the deck only with genuine alpha transparency above the original rail. Original target dimensions 640 by 423; preserve its aspect ratio and composition.",
+    "transparent_background": true,
+    "source_master": "exec-80eae4c0-4d75-4dad-b05e-5d7efc486b70.png",
+    "reference_roles": [
+      "original Images/Fight deck composition",
+      "approved Master/harbor-full.png style"
+    ]
+  },
+  "boardingDeck": {
+    "prompt": "Use case: style-transfer. Asset type: transparent 2D mobile pirate-game boarding-combat foreground deck. Image 1 is exact target deck composition and silhouette; image 2 is STYLE REFERENCE ONLY. Repaint image 1 in bright cohesive hand-painted gouache matching image 2: warm honey oak planks, creamy furled sails, deep teal-blue shadows, lively but restrained brushwork and tangible rope and wood. Preserve the same frontal perspective toward ship bow, center mast and yardarm, rail placement, open broad empty central battle area, bottom and side edges fully covered by deck, transparent cutout outside ship. No people, no character, no UI or lettering, no background sea/sky. Maintain all key framing and footprint. Output one deck asset only with true alpha transparency. Target original aspect 640 wide by 569 high.",
+    "transparent_background": true,
+    "source_master": "exec-2468891d-ac43-4251-bbeb-65854c13e678.png",
+    "reference_roles": [
+      "original Images/Fight deck composition",
+      "approved Master/harbor-full.png style"
+    ]
+  },
+  "resourceSheet": {
+    "prompt": "Use case: stylized-concept. Asset type: production game resource icon sprite sheet, 4 columns by 3 rows on a square transparent canvas, each of 12 cells same size with generous transparent gutters. STYLE REFERENCE image is pirate harbor gouache painting: warm golden highlights, teal blue shadows, readable chunky hand-painted brushwork, polished and consistent. Each icon fully inside its own cell with no overlap or background plate, no cast shadow beyond subject, no numbers, no letters, no border. Exact row-major subjects: row1: golden wheat sheaf tied with twine; round crusty bread loaf and one bread slice as food; rough gray stone pile; bundled cut timber logs. row2: iron ore dark gray rocky chunks with cool metallic veins; natural gold ore rock with visible gold nuggets (not minted coins); two refined steel ingots silver blue; rolled reddish-brown leather hide. row3: folded coarse cream cloth; folded lustrous indigo silk with soft sheen; small stack and loose gold coins; single simple old brass key. One semantically distinct icon per cell. Strong silhouette readable at 55 pixels. Genuine transparent alpha background throughout. Only these 12 icons, precisely arranged 4 columns and 3 rows.",
+    "transparent_background": true,
+    "source_master": "exec-696e4cc7-1971-4558-a0ef-85a912a7837c.png",
+    "reference_roles": [
+      "approved Master/harbor-full.png style"
+    ]
+  },
+  "landmarkSheet": {
+    "prompt": "Use case: stylized-concept. Asset type: isometric mobile pirate exploration map inland-landmark sprite sheet, exactly 3 columns by 2 rows, total landscape 3:2 aspect, six equal square cells on genuine transparent background. Use the reference only for cohesive gouache storybook painting style, warm sunlight, brushwork and color richness. Every cell contains one complete isolated raised inland rock landmark, viewed from same three-quarter slightly top-down angle, base centered at 84 percent of cell height, equal consistent scale, generous empty gutters, no shore or water, no scenery backdrop, no icons or text or grid. Row1 left: ochre sandstone layered crag with a few tropical green shrubs, sandy island theme. Row1 middle: mossy gray stone ridge with a single lush emerald broadleaf tree, forest theme. Row1 right: angular black basalt peak with a few subtle orange hot lava fissures, volcanic theme. Row2 left: crystalline blue glacier peak with white snow on top, ice theme. Row2 middle: purple amethyst rock spires and muted mauve scrub, violet island theme. Row2 right: desaturated blue slate crag with one twisted pale dead tree, ghost island theme. Keep each base a compact clearly defined oval footprint, no wide root tendrils, faint contact shadow contained inside base, no glow haze. Strong raised silhouettes, beautiful low-noise painterly materials that will read at 140 game pixels. True alpha transparency between and around all six sprites.",
+    "transparent_background": true,
+    "source_master": "exec-2afbff8b-3e2d-4c37-be09-4f23b71f6af4.png",
+    "reference_roles": [
+      "approved Master/harbor-full.png style"
+    ]
+  }
+}

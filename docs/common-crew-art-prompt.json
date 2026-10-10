@@ -1,0 +1,11 @@
+{
+  "prompt": "Use case: style-transfer. Production game portrait sprite sheet with TWO equal side-by-side square cells on a 2:1 transparent canvas. First reference is the approved painterly portrait style to match exactly: expressive mature pirate faces, gouache brushwork, warm sunlight, creamy highlights and muted teal shadows, clean strong small-screen silhouettes. Second reference supplies identity cues of the LEFT portrait only: low-rank male pirate crew member, stocky face, scruffy gray beard, worn brown tricorn pirate hat and brown vest/coat, rough-but-approachable veteran. Third reference supplies identity cues of the RIGHT portrait only: muscular adult male sailor, deep brown skin, bald/shaved head, short dark beard, bare shoulders/chest with rough brown leather straps. Reinterpret both old tiny portraits in the approved first image art style without copying its existing three characters. Both should be cropped mid-chest with fully visible head/hat and shoulders, facing slightly inward, hands not shown. Preserve the individual identity silhouette and costume cues from their respective references, no new props or weapons, no eye patch unless reference shows one. Transparent background, no square background tiles or decorative frame, no letters, no UI, no symbols. Two separate full portraits with generous transparent gutter between them and around top/sides, same visual scale. Designed to remain distinct at64 pixels.",
+  "transparent_background": true,
+  "tool": "built-in imagegen",
+  "source_master": "exec-07c44044-1149-4e71-9824-417f76ae6a35.png",
+  "reference_roles": [
+    "Master/crew-trio.png approved style",
+    "Icon/j_1.png original100 cues",
+    "Icon/j_2.png original101 cues"
+  ]
+}

@@ -1,3 +1,4 @@
+require 'LuaClass/DialogTheme'
 require "AudioEngine"
 require "LuaClass/Header"
 
@@ -67,9 +68,11 @@ function WorldMapLayer:init()
     --地图承载点的大小
     local contentSize = cc.size(0,0)
     --设置返回按钮
-    local backBtn = SDButton:create("Images/Map/WorldMap/fanhang_a.png", "Images/Map/WorldMap/fanhang_b.png", function() 
+    local backBtn = DialogTheme.sdButton("Images/Map/WorldMap/fanhang_a.png", "Images/Map/WorldMap/fanhang_b.png", function()
         self:backToCurMap()
     end)
+    local returnText=DialogTheme.label("返回海域",28)
+    returnText:setPosition(cc.p(backBtn:getContentSize().width/2,backBtn:getContentSize().height/2));backBtn:addChild(returnText,2)
     backBtn:setScale(0.8)
     backBtn:setPosition(cc.p(winSize.width / 2 , backBtn:getContentSize().height * backBtn:getScaleY() ))
     self:addChild(backBtn)
@@ -77,7 +80,7 @@ function WorldMapLayer:init()
     -- --按钮文字
     -- local buttonTips = cc.LabelTTF:create("返 航", BoldFont, 30)
     -- buttonTips:setPosition(cc.p(backBtn:getPositionX() ,backBtn:getPositionY()))
-    -- buttonTips:setColor(opColorPrimroseYellow)
+    -- buttonTips:setColor(MasterTheme.colors.paper)
     -- self:addChild(buttonTips, 1000)
 
     --初始化地图
@@ -157,21 +160,21 @@ function WorldMapLayer:init()
         ship:setVisible(false)
 
         --地图名字
-        mapName = cc.LabelTTF:create(names[index],BoldFont,winSize.height * 0.025)
+        mapName = cc.LabelTTF:create(names[index],MasterTheme.headingFont(true),winSize.height * 0.025)
         mapName:setPosition(cc.p(mapButton:getPositionX() ,mapButton:getPositionY() - mapButton:getContentSize().height * mapButton:getScaleY() * 0.7 - mapName:getContentSize().height * mapName:getScaleY() / 2))
-        mapName:setColor(opColorPrimroseYellow)
+        mapName:setColor(MasterTheme.colors.paper)
         containerLayer:addChild(mapName, 1)
 
         --地图名字背景图
-        local chapterBg = cc.Sprite:create("Images/Map/WorldMap/k.png")
+        local chapterBg = DialogTheme.cardFromLegacy("Images/Map/WorldMap/k.png", "ink")
         chapterBg:setPosition(mapName:getPosition())
         containerLayer:addChild(chapterBg)
 
         --章节描述
         chapterString = string.format("第%s章",getChineseCharactersByNum(index)) 
-        local chapter = cc.LabelTTF:create(chapterString,BoldFont,winSize.height * 0.02)
+        local chapter = cc.LabelTTF:create(chapterString,MasterTheme.headingFont(false),winSize.height * 0.02)
         chapter:setPosition(cc.p(mapName:getPositionX(),mapName:getPositionY() - mapName:getContentSize().height * mapName:getScaleY() * 0.7 - chapter:getContentSize().height * chapter:getScaleY() / 2))
-        chapter:setColor(opColorPrimroseYellow)
+        chapter:setColor(MasterTheme.colors.paper)
         chapter:enableStroke(cc.c4b(0, 0, 0, 255), 1)
         containerLayer:addChild(chapter, 1)
         

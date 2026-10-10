@@ -32,6 +32,7 @@ THE SOFTWARE.
 #include "CCIMEDispatcher.h"
 
 #include <unordered_map>
+#include <cmath>
 
 NS_CC_BEGIN
 
@@ -522,10 +523,12 @@ void GLView::setFrameSize(float width, float height)
 
 void GLView::setViewPortInPoints(float x , float y , float w , float h)
 {
-    glViewport((GLint)(x * _scaleX * _retinaFactor * _frameZoomFactor + _viewPortRect.origin.x * _retinaFactor * _frameZoomFactor),
-               (GLint)(y * _scaleY * _retinaFactor  * _frameZoomFactor + _viewPortRect.origin.y * _retinaFactor * _frameZoomFactor),
-               (GLsizei)(w * _scaleX * _retinaFactor * _frameZoomFactor),
-               (GLsizei)(h * _scaleY * _retinaFactor * _frameZoomFactor));
+    // Keep retina/frame zoom in device space, then quantize once. Truncating a
+    // matching-aspect fractional design size can leave a one-pixel clear edge.
+    glViewport((GLint)std::round(x * _scaleX * _retinaFactor * _frameZoomFactor + _viewPortRect.origin.x * _retinaFactor * _frameZoomFactor),
+               (GLint)std::round(y * _scaleY * _retinaFactor * _frameZoomFactor + _viewPortRect.origin.y * _retinaFactor * _frameZoomFactor),
+               (GLsizei)std::round(w * _scaleX * _retinaFactor * _frameZoomFactor),
+               (GLsizei)std::round(h * _scaleY * _retinaFactor * _frameZoomFactor));
 }
 
 void GLView::setScissorInPoints(float x , float y , float w , float h)

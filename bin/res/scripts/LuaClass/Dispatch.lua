@@ -1,5 +1,6 @@
 require "LuaClass/Header"
 require "LuaClass/MainMenu"
+require "LuaClass/Home"
 require "LuaClass/Talent"
 require "LuaClass/Expedition"
 require "LuaClass/Repository"
@@ -179,7 +180,7 @@ function Dispatch:init(bIsDead)
     -- 设置仓库为接受信息的主界面
     -- self:setUpdateSystemInfoLayer(self.repository)
 
-    self:moveToRepository()
+    self:moveToHome()
 
     -- 设置点点选中仓库
     -- self.mainMenu:setPointWithIndex(3, 4)
@@ -195,6 +196,17 @@ function Dispatch:init(bIsDead)
     end)
 
     return true
+end
+
+-- Read-only harbor dashboard: no ExpeditionLayer construction on entry.
+function Dispatch:moveToHome()
+    if self.rightNode and self.rightNode.isAdventureHome then
+        self.rightNode:refreshSummary()
+        self.mainMenu:activeButtonWithIndex(0)
+        return
+    end
+    self:setViewWithDirection(HomeLayer:create(), true, 1)
+    self.mainMenu:activeButtonWithIndex(0)
 end
 
 -- 移动到天赋界面
@@ -462,7 +474,9 @@ function Dispatch:backToLastView()
         return
     end
     local index = self.mainMenu:getSelectedIndex()
-    if index == 1 then
+    if index == 0 then
+        self:moveToHome()
+    elseif index == 1 then
         self:moveToExpedition()
     elseif index == 2 then
         self:gotoTrain()
@@ -496,6 +510,8 @@ function Dispatch:setViewWithDirection(view, bIsMove, direction)
     self.rightNode:setPosition(cc.p(0, 0))
     self.BaseNode:addChild(self.rightNode)
     self:setUpdateSystemInfoLayer(self.rightNode)
+    self.mainMenu:setHomePresentation(self.rightNode.isAdventureHome == true)
+    self.mainMenu:setApprovedPagePresentation(self.rightNode.approvedPage == true, self.rightNode.keepNavigation ~= false)
 
     -- -- 如果正在移动中，那么禁止移动
     -- if self.bIsMoving then
@@ -680,30 +696,33 @@ end
 ]]
 
 -- 跳转到建造模块
-function Dispatch:gotoBuild()
+function Dispatch:gotoBuild(focusBuildId)
     require "LuaClass/BuildMode"
-    self:setViewWithDirection(BuildLayer:create(), true, 1)
+    self:setViewWithDirection(BuildLayer:create(focusBuildId), true, 1)
+    self.mainMenu:activeButtonWithIndex(3)
 end
 
 -- 跳转到建造模块
-function Dispatch:gotoMake()
+function Dispatch:gotoMake(focusResourceId)
     require "LuaClass/MakeMode"
-    self:setViewWithDirection(MakeLayer:create(), true, 1)
+    self:setViewWithDirection(MakeLayer:create(focusResourceId), true, 1)
+    self.mainMenu:activeButtonWithIndex(5)
 end
 
 -- 跳转到建造模块
 function Dispatch:gotoTrain()
     require "LuaClass/TrainMode"
     self:setViewWithDirection(TrainLayer:create(), true, 1)
+    self.mainMenu:activeButtonWithIndex(2)
 end
 
 -- 跳转到建造模块
-function Dispatch:gotoStore(bIsMoveToBottom)
+function Dispatch:gotoStore(bIsMoveToBottom, focusResourceId)
     if bIsMoveToBottom == nil then
         bIsMoveToBottom = false
     end
     require "LuaClass/StoreMode"
-    self:setViewWithDirection(StoreLayer:create(bIsMoveToBottom), true, 1)
+    self:setViewWithDirection(StoreLayer:create(bIsMoveToBottom, focusResourceId), true, 1)
     self.mainMenu:activeButtonWithIndex(7)
 end
 

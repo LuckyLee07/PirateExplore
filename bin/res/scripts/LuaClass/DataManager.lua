@@ -2229,8 +2229,12 @@ function DataManager:createSuccessCheck(unitType, id)
         if data ~= nil then
     		-- 如果是建筑成功的话才发送系统消息
     		if bIsNewBuild then
-    			-- 发送成功建造的信息
-    			self:sendSystemInfo(data["successDesc"])
+                -- B 导航将采集收在港务内，仓库建成后明确下一步的入口。
+                local successDesc = data["successDesc"]
+                if id == "1" then
+                    successDesc = (successDesc or "") .. "\n点击底部“港务”，再选择“采集”。"
+                end
+                self:sendSystemInfo(successDesc)
     		end
     		-- 如果新手引导没走到第三步，那么直接return
     		if not GuideController:getInstance():getIsHaveStep(3) then
@@ -2605,7 +2609,7 @@ function DataManager:AlchemyButtonDidClick()
     local _addcoin = DataManager:getInstance():getRoleData(roleAlchemyUnit)
     local _result =  DataManager:getInstance():addCoin(_addcoin)
     if _result == 1 then
-        ToastUtil:downString("金币+".._addcoin.." 总共:"..DataManager:getInstance():getRoleData(roleMoney), true)
+        ToastUtil:alchemyCoins(_addcoin)
     end
 
     local achievementValue = DataManager:getInstance():getAchievementInfo(achievement_Alchemy)
@@ -2636,39 +2640,8 @@ function DataManager:AlchemyButtonDidClick()
             showCount = 1
         end
         if AlchemyBtnClickCount >= (showCount < 4 and 100 or 300) then
-            -- 触发弹出逻辑
-            if showCount < 3 then
-                -- 弹框提示钻石购买金币
-                local _newalert = AlertView:create(2, 0, "购买金币", function()
-                    if self:addDiamond(-40) == 1 then
-                        self:addCoin(5000, false, true)
-                    end
-                end, nil)
-                _newalert:setOkRemove(false)
-
-                local showLabel1 = cc.LabelTTF:create("您是否花费40钻石\n购买5000金币？", BoldFont, 36.0)
-                showLabel1:setColor(WriteColor)
-                showLabel1:setPosition(cc.p(_newalert.s_position.x, _newalert.s_position.y))
-                _newalert:addChild(showLabel1)
-            else
-                -- 弹框提示购买长按炼金
-                local _newalert = nil
-                _newalert = AlertView:create(2, 0, "购买长按炼金", function()
-                    if self:addDiamond(-398) == 1 then
-                        self:setRoleData(roleAlchemyCanLongPress, 1)
-                        -- 这里必须刷新之前的界面，否则多次炼金不生效
-                        zqDispatch:backToLastView()
-                        _newalert:removeFromParent()
-                    end
-                end, nil)
-                _newalert:setOkRemove(false)
-
-                local showLabel1 = cc.LabelTTF:create("长按炼金按钮，可持续获得金币，\n您是否花费398钻石获得此功能？", BoldFont, 36.0)
-                showLabel1:setColor(WriteColor)
-                -- showLabel1:enableStroke(cc.c4b(16, 16, 16, 255), 2)
-                showLabel1:setPosition(cc.p(_newalert.s_position.x, _newalert.s_position.y))
-                _newalert:addChild(showLabel1)
-            end
+            -- Keep the legacy counter rollover, but paid offers are voluntary.
+            -- The gold + dialog retains the original exchanges and hold upgrade.
             -- 将次数置为0
             AlchemyBtnClickCount = 0
             -- 写入显示次数
@@ -2698,35 +2671,150 @@ function DataManager:splitValueToArrayBySeparators(tableData, key, separator)
 	end
 end
 
+-- Only these voluntary alchemy dialogs opt into narrow-screen fitting. The
+-- full-screen modal shade/listener stay unscaled; all panel content moves as one.
+local function alchemyDialogBody(alert)
+    local body = cc.Node:create()
+    alert:addChild(body)
+    if alert.s_bg then
+        alert.s_bg:retain()
+        alert.s_bg:removeFromParent(false)
+        body:addChild(alert.s_bg)
+        alert.s_bg:release()
+    end
+    local win = cc.Director:getInstance():getWinSize()
+    local size = alert.s_size or cc.size(572, 437)
+    local scale = math.min(1, (win.width - 24) / size.width, (win.height - 24) / size.height)
+    body:setScale(scale)
+    body:setPosition(cc.p(alert.s_position.x * (1 - scale), alert.s_position.y * (1 - scale)))
+    alert.alchemyBody = body
+    return body
+end
+
+local function alchemyGuideReady(manager)
+    local guide = manager:getRoleData(roleGuideStep)
+    return type(guide) == "string" and ("_" .. guide .. "_"):find("_s001_", 1, true) ~= nil
+        and GuideController:getInstance():getIsHaveStep(1)
+end
+
+function DataManager:showBuyAlchemyLongPressBox()
+    if self:getRoleData(roleAlchemyCanLongPress) == 1 then
+        ToastUtil:downString("已解锁长按炼金，按住炼金按钮即可使用")
+        return
+    end
+    if not alchemyGuideReady(self) then
+        ToastUtil:downString("请先完成10次炼金，再选择长按炼金")
+        return
+    end
+    if self.alchemyUnlockDialog then return end
+    local DialogTheme = require "LuaClass/DialogTheme"
+    local alert, finished
+    local function cancel() finished = true end
+    alert = AlertView:create(2, 0, "长按炼金", function()
+        if finished then return end
+        if not alchemyGuideReady(self) then
+            ToastUtil:downString("请先完成10次炼金，再选择长按炼金")
+            return
+        end
+        local status = self.__roleData:commitAlchemyUnlock()
+        if status ~= "success" then
+            if status == "already_owned" then
+                finished = true
+                alert:removeFromParent()
+            else
+                local messages = {
+                    guide_locked = "请先完成10次炼金，再选择长按炼金",
+                    insufficient = "钻石不足，需要398钻石",
+                    save_failed = "保存失败，未扣除钻石，请重试",
+                    invalid = "数据异常，未扣除钻石"
+                }
+                ToastUtil:downString(messages[status] or messages.invalid)
+            end
+            return
+        end
+        -- Durable ownership is final before observers/navigation run. An error
+        -- in presentation must never retry or roll back this completed purchase.
+        finished = true
+        alert:removeFromParent()
+        local function notify(callback)
+            local ok, err = pcall(callback)
+            if not ok then cclog("%s", "Alchemy unlock presentation failed: " .. tostring(err)) end
+        end
+        notify(function() self:postEvent(roleDiamond, nil) end)
+        notify(function() self:postEvent(roleAlchemyCanLongPress, nil) end)
+        notify(function()
+            local learned = self:checkAutoLearnedTallent()
+            for key, value in pairs(learned or {}) do
+                if value ~= nil then self:unlockTallentByKey(key) end
+            end
+        end)
+        notify(function()
+            if zqDispatch and zqDispatch.backToLastView then zqDispatch:backToLastView() end
+        end)
+    end, cancel, "取 消", "398钻石解锁")
+    self.alchemyUnlockDialog = alert
+    alert:setOkRemove(false)
+    local owner = cc.Node:create()
+    owner:registerScriptHandler(function(event)
+        if event == "exit" or event == "cleanup" then
+            finished = true
+            if self.alchemyUnlockDialog == alert then self.alchemyUnlockDialog = nil end
+        end
+    end)
+    alert:addChild(owner)
+    alert:usePaperBody()
+    -- usePaperBody appends an opaque sheet after AlertView's existing menus.
+    -- Keep that sheet above the panel paint, but lift only this offer's controls
+    -- above it; putting the sheet at negative z would hide it under panel paint.
+    for _, child in ipairs(alert.s_bg:getChildren()) do
+        if tolua.type(child) == "cc.Menu" or child == alert.closeBtn then
+            child:setLocalZOrder(2)
+        end
+    end
+    local body = alchemyDialogBody(alert)
+    local caption = cc.LabelTTF:create("长按炼金按钮，可持续获得金币。\n\n花费398钻石解锁此功能？", MasterTheme.headingFont(false), 28)
+    caption:setColor(MasterTheme.colors.ink)
+    caption:setDimensions(cc.size(476, 156))
+    caption:setHorizontalAlignment(cc.TEXT_ALIGNMENT_CENTER)
+    caption:setPosition(cc.p(alert.s_position.x, alert.s_position.y + 10))
+    body:addChild(caption)
+end
+
 -- 显示购买金币的框
 function DataManager:showBuyGoldBox()
+    local DialogTheme = require "LuaClass/DialogTheme"
+    local ItemIcon = require "LuaClass/ItemIcon"
+    local resourceInfo = self:getCSVByID(csvOfResourceInfo)
+    local coinInfo = resourceInfo and resourceInfo["1001"]
     local _alert = AlertView:create(0, 0, "购买金币","",nil)
+    _alert:usePaperBody()
+    local body = alchemyDialogBody(_alert)
     
-    local showLabel1 = cc.LabelTTF:create("消耗钻石购买获得更多金币", BoldFont, 33.0)
-    showLabel1:setColor(cc.c3b(255, 255, 255))
+    local showLabel1 = cc.LabelTTF:create("消耗钻石购买获得更多金币", MasterTheme.headingFont(false), 28.0)
+    showLabel1:setColor(MasterTheme.colors.ink)
     -- showLabel1:enableStroke(cc.c4b(16, 16, 16, 255), 2)
-    showLabel1:setPosition(cc.p(_alert.s_position.x, _alert.s_position.y + showLabel1:getContentSize().height * 1.8))
-    _alert:addChild(showLabel1)
+    showLabel1:setPosition(cc.p(_alert.s_position.x, _alert.s_position.y + 114))
+    body:addChild(showLabel1)
     
     for i = 1,2 do
-        local _backGround = cc.Sprite:create("Images/UI/dibantiao_03.png")
-        _backGround:setPosition(cc.p(_alert.s_position.x, _alert.s_position.y - 10 - _backGround:getContentSize().height *1.2 * (i - 1)))
-        _alert:addChild(_backGround)
+        local rowSize=DialogTheme.legacySize("Images/UI/dibantiao_03.png")
+        local _backGround = DialogTheme.ledgerRow(rowSize.width,rowSize.height)
+        _backGround:setPosition(cc.p(_alert.s_position.x, _alert.s_position.y + 35 - _backGround:getContentSize().height *1.2 * (i - 1)))
+        body:addChild(_backGround)
         
         local _fontSize = 26
-        local _HeadSprite= nil--cc.Sprite:create("Images/Icon/".._soilder["icon"])
-        if _HeadSprite == nil then _HeadSprite= cc.Sprite:create("Images/Icon/r_9.png")  end
+        local _HeadSprite = ItemIcon.sprite(coinInfo and coinInfo.iconName)
         _HeadSprite:setPosition(cc.p(_backGround:getPositionX()-_backGround:getContentSize().width/2+_HeadSprite:getContentSize().width-5,_backGround:getPositionY()))
-        _alert:addChild(_HeadSprite)
+        body:addChild(_HeadSprite)
         --name
         local _xLeft = _HeadSprite:getPositionX() + _HeadSprite:getContentSize().width/2 + 10
         local _centerY = _HeadSprite:getPositionY() -5
-        local _name = cc.LabelTTF:create("金 币",BoldFont,_fontSize+4);
+        local _name = cc.LabelTTF:create("金 币",MasterTheme.headingFont(false),_fontSize+4);
         _name:setPosition(cc.p(_xLeft,_centerY+_fontSize+2))
-        _name:setColor(BaseColor)
+        _name:setColor(MasterTheme.colors.ink)
         -- _name:enableStroke(cc.c4b(255, 255, 255, 255), 1)
         _name:setAnchorPoint(cc.p(0,0.5))
-        _alert:addChild(_name)
+        body:addChild(_name)
         
         
         local coinnum = 5000
@@ -2739,14 +2827,14 @@ function DataManager:showBuyGoldBox()
             need_diamond = 500
         end
 
-        local _price = cc.LabelTTF:create("x"..coinnum,BoldFont,_fontSize+4);
+        local _price = cc.LabelTTF:create("x"..coinnum,MasterTheme.headingFont(false),_fontSize+4);
         _price:setPosition(cc.p(_xLeft,_centerY-_fontSize+7))
-        _price:setColor(WriteColor)
+        _price:setColor(MasterTheme.colors.muted)
         -- _price:enableStroke(cc.c4b(255, 255, 255, 255), 1)
         _price:setAnchorPoint(cc.p(0,0.5))
-        _alert:addChild(_price)
+        body:addChild(_price)
         
-        local _menuButton = cc.MenuItemImage:create("Images/btn/ann10_a.png", "Images/btn/ann10_b.png")
+        local _menuButton = DialogTheme.menuItem("Images/btn/ann10_a.png", "Images/btn/ann10_b.png")
         
         _menuButton:registerScriptTapHandler(function()
             print("点击购买")
@@ -2781,19 +2869,36 @@ function DataManager:showBuyGoldBox()
         _menuButton:addChild(_diaIcon)
         
         
-        local _diaLable = cc.LabelTTF:create("x"..need_diamond, BoldFont, 25.0)
+        local _diaLable = cc.LabelTTF:create("x"..need_diamond, MasterTheme.headingFont(false), 25.0)
         _diaLable:setAnchorPoint(cc.p(0,0))
         _diaLable:setPosition(cc.p(_menuButton:getContentSize().width * 0.5,_menuButton:getContentSize().height * 0.5))
         -- _diaLable:enableStroke(cc.c4b(255, 255, 255, 255), 2)
         _menuButton:addChild(_diaLable)
         
         
-        local _zz = cc.LabelTTF:create("购 买", BoldFont, 25.0)
+        local _zz = cc.LabelTTF:create("购 买", MasterTheme.headingFont(false), 25.0)
         _zz:setAnchorPoint(cc.p(0.5,0))
         _zz:setPosition(cc.p(_menuButton:getContentSize().width * 0.5,0))
         -- _zz:enableStroke(cc.c4b(255, 255, 255, 255), 2)
         _menuButton:addChild(_zz)
     end
+    -- Stable player-invoked access, below the two unchanged gold exchanges.
+    local owned = self:getRoleData(roleAlchemyCanLongPress) == 1
+    local ready = alchemyGuideReady(self)
+    local text = owned and "长按炼金 · 已解锁" or
+        (ready and "长按炼金 · 398钻石" or "长按炼金 · 先完成10次炼金")
+    local entry = cc.MenuItemSprite:create(DialogTheme.card(530, 44, 'paper'),
+        DialogTheme.card(530, 44, 'paper', true))
+    local label = DialogTheme.label(text, 24, MasterTheme.colors.ink)
+    DialogTheme.fit(label, 502)
+    label:setPosition(cc.p(265, 22)); entry:addChild(label)
+    entry:setPosition(cc.p(_alert.s_position.x, _alert.s_position.y - 180))
+    entry:registerScriptTapHandler(function()
+        _alert:removeFromParent()
+        self:showBuyAlchemyLongPressBox()
+    end)
+    local menu = cc.Menu:create(entry); menu:setPosition(cc.p(0, 0)); body:addChild(menu)
+    _alert.alchemyUnlockEntry = entry
 end
 
 function test1(event)

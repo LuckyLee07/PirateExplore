@@ -89,7 +89,7 @@ bool AppDelegate::applicationDidFinishLaunching() {
     searchPaths.insert(searchPaths.begin(), "scripts");
     fileUtils->setSearchPaths(searchPaths);
     
-#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32 || CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID ||CC_TARGET_PLATFORM == CC_PLATFORM_IOS || CC_TARGET_PLATFORM == CC_PLATFORM_MAC)
+#if (CC_TARGET_PLATFORM == CC_PLATFORM_WIN32 || CC_TARGET_PLATFORM == CC_PLATFORM_ANDROID ||CC_TARGET_PLATFORM == CC_PLATFORM_IOS || CC_TARGET_PLATFORM == CC_PLATFORM_MAC || CC_TARGET_PLATFORM == CC_PLATFORM_LINUX)
     LuaStack* stack = pEngine->getLuaStack();
     tolua_TOLUA_LuaRecord_open(stack->getLuaState());
     tolua_TOLUA_MD5_open(stack->getLuaState());

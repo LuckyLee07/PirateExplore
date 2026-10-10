@@ -1,6 +1,10 @@
 require "LuaClass/Header"
+local CrewSkillDetails = require "LuaClass/CrewSkillDetails"
 require "LuaClass/BaseView"
 require "LuaClass/UIKit"
+local BTheme = require "LuaClass/BTheme"
+local MasterTheme = require "LuaClass/MasterTheme"
+local DepartureTheme = require "LuaClass/DepartureTheme"
 
 
 ExpeditionLayer = class("ExpeditionLayer", function ()
@@ -30,8 +34,15 @@ function ExpeditionLayer:create()
 end
 
 function ExpeditionLayer:destory()
-    -- body
+    self.departureInProgress = true
+    self.departureAction = nil
+    self.foodStockUpdater = nil
+    if self.adventureRoot then
+        self.adventureRoot:stopAllActions()
+    end
     DataManager:getInstance():unregisterEvent("breadBirth", "expedition")
+    DataManager:getInstance():unregisterEvent(roleMoney, "approvedDeparture")
+    DataManager:getInstance():unregisterEvent(roleDiamond, "approvedDeparture")
     DataManager:getInstance():unregisterEvent(roleGuideStep, "expedition")
     -- 调用父类的析构
     self:superDestory()
@@ -42,6 +53,10 @@ function ExpeditionLayer:init()
     local visibleSize = cc.Director:getInstance():getVisibleSize()
     local origin = cc.Director:getInstance():getVisibleOrigin()
 
+    self.departureInProgress = false
+    self.isApprovedDeparture = true
+    self.approvedPage = true
+    self.keepNavigation = true
     self.boatNum = DataManager:getInstance():getRoleData(rolePackSize)
     self.soldierNum = DataManager:getInstance():getRoleData(roleCabinSize)
     self.produceCsv = DataManager:getInstance():getCSVByID(csvOfResourceInfo)
@@ -58,12 +73,11 @@ function ExpeditionLayer:init()
     -- 修改顶部右侧按钮为排行榜
     self:resetTopRightButtonToRank()
 
-    -- 设置下方信息界面
-    self:addInfoNode("天 赋", function()
-        zqDispatch:gotoTalent()
-    end, "仓 库", function()
-        zqDispatch:moveToRepository()
-    end, "Images/MainMenu/an_yuanz_a.png", "Images/MainMenu/an_yuanz_b.png", function()
+    -- Keep the original departure checks and inventory transaction together.
+    self.departureAction = function()
+        if self.departureInProgress then
+            return
+        end
         cclog("点击了出征按钮")
         -- 先保存临时背包以及战斗单位数据
         local packData = {}
@@ -109,6 +123,8 @@ function ExpeditionLayer:init()
             ToastUtil:downString(soildierInfoString, true)
             return
         end
+        -- Lock only after both checks pass; repeated taps must not debit twice.
+        self.departureInProgress = true
         -- 都满足才能扣除
         for k, v in pairs(self.selectedData) do
             print("正在处理的数据", k, v)
@@ -141,52 +157,19 @@ function ExpeditionLayer:init()
         DataManager:getInstance():setRoleData(roleSelectUnit, self.selectedData, nil)
         -- 最后切换到地图界面
         zqDispatch:moveToFightLayer()
-    end, "Images/MainMenu/w_qih.png")
+    end
+    -- BaseView still owns the existing details popup and its lifecycle.
+    self:addInfoNode("天 赋", function()
+        zqDispatch:gotoTalent()
+    end, "仓 库", function()
+        zqDispatch:moveToRepository()
+    end, "Images/MainMenu/an_yuanz_a.png", "Images/MainMenu/an_yuanz_b.png",
+        self.departureAction, "Images/MainMenu/w_qih.png")
 
-    self.setBtnLight:setVisible(true)
-
-    -- 添加工匠配置底框
-    -- local tempSpr = cc.Sprite:create("Images/UI/MaskBg.png")
-    maskSize = cc.size(self.areaWidth, self.areaHeight)
-    -- local topMask = cc.Scale9Sprite:create("Images/UI/MaskBg.png", cc.rect(0, 0, tempSpr:getContentSize().width, tempSpr:getContentSize().height), cc.rect(12, 12, tempSpr:getContentSize().width - 24, tempSpr:getContentSize().height - 24))
-    -- topMask:setContentSize(maskSize)
-    -- topMask:setPosition(self.centerPos)
-    -- self:addChild(topMask)
-
-    -- 添加底部资源框的标题
-    local topMaskTitleBg = cc.Sprite:create("Images/UI/biaoti_long.png")
-    topMaskTitleBg:setPosition(cc.p(self.centerPos.x, self.originPos.y + maskSize.height - topMaskTitleBg:getContentSize().height * 0.5))
-    self:addChild(topMaskTitleBg)
-
-    -- 添加底部资源框的title
-    self.topMaskLabel = cc.LabelTTF:create("货舱:(15/45) 成员:(15/45)", BoldFont, 28.0)
-    self.topMaskLabel:setPosition(topMaskTitleBg:getPosition())
-    self.topMaskLabel:setColor(cc.c3b(255, 255, 255))
-    -- self.topMaskLabel:enableStroke(cc.c4b(16, 16, 16, 255), 1)
-    self:addChild(self.topMaskLabel)
-
-    -- 添加资源获取界面的scrollView
-    self.scrollViewContainer = cc.Layer:create()
-    scrollViewSize = cc.size(maskSize.width, maskSize.height - topMaskTitleBg:getContentSize().height)
-    self.scrollViewContainer:setContentSize(scrollViewSize)
-    self.scrollView = cc.ScrollView:create(scrollViewSize)
-    self.scrollView:setPosition(self.originPos)
-    self.scrollView:setContainer(self.scrollViewContainer) -- 設置容器
-    self.scrollView:setViewSize(scrollViewSize)
-    self.scrollView.bIsScrollView = true
-    self.scrollView:setClippingToBounds(true) -- 設置剪切
-    self.scrollView:setBounceable(true)  -- 設置彈性效果
-    self.scrollView:setDirection(cc.SCROLLVIEW_DIRECTION_VERTICAL) -- 設置滾動方向
-    self.scrollView:setDelegate()
-    self.scrollView:registerScriptHandler(function()
-
-    end, cc.SCROLLVIEW_SCRIPT_SCROLL)
-    self:addChild(self.scrollView)
+    self:createAdventureUI()
 
     DataManager:getInstance():registerEvent("breadBirth", "expedition", function()
-        -- cclog("由于产生了面包，所以刷新出征界面面包数据")
-        -- 必须重新刷新数据，要不然不会增加
-        self:setResourceUIWithData()
+        self:refreshProducedFood()
     end)
 
     DataManager:getInstance():registerEvent(roleGuideStep, "expedition", function()
@@ -229,6 +212,140 @@ function ExpeditionLayer:init()
     return true
 end
 
+-- Project the approved sheet into screen coordinates. The root stays unscaled
+-- so SDButton and ScrollView keep their original screen-space hit testing.
+function ExpeditionLayer:createAdventureUI()
+    local size=cc.Director:getInstance():getVisibleSize()
+    local origin=cc.Director:getInstance():getVisibleOrigin()
+    local M,D=MasterTheme,DepartureTheme
+    local C=M.colors
+    local navigationHeight=(zqDispatch.mainMenu and zqDispatch.mainMenu.navigationHeight) or 118
+    local ux=size.width/941
+    local uy=math.min(size.height/1672,(size.height-navigationHeight)/1518)
+    self.adventureScaleX=ux;self.adventureScaleY=uy
+    self.adventureWidth=833*ux;self.adventureRowHeight=126*uy
+    local function x(v)return origin.x+v*ux end
+    local function y(v)return origin.y+size.height-v*uy end
+    self.mainBg:setVisible(false);self.titleBg:setVisible(false);self.storeMenu:setVisible(false)
+    for _,child in ipairs(self.infoNode:getChildren()) do
+        if child~=self.bottomInfoBox then child:setVisible(false);child:stopAllActions() end
+    end
+    self.setBtn:stopAllActions();self.setBtnLight:stopAllActions()
+    self.infoNode:setPosition(cc.p(0,0));self.infoNode:setLocalZOrder(30)
+    self.bottomInfoBox:setPosition(cc.p(x(470.5),y(1160)))
+    -- BaseView retains its dark MaskBg_1 tooltip; use light text on that surface.
+    self.infoBoxLabel:setColor(C.white)
+    local root=cc.Node:create();self.adventureRoot=root;self:addChild(root,2)
+    local bg=M.cover(D.path..'backdrop.png',size.width,size.height)
+        or M.cover(M.path..'harbor-full.png',size.width,size.height)
+    if bg then bg:setPosition(origin);root:addChild(bg)
+    else root:addChild(BTheme.panel(size.width,size.height,cc.c3b(83,163,185),origin.x,origin.y)) end
+    local function material(name,left,top,w,h)
+        local n=D.material(name,w*ux,h*uy);n:setPosition(cc.p(x(left),y(top+h)));root:addChild(n);return n
+    end
+    local function label(text,font,color,left,top,anchor)
+        local n=D.label(text,font*ux,color,x(left),y(top),anchor);root:addChild(n);return n
+    end
+    local function icon(kind,left,top,w)
+        local n=M.icon(kind,w*ux,C.paper);n:setPosition(cc.p(x(left),y(top)-w*ux));root:addChild(n);return n
+    end
+    local function button(text,left,top,w,h,callback,opts)
+        opts=opts or {};opts.fontSize=(opts.fontSize or 32)*ux;opts.bold=true
+        local n=M.button(text,w*ux,h*uy,callback,opts)
+        n:setPosition(cc.p(x(left+w/2),y(top+h/2)));root:addChild(n);return n
+    end
+    local back=D.menuItem('‹',65*ux,88*uy,function() zqDispatch:moveToHome() end,
+        {clear=true,fontSize=98*ux,textColor=C.ink})
+    back:setPosition(cc.p(x(75),y(73)))
+    local backMenu=cc.Menu:create(back);backMenu:setPosition(cc.p(0,0));root:addChild(backMenu)
+    self.departureBackButton=back
+    local heading=label('出航整备',65,C.ink,126,72)
+    M.fit(heading,253*ux)
+    local compass=D.compass(76*ux);compass:setPosition(cc.p(x(419),y(76)));root:addChild(compass)
+    local function currency(kind,key,left,width)
+        material('currency-paper.png',left,128,width,62)
+        local art=D.currencyIcon(kind,49*ux);art:setPosition(cc.p(x(left+13),y(158)-24.5*ux));root:addChild(art)
+        local value=label('',35,C.ink,left+80,159)
+        local add=D.menuItem('+',58*ux,62*uy,function()
+            if kind=='coin' then DataManager:getInstance():showBuyGoldBox() else ChargeLayer:create() end
+        end,{clear=true,fontSize=48*ux,textColor=C.ink})
+        add:setPosition(cc.p(x(left+width-32),y(159)))
+        local chip=M.material('currency-paper.png',42*ux,46*uy,cc.c3b(219,222,201))
+        chip:setPosition(cc.p(8*ux,8*uy));add:addChild(chip,1)
+        local menu=cc.Menu:create(add);menu:setPosition(cc.p(0,0));root:addChild(menu)
+        local function refresh()
+            local amount=tonumber(DataManager:getInstance():getRoleData(key)) or 0
+            value:setString(amount>1000000 and math.floor(amount/10000)..'万' or tostring(amount))
+            M.fit(value,(width-134)*ux)
+        end
+        refresh();DataManager:getInstance():registerEvent(key,'approvedDeparture',refresh)
+        return value,add
+    end
+    self.departureCoinLabel,self.departureCoinAdd=currency('coin',roleMoney,47,246)
+    self.departureDiamondLabel,self.departureDiamondAdd=currency('diamond',roleDiamond,309,225)
+    material('ink-brush.png',42,368,312,86)
+    icon('sail',69,380,58)
+    self.shipNameLabel=label('',41,C.paper,141,411)
+    material('ink-brush.png',30,454,882,150)
+    icon('crew',81,479,72);icon('food',504,488,58)
+    self.crewLabel=label('',35,C.paper,174,505)
+    self.cargoLabel=label('',35,C.paper,579,505)
+    local divider=cc.DrawNode:create();divider:drawSegment(cc.p(x(472),y(490)),cc.p(x(472),y(557)),.7,HomeTheme.rgba(C.paper,.6));root:addChild(divider)
+    local function capacity(left,width)
+        local w,h=width*ux,20*uy
+        local frame=HomeTheme.rounded(w,h,C.sea,10*uy);frame:setPosition(cc.p(x(left),y(551)));root:addChild(frame)
+        local track=HomeTheme.rounded(w-2,h-2,C.ink,9*uy);track:setPosition(cc.p(x(left)+1,y(551)+1));root:addChild(track)
+        local bar=HomeTheme.rounded(w-2,h-2,cc.c3b(66,220,228),9*uy);bar:setPosition(cc.p(x(left)+1,y(551)+1));root:addChild(bar)
+        return bar
+    end
+    self.crewCapacityBar=capacity(76,360);self.cargoCapacityBar=capacity(578,287)
+    icon('food',690,562,30)
+    self.foodLabel=label('',26,C.paper,735,578)
+    material('manifest-paper.png',18,594,904,676)
+    label('装载清单',47,C.ink,65,648)
+    label('点击名称查看详情',24,C.muted,884,657,1)
+    local rule=cc.DrawNode:create();rule:drawSegment(cc.p(x(65),y(678)),cc.p(x(355),y(678)),1.2,HomeTheme.rgba(C.ink));root:addChild(rule)
+    label('长按 + / − 连续调整',24,C.muted,470.5,1200,.5)
+    material('currency-paper.png',184,1242,574,94)
+    self.readinessIcon=D.readinessIcon(46*ux);self.readinessIcon:setPosition(cc.p(x(216),y(1293)));root:addChild(self.readinessIcon)
+    self.readyLabel=label('',32,C.ink,280,1274)
+    self.readinessRequirement=label('出航需至少 1 名船员与食物',25,C.muted,473,1309,.5)
+    self.departureButton=button('出  航  ›',164,1334,613,108,self.departureAction,
+        {material='coral-brush.png',fontSize=58})
+    self.departureButton.label:setPositionX(374*ux)
+    local sail=M.icon('sail',78*ux,C.paper);sail:setPosition(cc.p(164*ux,15*uy));self.departureButton.item:addChild(sail,4)
+    self.talentShortcut=button('查看天赋  ›',177,1450,288,63,function() zqDispatch:moveToTalent() end,{fontSize=32})
+    self.warehouseShortcut=button('整理仓库  ›',482,1450,285,63,function() zqDispatch:moveToRepository() end,{fontSize=32})
+    self.topMaskLabel=D.label('',20,C.ink,0,0);self.topMaskLabel:setVisible(false);root:addChild(self.topMaskLabel)
+    local viewSize=cc.size(self.adventureWidth,506*uy)
+    self.scrollViewContainer=cc.Layer:create();self.scrollViewContainer:setContentSize(viewSize)
+    self.scrollView=cc.ScrollView:create(viewSize)
+    self.scrollView:setPosition(cc.p(x(55),y(1192)))
+    self.scrollView:setContainer(self.scrollViewContainer);self.scrollView:setViewSize(viewSize)
+    self.scrollView.bIsScrollView=true;self.scrollView:setClippingToBounds(true)
+    self.scrollView:setBounceable(true);self.scrollView:setDirection(cc.SCROLLVIEW_DIRECTION_VERTICAL)
+    self:addChild(self.scrollView,3)
+end
+
+function ExpeditionLayer:updateAdventureReadiness()
+    local food=tonumber(self.selectedData['1005']) or 0
+    local ship=self.produceCsv[tostring(DataManager:getInstance():getRoleData(roleShipId) or '')] or {}
+    self.shipNameLabel:setString(ship.name or '战船');MasterTheme.fit(self.shipNameLabel,205*self.adventureScaleX)
+    self.crewLabel:setString('船员  '..self.useSoldierNum..'/'..self.soldierNum)
+    self.cargoLabel:setString('货舱  '..self.useBoatNum..'/'..self.boatNum)
+    MasterTheme.fit(self.crewLabel,260*self.adventureScaleX);MasterTheme.fit(self.cargoLabel,287*self.adventureScaleX)
+    self.foodLabel:setString('已备食物 '..food);MasterTheme.fit(self.foodLabel,139*self.adventureScaleX)
+    self.crewCapacityBar:setScaleX(math.min(1,self.useSoldierNum/math.max(1,self.soldierNum)))
+    self.cargoCapacityBar:setScaleX(math.min(1,self.useBoatNum/math.max(1,self.boatNum)))
+    local ready=food>0 and self.useSoldierNum>0
+    self.readinessIcon.update(ready)
+    if ready then self.readyLabel:setString('整备就绪 · 船员与补给已登船')
+    elseif food<=0 and self.useSoldierNum>0 then self.readyLabel:setString('船员已就位，请装入航行食物')
+    elseif food<=0 then self.readyLabel:setString('请装入食物，并分配至少一名船员')
+    else self.readyLabel:setString('补给已就位，请分配至少一名船员') end
+    MasterTheme.fit(self.readyLabel,458*self.adventureScaleX)
+end
+
 function ExpeditionLayer:resetUI()
     cclog("刷新出征界面的UI")
     
@@ -240,6 +357,19 @@ function ExpeditionLayer:resetUI()
     if self.lastUpdateMd5 == nil or self.lastUpdateMd5 ~= jsonMd5 then
         self:setResourceUIWithData()
         self.lastUpdateMd5 = jsonMd5
+    end
+end
+
+-- Production changes food stock, not the selected loadout. Preserve existing
+-- controls so a production tick cannot destroy an active long-press gesture.
+function ExpeditionLayer:refreshProducedFood()
+    if self.departureInProgress then return end
+    if self.foodStockUpdater then
+        local pack=DataManager:getInstance():getRoleData(rolePack) or {}
+        self.foodStockUpdater(tonumber(pack['1005']) or 0)
+    else
+        -- A new food type must become a real row when it first enters stock.
+        self:setResourceUIWithData()
     end
 end
 
@@ -263,7 +393,7 @@ function ExpeditionLayer:setResourceUIWithData()
         if csvData ~= nil then
             -- 如果可以出征携带并且数量大于0，那么加入数据
             if tonumber(csvData["carryType"]) == 1 and v > 0 then
-                table.insert(self.expeditionData, {[dataKeyID] = k, [dataKeyNum] = v, ["name"] = csvData["name"], ["desc"] = csvData["desc"], ["cubage"] = csvData["cubage"], ["star"] = csvData["starNum"]})
+                table.insert(self.expeditionData, {[dataKeyID] = k, [dataKeyNum] = v, ["name"] = csvData["name"], ["desc"] = csvData["desc"], ["cubage"] = csvData["cubage"], ["star"] = csvData["starNum"], ["icon"] = csvData["icon"]})
                 dataNum = dataNum + 1
             end
         end
@@ -272,17 +402,20 @@ function ExpeditionLayer:setResourceUIWithData()
         -- print(k, v)
         local csvData = soildierCsv[tostring(k)]
         if csvData ~= nil and v[dataKeyNum] > 0 then
-            table.insert(self.expeditionData, {[dataKeyID] = (tonumber(k) + 10000) .. "", [dataKeyNum] = v[dataKeyNum], ["name"] = csvData["name"], ["skill"] = csvData["skill"], ["hp"] = csvData["hp"], ["attack"] = csvData["attack"], ["speed"] = csvData["speed"], ["star"] = csvData["star"]})
+            table.insert(self.expeditionData, {[dataKeyID] = (tonumber(k) + 10000) .. "", [dataKeyNum] = v[dataKeyNum], ["name"] = csvData["name"], ["skill"] = csvData["skill"], ["hp"] = csvData["hp"], ["attack"] = csvData["attack"], ["speed"] = csvData["speed"], ["star"] = csvData["star"], ["icon"] = csvData["icon"]})
             dataNum = dataNum + 1
         end
     end
-    -- 重新排序
-    -- for k,v in pairs(table_name) do
-        
-    -- end
-    -- 临时计算高度用的图
-    local tempSpr = cc.Sprite:create("Images/btn/ann01_a.png")
-    local singleHeight = tempSpr:getContentSize().height + 14
+    -- Keep required food and crew visible first; sort presentation only.
+    table.sort(self.expeditionData, function(a, b)
+        local aID, bID = tonumber(a[dataKeyID]), tonumber(b[dataKeyID])
+        local aGroup = aID == 1005 and 0 or (aID >= 10000 and 1 or 2)
+        local bGroup = bID == 1005 and 0 or (bID >= 10000 and 1 or 2)
+        return aGroup == bGroup and aID < bID or aGroup < bGroup
+    end)
+    local singleHeight = self.adventureRowHeight
+    local ux,uy=self.adventureScaleX,self.adventureScaleY
+    local D,M=DepartureTheme,MasterTheme
     local allHeight = singleHeight * dataNum
     if allHeight < self.scrollView:getViewSize().height then
         allHeight = self.scrollView:getViewSize().height
@@ -290,12 +423,15 @@ function ExpeditionLayer:setResourceUIWithData()
     -- 重新设置数量的函数
     local function resetQueueData(bIsNeedSave)
         self.topMaskLabel:setString("货舱：(" .. self.useBoatNum .. "/" .. self.boatNum .. ") 成员：(" .. self.useSoldierNum .. "/" .. self.soldierNum .. ")")
+        self:updateAdventureReadiness()
         if bIsNeedSave then
             -- 调用存档方法，记录出征选择数据，这里如果点了出征，那么就直接清理为空
             -- print("存档时的selectedData:", tableToJson(self.selectedData))
             DataManager:getInstance():setRoleData(roleSelectUnit, self.selectedData, nil)
         end
     end
+    -- Discard the old row closure before replacing its controls.
+    self.foodStockUpdater = nil
     -- 清理掉之前界面上的所有东西
     self.scrollViewContainer:removeAllChildren()
     self.useBoatNum = 0
@@ -332,14 +468,8 @@ function ExpeditionLayer:setResourceUIWithData()
             num = v[dataKeyNum]
             name = v["name"]
             starNum = v["star"]
-            local skillData = skillCsv[v["skill"]]
-            local buff = skillData["buffID"]
-            local buffDesc = "无"
-            -- print("buff is：", buff)
-            if buff ~= "0" then
-                buffDesc = buffCsv[buff]["description"]
-            end
-            infoString = name.."整装待发\n技能："..skillData["name"].."\n技能效果："..buffDesc.."\n生命："..v["hp"].." 威力："..v["attack"].." 速度："..v["speed"]
+            local skillName, buffDesc = CrewSkillDetails.describe(v["skill"], skillCsv, buffCsv)
+            infoString = name.."整装待发\n技能："..skillName.."\n技能效果："..buffDesc.."\n生命："..v["hp"].." 威力："..v["attack"].." 速度："..v["speed"]
             bagType = 1
         end
         -- 如果之前的存储里边存在数据，那么更新它
@@ -356,42 +486,41 @@ function ExpeditionLayer:setResourceUIWithData()
         end
         -- 根据数据结果，开始画界面
         tempNode = cc.Node:create()
-        tempNode:setPosition(cc.p(self.scrollView:getContentSize().width * 0.5, allHeight - singleHeight * (i - 1) - singleHeight * 0.5))
+        tempNode:setPosition(cc.p(self.scrollView:getViewSize().width * 0.5, allHeight - singleHeight * (i - 1) - singleHeight * 0.5))
+        local divider=cc.DrawNode:create()
+        divider:drawSegment(cc.p(-self.adventureWidth/2,-singleHeight/2),cc.p(self.adventureWidth/2,-singleHeight/2),.65,HomeTheme.rgba(M.colors.muted,.45))
+        tempNode:addChild(divider)
         self.scrollViewContainer:addChild(tempNode)
-
-        -- 首先添加文字框
-        local numberBox = cc.Sprite:create("Images/UI/NumberBox.png")
-        numberBox:setPosition(cc.p(0, 0))
-        tempNode:addChild(numberBox)
-
-        -- 添加健文字框中间的数字label
-        local numberLabel = cc.LabelTTF:create(itemNum .. "", BoldFont, 24.0)
-        numberLabel:setColor(WriteColor)
-        -- numberLabel:enableStroke(cc.c4b(16, 16, 16, 255), 2)
-        numberLabel:setPosition(numberBox:getPosition())
-        tempNode:addChild(numberLabel)
+        tempNode.itemId=tostring(k)
+        local numberLabel=D.label(itemNum..'',47*ux,M.colors.ink,122.5*ux,0,.5)
+        tempNode:addChild(numberLabel);tempNode.quantityLabel=numberLabel
 
         -- 定义数字按钮上的label
-        local numLable = cc.LabelTTF:create("1", BoldFont, 24.0)
+        local numLable = D.label("1",28*ux,M.colors.muted,0,0)
 
         local function setNumLabel(intNum)
             -- 开始设置数量文本
             if numLable ~= nil and intNum >= 0 then
-                if intNum > 9 then
-                    numLable:setString("N")
-                else
-                    numLable:setString(intNum.."")
-                end
+                numLable:setString("余 " .. intNum)
             end
         end
         -- 优先设置一次数量
         setNumLabel(num)
+        if tostring(k) == '1005' then
+            self.foodStockUpdater = function(total)
+                -- Refresh the same remaining-stock upvalue consumed by + and
+                -- fill. Updating only the label would leave their limits stale.
+                v[dataKeyNum] = total
+                num = math.max(0, total - (tonumber(self.selectedData[k]) or 0))
+                setNumLabel(num)
+            end
+        end
 
         -- 然后添加左右加减按钮
         local function subButtonDidClick()
             -- cclog("点击减少按钮", i)
             local val = tonumber(numberLabel:getString())
-            if val >= needNum then
+            if val > 0 then
                 numberLabel:setString((val - 1) .. "")
                 if bagType == 0 then
                     -- 背包数据
@@ -413,7 +542,8 @@ function ExpeditionLayer:setResourceUIWithData()
 
         local subBtn = SDButton:create("Images/UI/SubCircleBtn.png", "Images/UI/SubCircleBtn1.png", subButtonDidClick)
         subBtn:registerLongPressed(subButtonDidClick)
-        subBtn:setPosition(cc.p(numberBox:getPositionX() - numberBox:getContentSize().width * 0.6 - subBtn:getContentSize().width * 0.5, 0))
+        subBtn:setPosition(cc.p(22.5*ux, 0))
+        D.quantity(subBtn, "−",78*ux,68*uy,47*ux)
         tempNode:addChild(subBtn)
 
         local function addButtonDidClick()
@@ -453,11 +583,12 @@ function ExpeditionLayer:setResourceUIWithData()
         end
         local addBtn = SDButton:create("Images/UI/AddCircleBtn.png", "Images/UI/AddCircleBtn1.png", addButtonDidClick)
         addBtn:registerLongPressed(addButtonDidClick)
-        addBtn:setPosition(cc.p(numberBox:getPositionX() + numberBox:getContentSize().width * 0.6 + addBtn:getContentSize().width * 0.5, 0))
+        addBtn:setPosition(cc.p(222.5*ux, 0))
+        D.quantity(addBtn, "+",78*ux,68*uy,47*ux)
         tempNode:addChild(addBtn)
 
         -- 添加加号右侧的“装满”按钮
-        local addFullBtn = cc.MenuItemImage:create("Images/btn/ann01_a.png", "Images/btn/ann01_b.png")
+        local addFullBtn = D.menuItem("装满",122*ux,68*uy,nil,{fontSize=35*ux})
         addFullBtn:registerScriptTapHandler(function()
             cclog("点击装满按钮", i)
             local val = tonumber(numberLabel:getString())
@@ -497,48 +628,27 @@ function ExpeditionLayer:setResourceUIWithData()
                 end
             end
         end)
-        addFullBtn:setPosition(cc.p(addBtn:getPositionX() + addBtn:getContentSize().width + addFullBtn:getContentSize().width * 0.5, 0))
+        addFullBtn:setPosition(cc.p(348.5*ux, 0))
 
-        local addFullLabel = cc.LabelTTF:create("装  满", BoldFont, 24.0)
-        addFullLabel:setPosition(cc.p(addFullBtn:getContentSize().width * 0.5, addFullBtn:getContentSize().height * 0.5))
-        addFullBtn:addChild(addFullLabel)
-
-        -- 添加左侧工匠名称按钮
-        local nameBtn = cc.MenuItemImage:create("Images/btn/ann01_a.png", "Images/btn/ann01_b.png")
-        nameBtn:registerScriptTapHandler(function()
-            cclog("点击名称按钮", i)
-            self:showInfoBox(infoString)
-        end)
-        nameBtn:setPosition(cc.p(subBtn:getPositionX() - subBtn:getContentSize().width - nameBtn:getContentSize().width * 0.5, 0))
-
-        -- 添加左侧工匠类型文本
-        local nameLabel = cc.LabelTTF:create(name, BoldFont, 24.0)
-        nameLabel:setColor(BaseColor)
-        -- nameLabel:enableStroke(cc.c4b(16, 16, 16, 255), 2)
-        nameLabel:setPosition(cc.p(nameBtn:getContentSize().width * 0.5, nameBtn:getContentSize().height * 0.6))
-        nameBtn:addChild(nameLabel)
-
-        -- 添加左侧工匠类型的星级
-        for j = 1, starNum do
-            local spr = cc.Sprite:create("Images/UI/xingxing01.png")
-            -- print("宽度：", allNum % 2)
-            spr:setScale(0.5)
-            spr:setPosition(cc.p(nameBtn:getContentSize().width * 0.5 + (j - starNum / 2.0 - 0.5) * (spr:getContentSize().width * spr:getScale() + 2), nameBtn:getContentSize().height * 0.25))
-            nameBtn:addChild(spr)
+        -- The portrait and name are one real details control. All rows come
+        -- from the existing merged inventory, including types outside the mock.
+        local nameBtn=D.menuItem('',383*ux,singleHeight,nil,{clear=true})
+        nameBtn:registerScriptTapHandler(function() self:showInfoBox(infoString) end)
+        nameBtn:setPosition(cc.p(-225*ux,0))
+        local portrait=D.portrait(v,145*ux,124*uy)
+        portrait:setPosition(cc.p(8*ux,1*uy));nameBtn:addChild(portrait)
+        local nameLabel=D.label(name,40*ux,M.colors.ink,184*ux,(bagType==1 and 89 or 80)*uy)
+        M.fit(nameLabel,196*ux);nameBtn:addChild(nameLabel)
+        if bagType==1 then
+            for j=1,tonumber(starNum) or 0 do
+                local star=D.label('★',25*ux,cc.c3b(162,115,37),(184+(j-1)*28)*ux,56*uy)
+                nameBtn:addChild(star)
+            end
         end
-
-        -- 添加出征数据的数量文本
-        local numBg = cc.Sprite:create("Images/UI/num_circlebg.png")
-        numBg:setPosition(cc.p(nameBtn:getContentSize().width - numBg:getContentSize().width * 0.5, nameBtn:getContentSize().height - numBg:getContentSize().height * 0.5))
-        nameBtn:addChild(numBg)
-
-        numLable:setPosition(cc.p(numBg:getContentSize().width * 0.5, numBg:getContentSize().height * 0.5))
-        numLable:setColor(WriteColor)
-        numBg:addChild(numLable)
-
-        -- 添加详情按钮
-        -- local infoBtn = cc.MenuItemImage:create("Images/UI/Info.png", "Images/UI/Info1.png")
-        -- infoBtn:setPosition(cc.p(addBtn:getPositionX() + addBtn:getContentSize().width + infoBtn:getContentSize().width * 0.8, 0))
+        numLable:setPosition(cc.p(184*ux,(bagType==1 and 25 or 38)*uy))
+        M.fit(numLable,195*ux);nameBtn:addChild(numLable)
+        tempNode.controls={minus=subBtn,plus=addBtn,full=addFullBtn,details=nameBtn}
+        tempNode.remainingLabel=numLable
 
         local buttonArr = {nameBtn, addFullBtn}
         local menu = cc.Menu:create(unpack(buttonArr))
@@ -546,6 +656,10 @@ function ExpeditionLayer:setResourceUIWithData()
         tempNode:addChild(menu)
 
         -- self.workerUseNum = self.workerUseNum + tonumber(workerTable[dataKeyNum])
+    end
+    if #self.expeditionData == 0 then
+        self.scrollViewContainer:addChild(BTheme.label("暂无可携带物品或船员", 23,
+            MasterTheme.colors.muted, self.adventureWidth * 0.5, allHeight * 0.5, 0.5, 0.5))
     end
     -- 设置兵将与背包数量
     resetQueueData(false)

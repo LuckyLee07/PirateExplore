@@ -1,4 +1,5 @@
 require "LuaClass/Header"
+require "LuaClass/DialogTheme"
 require "LuaClass/UIKit"
 require "LuaClass/DataManager"
 require "LuaClass/WoWUtils"
@@ -6,6 +7,13 @@ require "LuaClass/GuideController"
 
 
 local SevenDayBonusLayerInstance = nil
+
+local function canClaimBonus(sevenData)
+    -- Match NotificationNode's original date/count rule again at use time:
+    -- its delayed show may have been queued before another dialog was claimed.
+    local days = math.floor(NotificationNode:getInstance():GetGameTime() / 86400)
+    return days - sevenData % 1000000 >= 1 and math.floor(sevenData / 1000000) < 7
+end
 
 SevenDayBonusLayer = class("SevenDayBonusLayer", function ()
     return AlertView:create(0, 1, "", function()
@@ -18,6 +26,9 @@ function SevenDayBonusLayer:create()
     if SevenDayBonusLayerInstance ~= nil then
         return nil
     end
+    if not canClaimBonus(DataManager:getInstance():getRoleData(roleSevenDayBonus)) then
+        return nil
+    end
     local view = SevenDayBonusLayer.new()
     if view and view:init() then
         SevenDayBonusLayerInstance = view
@@ -28,10 +39,16 @@ end
 
 -- 清理函数
 function SevenDayBonusLayer:destory()
-    SevenDayBonusLayerInstance = nil
+    self.isClosed = true
+    -- A late exit/cancel from an older view must not clear a newer singleton.
+    if SevenDayBonusLayerInstance == self then
+        SevenDayBonusLayerInstance = nil
+    end
 end
 
 function SevenDayBonusLayer:init()
+    self.isClosed = false
+    self.claimStarted = false
     -- 钻石商店物品
     -- local scrollViewSize = cc.size(self.s_size.width, self.s_size.height - 140)
     -- self.scrollViewContainer = cc.Layer:create()
@@ -52,16 +69,24 @@ function SevenDayBonusLayer:init()
     self.closeBtn:removeFromParent()
 
     -- 添加title文字
-    local titleSpr = cc.Sprite:create("Images/SevenDayBonus/SevenBonusTitle.png")
+    local titleSpr = DialogTheme.label("七日航海礼", 34)
     titleSpr:setPosition(cc.p(self.s_position.x, self.s_position.y + self.s_size.height * 0.5 - 36))
     self:addChild(titleSpr)
 
     -- 添加底部的确定按钮
-    local okBtn = cc.MenuItemImage:create("Images/btn/ann05_a.png", "Images/btn/ann05_b.png")
+    local okBtn = DialogTheme.menuItem("Images/btn/ann05_a.png", "Images/btn/ann05_b.png")
     okBtn:setPosition(cc.p(self.s_position.x, self.s_position.y - self.s_size.height * 0.5 + okBtn:getContentSize().height))
     okBtn:registerScriptTapHandler(function()
+        -- Reject queued/reentrant taps before any reward or save mutation.
+        if self.isClosed or self.claimStarted then return end
+        self.claimStarted = true
         -- cclog("点击信息按钮", i)
         local sevenData = DataManager:getInstance():getRoleData(roleSevenDayBonus)
+        if not canClaimBonus(sevenData) then
+            self:destory()
+            self:removeFromParent()
+            return
+        end
         -- 处理领取数据
         local csv = DataManager:getInstance():getCSVByID(csvOfLogingReward)
         for k,v in pairs(csv) do
@@ -99,11 +124,12 @@ function SevenDayBonusLayer:init()
         end
         cclog("sevenData:%d", sevenData)
         DataManager:getInstance():setRoleData(roleSevenDayBonus, sevenData)
+        self:destory()
         self:removeFromParent()
     end)
 
-    local okLabel = cc.LabelTTF:create("领  取", BoldFont, 28.0)
-    okLabel:setColor(BaseColor)
+    local okLabel = cc.LabelTTF:create("领  取", MasterTheme.headingFont(false), 28.0)
+    okLabel:setColor(MasterTheme.colors.white)
     okLabel:setPosition(cc.p(okBtn:getContentSize().width * 0.5, okBtn:getContentSize().height * 0.5))
     okBtn:addChild(okLabel)
 
@@ -118,6 +144,9 @@ function SevenDayBonusLayer:init()
     self:setCancelCallback(function()
         -- body
         self:destory()
+    end)
+    self:registerScriptHandler(function(event)
+        if event == "exit" then self:destory() end
     end)
     return true
 end
@@ -134,9 +163,9 @@ function SevenDayBonusLayer:loadData()
     local days = math.floor(sevenData / 1000000) + 1
     for i = 1, 7 do
         local data = csv[i..""]
-        local bg = cc.Sprite:create("Images/SevenDayBonus/SevenBonusItem.png") 
+        local bg = DialogTheme.cardFromLegacy("Images/SevenDayBonus/SevenBonusItem.png")
         if bg ~= nil then
-            bg:setPosition(cc.p(originPos.x + (3 - i % 2 * 2) * (bg:getContentSize().width * 0.5) + (2 - i % 2) * gap, 
+            bg:setPosition(cc.p(originPos.x + (3 - i % 2 * 2) * (bg:getContentSize().width * 0.5) + (2 - i % 2) * gap,
                 originPos.y + showSize.height - math.ceil(i * 0.5) * (bg:getContentSize().height + gap)))
             self:addChild(bg)
 
@@ -154,7 +183,7 @@ function SevenDayBonusLayer:loadData()
             bg:addChild(icon)
 
             -- 添加礼包天数文字
-            local dayLabel = cc.LabelTTF:create(data["day"], BoldFont, 24.0)
+            local dayLabel = cc.LabelTTF:create(data["day"], MasterTheme.headingFont(false), 24.0)
             dayLabel:setPosition(cc.p(icon:getPositionX(), dayLabel:getContentSize().height * 0.7))
             bg:addChild(dayLabel)
 
@@ -164,7 +193,7 @@ function SevenDayBonusLayer:loadData()
                 stateSpr:setPosition(cc.p(bg:getContentSize().width - stateSpr:getContentSize().width * 0.3, bg:getContentSize().height - stateSpr:getContentSize().height * 0.3))
                 bg:addChild(stateSpr, 1)
             elseif i == days then
-                local stateSpr = cc.Sprite:create("Images/SevenDayBonus/SevenBonusItemHL.png")
+                local stateSpr = DialogTheme.outlineFromLegacy("Images/SevenDayBonus/SevenBonusItemHL.png")
                 stateSpr:setPosition(cc.p(bg:getContentSize().width * 0.5, bg:getContentSize().height * 0.5))
                 bg:addChild(stateSpr)
             end
@@ -174,7 +203,7 @@ function SevenDayBonusLayer:loadData()
             for k,v in pairs(data["Tips"]) do
                 infoString = infoString .. v[1] .. "\n"
             end
-            local infoLabel = cc.LabelTTF:create(infoString, BoldFont, 20.0)
+            local infoLabel = cc.LabelTTF:create(infoString, MasterTheme.headingFont(false), 20.0)
             infoLabel:setColor(WriteColor)
             infoLabel:setHorizontalAlignment(cc.TEXT_ALIGNMENT_LEFT)
             infoLabel:setVerticalAlignment(cc.VERTICAL_TEXT_ALIGNMENT_CENTER)

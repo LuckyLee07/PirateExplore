@@ -1,5 +1,6 @@
 require "LuaClass/Header"
 require "LuaClass/CSVParser"
+require "LuaClass/ResourceTheme"
 
 
 StaticData = class("StaticData", function ()
@@ -78,6 +79,7 @@ function StaticData:initWithData()
 	self:splitValueToMatrix(self._strongholdAttribute,"requiredtool")
 
 	self._resourceInfo = parser:loadFileByName("data/resourceInfo.csv")
+	ResourceTheme.applyIcons(self._resourceInfo)
 	self:splitValueToMatrix(self._resourceInfo,	"resume")
 	self:splitValueToMatrix(self._resourceInfo,	"raiseType")
 	-- self:splitValueToMatrix(self._resourceInfo, "price")
@@ -91,6 +93,7 @@ function StaticData:initWithData()
 	self._skillAttribute = parser:loadFileByName("data/skillAttribute.csv")
 
 	self._soilderAttribute = parser:loadFileByName("data/soilderAttribute.csv")
+	ResourceTheme.applyCrewIcons(self._soilderAttribute)
 	self:splitValueToMatrix(self._soilderAttribute,"produceResume")
 	self:splitValueToMatrix(self._soilderAttribute,"rebornConsume")
 	self:splitValueToMatrix(self._soilderAttribute,"changeJob")

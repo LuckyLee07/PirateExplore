@@ -1,5 +1,7 @@
 require "LuaClass/Header"
 require "LuaClass/BaseView"
+require "LuaClass/ManagementTheme"
+require "LuaClass/HarborGoals"
 require "LuaClass/AlertView"
 require "LuaClass/Lackmaterial"
 
@@ -14,8 +16,9 @@ MakeLayer.ResoucecsvData = nil
 MakeLayer.dataIndex = nil
 
 
-function MakeLayer:create()
+function MakeLayer:create(focusResourceId)
     local view = MakeLayer.new()
+    view.focusTargetId = focusResourceId
     if view and view:init() then
         return view
     end
@@ -37,6 +40,7 @@ function MakeLayer:viewWillDestory()
 end
 
 function MakeLayer:init()
+    self:applyManagementTheme()
     DataManager:getInstance():registerEvent(roleMapInfo, "MakeLayer", function()
         -- body
         local flag = DataManager:getInstance():checkDiamondStoreNewGoods()
@@ -113,9 +117,7 @@ function MakeLayer:init()
         cell:setTag(idx)
         cell:removeAllChildren()
 
-        local temp = cc.Sprite:create("Images/UI/dibantiao_02.png")
-        local _backGround = cc.Scale9Sprite:create("Images/UI/dibantiao_02.png", cc.rect(0, 0, temp:getContentSize().width, temp:getContentSize().height), cc.rect(17, 17, 30, 30));
-        _backGround:setPreferredSize(cc.size(visibleSize.width, 100))
+        local _backGround = ManagementTheme.panel(visibleSize.width-24,100,'paper')
 
         _backGround:setPosition(cc.p(cellSize.width/2,cellSize.height/2))
         cell:addChild(_backGround)
@@ -185,9 +187,10 @@ function MakeLayer:init()
         local _centerY = _HeadSprite:getPositionY() + _HeadSprite:getContentSize().height/2
 
         local _name_str = self.ResoucecsvData[tostring(_csvID)]["name"]
-        local _name = cc.LabelTTF:create(_name_str,BoldFont,_fontSize+4);
+        local _name = cc.LabelTTF:create(_name_str,ManagementTheme.bodyFont(),_fontSize+4);
         _name:setPosition(cc.p(_xLeft,_centerY + 5))
-        _name:setColor(BaseColor)
+        _name:setFontSize(28)
+        ManagementTheme.styleLabel(_name,'body',330)
         -- _name:enableStroke(cc.c4b(255, 255, 255, 255), 1)
         _name:setAnchorPoint(cc.p(0,1))
         cell:addChild(_name)
@@ -201,7 +204,7 @@ function MakeLayer:init()
         basenode:setPosition(cc.p(0,0))
         cell:addChild(basenode)
         for i = 1,neednum do
-            local _price = cc.LabelTTF:create(s_templacktable[i]["mtname"],BoldFont,_fontSize - 2);
+            local _price = cc.LabelTTF:create(s_templacktable[i]["mtname"],ManagementTheme.bodyFont(),_fontSize - 2);
             _price:setPosition(cc.p(s_p,_centerY - _HeadSprite:getContentSize().height - 5))
             -- _price:enableStroke(cc.c4b(255, 255, 255, 255), 1)
             _price:setColor(s_templacktable[i]["mtcolor"])
@@ -224,12 +227,13 @@ function MakeLayer:init()
 
 
         local _resStarNum_str = self.ResoucecsvData[tostring(_csvID)]["starNum"]
-        local _rightX = _backGround:getPositionX() - 40
+        local _rightX = cellSize.width - 94
         if _resStarNum_str ~= "" and _resStarNum_str ~= nil then
             for i=1,tostring(_resStarNum_str) do
                 local _starSprite = cc.Sprite:create("Images/UI/xingxing01.png")
-                _starSprite:setPosition(cc.p(_rightX+i*_starSprite:getContentSize().width,_centerY))
-                _starSprite:setAnchorPoint(cc.p(0,1))
+                _starSprite:setScale(16/_starSprite:getContentSize().width)
+                _starSprite:setPosition(cc.p(_rightX+(i-(tonumber(_resStarNum_str)+1)/2)*18,15))
+                _starSprite:setAnchorPoint(cc.p(.5,.5))
                 cell:addChild(_starSprite)
             end
         end
@@ -238,7 +242,7 @@ function MakeLayer:init()
         --end
         local function test()
         end
-        local _menuButton = cc.MenuItemImage:create("Images/btn/ann01_a.png", "Images/btn/ann01_b.png")
+        local _menuButton = ManagementTheme.menuItem(128,59,'coral')
         _menuButton:registerScriptTapHandler(function()
 
             local ishave,templacktable = self:cheackResoucesOK(_csvID)
@@ -299,7 +303,8 @@ function MakeLayer:init()
             GuideController:getInstance():addRedPoint(_menuButton)
         end
 
-        local _zz = cc.LabelTTF:create("制 造", BoldFont, 30.0)
+        local _zz = cc.LabelTTF:create("制 造", ManagementTheme.bodyFont(), 26.0)
+        ManagementTheme.styleLabel(_zz,'action')
         _zz:setPosition(_menuButton:getPosition())
         -- _zz:enableStroke(cc.c4b(255, 255, 255, 255), 2)
         cell:addChild(_zz)
@@ -318,6 +323,7 @@ function MakeLayer:init()
 
     self:addChild(self.tableview)
     self.tableview:reloadData()
+    self:focusEntry(self.focusTargetId)
 
     return true
 end
@@ -346,9 +352,9 @@ function MakeLayer:getResouceshowtable(csvID)
         local lacktablecell = {}
         lacktablecell.mtname = self.ResoucecsvData[tostring(keystring)]["name"].."x"..keynum.." "
         if tonumber(havenum) < tonumber(keynum) then
-            lacktablecell.mtcolor = RedColor
+            lacktablecell.mtcolor = ManagementTheme.colors.danger
         else
-            lacktablecell.mtcolor = WriteColor
+            lacktablecell.mtcolor = ManagementTheme.colors.ink
         end
         table.insert(Lacktable,1,lacktablecell)
         if tonumber(havenum) < tonumber(keynum) then
@@ -439,4 +445,17 @@ function MakeLayer:getDataNum()
     -- cclog("_num = ".._num)
     _num = #self.workerData
     return _num
+end
+
+-- Optional read-only navigation target; ordinary entry keeps its old scroll state.
+function MakeLayer:focusEntry(id)
+    if not id then return false end
+    for index,row in ipairs(self.workerData or {}) do
+        if tostring(row[dataKeyID])==tostring(id) then
+            local offset=HarborGoals.focusOffset(#self.workerData,index,self.areaHeight,self.cellhight)
+            self.tableview:setContentOffset(cc.p(0,offset),false)
+            return true
+        end
+    end
+    return false
 end

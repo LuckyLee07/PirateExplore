@@ -8,6 +8,9 @@ end
 
 -- 是否开启debug功能（包括debug菜单、cclog是否打印和代码中判断的块）
 zqDebug = true
+-- Destructive developer controls are opt-in and separate from diagnostic logs.
+-- Never enable this in a player-facing build.
+zqDebugMenuEnabled = false
 
 -- 包类型，礼包类型1对应A类包，2对应B类包，之后如果还有其他的，以此类推
 zqPackageType = 1

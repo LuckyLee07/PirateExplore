@@ -395,14 +395,14 @@ function Mission:receive(  )
         goodsType = goodsInfo[1]
         goodsId = goodsInfo[2]
         goodsNum = goodsInfo[3]
-        goodsName = goodCsvData[goodsId]["name"]
         --1英雄，2物品
         if goodsType == "1" then
 
             DataManager:getInstance():addSoilderWithId(goodsId,tonumber(goodsNum))
 
         elseif goodsType == "2" then
-           
+            goodsName = goodCsvData[goodsId]["name"]
+
             if goodsName == "金币"  then
                 DataManager:getInstance():addCoin(tonumber(goodsNum))
             elseif goodsName == "钻石" then
@@ -417,7 +417,7 @@ function Mission:receive(  )
     --领取完毕后可触发下一个任务
     local nextMission = self.infos["next"] 
 
-    DataManager:getInstance():triggerMissionByIDAndStepInfos(nextMission,"1","auto")
+    MissionManagers:getInstance():triggerMissionByIDAndStepInfos(nextMission,"1","auto")
 
 end
 
@@ -584,10 +584,17 @@ end
 --存储当前任务信息
 function MissionManagers:saveMissionDatas(  )
 
-    printn("saveMissionDatas",self.datas.datas)
+    -- The legacy custom table's .datas mirror is not reliable after an
+    -- existing entry is updated or removed. Serialize its indexed values so
+    -- claiming/expiring one quest cannot drop another quest from the save.
+    local missionDatas = {}
+    for i=1,self.datas.len do
+        missionDatas[i] = self.datas[i]
+    end
+    printn("saveMissionDatas",missionDatas)
     local tipstring = string.format("当前任务有%d个",self.datas.len)
     ToastUtil:toastString(tipstring)
-    DataManager:getInstance():setRoleData(roleMission,self.datas.datas)
+    DataManager:getInstance():setRoleData(roleMission,missionDatas)
 end
 
 
@@ -611,9 +618,7 @@ function MissionManagers:triggerMissionByIDAndStepInfos( ID,stepInfos,keys )
 
         --若超时，则进行删除操作
         if not mission:checkTime() then
-            self.missions[ID] = nil
-            self.waitingMissions[ID] = nil
-            self.validMissions[ID] = nil
+            self:theMissionIsTimeout(mission,ID)
             return
         end
 
@@ -728,13 +733,15 @@ function MissionManagers:tryReceiveMissionRewardsByMissionID( ID )
 
     local mission = self.completedMissions[ID]
 
-    if mission.statue == "wait" then
+    if not mission or mission.statue == "wait" then
         return
     end
 
     if mission then
         self.missions[ID] = nil
         self.completedMissions[ID] = nil
+        self.waitingMissions[ID] = nil
+        self.validMissions[ID] = nil
         self.datas[ID] = nil
         if mission:getMissionStatue() == "complete" then
             mission:receive()
@@ -746,7 +753,7 @@ function MissionManagers:tryReceiveMissionRewardsByMissionID( ID )
 end
 
 --删除供外部的界面操作数组对应的任务
-function MissionManagers:removeMissionInUI( mission,Id )
+function MissionManagers:removeMissionInUI( mission,id )
     if not mission and not id then
         return
     end
@@ -760,7 +767,7 @@ function MissionManagers:removeMissionInUI( mission,Id )
         mission = self.UIMissions[i]
         temp = mission:getMissionId()
         if temp == id then
-            table.remove(self.UIMissions)
+            table.remove(self.UIMissions,i)
             break
         end
     end
@@ -774,7 +781,8 @@ function MissionManagers:getWaitingMissions( )
     local missionID = nil
     local needSaveDatas = false
 
-    for i=1,self.waitingMissions.len do
+    local i = 1
+    while i <= self.waitingMissions.len do
 
         mission = self.waitingMissions[i]
         missionID = mission:getMissionId()
@@ -783,8 +791,12 @@ function MissionManagers:getWaitingMissions( )
         if not mission:checkTime() then
             self.waitingMissions[i] = nil
             self.missions[missionID] = nil
-            self.missionDatas[missionID] = nil
+            self.validMissions[missionID] = nil
+            self.datas[missionID] = nil
+            self:removeMissionInUI(nil,missionID)
             needSaveDatas = true
+        else
+            i = i + 1
         end
     end
 
@@ -811,17 +823,20 @@ function MissionManagers:getAllMissions(  )
     end
 
     --待完成的
-    for i=1,self.waitingMissions.len do
+    local i = 1
+    while i <= self.waitingMissions.len do
         mission = self.waitingMissions[i]
         missionID = mission:getMissionId()
 
         --若不超时，则加入，否则删除
         if mission:checkTime() then
             missions[#missions + 1] = mission
+            i = i + 1
         else
             self.waitingMissions[i] = nil
             self.missions[missionID] = nil
-            self.missionDatas[missionID] = nil
+            self.validMissions[missionID] = nil
+            self.datas[missionID] = nil
             needSaveDatas = true
         end
     end
@@ -866,6 +881,7 @@ function MissionManagers:theMissionIsTimeout( mission,id )
     self.missions[id] = nil
     --任务等待队列删除
     self.waitingMissions[id] = nil
+    self.validMissions[id] = nil
     --数据队列删除
     self.datas[id] = nil
 

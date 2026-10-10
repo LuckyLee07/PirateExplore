@@ -1,5 +1,6 @@
 require "AudioEngine"
 require "LuaClass/Header"
+require "LuaClass/DialogTheme"
 
 local beganPos = cc.p(0,0)
 
@@ -117,38 +118,22 @@ function EventBaseView:init()
 	local visibleSize = cc.Director:getInstance():getVisibleSize()
     local origin = cc.Director:getInstance():getVisibleOrigin()
 
-    -- 添加总背景
-    local mainBg = cc.Sprite:create("Images/Background/MainBackGround.png")
-    mainBg:setAnchorPoint(cc.p(0, 0))
-    mainBg:setPosition(cc.p(0, 0))
-    self:addChild(mainBg)
+    -- The same harbor paint sits quietly behind the event roster.
+    DialogTheme.screen(self, visibleSize)
 
-    -- 在总背景上添加图
-    local bgIcon = cc.Sprite:create("Images/Background/cangk.png")
-    bgIcon:setPosition(cc.p(mainBg:getContentSize().width * 0.5, mainBg:getContentSize().height * 0.5))
-    mainBg:addChild(bgIcon)
-    
     ------------------------- 顶部试图 -------------------------
     -- 添加上边标题栏的背景
-    local pTopBg = cc.Sprite:create("Images/UI/TitleBg.png")
+    local pTopBg = DialogTheme.cardFromLegacy("Images/UI/TitleBg.png", "ink")
     self.topHeight = pTopBg:getContentSize().height
     pTopBg:setPosition(cc.p(visibleSize.width * 0.5, visibleSize.height - self.topHeight*0.5))
     self:addChild(pTopBg)
 
     local TopPosY = pTopBg:getPositionY()
-    -- 先分别添加左右背景
-    local LeftBg = cc.Sprite:create("Images/UI/TopDecor.png")
-    self:addChild(LeftBg)
-    local RightBg = cc.Sprite:create("Images/UI/TopDecor.png")
-    RightBg:setFlippedX(true)
-    self:addChild(RightBg)
-    
-    -- 设置左右背景的位置
-    LeftBg:setPosition(LeftBg:getContentSize().width * 0.75, TopPosY)
-    RightBg:setPosition(visibleSize.width - RightBg:getContentSize().width * 0.75, TopPosY)
-    
+    DialogTheme.rule(self, 26, TopPosY, 100)
+    DialogTheme.rule(self, visibleSize.width-126, TopPosY, 100)
+
     -- 放置顶部文字
-    self.titleLabel = cc.LabelTTF:create("未 知", BoldFont, 46.0)
+    self.titleLabel = cc.LabelTTF:create("未 知", MasterTheme.headingFont(false), 46.0)
     self.titleLabel:setColor(cc.c3b(255, 255, 255))
     -- self.titleLabel:enableStroke(cc.c4b(16, 16, 16, 255), 2)
     self.titleLabel:setPosition(cc.p(visibleSize.width * 0.5, TopPosY))
@@ -157,21 +142,18 @@ function EventBaseView:init()
     
     ------------------------- 底部视图 -------------------------
     -- 添加底部背景图
-    local pBottomBg = cc.Sprite:create("Images/UI/BottomBg.png")
+    local pBottomBg = DialogTheme.cardFromLegacy("Images/UI/BottomBg.png", "ink")
     self.buttomHeight = pBottomBg:getContentSize().height
     pBottomBg:setPosition(pTopBg:getPositionX(), self.buttomHeight*0.5)
     self:addChild(pBottomBg)
     
-    -- 添加左右分框
-    local pSplitLeft = cc.Sprite:create("Images/UI/ButtonSplit.png")
-    pSplitLeft:setPosition(cc.p(visibleSize.width*0.25, self.buttomHeight*0.5))
-    pBottomBg:addChild(pSplitLeft)
-    local pSplitRight = cc.Sprite:create("Images/UI/ButtonSplit.png")
-    pSplitRight:setPosition(cc.p(visibleSize.width*0.75, self.buttomHeight*0.5))
-    pBottomBg:addChild(pSplitRight)
-    
+    DialogTheme.rule(pBottomBg, 24, self.buttomHeight-4, visibleSize.width-48)
+
     -- 添加离开按钮
-    local centerBtn = cc.MenuItemImage:create("Images/UI/BottomTip_likai.png", "Images/UI/BottomTip_likai.png")
+    local centerBtn = DialogTheme.menuItem("Images/UI/BottomTip_likai.png", "Images/UI/BottomTip_likai.png", "secondary")
+    local closeLabel = DialogTheme.label("离 开", 28)
+    closeLabel:setPosition(cc.p(centerBtn:getContentSize().width*.5, centerBtn:getContentSize().height*.5))
+    centerBtn:addChild(closeLabel)
     centerBtn:setPosition(pBottomBg:getPosition())
     centerBtn:registerScriptTapHandler(function() self:close() end)
     
@@ -220,7 +202,7 @@ function EventBaseView:init()
     local infoBoxSize = cc.size(screenSize.width * 0.8, 24 * 5)
 
      -- 添加scrollView上的label
-    self.infoLabel = cc.LabelTTF:create(" ", BoldFont, 24.0)
+    self.infoLabel = cc.LabelTTF:create(" ", MasterTheme.headingFont(false), 24.0)
     -- self.infoLabel:setAnchorPoint(cc.p(0.0, 0.0))
     self.infoLabel:setColor(WriteColor)
     -- self.infoLabel:setHorizontalAlignment(0)
@@ -237,9 +219,7 @@ function EventBaseView:init()
     -- self.infoNode:addChild(self.pointNode)
 
     -- 添加信息框
-    local tempSpr = cc.Sprite:create("Images/UI/MaskBg_1.png")
-    self.bottomInfoBox = cc.Scale9Sprite:create("Images/UI/MaskBg_1.png", cc.rect(0, 0, tempSpr:getContentSize().width, tempSpr:getContentSize().height), cc.rect(12, 12, tempSpr:getContentSize().width - 24, tempSpr:getContentSize().height - 24))
-    self.bottomInfoBox:setContentSize(infoBoxSize)
+    self.bottomInfoBox = DialogTheme.card(infoBoxSize.width, infoBoxSize.height)
     self.bottomInfoBox:setPosition(self.infoLabel:getPosition())
     -- self.bottomInfoBox:setVisible(false)
     self.infoNode:addChild(self.bottomInfoBox)

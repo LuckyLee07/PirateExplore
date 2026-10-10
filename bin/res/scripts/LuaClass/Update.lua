@@ -1,3 +1,4 @@
+require 'LuaClass/StartupTheme'
 --require "LuaClass/Header"
 require "json"
 require "LuaClass/SaveDataManager"
@@ -289,13 +290,13 @@ function Update:init()
 ]]--
     local visibleSize = cc.Director:getInstance():getVisibleSize()
 
-    cc.Texture2D:setDefaultAlphaPixelFormat(kCCTexture2DPixelFormat_RGB888)
-    local bg = cc.Sprite:create("Images/UI/fm_01.png")
+    cc.Texture2D:setDefaultAlphaPixelFormat(kCCTexture2DPixelFormat_RGBA8888)
+    local bg = StartupTheme.background(visibleSize)
     bg:setPosition(cc.p(visibleSize.width / 2, visibleSize.height / 2))
     self:addChild(bg)
 
-    cc.Texture2D:setDefaultAlphaPixelFormat(kCCTexture2DPixelFormat_RGB5A1)
-    local title = cc.Sprite:create("Images/UI/logo_01.png")
+    cc.Texture2D:setDefaultAlphaPixelFormat(kCCTexture2DPixelFormat_RGBA8888)
+    local title = StartupTheme.title()
     title:setPosition(cc.p(bg:getPositionX(),visibleSize.height * 0.9 - title:getContentSize().height * title:getScaleY() / 2))
     self:addChild(title)
 
@@ -304,7 +305,7 @@ function Update:init()
     self:addChild(waves)
     self.progressBarWidth = waves:getContentSize().width
 --[[
-    self.tip = cc.LabelTTF:create("检测中...", "Arial-BoldMT", 26.0)
+    self.tip = cc.LabelTTF:create("检测中...", MasterTheme.headingFont(false), 26.0)
     self.tip:setPosition(cc.p(bg:getPositionX(),waves:getPositionY() - waves:getContentSize().height / 2 - self.tip:getContentSize().height))
     self:addChild(self.tip)
 ]]--
@@ -314,14 +315,14 @@ function Update:init()
     self:addChild(self.progressBar)
     self.progressBar:setTextureRect(cc.rect(0, 0, 0,self.progressBar:getContentSize().height))
 
-    self.ship = cc.Sprite:create("Images/UI/fmloding_01.png")
+    self.ship = StartupTheme.ship()
     self.ship:setAnchorPoint(0.5, 0.0)
     self.ship:setPosition(cc.p(self.progressBar:getPositionX(), self.progressBar:getPositionY()))
     self:addChild(self.ship)
     self.ship:runAction(cc.Sequence:create(cc.FadeOut:create(0.0),cc.EaseExponentialOut:create(cc.FadeIn:create(1.0))))
 
     -- 添加提示文字内容
-    local updateTip = cc.LabelTTF:create("联网游戏可以获取离线资源，占用流量极少", "Arial-BoldMT", 26.0)
+    local updateTip = cc.LabelTTF:create("联网游戏可以获取离线资源，占用流量极少", MasterTheme.headingFont(false), 26.0)
     updateTip:setPosition(cc.p(bg:getPositionX(),waves:getPositionY() + waves:getContentSize().height / 2 + self.ship:getContentSize().height + updateTip:getContentSize().height))
     self:addChild(updateTip)
 

@@ -542,3 +542,50 @@ end
 function UserData:saveMission()
 	SaveDataManager:getInstance():SaveData(json.encode(self._missionData), "mission")
 end
+
+-- Build an encrypted candidate without touching the live proxy. Publish only
+-- after the complete inventory + local production ledger is safely replaced.
+function UserData:commitLocalProduction(fields)
+    local candidate = {}
+    for key, value in pairs(realDatas) do candidate[key] = value end
+    for key, value in pairs(fields) do candidate[key] = simpleclone(value, -1, key) end
+    if not SaveDataManager:getInstance():saveDataAtomic(json.encode(candidate), "gameRole") then
+        return false
+    end
+    realDatas = candidate
+    return true
+end
+
+-- A single narrowly scoped paid entitlement. Do not publish either changed field
+-- until the complete existing-format snapshot has been atomically replaced.
+function UserData:commitAlchemyUnlock()
+    local owned = self:getRoleData(roleAlchemyCanLongPress)
+    if owned == 1 then return "already_owned" end
+    if owned ~= nil and owned ~= 0 then return "invalid" end
+    local guide = self:getRoleData(roleGuideStep)
+    if type(guide) ~= "string" or not ("_" .. guide .. "_"):find("_s001_", 1, true) then
+        return "guide_locked"
+    end
+    local diamonds = self:getRoleData(roleDiamond)
+    if type(diamonds) ~= "number" or diamonds ~= diamonds or
+        diamonds < 0 or diamonds > 9007199254740991 or diamonds % 1 ~= 0 then return "invalid" end
+    if diamonds < 398 then return "insufficient" end
+    local remaining = diamonds - 398
+    if diamonds - remaining ~= 398 then return "invalid" end
+    local candidate = {}
+    for key, value in pairs(realDatas) do candidate[key] = value end
+    candidate[roleDiamond] = simpleclone(remaining, -1, roleDiamond)
+    candidate[roleAlchemyCanLongPress] = simpleclone(1, -1, roleAlchemyCanLongPress)
+    local ok, saved = pcall(function()
+        local encoded = json.encode(candidate)
+        -- Some legacy JSON encoders round large numbers. Never claim an exact
+        -- debit unless both changed fields survive the actual serializer.
+        local decoded = json.decode(encoded)
+        if decoded[roleDiamond] ~= candidate[roleDiamond] or
+            decoded[roleAlchemyCanLongPress] ~= candidate[roleAlchemyCanLongPress] then return false end
+        return SaveDataManager:getInstance():saveDataAtomic(encoded, "gameRole")
+    end)
+    if not ok or saved ~= true then return "save_failed" end
+    realDatas = candidate
+    return "success"
+end
