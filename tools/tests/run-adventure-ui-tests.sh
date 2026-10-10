@@ -58,3 +58,20 @@ python3 tools/tests/weapon_tier_icons_regression.py "$LUA"
 "$LUA" tools/tests/voluntary_alchemy_regression.lua
 
 "$LUA" tools/tests/first_sailor_progression_regression.lua
+
+# Gameplay v1: independent rules, known-chart guidance and visible growth.
+"$LUA" -e 'for _,f in ipairs({"AdventureProgress","AdventureDialog","AdventureSea","AdventureNavigation","AdventureNavigationView","KnownRoute"}) do assert(loadfile("bin/res/scripts/LuaClass/"..f..".lua")); print("PARSE PASS "..f) end'
+for test in encounter_rate_regression decorative_gift_boat_regression mission_abandon_limits_regression known_route_regression adventure_navigation_ui_regression harbor_growth_regression; do
+  "$LUA" "tools/tests/$test.lua"
+done
+"$LUA" tools/tests/adventure_progression_regression.lua
+"$LUA" tools/tests/adventure_state_audit.lua
+
+python3 tools/tests/heading_font_coverage_regression.py
+
+"$LUA" tools/tests/adventure_return_ui_transaction_audit.lua
+"$LUA" tools/tests/adventure_sea_ui_regression.lua
+
+"$LUA" tools/tests/adventure_event_guide_audit.lua
+
+"$LUA" tools/tests/adventure_cold_position_audit.lua

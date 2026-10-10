@@ -1,3 +1,5 @@
+local AdventureProgress = require "LuaClass/AdventureProgress"
+local AdventureSea = require "LuaClass/AdventureSea"
 require "LuaClass/Header"
 require "LuaClass/ExploreDataManager"
 require "LuaClass/Jointed"
@@ -380,6 +382,8 @@ end
 
 -- zoomCenter = cc.p(0,0)
 local function onTouchesBegan( target,touch, event )
+    if target.adventureDialog then return false end
+    if target.adventureObjectiveItem and AdventureSea.isHudPoint(target,target:convertToNodeSpace(touch:getLocation())) then return false end
 
     if target.adventureHudTop and target.adventureHudBottom then
         local point = target:convertToNodeSpace(touch:getLocation())
@@ -912,6 +916,7 @@ end
 local mapGuidePlotDelayTime = 1.7
 
 function Explore:startMapGuide( dirction )
+    if AdventureProgress.getState(DataManager:getInstance()).enabled then self.isNeedGuide=false;return end
 	
 	if not self.mapGuideComponent then
 		self.mapGuideComponent = ExploreGuideComponent:create(self.map)
@@ -1193,6 +1198,20 @@ function Explore:initTipLayer()
         	return
         end
 
+        if AdventureProgress.getState(DataManager:getInstance()).enabled then
+            local quote=AdventureProgress.quoteReturn(DataManager:getInstance(),self.mapIndex)
+            if not quote then ToastUtil:toastString('当前返航条件无法确认，请沿已知路线回港。');return end
+            local detail
+            if quote.kind=='free' then detail='首次使用返航免费，不扣卷轴。'
+            elseif quote.kind=='scroll' then
+                local resource=DataManager:getInstance():getCSVByID(csvOfResourceInfo)[quote.toolId] or {}
+                detail='消耗'..quote.count..'个'..(resource.name or '回城卷轴')..'。'
+            else detail='卷轴不足，本次消耗'..quote.price..'钻石。' end
+            require('LuaClass/AdventureDialog').show('确认返航',detail..'费用与本航归仓一起保存；失败不扣费。',{
+                {label='确认返航',action=function()return self:returnToBase(nil,quote)end},
+                {label='继续航行'}},self)
+            return
+        end
         local tempData = DataManager:getInstance():getRoleData(roleMapInfo)
         local tipstring = nil
         local comfirmFunc = nil
@@ -1423,6 +1442,7 @@ function Explore:initMapByMapIndex( mapIndex,isclear )
 	if isclear == nil then
 		self:clearMapInfoData(true)
 		--清空地图上一次地图据点动画
+		AdventureSea.clearMapDecorations(self)
 		self.moveLayer:removeAllChildren()
 		self.map = nil 
 		self.player = nil
@@ -1682,6 +1702,8 @@ function Explore:initMapByMapIndex( mapIndex,isclear )
 	self:startMapGuide()
 
 	self.statue = "ready"
+    self.adventureBreadCoefficient=breadCoefficient
+    AdventureSea.refresh(self,breadCoefficient)
 end
 
 function Explore:initPlayer( )
@@ -1784,7 +1806,7 @@ function Explore:initPlayer( )
 	else
 		-- print("读入玩家地图坐标",position.x,position.y)
 		print("getPosition",position.x,position.y)
-		local playerposition = position
+		local playerposition = cc.p(position.x,position.y)
 		--若有战斗状态，则需要进行自动偏移
 		if tempData.willFight ~= nil then
 			print("willFight")
@@ -1799,6 +1821,9 @@ function Explore:initPlayer( )
 		playerPosition.y = realPos.y
 	end
 
+    -- The sprite, including the legacy pre-battle left offset, is authority.
+    -- Do not leave the logical position at its class default after cold load.
+    self.playerTitlePosition=self:tileCoordForPosition(playerPosition)
 	--设置player点为屏幕起始点
     self:setViewpointCenter(playerPosition)
     self.moveWaitingQueue = {}
@@ -1813,7 +1838,8 @@ function Explore:startJumpAction(  )
 	print("startJumpAction")
 	local tempData = DataManager:getInstance():getRoleData(roleMapInfo)
 	if tempData.willFight == nil then
-		print("NONONON")
+        AdventureSea.tryEvent(self,false,'scene_enter')
+		print("NONONONON")
 		return
 	end
 	-- tempData.willFight = nil
@@ -1875,8 +1901,9 @@ function Explore:checkMoveWaitingQueue( moveType )
 end
 
 function Explore:jointedCalBack( dirction )
+    if self.adventureDialog then return end
 	
-	if not GuideController:getInstance():getIsHaveStep(63) then
+	if not AdventureProgress.getState(DataManager:getInstance()).enabled and not GuideController:getInstance():getIsHaveStep(63) then
 		return
 	end 
 
@@ -2136,6 +2163,10 @@ function Explore:moveEnd()
 
 			end, function()
 
+                if AdventureProgress.getState(DataManager:getInstance()).enabled then
+                    self:returnToBase('NoBread')
+                    return
+                end
 				--饿死的数据处理
 				--安全删除默认的自带数据
 				self.bagController:safeClearMissionData()
@@ -2193,6 +2224,12 @@ function Explore:moveEnd()
 	if self.statue == "Location" then
 		self.statue = "ready"
 	end
+
+    -- After the real movement/food step has completed, offer the empty-sea
+    -- objective even when the legacy zero-event queue has already drained.
+    if self.statue=='ready' and not self.isHungry and self.eventManger and not self.eventManger.isMinesweeper then
+        AdventureSea.tryEvent(self,false,'move_end')
+    end
 
 
 	if self:getNumberOfRunningActions() == 1 then
@@ -2313,6 +2350,7 @@ function Explore:tryToMoveForDirction( dirction,moveType )
 	-- print("mapsize",self.map:getMapSize().width,self.map:getMapSize().height,tilePosition.x,tilePosition.y)
 
 	if (tilePosition.x > self.map:getMapSize().width - 1 or tilePosition.x < 0) or (tilePosition.y > self.map:getMapSize().height - 1 or tilePosition.y < 0) then
+        ToastUtil:toastString(require("LuaClass/AdventureNavigation").boundaryMessage)
 		return
 	end
 
@@ -2484,6 +2522,9 @@ function Explore:tryToMoveForDirction( dirction,moveType )
 		self.playerRect = cc.rect(tilePosition.x,tilePosition.y,realVision,realVision)
 		self:checkClearFogs()
 		self:clearFogs()
+        self.adventureWreckDeferred=false
+        self.adventureWreckDiagnostic=false
+        AdventureSea.refresh(self,breadCoefficient)
 
 		--若状态不为饥饿状态刷新玩家位置
 		if not self.isHungry then
@@ -3053,12 +3094,20 @@ function Explore:addDeadData(  )
 		--从战斗数据中删除对应的兵
 		-- DataManager:getInstance():addSoilderWithId(tempData.id, -tempData.num)
 	end
+    if AdventureProgress.getState(DataManager:getInstance()).enabled then
+        local ok=AdventureProgress.failVoyage(DataManager:getInstance(),DeathInformation)
+        if not ok then return false end
+        self.playerfighters={}
+        self.bagController.battlePackData={};self.bagController.mapCoin=0
+        return true
+    end
 	DataManager:getInstance():setRoleData(roleDeathInformation, DeathInformation)
 	DataManager:getInstance():setRoleData(roleBattlePack,{})
 	--清除战斗人员数据
 	DataManager:getInstance():setRoleData(roleBattleQueue,{})
 
 	self.playerfighters = {}
+    return true
 end
 
 function Explore:getbackObjectStr()
@@ -3094,9 +3143,26 @@ function Explore:clearMapInfoData( isChangeMapIndex )
 end
 
 --根据状态返回主城
-function Explore:returnToBase( statue )
+function Explore:returnToBase( statue, returnRequest )
+    local adventure=AdventureProgress.getState(DataManager:getInstance())
+    local adventureReturned=false
+    if adventure.enabled then
+        if statue~='Killed' and statue~='NoBread' then
+            local cargoText=self:getbackObjectStr()
+            local ok,awarded=AdventureProgress.returnVoyage(DataManager:getInstance(),statue,returnRequest)
+            if not ok then
+                local messages={insufficient_diamonds='钻石不足，尚未返港，也未扣费。',return_offer_changed='返航条件已改变，请重新打开返航确认。'}
+                ToastUtil:toastString(messages[awarded] or '返港未保存，请重试。物品、费用和奖励均未结算。');return false
+            end
+            adventureReturned=true
+            self.bagController.battlePackData={};self.bagController.mapCoin=0
+            DataManager:getInstance():sendSystemInfo('本航带回：'..cargoText)
+            if awarded then DataManager:getInstance():sendSystemInfo('首返补助：25金币、15石、5木、5布。铁匠铺已待建，带回2铁后可按真实配方扩舱20→30。') end
+        end
+    end
 	--安全删除默认的自带数据
-	self.bagController:safeClearMissionData()
+	if not adventure.enabled then self.bagController:safeClearMissionData() end
+    if not adventure.enabled then
 	-- 设置是否进入过地图了（首次出征返回）
 	GuideController:getInstance():addStep(60)
 	--设置玩家状态为1(探索状态)
@@ -3104,17 +3170,18 @@ function Explore:returnToBase( statue )
     DataManager:getInstance():setRoleData(roleBreadCostDecimal,0)
     --清除地图关联信息
    self:clearMapInfoData()
+    end
 
 	--正常返回
 	if statue == nil then
 		local showstr = "您的舰队本次出征,带回了"
 		showstr = showstr..self:getbackObjectStr()
-		DataManager:getInstance():sendSystemInfo(showstr)
+		if not adventureReturned then DataManager:getInstance():sendSystemInfo(showstr) end
 	--全员阵亡
 	elseif statue == "Killed" then
 		-- print("战死")
 		--添加死亡数据
-		self:addDeadData()
+		if self:addDeadData()==false then ToastUtil:toastString('死亡结算未保存，请重试');return end
 		DataManager:getInstance():sendSystemInfo("您的勇士已全部战死，同时失去了所有的战利品！您可以提升战船、转职英雄或来提升战斗力！")
 		--粮食用尽
 	elseif statue == "NoBread" then 
@@ -3124,19 +3191,23 @@ function Explore:returnToBase( statue )
 		-- 	return
 		-- end
 		--添加死亡数据
-		self:addDeadData()
+		if self:addDeadData()==false then ToastUtil:toastString('死亡结算未保存，请重试');return end
 		DataManager:getInstance():sendSystemInfo("您的舰队食物不足，消失在茫茫海上，所有勇士及战利品全部丢失！您可以升级货仓提升食物携带数量，也可以进入已被您占领的据点获得食物补给")
 		--使用回城卷轴
 	else 
 
 	end
 
-	self.bagController:safeTransformCoinToPack(statue)
+	if not adventure.enabled then self.bagController:safeTransformCoinToPack(statue) end
 	self.moveLayer:stopAllActions()
 
 	--清除临时领取数据
 	DataManager:getInstance():setRoleData(roleTempReceivedDatas,nil)
-	DataManager:getInstance():mixPackAndSoildier()
+	if not adventure.enabled then DataManager:getInstance():mixPackAndSoildier() end
+
+    if adventure.enabled and (statue=='Killed' or statue=='NoBread') then
+        AdventureProgress.finishVoyage(DataManager:getInstance(),false)
+    end
 
 	--清楚之前战斗的数据
 	FightDataManager:getInstance():clearAllData()

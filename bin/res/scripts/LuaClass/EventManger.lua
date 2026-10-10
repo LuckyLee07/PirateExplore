@@ -442,6 +442,12 @@ end
 
 --触发对应id的事件
 function EventManger:onTriggerById( id )
+    -- The new tutorial occupies a validated empty sea tile only. Existing
+    -- strongholds and random battles keep their original dispatch semantics.
+    if id == 0 and require('LuaClass/AdventureSea').tryEvent(self.owner) then
+        table.remove(self.eventWaitingQueue,1)
+        return
+    end
 
 	-- local posDes = ExploreDataManager:getInstance():getPosKeyByPosition(self.owner.playerTitlePosition)
 	local positionDes = string.format("_%d_%d",self.owner.playerTitlePosition.x,self.owner.playerTitlePosition.y)
@@ -856,6 +862,17 @@ end
 
 function EventManger:minesweeper( )
 	
+    local adventure=require('LuaClass/AdventureProgress')
+    local destination=self.owner.playerTitlePosition
+    if self.owner.player and self.owner.tileCoordForPosition then
+        destination=self.owner:tileCoordForPosition(cc.p(self.owner.player:getPosition()))
+    end
+    if adventure.isTutorialProtected(DataManager:getInstance(),self.owner.mapIndex,destination) then
+        self.isMinesweeper=false
+        return false
+    elseif adventure.isTutorialProtected(DataManager:getInstance(),self.owner.mapIndex,self.owner.playerTitlePosition) then
+        ToastUtil:toastString('离开首航巡逻航段：普通随机遭遇已恢复，粮耗照常。')
+    end
 	--新手引导不能遇敌
 	if self.owner.isNeedGuide then
 		return
@@ -906,6 +923,9 @@ end
 
 --战斗中全员阵亡
 function EventManger:allMembersKilled( )
+    if require('LuaClass/AdventureProgress').getState(DataManager:getInstance()).enabled then
+        return self.owner:returnToBase('Killed')
+    end
 
 	local tempData = DataManager:getInstance():getRoleData(roleMapInfo)
 	tempData.willFight = nil

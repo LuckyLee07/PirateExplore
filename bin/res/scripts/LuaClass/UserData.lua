@@ -589,3 +589,8 @@ function UserData:commitAlchemyUnlock()
     realDatas = candidate
     return "success"
 end
+
+-- Adventure transactions use the same complete encrypted atomic-save boundary.
+function UserData:commitAdventure(fields)
+    return self:commitLocalProduction(fields)
+end

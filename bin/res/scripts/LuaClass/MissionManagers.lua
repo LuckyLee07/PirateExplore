@@ -905,6 +905,8 @@ function MissionManagers:giveUpTheMission( mission,id )
     self.completedMissions[id] = nil
     --任务等待队列删除
     self.waitingMissions[id] = nil
+    -- Stop condition-based encounters immediately, before any map refresh.
+    self.validMissions[id] = nil
     --数据队列删除
     self.datas[id] = nil
 

@@ -7,6 +7,12 @@ unpack = unpack or table.unpack
 local root = 'bin/res/scripts/LuaClass/'
 local originalRequire = require
 require = function(name)
+    -- AdventureProgress is a returned module, not a global singleton. Keep its
+    -- real read-only implementation in the Home harness to catch import bugs.
+    if name == 'LuaClass/AdventureProgress' then
+        if not package.loaded[name] then package.loaded[name]=assert(loadfile(root..'AdventureProgress.lua'))() end
+        return package.loaded[name]
+    end
     if name == 'LuaClass/BTheme' then return BTheme end
     if name == 'LuaClass/HomeTheme' then return HomeTheme end
     if name == 'LuaClass/MasterTheme' then return MasterTheme end
@@ -321,7 +327,7 @@ function HomeLayer:refreshSummary(...)
     return refresh(self,...)
 end
 
-local HOME_EVENTS={rolePack,roleSelectUnit,roleSoildierQueue,rolePackSize,roleCabinSize,roleGuideStep,roleShipId,roleMake,roleBuilding,roleAlchemyUnit,roleMoney,roleStore,roleProducerQueue,roleLivingUnitNum}
+local HOME_EVENTS={rolePack,roleSelectUnit,roleSoildierQueue,rolePackSize,roleCabinSize,roleGuideStep,roleShipId,roleMake,roleBuilding,roleAlchemyUnit,roleMoney,roleStore,roleProducerQueue,roleLivingUnitNum,'adventureProgressV1'}
 local function fixture()
     data={
         [roleMoney]=1250,[roleDiamond]=213,[roleCabinSize]=3,[rolePackSize]=60,[roleShipId]='1299',
@@ -452,7 +458,7 @@ for _,key in ipairs(HOME_EVENTS)do
     dm:postEvent(key,nil);equal(home.refreshCount,stopped,'destroyed Home does not receive '..key)
 end
 home:destory();equal(countListeners(),0,'idempotent destroy')
-print('PASS Master Home real packaged CSV, 107 x 3 identical slots, ship title, read-only refresh and fourteen-event lifecycle')
+print('PASS Master Home real packaged CSV, 107 x 3 identical slots, ship title, read-only refresh and fifteen-event lifecycle')
 
 for selected=0,2 do
     fixture();data[roleSelectUnit]=selected>0 and {['10107']=selected} or {}

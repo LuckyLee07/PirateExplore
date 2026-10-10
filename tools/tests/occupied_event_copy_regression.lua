@@ -21,7 +21,10 @@ if native then require('extern') else
     dofile('src/engine/cocos2d-x/cocos/scripting/lua-bindings/script/extern.lua')
 end
 local originalRequire=require
-require=function()return true end
+require=function(name)
+    if name=='LuaClass/AdventureProgress' then return {getState=function()return {enabled=false}end} end
+    return true
+end
 dofile(os.getenv('PIRATE_EVENT_LAYER_SOURCE') or 'bin/res/scripts/LuaClass/EventLayer.lua')
 dofile('bin/res/scripts/LuaClass/EventManger.lua')
 require=originalRequire

@@ -1,3 +1,4 @@
+local AdventureProgress = require "LuaClass/AdventureProgress"
 require "LuaClass/Header"
 local CrewSkillDetails = require "LuaClass/CrewSkillDetails"
 require "LuaClass/BaseView"
@@ -123,6 +124,14 @@ function ExpeditionLayer:init()
             ToastUtil:downString(soildierInfoString, true)
             return
         end
+        if AdventureProgress.getState(DataManager:getInstance()).enabled then
+            self.departureInProgress=true
+            local ok,reason=AdventureProgress.depart(DataManager:getInstance(),self.selectedData)
+            if not ok then self.departureInProgress=false;ToastUtil:toastString("出航未保存，请检查装载后重试："..tostring(reason));return end
+            self.selectedData={}
+            zqDispatch:moveToFightLayer()
+            return
+        end
         -- Lock only after both checks pass; repeated taps must not debit twice.
         self.departureInProgress = true
         -- 都满足才能扣除
@@ -182,7 +191,13 @@ function ExpeditionLayer:init()
     end)
 
     -- 首次进入出征界面，给玩家增加100个食物和1个初级水手
-    if not GuideController:getInstance():getIsHaveStep(30, true) then
+    local adventureNew=AdventureProgress.getState(DataManager:getInstance()).enabled
+    if adventureNew and not GuideController:getInstance():getIsHaveStep(30,true) then
+        local granted=AdventureProgress.claimStarter(DataManager:getInstance())
+        if granted then DataManager:getInstance():sendSystemInfo("首航整备：1名低级船员和100食物已入库。20格货舱请手动选择装粮，港口附近沉船可回收2铁。")
+        else ToastUtil:toastString("首航整备未保存，请重进重试") end
+    end
+    if not adventureNew and not GuideController:getInstance():getIsHaveStep(30, true) then
         -- 确实建设完船坞之后根据新手引导要求，要给玩家船员*1，食物*100
         DataManager:getInstance():addPackItemWithId("1005", 100)
         DataManager:getInstance():addSoilderWithId("100", 1)
@@ -286,6 +301,17 @@ function ExpeditionLayer:createAdventureUI()
     material('ink-brush.png',42,368,312,86)
     icon('sail',69,380,58)
     self.shipNameLabel=label('',41,C.paper,141,411)
+    if AdventureProgress.getState(DataManager:getInstance()).enabled then
+        local function chooseObjective()
+            require('LuaClass/AdventureDialog').show('本航目标','目标可在沉船处改选。首航巡逻航段暂停普通随机遭遇，粮耗和主动据点战斗照常；离段恢复风险，第二航恢复原概率。',{
+                {label='救援：带人安全返港',detail='消耗额外食物，换取港口NPC和实际章门方位',action=function() local ok=AdventureProgress.setObjective(DataManager:getInstance(),'rescue');if not ok then ToastUtil:toastString('目标未保存，请重试。原目标未改变。');return false end;self.objectiveButton.label:setString('目标：救援  ›') end},
+                {label='补给：抢救升级材料',detail='保留食物，带回更多木材；不会封锁章门',action=function() local ok=AdventureProgress.setObjective(DataManager:getInstance(),'supply');if not ok then ToastUtil:toastString('目标未保存，请重试。原目标未改变。');return false end;self.objectiveButton.label:setString('目标：补给  ›') end},
+                {label='暂不更改'}},self)
+        end
+        local objective=AdventureProgress.getState(DataManager:getInstance()).objective
+        self.objectiveButton=button(objective=='supply' and '目标：补给  ›' or '目标：救援  ›',410,368,474,72,chooseObjective,{fontSize=30})
+    end
+
     material('ink-brush.png',30,454,882,150)
     icon('crew',81,479,72);icon('food',504,488,58)
     self.crewLabel=label('',35,C.paper,174,505)

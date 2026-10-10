@@ -4,12 +4,13 @@ require 'LuaClass/GuideController'
 require 'LuaClass/MasterTheme'
 require 'LuaClass/HarborGoals'
 require 'LuaClass/CrewRecovery'
+require 'LuaClass/AdventureProgress'
 
 -- Read-only harbor. Coordinates follow the approved 941x1672 master artwork;
 -- no role data, tutorial reward, or expedition initialization is performed here.
 HomeLayer=class('HomeLayer',function() return cc.Layer:create() end)
 HomeLayer.__index=HomeLayer
-local HOME_EVENTS={rolePack,roleSelectUnit,roleSoildierQueue,rolePackSize,roleCabinSize,roleGuideStep,roleShipId,roleMake,roleBuilding,roleAlchemyUnit,roleMoney,roleStore,roleProducerQueue,roleLivingUnitNum}
+local HOME_EVENTS={rolePack,roleSelectUnit,roleSoildierQueue,rolePackSize,roleCabinSize,roleGuideStep,roleShipId,roleMake,roleBuilding,roleAlchemyUnit,roleMoney,roleStore,roleProducerQueue,roleLivingUnitNum,'adventureProgressV1'}
 function HomeLayer:create()
     local view=HomeLayer.new();if view and view:init() then return view end
 end
@@ -132,6 +133,7 @@ function HomeLayer:refreshSummary()
     self:refreshGoalsDialog()
     self:refreshSourcesDialog()
     self:renderCrew()
+    HomeTheme.refreshGrowth(self,dm)
 end
 function HomeLayer:renderCrew()
     self.crewNode:removeAllChildren();local M=MasterTheme;local c=M.colors
@@ -169,7 +171,7 @@ function HomeLayer:renderCrew()
 end
 -- The existing status plaque is the only new entry point. Details are opt-in.
 function HomeLayer:openGoals()
-    if self.homeDisposed or not self.goals or #self.goals==0 or self.goalDialog or self.sourceDialog or self.recovery then return end
+    if self.homeDisposed or self.adventureDialog or not self.goals or #self.goals==0 or self.goalDialog or self.sourceDialog or self.recovery then return end
     require 'LuaClass/AlertView'
     local dialog=AlertView:create(1,0,'回港升级',nil,nil,nil,'关 闭')
     self.goalDialog=dialog;self.goalRows={}
@@ -215,7 +217,7 @@ function HomeLayer:refreshGoalsDialog()
     end
 end
 function HomeLayer:openGoalAt(index)
-    if self.homeDisposed or not self.goalDialog then return end
+    if self.homeDisposed or self.adventureDialog or not self.goalDialog then return end
     self:refreshSummary()
     if self.recovery or not self.goalDialog then return end
     -- Re-read the state at the actual click; a stale preview cannot buy or unlock.
@@ -235,7 +237,7 @@ function HomeLayer:closeSources()
     if dialog then dialog:removeFromParent(true) end
 end
 function HomeLayer:openSourcesAt(index)
-    if self.homeDisposed or self.sourceDialog or self.recovery or not self.goalDialog then return end
+    if self.homeDisposed or self.adventureDialog or self.sourceDialog or self.recovery or not self.goalDialog then return end
     local goal=self.goals and self.goals[index]
     if not goal then return end
     local sources=HarborGoals.sources(DataManager:getInstance(),GuideController:getInstance(),goal.id)
@@ -286,7 +288,7 @@ function HomeLayer:refreshSourcesDialog()
     end
 end
 function HomeLayer:openSource(materialId)
-    if self.homeDisposed or not self.sourceDialog or not materialId then return end
+    if self.homeDisposed or self.adventureDialog or not self.sourceDialog or not materialId then return end
     -- Re-read before navigating; completion, unlock and inventory may have changed.
     self:refreshSummary()
     if not self.sourceDialog then return end
@@ -302,7 +304,7 @@ function HomeLayer:openSource(materialId)
     end
 end
 function HomeLayer:openPrimary()
-    if self.homeDisposed then return end
+    if self.homeDisposed or self.adventureDialog then return end
     self:refreshSummary()
     if self.recovery then self:openRecovery();return end
     if self.summary.unlocked then self:openRoute(1)
@@ -311,7 +313,7 @@ function HomeLayer:openPrimary()
 end
 -- Recovery is an opt-in preview; its actions only navigate to original screens.
 function HomeLayer:openRecovery()
-    if self.homeDisposed or self.recoveryDialog then return end
+    if self.homeDisposed or self.adventureDialog or self.recoveryDialog then return end
     self.recovery=CrewRecovery.next(DataManager:getInstance(),GuideController:getInstance())
     if not self.recovery then return end
     require 'LuaClass/AlertView'
@@ -344,7 +346,7 @@ function HomeLayer:refreshRecoveryDialog()
     self.recoveryAction.item:setEnabled(self.recovery.route~=nil)
 end
 function HomeLayer:openRecoveryAction()
-    if self.homeDisposed then return end
+    if self.homeDisposed or self.adventureDialog then return end
     self:refreshSummary() -- Re-evaluate crew, funds and the original unlock gate.
     local recovery=self.recovery
     if not recovery or not recovery.route then return end
@@ -354,6 +356,7 @@ function HomeLayer:openRecoveryAction()
     elseif recovery.route=='recruit' then self:openRoute(2) end
 end
 function HomeLayer:openRoute(index)
+    if self.homeDisposed or self.adventureDialog then return end
     if zqDispatch and zqDispatch.mainMenu then zqDispatch.mainMenu:openRoute(index) end
 end
 function HomeLayer:updateInfoLabel(text)
@@ -364,6 +367,7 @@ function HomeLayer:viewWillDestory() end
 function HomeLayer:destory()
     if self.homeDisposed then return end
     self.homeDisposed=true
+    if self.adventureDialog then self.adventureDialog:removeFromParent(true);self.adventureDialog=nil end
     self:closeRecovery()
     self:closeSources()
     if self.goalDialog then self.goalDialog:removeFromParent(true);self.goalDialog=nil;self.goalRows=nil end

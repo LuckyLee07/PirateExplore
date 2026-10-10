@@ -1,6 +1,10 @@
 -- Exercise production camera functions with native-point map bounds.
 -- No game state, display, save or event manager is opened by this test.
-require = function() return {} end
+require = function(name)
+    if name=='LuaClass/AdventureSea' then return {refresh=function()end,tryEvent=function()return false end} end
+    if name=='LuaClass/AdventureNavigation' then return {boundaryMessage='已到海图边界，请换个方向。'} end
+    return {}
+end
 cc = {
     p = function(x,y) return {x=x,y=y} end,
     size = function(w,h) return {width=w,height=h} end,

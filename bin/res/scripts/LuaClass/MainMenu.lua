@@ -562,29 +562,24 @@ function MainMenuLayer:init()
         MainMenuDidGuideChange()
     -- end
 
-    -- 播放船走的动画
-    local boatBtn = nil
-    boatBtn = SDButton:create("Images/DiamondStore/GoldenBoat.png", "Images/DiamondStore/GoldenBoat.png", function()
-        self:openGiftOffer()
-        -- 移动小船到准备出发的位置
-        self.boatSpr:stopAllActions()
-        self.boatSpr:setPosition(cc.p(visibleSize.width + boatBtn:getContentSize().width, UIBottomHeight + boatBtn:getContentSize().height * 0.5))
-    end)
+    -- Decorative only: a moving paid button can cover Home's primary actions.
+    -- Paid offers remain opt-in through the fixed, labelled Port entry.
+    local boatArt = cc.Sprite:create("Images/DiamondStore/GoldenBoat.png")
     self.boatSpr = cc.Node:create()
-    self.boatSpr:setPosition(cc.p(visibleSize.width + boatBtn:getContentSize().width * 0.5, UIBottomHeight + boatBtn:getContentSize().height * 0.5))
+    self.boatSpr:setPosition(cc.p(visibleSize.width + boatArt:getContentSize().width * 0.5, UIBottomHeight + boatArt:getContentSize().height * 0.5))
     self:addChild(self.boatSpr, 9999)
 
-    boatBtn:setPosition(cc.p(0, 0))
-    self.boatSpr:addChild(boatBtn)
+    boatArt:setPosition(cc.p(0, 0))
+    self.boatSpr:addChild(boatArt)
 
     local function playBoatRun()
         -- body
-        self.boatSpr:setPosition(cc.p(visibleSize.width + boatBtn:getContentSize().width * 0.5, UIBottomHeight + boatBtn:getContentSize().height * 0.5))
-        self.boatSpr:runAction(cc.MoveTo:create(10.0, cc.p(-boatBtn:getContentSize().width * 0.5, self.boatSpr:getPositionY())))
+        self.boatSpr:setPosition(cc.p(visibleSize.width + boatArt:getContentSize().width * 0.5, UIBottomHeight + boatArt:getContentSize().height * 0.5))
+        self.boatSpr:runAction(cc.MoveTo:create(10.0, cc.p(-boatArt:getContentSize().width * 0.5, self.boatSpr:getPositionY())))
     end
 
     -- Returning home never interrupts play with a paid offer. The same gift
-    -- remains available deliberately through Port and the original boat.
+    -- remains available deliberately through the fixed Port entry.
     -- 出征之后才会显示金船走过 by 杨杰 厉晔的需求
     if DataManager:getInstance():getRoleData(roleMapInfo) ~= nil then
         self:runAction(cc.RepeatForever:create(cc.Sequence:create(cc.DelayTime:create(60.0), cc.CallFunc:create(playBoatRun))))

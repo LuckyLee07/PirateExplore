@@ -1,3 +1,4 @@
+local AdventureProgress = require 'LuaClass/AdventureProgress'
 require 'LuaClass/DialogTheme'
 local function eventLabel(text, _, size) return MasterTheme.label(text,size,MasterTheme.colors.paper,0,0,false,.5) end
 require "AudioEngine"
@@ -1045,7 +1046,7 @@ function EventLayer:changeToTeleportLayer( data )
 		-- self.midTip:setString(des)
 
 		local explor = getExplor()
-		if not GuideController:getInstance():getIsHaveStep(71) then
+		if not AdventureProgress.getState(DataManager:getInstance()).enabled and not GuideController:getInstance():getIsHaveStep(71) then
     		explor.mapGuideComponent:hideAllComponents()
     		GuideController:getInstance():addStep(71)
     		explor.isNeedGuide = false
@@ -1253,7 +1254,7 @@ function EventLayer:changeToMaterialsLayer( data,isOccupied )
 		local explor = getExplor()
 
 		self.buttons[1]:registerSingleCLick(function() 
-			if not GuideController:getInstance():getIsHaveStep(71) then
+			if not AdventureProgress.getState(DataManager:getInstance()).enabled and not GuideController:getInstance():getIsHaveStep(71) then
 	    		explor.mapGuideComponent:hideAllComponents()
 	    		GuideController:getInstance():addStep(71)
 	    		explor.isNeedGuide = false
@@ -1264,7 +1265,7 @@ function EventLayer:changeToMaterialsLayer( data,isOccupied )
 
     	--新手引导
     	
-    	if not GuideController:getInstance():getIsHaveStep(71) then
+        if not AdventureProgress.getState(DataManager:getInstance()).enabled and not GuideController:getInstance():getIsHaveStep(71) then
     		explor.mapGuideComponent:changeFingerParent(self)
     		explor.mapGuideComponent:showFingerActionByPosition(cc.p(self.buttonTips[1]:getPosition()))
     	end
@@ -1661,7 +1662,7 @@ function EventLayer:leaveToExploreMap( arg )
 	local explor = getExplor()
 
 	--新手引导中不允许离开
-	if not GuideController:getInstance():getIsHaveStep(71) then
+	if not AdventureProgress.getState(DataManager:getInstance()).enabled and not GuideController:getInstance():getIsHaveStep(71) then
 		return 
 	end
 

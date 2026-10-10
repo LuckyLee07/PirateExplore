@@ -122,6 +122,9 @@ function DataManager:initWithData()
 		-- 天赋初始化
 		self.__roleData:loadTalent({})
 
+        -- Only genuinely empty saves receive the versioned adventure bootstrap.
+        assert(require("LuaClass/AdventureProgress").initializeNewRole(self.__roleData,self), "Adventure new-game save failed")
+
 
 	end
 

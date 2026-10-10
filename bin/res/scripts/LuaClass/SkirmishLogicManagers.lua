@@ -280,7 +280,7 @@ function SkirmishLogicManagers:useTheDice(  )
     --清空
     self.curEncounter = nil
     --当前骰子投掷出来的数
-    local dicePoint = math.random() * 100000 % 101
+    local dicePoint = math.random() * 100
     local encounter = nil
     local rate = nil
 
@@ -289,9 +289,9 @@ function SkirmishLogicManagers:useTheDice(  )
     for i=1,#self.validEncounters do
         encounter = self.validEncounters[i]
         rate = tonumber(encounter["rate"])
-        rate = 100
-
-        if rate > dicePoint - 1 then
+        -- Configured percentages: zero never triggers, 100 always triggers.
+        -- Keep one shared roll and the existing candidate-selection draw.
+        if rate > 0 and (rate >= 100 or dicePoint < rate) then
             temp[#temp + 1] = encounter
         end
 

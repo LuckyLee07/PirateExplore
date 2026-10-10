@@ -78,6 +78,7 @@ local availability = dofile(root .. 'PurchaseAvailability.lua')
 local fixtureRequire = require
 require = function(name)
     if name == 'LuaClass/PurchaseAvailability' then return availability end
+    if name == 'LuaClass/AdventureProgress' then return {getState=function()return {enabled=false}end} end
     return fixtureRequire(name)
 end
 for _, name in ipairs({'Header', 'HomeTheme', 'MasterTheme', 'DialogTheme', 'SDButton', 'AlertView', 'ChargeMode', 'DiamondStore', 'Explore'}) do
