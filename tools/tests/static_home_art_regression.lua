@@ -101,8 +101,8 @@ for _, mode in ipairs(modes) do
         equal(compass:isVisible(), not painted, context..' no duplicate native compass')
 
         for _, currency in ipairs({
-            {name='coin-detail.png', x=63, number=menu.homeCoinLabel, add=menu.homeCoinAddButton, plusX=199},
-            {name='gem-detail.png', x=258, number=menu.homeDiamondLabel, add=menu.homeDiamondAddButton, plusX=382},
+            {name='coin-detail.png', x=63, number=menu.homeCoinLabel, add=menu.homeCoinAddButton, plusX=193},
+            {name='gem-detail.png', x=258, number=menu.homeDiamondLabel, add=menu.homeDiamondAddButton, plusX=376},
         }) do
             local icon = assert(findChild(menu.homeHeader, function(child)
                 return child:getPositionX() == currency.x and child:getPositionY() == height - 121

@@ -17,7 +17,7 @@ int main(int argc, char **argv) {
         width = std::atoi(argv[1]); height = std::atoi(argv[2]);
         if (width < 320 || height < 480) return 2;
     }
-    auto view = cocos2d::GLView::createWithRect("PirateExplore - Initial c53323e",
+    auto view = cocos2d::GLView::createWithRect("PirateExplore - Native Linux",
         cocos2d::Rect(0, 0, width, height));
     if (!view) return 1;
     cocos2d::Director::getInstance()->setOpenGLView(view);

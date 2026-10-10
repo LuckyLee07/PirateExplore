@@ -3,6 +3,8 @@
 #include "../CCApplication.h"
 #include "platform/CCFileUtils.h"
 #include "CCEventType.h"
+#include "CCEventCustom.h"
+#include "CCEventDispatcher.h"
 #include "JniHelper.h"
 #include <jni.h>
 
@@ -15,6 +17,10 @@ extern "C" {
     }
 
     JNIEXPORT void JNICALL Java_org_cocos2dx_lib_Cocos2dxRenderer_nativeOnPause() {
+        // GLSurfaceView queues this on its GL thread while the context is
+        // current. Snapshot dynamic textures before a possible context loss.
+        EventCustom backgroundEvent(EVENT_COME_TO_BACKGROUND);
+        Director::getInstance()->getEventDispatcher()->dispatchEvent(&backgroundEvent);
         Application::getInstance()->applicationDidEnterBackground();
     }
 

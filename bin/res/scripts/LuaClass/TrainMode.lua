@@ -1,5 +1,7 @@
 require "LuaClass/Header"
+local CrewSkillDetails = require "LuaClass/CrewSkillDetails"
 require "LuaClass/BaseView"
+require "LuaClass/ManagementTheme"
 require "LuaClass/ToastUtil"
 require "LuaClass/DataManager"
 require "LuaClass/AlertView"
@@ -32,6 +34,7 @@ function TrainLayer:destory()
 end
 
 function TrainLayer:init()
+    self:applyManagementTheme()
     DataManager:getInstance():registerEvent(roleMapInfo, "TrainLayer", function()
         -- body
         local flag = DataManager:getInstance():checkDiamondStoreNewGoods()
@@ -83,14 +86,14 @@ function TrainLayer:init()
         if _result == 0 then
             --ToastUtil:toastString("缺少金币".."X".._defGoil)
         local _alert = AlertView:create(2,0, "购买失败",test,nil)
-        local showLabel1 = cc.LabelTTF:create("金币不足!", BoldFont, 36.0)
-        showLabel1:setColor(cc.c3b(255, 255, 255))
+        local showLabel1 = cc.LabelTTF:create("金币不足!", ManagementTheme.bodyFont(), 36.0)
+        showLabel1:setColor(ManagementTheme.colors.white)
         -- showLabel1:enableStroke(cc.c4b(16, 16, 16, 255), 2)
         showLabel1:setPosition(cc.p(_alert.s_position.x, _alert.s_position.y + showLabel1:getContentSize().height * 1.0))
         _alert:addChild(showLabel1)
 
-        local showLabel2 = cc.LabelTTF:create("您可以通过充值获得钻石购买金币", BoldFont, 36.0)
-        showLabel2:setColor(cc.c3b(255, 255, 255))
+        local showLabel2 = cc.LabelTTF:create("您可以通过充值获得钻石购买金币", ManagementTheme.bodyFont(), 36.0)
+        showLabel2:setColor(ManagementTheme.colors.white)
         -- showLabel2:enableStroke(cc.c4b(16, 16, 16, 255), 2)
         showLabel2:setPosition(cc.p(_alert.s_position.x, _alert.s_position.y - showLabel1:getContentSize().height * 0.2))
         _alert:addChild(showLabel2)
@@ -127,7 +130,7 @@ function TrainLayer:init()
         local _layer = AlertView:create(2,0, "招募",Recruit,nil)
         local _soilder = self.csvData[soilderID]
 
-        local _backGround = cc.Sprite:create("Images/UI/dibantiao_03.png")
+        local _backGround = ManagementTheme.surfaceLike("Images/UI/dibantiao_03.png",'paper')
         _backGround:setPosition(_layer.s_position)
         _layer:addChild(_backGround)
 
@@ -142,24 +145,24 @@ function TrainLayer:init()
         --name
         local _xLeft = _HeadSprite:getPositionX() + _HeadSprite:getContentSize().width/2 + 10
         local _centerY = _HeadSprite:getPositionY() -5
-        local _name = cc.LabelTTF:create(_soilder["name"],BoldFont,_fontSize+4);
+        local _name = cc.LabelTTF:create(_soilder["name"],ManagementTheme.bodyFont(),_fontSize+4);
         _name:setPosition(cc.p(_xLeft,_centerY+_fontSize+7))
-        _name:setColor(BaseColor)
+        ManagementTheme.styleLabel(_name,'heading',175)
         -- _name:enableStroke(cc.c4b(215, 199, 165, 255), 1)
         _name:setAnchorPoint(cc.p(0,0.5))
         _layer:addChild(_name)
         --skill
-        local _skillName = cc.LabelTTF:create("技能："..SkillData[tostring(_soilder["skill"])]["name"],BoldFont,_fontSize);
+        local _skillName = cc.LabelTTF:create("技能："..SkillData[tostring(_soilder["skill"])]["name"],ManagementTheme.bodyFont(),_fontSize);
         _skillName:setPosition(cc.p(_xLeft,_centerY+2))
         -- _skillName:enableStroke(cc.c4b(255, 255, 255, 255), 1)
-        _skillName:setColor(WriteColor)
+        _skillName:setColor(ManagementTheme.colors.ink)
         _skillName:setAnchorPoint(cc.p(0,0.5))
         _layer:addChild(_skillName)
          --attack
-        local _attackName = cc.LabelTTF:create("威力：".._soilder["attack"],BoldFont,_fontSize);
+        local _attackName = cc.LabelTTF:create("威力：".._soilder["attack"],ManagementTheme.bodyFont(),_fontSize);
         _attackName:setPosition(cc.p(_xLeft,_centerY-_fontSize))
         -- _attackName:enableStroke(cc.c4b(255, 255, 255, 255), 1)
-        _attackName:setColor(WriteColor)
+        _attackName:setColor(ManagementTheme.colors.ink)
         _attackName:setAnchorPoint(cc.p(0,0.5))
         _layer:addChild(_attackName)
         --star 
@@ -167,30 +170,31 @@ function TrainLayer:init()
         local _righCenterY = _backGround:getPositionY() -5
         for i=0,_soilder["star"]-1 do
             local _starSprite = cc.Sprite:create("Images/UI/xingxing01.png")
-            _starSprite:setPosition(cc.p(_rightX+i*_starSprite:getContentSize().width,_name:getPositionY()))
+            _starSprite:setScale(20/_starSprite:getContentSize().width)
+            _starSprite:setPosition(cc.p(_rightX+i*20,_name:getPositionY()))
             _starSprite:setAnchorPoint(cc.p(0,0.5))
             _layer:addChild(_starSprite)
         end
         --hp
-        local _hpName = cc.LabelTTF:create("生命：".._soilder["hp"],BoldFont,_fontSize);
+        local _hpName = cc.LabelTTF:create("生命：".._soilder["hp"],ManagementTheme.bodyFont(),_fontSize);
         _hpName:setPosition(cc.p(_rightX,_skillName:getPositionY()))
         -- _hpName:enableStroke(cc.c4b(153, 156, 156, 255), 1)
-        _hpName:setColor(WriteColor)
+        _hpName:setColor(ManagementTheme.colors.ink)
         _hpName:setAnchorPoint(cc.p(0,0.5))
         _layer:addChild(_hpName)
         --speed
-        local _speedName = cc.LabelTTF:create("速度：".._soilder["speed"],BoldFont,_fontSize);
+        local _speedName = cc.LabelTTF:create("速度：".._soilder["speed"],ManagementTheme.bodyFont(),_fontSize);
         _speedName:setPosition(cc.p(_rightX,_attackName:getPositionY()))
         -- _speedName:enableStroke(cc.c4b(153, 156, 156, 255), 1)
-        _speedName:setColor(WriteColor)
+        _speedName:setColor(ManagementTheme.colors.ink)
         _speedName:setAnchorPoint(cc.p(0,0.5))
         _layer:addChild(_speedName)
         --title
         local _titleY = _backGround:getPositionY() + _backGround:getContentSize().height/2 + 55
-        local _hf = cc.LabelTTF:create("花费", BoldFont, 30.0)
+        local _hf = cc.LabelTTF:create("花费", ManagementTheme.bodyFont(), 30.0)
         _hf:setPosition(cc.p(_HeadSprite:getPositionX()+10,_titleY))
         -- _hf:enableStroke(cc.c4b(153, 156, 156, 255), 1)
-        _hf:setColor(WriteColor)
+        _hf:setColor(ManagementTheme.colors.white)
         _hf:setAnchorPoint(cc.p(0,0.5))
         _layer:addChild(_hf)
         --goal
@@ -199,23 +203,16 @@ function TrainLayer:init()
         _goalSprite:setAnchorPoint(cc.p(0,0.5))
         _layer:addChild(_goalSprite)
         --
-        local _disFont = cc.LabelTTF:create("X".._soilder["produceResume"][1][3].."招募一个".._soilder["name"].."？", BoldFont, 30.0)
+        local _disFont = cc.LabelTTF:create("X".._soilder["produceResume"][1][3].."招募一个".._soilder["name"].."？", ManagementTheme.bodyFont(), 30.0)
         _disFont:setPosition(cc.p(_goalSprite:getPositionX()+_goalSprite:getContentSize().width,_titleY))
         -- _disFont:enableStroke(cc.c4b(153, 156, 156, 255), 1)
-        _disFont:setColor(WriteColor)
+        _disFont:setColor(ManagementTheme.colors.white)
         _disFont:setAnchorPoint(cc.p(0,0.5))
         _layer:addChild(_disFont)
 
     end, "Images/MainMenu/w_zhaom.png")
 
     self.setBtnLight:setVisible(true)
-
-    --招募
-    local light = cc.Sprite:create("Images/UI/pointer.png")
-    light:setScale(1.8)
-    light:setPosition(cc.p(self.setBtn:getPositionX(),self.setBtn:getPositionY()))
-    self.infoNode:addChild(light,-1)
-    light:runAction(cc.RepeatForever:create(cc.Sequence:create(cc.FadeIn:create(0.0),cc.ScaleTo:create(0, 1.5), cc.Spawn:create(cc.EaseExponentialIn:create(cc.FadeTo:create(0.8, 128.0)), cc.ScaleTo:create(0.8, 2.3)))))
 
     local cellSize = cc.size(530,112)
     -- 添加scrollView
@@ -233,8 +230,7 @@ function TrainLayer:init()
         cell:setTag(idx)
         cell:removeAllChildren()
 
-        local _backGround = cc.Scale9Sprite:create("Images/UI/dibantiao_02.png")
-        _backGround:setPreferredSize(cc.size(589,101))
+        local _backGround = ManagementTheme.panel(589,101,'paper')
         _backGround:setPosition(cc.p(self.areaWidth/2,cellSize.height/2))
         cell:addChild(_backGround)
 
@@ -249,13 +245,13 @@ function TrainLayer:init()
         cell:addChild(_HeadSprite)
         --num
         if _soilderTable[dataKeyNum] ~= nil and _soilderTable[dataKeyNum] > 1 then
-        local _numS = cc.Sprite:create("Images/UI/num_circlebg.png")
+        local _numS = ManagementTheme.surfaceLike("Images/UI/num_circlebg.png",'paper')
         _numS:setScale(1.5)
         _numS:setPosition(cc.p(_HeadSprite:getPositionX()+_HeadSprite:getContentSize().width/2-12,
             _HeadSprite:getPositionY()+_HeadSprite:getContentSize().height/2))
         cell:addChild(_numS)
-        local  _numFont = cc.LabelTTF:create(_soilderTable[dataKeyNum],BoldFont,_fontSize);
-        _numFont:setColor(BaseColor)
+        local  _numFont = cc.LabelTTF:create(_soilderTable[dataKeyNum],ManagementTheme.bodyFont(),_fontSize);
+        _numFont:setColor(ManagementTheme.colors.ink)
         _numFont:setPosition(_numS:getPosition())
         -- _numFont:enableStroke(cc.c4b(215, 199, 165, 255), 1)
         cell:addChild(_numFont)
@@ -263,24 +259,24 @@ function TrainLayer:init()
         --name
         local _xLeft = _HeadSprite:getPositionX() + _HeadSprite:getContentSize().width/2 + 16
         local _centerY = _HeadSprite:getPositionY() -5
-        local _name = cc.LabelTTF:create(_soilder["name"],BoldFont,_fontSize+4);
+        local _name = cc.LabelTTF:create(_soilder["name"],ManagementTheme.bodyFont(),_fontSize+4);
         _name:setPosition(cc.p(_xLeft,_centerY+_fontSize+7))
-        _name:setColor(BaseColor)
+        ManagementTheme.styleLabel(_name,'heading',175)
         -- _name:enableStroke(cc.c4b(215, 199, 165, 255), 1)
         _name:setAnchorPoint(cc.p(0,0.5))
         cell:addChild(_name)
         --skill
-        local _skillName = cc.LabelTTF:create("技能："..SkillData[tostring(_soilder["skill"])]["name"],BoldFont,_fontSize);
+        local _skillName = cc.LabelTTF:create("技能："..SkillData[tostring(_soilder["skill"])]["name"],ManagementTheme.bodyFont(),_fontSize);
         _skillName:setPosition(cc.p(_xLeft,_centerY+2))
         -- _skillName:enableStroke(cc.c4b(153, 156, 156, 255), 1)
-        _skillName:setColor(WriteColor)
+        _skillName:setColor(ManagementTheme.colors.ink)
         _skillName:setAnchorPoint(cc.p(0,0.5))
         cell:addChild(_skillName)
          --attack
-        local _attackName = cc.LabelTTF:create("威力：".._soilder["attack"],BoldFont,_fontSize);
+        local _attackName = cc.LabelTTF:create("威力：".._soilder["attack"],ManagementTheme.bodyFont(),_fontSize);
         _attackName:setPosition(cc.p(_xLeft,_centerY-_fontSize))
         -- _attackName:enableStroke(cc.c4b(153, 156, 156, 255), 1)
-        _attackName:setColor(WriteColor)
+        _attackName:setColor(ManagementTheme.colors.ink)
         _attackName:setAnchorPoint(cc.p(0,0.5))
         cell:addChild(_attackName)
         --star 
@@ -288,27 +284,28 @@ function TrainLayer:init()
         local _righCenterY = _backGround:getPositionY() -5
         for i=0,_soilder["star"]-1 do
             local _starSprite = cc.Sprite:create("Images/UI/xingxing01.png")
-            _starSprite:setPosition(cc.p(_rightX+i*_starSprite:getContentSize().width,_name:getPositionY()))
+            _starSprite:setScale(20/_starSprite:getContentSize().width)
+            _starSprite:setPosition(cc.p(_rightX+i*20,_name:getPositionY()))
             _starSprite:setAnchorPoint(cc.p(0,0.5))
             cell:addChild(_starSprite)
         end
         --hp
-        local _hpName = cc.LabelTTF:create("生命：".._soilder["hp"],BoldFont,_fontSize);
+        local _hpName = cc.LabelTTF:create("生命：".._soilder["hp"],ManagementTheme.bodyFont(),_fontSize);
         _hpName:setPosition(cc.p(_rightX,_skillName:getPositionY()))
         -- _hpName:enableStroke(cc.c4b(153, 156, 156, 255), 1)
-        _hpName:setColor(WriteColor)
+        _hpName:setColor(ManagementTheme.colors.ink)
         _hpName:setAnchorPoint(cc.p(0,0.5))
         cell:addChild(_hpName)
         --speed
-        local _speedName = cc.LabelTTF:create("速度：".._soilder["speed"],BoldFont,_fontSize);
+        local _speedName = cc.LabelTTF:create("速度：".._soilder["speed"],ManagementTheme.bodyFont(),_fontSize);
         _speedName:setPosition(cc.p(_rightX,_attackName:getPositionY()))
         -- _speedName:enableStroke(cc.c4b(153, 156, 156, 255), 1)
-        _speedName:setColor(WriteColor)
+        _speedName:setColor(ManagementTheme.colors.ink)
         _speedName:setAnchorPoint(cc.p(0,0.5))
         cell:addChild(_speedName)
 
         --end
-        local _menuButton = cc.MenuItemImage:create("Images/btn/ann01_a.png", "Images/btn/ann01_b.png")
+        local _menuButton = ManagementTheme.menuItem(128,59,'coral')
         _menuButton:registerScriptTapHandler(function()
             if tonumber(_soilder["star"]) >= 6 then
                 ToastUtil:toastString("转职失败，该船员已为最高")
@@ -324,7 +321,8 @@ function TrainLayer:init()
         menu:setPosition(0.0, 0.0)
         cell:addChild(menu)
 
-        local _zz = cc.LabelTTF:create("转 职", BoldFont, 30.0)
+        local _zz = cc.LabelTTF:create("转 职", ManagementTheme.bodyFont(), 26.0)
+        ManagementTheme.styleLabel(_zz,'action')
         _zz:setPosition(_menuButton:getPosition())
         -- _zz:enableStroke(cc.c4b(255, 255, 255, 255), 2)
         cell:addChild(_zz)
@@ -359,16 +357,9 @@ function TrainLayer:init()
     local idx = cell:getTag()
     local _soilderTable = self.data[self:getDataKeyByIndex(idx)]
     local _soilder =  self.csvData[_soilderTable[dataKeyID]]
-    local _skillBuffID = SkillData[tostring(_soilder["skill"])]["buffID"]
-    local _skillNameStr = "技能："..SkillData[tostring(_soilder["skill"])]["name"].."\n"
-    local _skillBuf = nil
-    if _skillBuffID ~= nil and tonumber(_skillBuffID) > 0 then
-        --self:showInfoBox("附加效果："..self.bufData[tostring(_skillBuffID)]["description"])
-        _skillBuf = "技能效果："..self.bufData[tostring(_skillBuffID)]["description"].."\n"
-    else
-        --self:showInfoBox("附加效果：无")
-        _skillBuf = "技能效果：无".."\n"
-    end
+    local skillName, buffDescription = CrewSkillDetails.describe(_soilder["skill"], SkillData, self.bufData)
+    local _skillNameStr = "技能："..skillName.."\n"
+    local _skillBuf = "技能效果："..buffDescription.."\n"
     local _soilderSX = "生命：".._soilder["hp"].." ".."威力：".._soilder["attack"].." ".."速度：".._soilder["speed"]
     self:showInfoBox(_skillNameStr.._skillBuf.._soilderSX)
     end, cc.TABLECELL_TOUCHED)
@@ -589,24 +580,25 @@ function ChangeJobView:init(Soilder,Index)
     local size = cc.Director:getInstance():getVisibleSize()
 
     -- background
-    local bg = cc.Sprite:create("Images/UI/tankuang_03.png")
+    local bg = ManagementTheme.surfaceLike("Images/UI/tankuang_03.png",'paper')
     bg:setAnchorPoint(cc.p(0.5, 0.5))
     bg:setPosition(cc.p(0.5*size.width, 0.5*size.height))
     self:addChild(bg)
     --title
-    local title = cc.LabelTTF:create("转 职",BoldFont,36)
+    local title = cc.LabelTTF:create("转 职",ManagementTheme.bodyFont(),36)
     title:setPosition(cc.p(bg:getPositionX(),bg:getPositionY()+bg:getContentSize().height/2-34))
-    title:setColor(WriteColor)
+    ManagementTheme.styleLabel(title,'heading')
     -- title:enableStroke(cc.c4b(255, 255, 255, 255), 2)
     self:addChild(title)
     --dis
-    local dis = cc.LabelTTF:create("请选择要转职的职业",BoldFont,24)
+    local dis = cc.LabelTTF:create("请选择要转职的职业",ManagementTheme.bodyFont(),24)
     dis:setPosition(cc.p(title:getPositionX(),title:getPositionY()-58))
-    dis:setColor(WriteColor)
+    dis:setColor(ManagementTheme.colors.ink)
     -- dis:enableStroke(cc.c4b(255, 255, 255, 255), 2)
     self:addChild(dis)
     -- btn
-    local btn = cc.MenuItemImage:create("Images/UI/cancel_button.png", "Images/UI/cancel_button.png")
+    local btn = ManagementTheme.menuItem(58,58,'ink')
+    btn:addChild(ManagementTheme.label('×',32,'action',29,29,.5),2)
     btn:registerScriptTapHandler(function()
         self:close()
     end)
@@ -671,9 +663,8 @@ function ChangeJobView:init(Soilder,Index)
         cell:setTag(idx)
         cell:removeAllChildren()
         local _backGroundCenterY = (cellSize.height+36)/2+14
-        local _backGround = cc.Scale9Sprite:create("Images/UI/tankuang_04.png")
+        local _backGround = ManagementTheme.panel(cellSize.width,cellSize.height,'paper')
         _backGround:setPosition(cc.p(cellSize.width/2,_backGroundCenterY))
-        _backGround:setPreferredSize(cc.size(cellSize.width,cellSize.height))
         cell:addChild(_backGround, -1)
 
         --start
@@ -696,24 +687,24 @@ function ChangeJobView:init(Soilder,Index)
         --name
         local _xLeft = _HeadSprite:getPositionX() + _HeadSprite:getContentSize().width * 0.5 + 36
         local _centerY = _HeadSprite:getPositionY() -5
-        local _name = cc.LabelTTF:create(_soilder["name"],BoldFont,_fontSize+4);
+        local _name = cc.LabelTTF:create(_soilder["name"],ManagementTheme.bodyFont(),_fontSize+4);
         _name:setPosition(cc.p(_xLeft,_centerY+_fontSize+7))
-        _name:setColor(BaseColor)
+        ManagementTheme.styleLabel(_name,'heading',175)
         -- _name:enableStroke(cc.c4b(255, 255, 255, 255), 1)
         _name:setAnchorPoint(cc.p(0,0.5))
         cell:addChild(_name)
         --skill
-        local _skillName = cc.LabelTTF:create("技能："..SkillData[tostring(_soilder["skill"])]["name"],BoldFont,_fontSize);
+        local _skillName = cc.LabelTTF:create("技能："..SkillData[tostring(_soilder["skill"])]["name"],ManagementTheme.bodyFont(),_fontSize);
         _skillName:setPosition(cc.p(_xLeft,_centerY+2))
         -- _skillName:enableStroke(cc.c4b(255, 255, 255, 255), 1)
-        _skillName:setColor(WriteColor)
+        _skillName:setColor(ManagementTheme.colors.ink)
         _skillName:setAnchorPoint(cc.p(0,0.5))
         cell:addChild(_skillName)
          --attack
-        local _attackName = cc.LabelTTF:create("威力：".._soilder["attack"],BoldFont,_fontSize);
+        local _attackName = cc.LabelTTF:create("威力：".._soilder["attack"],ManagementTheme.bodyFont(),_fontSize);
         _attackName:setPosition(cc.p(_xLeft,_centerY-_fontSize))
         -- _attackName:enableStroke(cc.c4b(255, 255, 255, 255), 1)
-        _attackName:setColor(WriteColor)
+        _attackName:setColor(ManagementTheme.colors.ink)
         _attackName:setAnchorPoint(cc.p(0,0.5))
         cell:addChild(_attackName)
         -- --star 
@@ -721,22 +712,23 @@ function ChangeJobView:init(Soilder,Index)
         local _righCenterY = _backGround:getPositionY() -5
         for i=0,_soilder["star"]-1 do
             local _starSprite = cc.Sprite:create("Images/UI/xingxing01.png")
-            _starSprite:setPosition(cc.p(_rightX+i*_starSprite:getContentSize().width,_name:getPositionY()))
+            _starSprite:setScale(20/_starSprite:getContentSize().width)
+            _starSprite:setPosition(cc.p(_rightX+i*20,_name:getPositionY()))
             _starSprite:setAnchorPoint(cc.p(0,0.5))
             cell:addChild(_starSprite)
         end
         --hp
-        local _hpName = cc.LabelTTF:create("生命：".._soilder["hp"],BoldFont,_fontSize);
+        local _hpName = cc.LabelTTF:create("生命：".._soilder["hp"],ManagementTheme.bodyFont(),_fontSize);
         _hpName:setPosition(cc.p(_rightX,_skillName:getPositionY()))
         -- _hpName:enableStroke(cc.c4b(255, 255, 255, 255), 1)
-        _hpName:setColor(WriteColor)
+        _hpName:setColor(ManagementTheme.colors.ink)
         _hpName:setAnchorPoint(cc.p(0,0.5))
         cell:addChild(_hpName)
         --speed
-        local _speedName = cc.LabelTTF:create("速度：".._soilder["speed"],BoldFont,_fontSize);
+        local _speedName = cc.LabelTTF:create("速度：".._soilder["speed"],ManagementTheme.bodyFont(),_fontSize);
         _speedName:setPosition(cc.p(_rightX,_attackName:getPositionY()))
         -- _speedName:enableStroke(cc.c4b(255, 255, 255, 255), 1)
-        _speedName:setColor(WriteColor)
+        _speedName:setColor(ManagementTheme.colors.ink)
         _speedName:setAnchorPoint(cc.p(0,0.5))
         cell:addChild(_speedName)
         --end
@@ -880,21 +872,21 @@ function ChangeJobView:init(Soilder,Index)
                 local _conditionFontSize = 24
                 local _conditioncenterY = _conDitionIcon:getPositionY() -5
 
-                local _conditionname = cc.LabelTTF:create(_nameSprite,BoldFont,_conditionFontSize+4);
+                local _conditionname = cc.LabelTTF:create(_nameSprite,ManagementTheme.bodyFont(),_conditionFontSize+4);
                 _conditionname:setPosition(cc.p(_conditionX+40+_indexX,_conDitionIcon:getPositionY()+(_conditionFontSize+4)/2))
-                _conditionname:setColor(BaseColor)
+                _conditionname:setColor(ManagementTheme.colors.ink)
                 -- _conditionname:enableStroke(cc.c4b(255, 255, 255, 255), 1)
                 _conditionname:setAnchorPoint(cc.p(0,0.5))
                 _conditionname:setTag(self.nameTag+i)
                 cell:addChild(_conditionname)
                 --num
-                local _numFont = cc.LabelTTF:create(_numCurr.."/".._numMax,BoldFont,_conditionFontSize);
+                local _numFont = cc.LabelTTF:create(_numCurr.."/".._numMax,ManagementTheme.bodyFont(),_conditionFontSize);
                 _numFont:setPosition(cc.p( _conditionname:getPositionX(), _conditionname:getPositionY()-_conditionname:getContentSize().height/2-10))
                 if _numCurr >= _numMax then
-                    _numFont:setColor(WriteColor)
+                    _numFont:setColor(ManagementTheme.colors.ink)
                     menuIcon:setEnabled(false)
                 else
-                    _numFont:setColor(cc.c3b(255,0,0))
+                    _numFont:setColor(ManagementTheme.colors.danger)
                 end
                 _numFont:setTag(self.fontTag+i)
                 _numFont:setAnchorPoint(cc.p(0,0.5))
@@ -922,7 +914,7 @@ function ChangeJobView:init(Soilder,Index)
                 break;
            end 
         end
-        local _menuButton = cc.MenuItemImage:create("Images/btn/ann01_a.png", "Images/btn/ann01_b.png")
+        local _menuButton = ManagementTheme.menuItem(128,59,'coral')
         _menuButton:registerScriptTapHandler(function()
             -- 点击转职按钮
             _success = true
@@ -980,9 +972,9 @@ function ChangeJobView:init(Soilder,Index)
             cell:addChild(btnLight)
         end
 
-        local titleZZ = cc.LabelTTF:create("转 职",BoldFont,28)
+        local titleZZ = cc.LabelTTF:create("转 职",ManagementTheme.bodyFont(),28)
         titleZZ:setPosition(menu:getPosition())
-        titleZZ:setColor(WriteColor)
+        titleZZ:setColor(ManagementTheme.colors.white)
         -- titleZZ:enableStroke(cc.c4b(255, 255, 255, 255), 2)
         cell:addChild(titleZZ, 1)
 
@@ -990,11 +982,13 @@ function ChangeJobView:init(Soilder,Index)
         local _leftInfoDecor = cc.Sprite:create("Images/UI/InfoDecor.png")
         _leftInfoDecor:setPosition(cc.p(menu:getPositionX()-64,menu:getPositionY()))
         _leftInfoDecor:setAnchorPoint(cc.p(1,0.5))
+        _leftInfoDecor:setVisible(false)
         cell:addChild(_leftInfoDecor)
         local _rightInfoDecor = cc.Sprite:create("Images/UI/InfoDecor.png")
         _rightInfoDecor:setPosition(cc.p(menu:getPositionX()+64,menu:getPositionY()))
         _rightInfoDecor:setFlippedX(true)
         _rightInfoDecor:setAnchorPoint(cc.p(0,0.5))
+        _rightInfoDecor:setVisible(false)
         cell:addChild(_rightInfoDecor)
 
         return cell
@@ -1016,7 +1010,7 @@ function ChangeJobView:makeCallback(GoodsID,ShowNum,MaxNum,Index,Cell,CellIndex)
     end
     local _numFont = Cell:getChildByTag(tonumber(self.fontTag+Index))
     if _numFont ~= nil then 
-        if _success then _numFont:setColor(WriteColor) end
+        if _success then _numFont:setColor(ManagementTheme.colors.ink) end
         
         _numFont:setString(ShowNum.."/"..ShowNum)
     end
@@ -1074,21 +1068,21 @@ function MaterialView:init(Type,Material,CurrNum,MaxNum,StoreUnlockData,Index,Go
     local size = cc.Director:getInstance():getVisibleSize()
 
     -- background
-    local bg = cc.Sprite:create("Images/UI/tankuang_01.png")
+    local bg = ManagementTheme.surfaceLike("Images/UI/tankuang_01.png",'paper')
     bg:setAnchorPoint(cc.p(0.5, 0.5))
     bg:setPosition(cc.p(0.5*size.width, 0.5*size.height))
     self:addChild(bg)
     --title
     local title = nil
     if Type == 1 then
-        title = cc.LabelTTF:create("材料合成",BoldFont,36)
+        title = cc.LabelTTF:create("材料合成",ManagementTheme.bodyFont(),36)
     elseif Type == 2 then
-        title = cc.LabelTTF:create("材料获得",BoldFont,36)
+        title = cc.LabelTTF:create("材料获得",ManagementTheme.bodyFont(),36)
     elseif Type == 3 or Type == 4 then
-        title = cc.LabelTTF:create("提 示",BoldFont,36)
+        title = cc.LabelTTF:create("提 示",ManagementTheme.bodyFont(),36)
     end
     title:setPosition(cc.p(bg:getPositionX(),bg:getPositionY()+bg:getContentSize().height/2-34))
-    title:setColor(WriteColor)
+    ManagementTheme.styleLabel(title,'heading')
     -- title:enableStroke(cc.c4b(255, 255, 255, 255), 2)
     self:addChild(title)
     --dis
@@ -1098,7 +1092,8 @@ function MaterialView:init(Type,Material,CurrNum,MaxNum,StoreUnlockData,Index,Go
     -- dis:enableStroke(cc.c4b(255, 255, 255, 255), 2)
     -- self:addChild(dis)
     -- btn
-    local btn = cc.MenuItemImage:create("Images/UI/cancel_button.png", "Images/UI/cancel_button.png")
+    local btn = ManagementTheme.menuItem(58,58,'ink')
+    btn:addChild(ManagementTheme.label('×',32,'action',29,29,.5),2)
     btn:registerScriptTapHandler(function()
         self:close()
     end)
@@ -1133,35 +1128,37 @@ function MaterialView:init(Type,Material,CurrNum,MaxNum,StoreUnlockData,Index,Go
         _iconSprite:setAnchorPoint(cc.p(1,0.5))
         self:addChild(_iconSprite)
         local _fontSize = 26
-        local _nameMaterial = cc.LabelTTF:create(self.data["name"],BoldFont,_fontSize)
+        local _nameMaterial = cc.LabelTTF:create(self.data["name"],ManagementTheme.bodyFont(),_fontSize)
         _nameMaterial:setPosition(cc.p(title:getPositionX()+4,_iconSprite:getPositionY()))
         _nameMaterial:setAnchorPoint(cc.p(0,0))
-        _nameMaterial:setColor(BaseColor)
+        _nameMaterial:setColor(ManagementTheme.colors.ink)
         self:addChild(_nameMaterial)
-        local _numFont = cc.LabelTTF:create(CurrNum.."/"..MaxNum,BoldFont,_fontSize)
+        local _numFont = cc.LabelTTF:create(CurrNum.."/"..MaxNum,ManagementTheme.bodyFont(),_fontSize)
         _numFont:setAnchorPoint(cc.p(0,1))
         _numFont:setPosition(cc.p(_nameMaterial:getPositionX(),_iconSprite:getPositionY()))
         if CurrNum >= MaxNum then
-            _numFont:setColor(WriteColor)
+            _numFont:setColor(ManagementTheme.colors.ink)
         else
-            _numFont:setColor(cc.c3b(255,0,0))
+            _numFont:setColor(ManagementTheme.colors.danger)
         end
         self:addChild(_numFont)
 
         -- 
-        local _hcFont = cc.LabelTTF:create("合成所需材料",BoldFont,_fontSize-4)
+        local _hcFont = cc.LabelTTF:create("合成所需材料",ManagementTheme.bodyFont(),_fontSize-4)
         _hcFont:setPosition(cc.p(title:getPositionX(),_iconSprite:getPositionY()-60))
-        _hcFont:setColor(WriteColor)
+        _hcFont:setColor(ManagementTheme.colors.ink)
         -- _hcFont:enableStroke(cc.c4b(255, 255, 255, 255), 1)
         self:addChild(_hcFont)
         local _hengSprite = cc.Sprite:create("Images/UI/hengt_01.png")
         _hengSprite:setPosition(cc.p(_hcFont:getPositionX()-_hcFont:getContentSize().width/2-30,_hcFont:getPositionY()))
         _hengSprite:setAnchorPoint(cc.p(1,0.5))
         _hengSprite:setFlippedX(true)
+        _hengSprite:setVisible(false)
         self:addChild(_hengSprite)
         local _hengSpriteRight = cc.Sprite:create("Images/UI/hengt_01.png")
         _hengSpriteRight:setPosition(cc.p(_hcFont:getPositionX()+_hcFont:getContentSize().width/2+30,_hcFont:getPositionY()))
         _hengSpriteRight:setAnchorPoint(cc.p(0,0.5))
+        _hengSpriteRight:setVisible(false)
         self:addChild(_hengSpriteRight)
 
 
@@ -1268,21 +1265,21 @@ function MaterialView:init(Type,Material,CurrNum,MaxNum,StoreUnlockData,Index,Go
                 local _conditionFontSize = 24
                 local _conditioncenterY = _conDitionIcon:getPositionY() -5
 
-                local _conditionname = cc.LabelTTF:create(_nameSprite,BoldFont,_conditionFontSize+4);
+                local _conditionname = cc.LabelTTF:create(_nameSprite,ManagementTheme.bodyFont(),_conditionFontSize+4);
                 _conditionname:setPosition(cc.p(bg:getPositionX() - bg:getContentSize().width/4 +_indexX,_conDitionIcon:getPositionY()+(_conditionFontSize+4)/2))
-                _conditionname:setColor(BaseColor)
+                _conditionname:setColor(ManagementTheme.colors.ink)
                 -- _conditionname:enableStroke(cc.c4b(255, 255, 255, 255), 1)
                 _conditionname:setAnchorPoint(cc.p(0,0.5))
                 _conditionname:setTag(self.nameTag+i)
                 self:addChild(_conditionname)
                 --num
-                local _numFont = cc.LabelTTF:create(_numCurr.."/".._numMax,BoldFont,_conditionFontSize);
+                local _numFont = cc.LabelTTF:create(_numCurr.."/".._numMax,ManagementTheme.bodyFont(),_conditionFontSize);
                 _numFont:setPosition(cc.p( _conditionname:getPositionX(), _conditionname:getPositionY()-_conditionname:getContentSize().height/2-10))
                 if _numCurr >= _numMax then
-                    _numFont:setColor(WriteColor)
+                    _numFont:setColor(ManagementTheme.colors.ink)
                     menuIcon:setEnabled(false)
                 else
-                    _numFont:setColor(cc.c3b(255,0,0))
+                    _numFont:setColor(ManagementTheme.colors.danger)
                 end
                 _numFont:setTag(self.fontTag+i)
                 _numFont:setAnchorPoint(cc.p(0,0.5))
@@ -1304,14 +1301,14 @@ function MaterialView:init(Type,Material,CurrNum,MaxNum,StoreUnlockData,Index,Go
          end
 
         --end
-        local _cannelButton = cc.MenuItemImage:create("Images/btn/ann03_a.png","Images/btn/ann03_b.png")
+        local _cannelButton = ManagementTheme.menuItem(176,61,'coral')
         _cannelButton:setPosition(cc.p(bg:getPositionX()-130,bg:getPositionY()-bg:getContentSize().height/2+50))
         _cannelButton:registerScriptTapHandler(function()
             self:close()
 
         end)
 
-        local _sureButton = cc.MenuItemImage:create("Images/btn/ann03_a.png","Images/btn/ann03_b.png")
+        local _sureButton = ManagementTheme.menuItem(176,61,'coral')
         _sureButton:setPosition(cc.p(bg:getPositionX()+130,_cannelButton:getPositionY()))
         _sureButton:registerScriptTapHandler(function()
 
@@ -1368,60 +1365,60 @@ function MaterialView:init(Type,Material,CurrNum,MaxNum,StoreUnlockData,Index,Go
         menuIcon:setPosition(0.0, 0.0)
         self:addChild(menuIcon, 1)
 
-        local okButtonLabel = cc.LabelTTF:create("合 成", BoldFont, 32.0)
+        local okButtonLabel = cc.LabelTTF:create("合 成", ManagementTheme.bodyFont(), 32.0)
         -- okButtonLabel:enableStroke(cc.c4b(16, 16, 16, 255), 2)
         okButtonLabel:setColor(cc.c3b(255,255,255))
         okButtonLabel:setPosition(_sureButton:getPosition())
         self:addChild(okButtonLabel, 1)
 
-        local cancelButtonLabel = cc.LabelTTF:create("取 消", BoldFont, 32.0)
+        local cancelButtonLabel = cc.LabelTTF:create("取 消", ManagementTheme.bodyFont(), 32.0)
         -- cancelButtonLabel:enableStroke(cc.c4b(16, 16, 16, 255), 2)
         cancelButtonLabel:setColor(cc.c3b(255,255,255))
         cancelButtonLabel:setPosition(_cannelButton:getPosition())
-        self:addChild(cancelButtonLabel)
+        self:addChild(cancelButtonLabel, 1)
 
     elseif Type == 2 then
         --self:initMaterialGet()
         local _fontSize = 26
-        local _title1 = cc.LabelTTF:create("当前缺少"..CurrNum.."个"..Material,BoldFont,_fontSize)
+        local _title1 = cc.LabelTTF:create("当前缺少"..CurrNum.."个"..Material,ManagementTheme.bodyFont(),_fontSize)
         _title1:setPosition(cc.p(title:getPositionX(),title:getPositionY()-62))
-        _title1:setColor(WriteColor)
+        _title1:setColor(ManagementTheme.colors.ink)
         -- _title1:enableStroke(cc.c4b(255, 255, 255, 255), 1)
         self:addChild(_title1)
-        local _title2 = cc.LabelTTF:create("您可以通过以下方式获得",BoldFont,_fontSize+2)
+        local _title2 = cc.LabelTTF:create("您可以通过以下方式获得",ManagementTheme.bodyFont(),_fontSize+2)
         _title2:setPosition(cc.p(title:getPositionX(),_title1:getPositionY()-40))
-        _title2:setColor(WriteColor)
+        _title2:setColor(ManagementTheme.colors.ink)
         -- _title2:enableStroke(cc.c4b(255, 255, 255, 255), 1)
         self:addChild(_title2)
 
-        local _back1 = cc.Sprite:create("Images/UI/dibantiao_03.png")
+        local _back1 = ManagementTheme.surfaceLike("Images/UI/dibantiao_03.png",'paper')
         _back1:setPosition(cc.p(_title2:getPositionX(),_title2:getPositionY()-99))
         self:addChild(_back1)
         --
-        local _back1Font1 = cc.LabelTTF:create("购买"..CurrNum.."个"..Material,BoldFont,_fontSize)
+        local _back1Font1 = cc.LabelTTF:create("购买"..CurrNum.."个"..Material,ManagementTheme.bodyFont(),_fontSize)
         _back1Font1:setAnchorPoint(cc.p(0,0))
-        _back1Font1:setColor(WriteColor)
+        _back1Font1:setColor(ManagementTheme.colors.ink)
         -- _back1Font1:enableStroke(cc.c4b(255, 255, 255, 255), 1)
         _back1Font1:setPosition(cc.p(_back1:getPositionX()-_back1:getContentSize().width/2+22,_back1:getPositionY()+6))
         self:addChild(_back1Font1)
-        local _back1Font2 = cc.LabelTTF:create("花费"..MaxNum.."金币",BoldFont,_fontSize)
+        local _back1Font2 = cc.LabelTTF:create("花费"..MaxNum.."金币",ManagementTheme.bodyFont(),_fontSize)
         _back1Font2:setAnchorPoint(cc.p(0,1))
-        _back1Font2:setColor(WriteColor)
+        _back1Font2:setColor(ManagementTheme.colors.ink)
         -- _back1Font2:enableStroke(cc.c4b(255, 255, 255, 255), 1)
         _back1Font2:setPosition(cc.p(_back1Font1:getPositionX(),_back1:getPositionY()-6))
         self:addChild(_back1Font2)
-        local _back2 = cc.Sprite:create("Images/UI/dibantiao_03.png")
+        local _back2 = ManagementTheme.surfaceLike("Images/UI/dibantiao_03.png",'paper')
         _back2:setPosition(cc.p(_title2:getPositionX(),_back1:getPositionY()-120))
         self:addChild(_back2)
-        local _back2Font1 = cc.LabelTTF:create("生产：需花费一些时间",BoldFont,_fontSize)
+        local _back2Font1 = cc.LabelTTF:create("生产：需花费一些时间",ManagementTheme.bodyFont(),_fontSize)
         _back2Font1:setAnchorPoint(cc.p(0,0.5))
-        _back2Font1:setColor(WriteColor)
+        _back2Font1:setColor(ManagementTheme.colors.ink)
         -- _back2Font1:enableStroke(cc.c4b(255, 255, 255, 255), 1)
         _back2Font1:setPosition(cc.p(_back1Font1:getPositionX(),_back2:getPositionY()))
         self:addChild(_back2Font1)
 
         --button
-        local _buyButton = cc.MenuItemImage:create("Images/btn/ann01_a.png","Images/btn/ann01_b.png")
+        local _buyButton = ManagementTheme.menuItem(128,59,'coral')
         _buyButton:setPosition(cc.p(_back1:getPositionX()+_back1:getContentSize().width/2-90,_back1:getPositionY()))
         _buyButton:registerScriptTapHandler(function()
             --购买
@@ -1448,7 +1445,7 @@ function MaterialView:init(Type,Material,CurrNum,MaxNum,StoreUnlockData,Index,Go
 
         end)
 
-        local _produceButton = cc.MenuItemImage:create("Images/btn/ann01_a.png","Images/btn/ann01_b.png")
+        local _produceButton = ManagementTheme.menuItem(128,59,'coral')
         _produceButton:setPosition(cc.p(_buyButton:getPositionX(),_back2:getPositionY()))
         _produceButton:registerScriptTapHandler(function()
             --生产
@@ -1462,31 +1459,31 @@ function MaterialView:init(Type,Material,CurrNum,MaxNum,StoreUnlockData,Index,Go
         menuIcon:setPosition(0.0, 0.0)
         self:addChild(menuIcon)
 
-        local _buyLabel = cc.LabelTTF:create("购 买", BoldFont, 32.0)
+        local _buyLabel = cc.LabelTTF:create("购 买", ManagementTheme.bodyFont(), 32.0)
         -- _buyLabel:enableStroke(cc.c4b(16, 16, 16, 255), 2)
         _buyLabel:setColor(cc.c3b(255,255,255))
         _buyLabel:setPosition(_buyButton:getPosition())
         self:addChild(_buyLabel)
 
-        local _produceButtonLabel = cc.LabelTTF:create("生 产", BoldFont, 32.0)
+        local _produceButtonLabel = cc.LabelTTF:create("生 产", ManagementTheme.bodyFont(), 32.0)
         -- _produceButtonLabel:enableStroke(cc.c4b(16, 16, 16, 255), 2)
         _produceButtonLabel:setColor(cc.c3b(255,255,255))
         _produceButtonLabel:setPosition(_produceButton:getPosition())
         self:addChild(_produceButtonLabel)
     elseif Type == 3 then
         local _fontSize = 30
-        local _title1 = cc.LabelTTF:create("您当前还无法获得"..Material,BoldFont,_fontSize)
+        local _title1 = cc.LabelTTF:create("您当前还无法获得"..Material,ManagementTheme.bodyFont(),_fontSize)
         _title1:setPosition(cc.p(title:getPositionX(),bg:getPositionY()+40))
-        _title1:setColor(WriteColor)
+        _title1:setColor(ManagementTheme.colors.ink)
         -- _title1:enableStroke(cc.c4b(255, 255, 255, 255), 1)
         self:addChild(_title1)
         print("GoodsID:", GoodsID)
-        local _title2 = cc.LabelTTF:create(self.packageCSV[tostring(GoodsID)]["obtain"],BoldFont,_fontSize)
+        local _title2 = cc.LabelTTF:create(self.packageCSV[tostring(GoodsID)]["obtain"],ManagementTheme.bodyFont(),_fontSize)
         _title2:setPosition(cc.p(_title1:getPositionX(),bg:getPositionY()-17))
-        _title2:setColor(WriteColor)
+        _title2:setColor(ManagementTheme.colors.ink)
         -- _title2:enableStroke(cc.c4b(255, 255, 255, 255), 1)
         self:addChild(_title2)
-        local _goButton = cc.MenuItemImage:create("Images/btn/ann03_a.png","Images/btn/ann03_b.png")
+        local _goButton = ManagementTheme.menuItem(176,61,'coral')
         _goButton:setPosition(cc.p(title:getPositionX(),bg:getPositionY()-bg:getContentSize().height/2+74))
         _goButton:registerScriptTapHandler(function()
             --前往探索
@@ -1497,24 +1494,24 @@ function MaterialView:init(Type,Material,CurrNum,MaxNum,StoreUnlockData,Index,Go
         local menuIcon = cc.Menu:create(_goButton)
         menuIcon:setPosition(0.0, 0.0)
         self:addChild(menuIcon)
-        local goLabel = cc.LabelTTF:create("出征探索", BoldFont, 32.0)
+        local goLabel = cc.LabelTTF:create("出征探索", ManagementTheme.bodyFont(), 32.0)
         -- goLabel:enableStroke(cc.c4b(16, 16, 16, 255), 2)
         goLabel:setColor(cc.c3b(255,255,255))
         goLabel:setPosition(_goButton:getPosition())
         self:addChild(goLabel)
     elseif Type == 4 then
         local _fontSize = 30
-        local _title1 = cc.LabelTTF:create("您当前还无法制造"..Material,BoldFont,_fontSize)
+        local _title1 = cc.LabelTTF:create("您当前还无法制造"..Material,ManagementTheme.bodyFont(),_fontSize)
         _title1:setPosition(cc.p(title:getPositionX(),bg:getPositionY()+40))
-        _title1:setColor(WriteColor)
+        _title1:setColor(ManagementTheme.colors.ink)
         -- _title1:enableStroke(cc.c4b(255, 255, 255, 255), 1)
         self:addChild(_title1)
-        local _title2 = cc.LabelTTF:create("可以在市场中购买图纸解锁",BoldFont,_fontSize)
+        local _title2 = cc.LabelTTF:create("可以在市场中购买图纸解锁",ManagementTheme.bodyFont(),_fontSize)
         _title2:setPosition(cc.p(_title1:getPositionX(),bg:getPositionY()-17))
-        _title2:setColor(WriteColor)
+        _title2:setColor(ManagementTheme.colors.ink)
         -- _title2:enableStroke(cc.c4b(255, 255, 255, 255), 1)
         self:addChild(_title2)
-        local _goButton = cc.MenuItemImage:create("Images/btn/ann03_a.png","Images/btn/ann03_b.png")
+        local _goButton = ManagementTheme.menuItem(176,61,'coral')
         _goButton:setPosition(cc.p(title:getPositionX(),bg:getPositionY()-bg:getContentSize().height/2+74))
         _goButton:registerScriptTapHandler(function()
             --前往探索
@@ -1525,7 +1522,7 @@ function MaterialView:init(Type,Material,CurrNum,MaxNum,StoreUnlockData,Index,Go
         local menuIcon = cc.Menu:create(_goButton)
         menuIcon:setPosition(0.0, 0.0)
         self:addChild(menuIcon)
-        local goLabel = cc.LabelTTF:create("前往市场", BoldFont, 32.0)
+        local goLabel = cc.LabelTTF:create("前往市场", ManagementTheme.bodyFont(), 32.0)
         -- goLabel:enableStroke(cc.c4b(16, 16, 16, 255), 2)
         goLabel:setColor(cc.c3b(255,255,255))
         goLabel:setPosition(_goButton:getPosition())
@@ -1542,7 +1539,7 @@ function MaterialView:buyCallback(GoodsID,ShowNum,Index)
     end
     local _numFont = self:getChildByTag(tonumber(self.fontTag+Index))
     if _numFont ~= nil then 
-        _numFont:setColor(WriteColor)
+        _numFont:setColor(ManagementTheme.colors.ink)
         _numFont:setString(ShowNum.."/"..ShowNum)
     end
     local _button = self:getChildByTag(tonumber(self.buttonTag+Index))

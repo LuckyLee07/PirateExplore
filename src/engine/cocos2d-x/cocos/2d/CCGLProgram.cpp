@@ -138,11 +138,22 @@ bool GLProgram::initWithByteArrays(const GLchar* vShaderByteArray, const GLchar*
 
     _vertShader = _fragShader = 0;
 
+    // Callers use the bool result to keep their native material when an
+    // optional shader is unsupported. Leave failed objects safely reusable.
+    auto discardFailedProgram = [this]() {
+        if (_vertShader) glDeleteShader(_vertShader);
+        if (_fragShader) glDeleteShader(_fragShader);
+        _vertShader = _fragShader = 0;
+        if (_program) GL::deleteProgram(_program);
+        _program = 0;
+    };
+
     if (vShaderByteArray)
     {
         if (!compileShader(&_vertShader, GL_VERTEX_SHADER, vShaderByteArray))
         {
             CCLOG("cocos2d: ERROR: Failed to compile vertex shader");
+            discardFailedProgram();
  			return false;
        }
     }
@@ -153,6 +164,7 @@ bool GLProgram::initWithByteArrays(const GLchar* vShaderByteArray, const GLchar*
         if (!compileShader(&_fragShader, GL_FRAGMENT_SHADER, fShaderByteArray))
         {
             CCLOG("cocos2d: ERROR: Failed to compile fragment shader");
+            discardFailedProgram();
 			return false;
         }
     }
@@ -265,7 +277,9 @@ bool GLProgram::compileShader(GLuint * shader, GLenum type, const GLchar* source
         }
         free(src);
 
-        abort();
+        glDeleteShader(*shader);
+        *shader = 0;
+        return false;
     }
     return (status == GL_TRUE);
 }
@@ -344,7 +358,7 @@ bool GLProgram::link()
     
     _vertShader = _fragShader = 0;
 	
-#if DEBUG || (CC_TARGET_PLATFORM == CC_PLATFORM_WINRT) || (CC_TARGET_PLATFORM == CC_PLATFORM_WP8)
+    // Optional custom programs must report linker failure in release builds too.
     glGetProgramiv(_program, GL_LINK_STATUS, &status);
 	
     if (status == GL_FALSE)
@@ -353,7 +367,6 @@ bool GLProgram::link()
         GL::deleteProgram(_program);
         _program = 0;
     }
-#endif
 
 #if (CC_TARGET_PLATFORM == CC_PLATFORM_WINRT) || (CC_TARGET_PLATFORM == CC_PLATFORM_WP8)
     if (status == GL_TRUE)
@@ -390,17 +403,19 @@ std::string GLProgram::logForOpenGLObject(GLuint object, GLInfoFunction infoFunc
 
 std::string GLProgram::getVertexShaderLog() const
 {
-    return this->logForOpenGLObject(_vertShader, (GLInfoFunction)&glGetShaderiv, (GLLogFunction)&glGetShaderInfoLog);
+    // GLEW exposes these names as function-pointer variables. Their values,
+    // not the addresses of those variables, are the callable entrypoints.
+    return this->logForOpenGLObject(_vertShader, (GLInfoFunction)glGetShaderiv, (GLLogFunction)glGetShaderInfoLog);
 }
 
 std::string GLProgram::getFragmentShaderLog() const
 {
-    return this->logForOpenGLObject(_fragShader, (GLInfoFunction)&glGetShaderiv, (GLLogFunction)&glGetShaderInfoLog);
+    return this->logForOpenGLObject(_fragShader, (GLInfoFunction)glGetShaderiv, (GLLogFunction)glGetShaderInfoLog);
 }
 
 std::string GLProgram::getProgramLog() const
 {
-    return this->logForOpenGLObject(_program, (GLInfoFunction)&glGetProgramiv, (GLLogFunction)&glGetProgramInfoLog);
+    return this->logForOpenGLObject(_program, (GLInfoFunction)glGetProgramiv, (GLLogFunction)glGetProgramInfoLog);
 }
 
 // Uniform cache

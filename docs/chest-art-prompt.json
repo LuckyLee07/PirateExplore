@@ -1,0 +1,11 @@
+{
+  "prompt": "Use case: style-transfer. Asset type: two-state game treasure chest sprite sheet, exactly TWO side-by-side equal portrait cells. Overall canvas aspect368:239, each cell184:239. Image1 is the original closed-state composition, image2 the original open-state composition, image3 only the approved pirate-harbor painterly style. Repaint the SAME single chest in both states. LEFT cell closed chest, RIGHT cell open chest. Preserve original wooden curved-lid chest with ornate brass straps and recognizable skull-shaped central lock, same three-quarter viewing direction and outer body proportions. Warm honey-brown timber, restrained antiqued golden brass, cool deep teal shadows, chunky refined hand-painted gouache, matching harbor style. Eliminate the old yellow glow completely: genuine transparent background, NO glow aura, no pale backing shape, no floor, no border, no labels. Right chest interior must be empty and dark, no gold or rewards because live game items are overlaid separately. Left lid closed. Right lid fully raised with skull ornament on the lid. BOTH chests' body bottoms line up and body is the same size; closed state naturally has empty transparent room above its closed lid while open lid uses upper room. Keep every edge, including lid, inside own cell with transparent gutters and no overlap. Only these two matching chest sprites, no additional objects.",
+  "transparent_background": true,
+  "tool": "built-in imagegen",
+  "source_master": "exec-18126b78-f8d7-445c-8c42-a64d6ac1f979.png",
+  "reference_roles": [
+    "Fight/baoxiang01.png closed composition",
+    "Fight/baoxiang02.png open composition",
+    "Master/harbor-full.png approved style"
+  ]
+}

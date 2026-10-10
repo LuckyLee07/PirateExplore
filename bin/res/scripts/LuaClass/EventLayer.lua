@@ -1,3 +1,5 @@
+require 'LuaClass/DialogTheme'
+local function eventLabel(text, _, size) return MasterTheme.label(text,size,MasterTheme.colors.paper,0,0,false,.5) end
 require "AudioEngine"
 require "LuaClass/Header"
 require "LuaClass/FightMode"
@@ -51,28 +53,30 @@ function EventLayer:init()
     buttoninterval = winSize.height * 0.1
     descriptioninterval = winSize.height * 0.3
 
-    local bgLayer = cc.LayerColor:create(cc.c4b(0,0,0,255),winSize.width , winSize.height )
+    local bgLayer = DialogTheme.panel(winSize.width, winSize.height)
+    bgLayer:setAnchorPoint(cc.p(0,0))
     bgLayer:setPosition(cc.p(0,0))
     self:addChild(bgLayer)
 
-   	self.title = cc.LabelTTF:create("事件标题文本", BoldFont, winSize.height * 0.04)
-   	self.title:setPosition(cc.p(winSize.width / 2,winSize.height - self.title:getContentSize().height / 2))
+    self.title = eventLabel("事件标题文本", BoldFont, winSize.height * 0.04)
+    self.title:setFontName(MasterTheme.headingFont(true))
+    self.title:setPosition(cc.p(winSize.width / 2,winSize.height - 50))
    	self:addChild(self.title)
 
-   	self.midTip = cc.LabelTTF:create("中间提示文本", BoldFont, winSize.height * 0.03)
+    self.midTip = eventLabel("中间提示文本", BoldFont, winSize.height * 0.03)
    	self.midTip:setPosition(cc.p(winSize.width / 2,self.title:getPositionY() - descriptioninterval / 2))
    	self:addChild(self.midTip)
 
    	self.midTip:setVisible(false)
 
-   	self.description = cc.LabelTTF:create("事件描述文本", BoldFont, winSize.height * 0.03)
+    self.description = eventLabel("事件描述文本", BoldFont, winSize.height * 0.03)
 	self.description:setPosition(cc.p(winSize.width / 2,self.title:getPositionY() - descriptioninterval))
    	self:addChild(self.description)
-   	local labelSize = cc.size(winSize.width,0)
+    local labelSize = cc.size(winSize.width-48,0)
    	self.description:setDimensions(labelSize)
    	self.midTip:setDimensions(labelSize)
   	
-   	local button = SDButton:create("Images/btn/ann05_b.png", "Images/btn/ann05_b.png", function() 
+    local button = DialogTheme.sdButton("Images/btn/ann05_b.png", "Images/btn/ann05_b.png", function()
         self:enterFightLayer()
     end)
    	-- cc.MenuItemImage:create("Images/btn/ann05_b.png", "Images/btn/ann05_b.png");
@@ -83,14 +87,14 @@ function EventLayer:init()
    	button:setPosition(cc.p(winSize.width / 2 ,self.description:getPositionY() - buttoninterval - button:getContentSize().height / 2))
    	self.buttons[1] = button
 
-   	local buttonTips = cc.LabelTTF:create("按钮1", BoldFont, winSize.height * 0.03)
+    local buttonTips = eventLabel("按钮1", BoldFont, winSize.height * 0.03)
    	buttonTips:setPosition(cc.p(button:getPositionX() ,button:getPositionY()))
-   	buttonTips:setColor(opColorPrimroseYellow)
+    buttonTips:setColor(MasterTheme.colors.paper)
    	self:addChild(buttonTips,3)
 
    	self.buttonTips[1] = buttonTips
    	
-   	button = SDButton:create("Images/btn/ann05_b.png", "Images/btn/ann05_b.png", function() 
+    button = DialogTheme.sdButton("Images/btn/ann05_b.png", "Images/btn/ann05_b.png", function()
         self:leaveToExploreMap(true)
     end)
 
@@ -103,9 +107,9 @@ function EventLayer:init()
     --     self:leaveToExploreMap(true)
     -- end)
 
-   	buttonTips = cc.LabelTTF:create("按钮2", BoldFont, winSize.height * 0.03)
+    buttonTips = eventLabel("按钮2", BoldFont, winSize.height * 0.03)
    	buttonTips:setPosition(cc.p(button:getPositionX() ,button:getPositionY()))
-   	buttonTips:setColor(opColorPrimroseYellow)
+    buttonTips:setColor(MasterTheme.colors.paper)
    	self:addChild(buttonTips,3)
    	self.buttonTips[2] = buttonTips
 
@@ -189,7 +193,7 @@ function EventLayer:showMultipleButtons(  )
 	startY = startY + buttoninterval 
 
 	--先添加离开滑动按钮
-	local button = SDButton:create("Images/btn/ann05_b.png", "Images/btn/ann05_b.png", function() 
+    local button = DialogTheme.sdButton("Images/btn/ann05_b.png", "Images/btn/ann05_b.png", function()
         	self:stopAllActions()
 	    	local seq = cc.Sequence:create(cc.DelayTime:create(0.1),cc.CallFunc:create(function ()
 				self:leaveToExploreMap(true)
@@ -198,13 +202,13 @@ function EventLayer:showMultipleButtons(  )
     end)
 
 	-- cc.MenuItemImage:create("Images/btn/ann05_b.png", "Images/btn/ann05_b.png");
-	-- 	button:registerSingleCLick(function() 
-	-- 		self:stopAllActions()
-	--     	local seq = cc.Sequence:create(cc.DelayTime:create(0.1),cc.CallFunc:create(function ()
-	-- 			self:leaveToExploreMap(true)
-	-- 		end))
-	-- 		self:runAction(seq)
- --    	end)
+    --  button:registerSingleCLick(function()
+    --      self:stopAllActions()
+    --      local seq = cc.Sequence:create(cc.DelayTime:create(0.1),cc.CallFunc:create(function ()
+    --          self:leaveToExploreMap(true)
+    --      end))
+    --      self:runAction(seq)
+ --     end)
 
 
 
@@ -213,9 +217,9 @@ function EventLayer:showMultipleButtons(  )
 
    	buttons[1] = button
 
-   	local buttonTips = cc.LabelTTF:create("离 开", BoldFont, winSize.height * 0.03)
+    local buttonTips = eventLabel("离 开", BoldFont, winSize.height * 0.03)
    	buttonTips:setPosition(cc.p(button:getPositionX() ,button:getPositionY()))
-   	buttonTips:setColor(opColorPrimroseYellow)
+    buttonTips:setColor(MasterTheme.colors.paper)
    	containerLayer:addChild(buttonTips)
 
    	startY = startY + button:getContentSize().height / 2
@@ -230,7 +234,7 @@ function EventLayer:showMultipleButtons(  )
 
 		print("showMultipleButtons",record.costs,record.level)
 
-		-- local label = cc.LabelTTF:create(tipString, BoldFont, winSize.height * 0.03)
+        -- local label = eventLabel(tipString, BoldFont, winSize.height * 0.03)
 
 		-- startY = startY - buttoninterval - label:getContentSize().height / 2
 
@@ -239,14 +243,14 @@ function EventLayer:showMultipleButtons(  )
 
 		-- startY = startY - label:getContentSize().height / 2
 
-		local button = SDButton:create("Images/btn/ann05_b.png", "Images/btn/ann05_b.png", function() 
+        local button = DialogTheme.sdButton("Images/btn/ann05_b.png", "Images/btn/ann05_b.png", function()
         	self:checkJumpToEternalArena(record.costs,record.level)
     	end)
 
 		-- cc.MenuItemImage:create("Images/btn/ann05_b.png", "Images/btn/ann05_b.png");
 		-- button:registerSingleCLick(function() 
-  --       	self:checkJumpToEternalArena(record.costs,record.level)
-  --   	end)
+  --        self:checkJumpToEternalArena(record.costs,record.level)
+  --    end)
     	startY = startY + button:getContentSize().height / 2
    		button:setPosition(cc.p(button:getContentSize().width / 2 ,startY))
 
@@ -262,7 +266,7 @@ function EventLayer:showMultipleButtons(  )
    		tipSpr:setScale(scale)
    		button:addChild(tipSpr)
    		print("%s",string.format("Images/Icon/%s",iconName),scale,button:getContentSize().height,tipSpr:getContentSize().height)
-   		local costNumLabel = cc.LabelTTF:create(string.format("X%d",tonumber(record.costs.num)), BoldFont, winSize.height * 0.04)
+        local costNumLabel = eventLabel(string.format("X%d",tonumber(record.costs.num)), BoldFont, winSize.height * 0.04)
    		costNumLabel:setPosition(cc.p(tipSpr:getPositionX() + tipSpr:getContentSize().width * scale / 2 + costNumLabel:getContentSize().width / 2,tipSpr:getPositionY()))
    		button:addChild(costNumLabel)
 
@@ -271,7 +275,7 @@ function EventLayer:showMultipleButtons(  )
 
    		tipString = string.format("快送挑战到%d关",tonumber(record.level))
 
-		local label = cc.LabelTTF:create(tipString, BoldFont, winSize.height * 0.03)
+        local label = eventLabel(tipString, BoldFont, winSize.height * 0.03)
 
 		startY = startY + label:getContentSize().height / 2
 
@@ -287,7 +291,7 @@ function EventLayer:showMultipleButtons(  )
 	startY = startY + buttoninterval 
 
 	--先添加离开滑动按钮
-	local button = SDButton:create("Images/btn/ann05_b.png", "Images/btn/ann05_b.png", function() 
+    local button = DialogTheme.sdButton("Images/btn/ann05_b.png", "Images/btn/ann05_b.png", function()
         	self:stopAllActions()
 	    	local seq = cc.Sequence:create(cc.DelayTime:create(0.1),cc.CallFunc:create(function ()
 				self:enterToEternalArenaByLevel()
@@ -296,22 +300,22 @@ function EventLayer:showMultipleButtons(  )
     	end)
 
 	-- cc.MenuItemImage:create("Images/btn/ann05_b.png", "Images/btn/ann05_b.png");
-	-- 	button:registerSingleCLick(function() 
-	-- 		self:stopAllActions()
-	--     	local seq = cc.Sequence:create(cc.DelayTime:create(0.1),cc.CallFunc:create(function ()
-	-- 			self:enterToEternalArenaByLevel()
-	-- 		end))
-	-- 		self:runAction(seq)
- --    	end)
+    --  button:registerSingleCLick(function()
+    --      self:stopAllActions()
+    --      local seq = cc.Sequence:create(cc.DelayTime:create(0.1),cc.CallFunc:create(function ()
+    --          self:enterToEternalArenaByLevel()
+    --      end))
+    --      self:runAction(seq)
+ --     end)
 
 	startY = startY + button:getContentSize().height / 2
    	button:setPosition(cc.p(button:getContentSize().width / 2 ,startY))
 
    	buttons[#buttons + 1] = button
 
-   	local buttonTips = cc.LabelTTF:create("挑 战", BoldFont, winSize.height * 0.03)
+    local buttonTips = eventLabel("挑 战", BoldFont, winSize.height * 0.03)
    	buttonTips:setPosition(cc.p(button:getPositionX() ,button:getPositionY()))
-   	buttonTips:setColor(opColorPrimroseYellow)
+    buttonTips:setColor(MasterTheme.colors.paper)
    	containerLayer:addChild(buttonTips)
 
    	startY = startY + button:getContentSize().height / 2
@@ -319,9 +323,9 @@ function EventLayer:showMultipleButtons(  )
 	-- --只能倒序
 	-- for i= #arenaRecords,1 do
 		
- --   		-- --筛选出宽度,查出一个bug，要想纵向移动container的宽必须和viewsize的宽一样，所以蛋疼的scview!横纵向管毛用。。。
- --   		-- local maxWidth = math.max(button:getContentSize().width,label:getContentSize().width)
- --   		-- containerSize.width = math.max(containerSize.width,maxWidth)
+ --         -- --筛选出宽度,查出一个bug，要想纵向移动container的宽必须和viewsize的宽一样，所以蛋疼的scview!横纵向管毛用。。。
+ --         -- local maxWidth = math.max(button:getContentSize().width,label:getContentSize().width)
+ --         -- containerSize.width = math.max(containerSize.width,maxWidth)
 	-- end
 
 
@@ -547,7 +551,7 @@ function EventLayer:getsAndSetsEnemyLayerInfoByEnemy( enemy,addDropInfo,calBack 
 	-- enemyFighters,enemyCanoon
 
 	-- for k,v in pairs(enemy) do
-	-- 	print(k,v)
+    --  print(k,v)
 	-- end
 	
 	curEnemyInfo = {}
@@ -665,7 +669,7 @@ function EventLayer:getsAndSetsEnemyLayerInfoByEnemy( enemy,addDropInfo,calBack 
 		FightDataManager:getInstance():addEnemyFighterData(fightFighterData)
 
 		-- for k,v in pairs(fightFighterData) do
-		-- 	print(k,v)
+        --  print(k,v)
 		-- end
 
 		print("getsAndSetsEnemyLayerInfoByEnemyOver",fightFighterData.power,fightFighterData.hp,fightFighterData.name,fightFighterData.speed,fightFighterData.miss,fightFighterData.bufferId,fightFighterData.description)
@@ -729,9 +733,9 @@ function EventLayer:getsAndSetsEnemyLayerInfoByEnemy( enemy,addDropInfo,calBack 
 			self.description:setFontSize(cc.Director:getInstance():getVisibleSize().height * 0.025)
 			self.midTip:setVisible(true)
 			-- self.buttons[1]:registerSingleCLick(function() 
-			-- 	self.enemysIndex = self.enemysIndex + 1
-   --      		self:fightIsOver(true)
-   --  		end)
+            --  self.enemysIndex = self.enemysIndex + 1
+   --           self:fightIsOver(true)
+   --       end)
 			print("getsAndSetsEnemyLayerInfoByEnemy")
 			self.buttonTips[1]:setString("战 斗")
 		end
@@ -740,11 +744,11 @@ function EventLayer:getsAndSetsEnemyLayerInfoByEnemy( enemy,addDropInfo,calBack 
 
 
 		-- self.buttons[2]:registerSingleCLick(function() 
-  --       	self:enterNextLayer()
-  --   	end)
+  --        self:enterNextLayer()
+  --    end)
 
 		-- for k,v in pairs(fightFighterData) do
-		-- 	print(k,v)
+        --  print(k,v)
 		-- end
 
 	--设置描述
@@ -758,7 +762,7 @@ function EventLayer:getsAndSetsEnemyLayerInfoByEnemy( enemy,addDropInfo,calBack 
 end
 
 -- function EventLayer( ... )
--- 	-- body
+--  -- body
 -- end
 
 --复活界面
@@ -906,7 +910,7 @@ function EventLayer:enterNextMapEnter( needEnterNext,index,isCheck )
 
 
 
-	-- 	return false
+    --  return false
 	-- end
 
 	--先事件处理毕，然后在更换地图
@@ -936,12 +940,12 @@ function EventLayer:changeToTeleportLayer( data )
 
 		local winSize = cc.Director:getInstance():getVisibleSize()
 
-		local otherTips = cc.LabelTTF:create(des, BoldFont, winSize.height * 0.03)
+        local otherTips = eventLabel(des, BoldFont, winSize.height * 0.03)
 		otherTips:setPosition(cc.p(self.description:getPosition()))
 		otherTips:setHorizontalAlignment(cc.TEXT_ALIGNMENT_LEFT)
 		otherTips:setVerticalAlignment(cc.VERTICAL_TEXT_ALIGNMENT_CENTER)
 
-		local labelSize = cc.size(winSize.width,0)
+        local labelSize = cc.size(winSize.width-48,0)
    		otherTips:setDimensions(labelSize)
    		self.description:getParent():addChild(otherTips,2,4)
    		self.otherTips = otherTips
@@ -993,7 +997,7 @@ function EventLayer:enterPubLayer( data )
 	-- print(data)
 
 	-- for k,v in pairs(data) do
-	-- 	print(k,v)
+    --  print(k,v)
 	-- end
 
 	local memberInfos = {}
@@ -1054,31 +1058,31 @@ function EventLayer:enterBlackMarket( data)
 	end
 
 	-- for k,v in pairs(data) do
-	-- 	print(k,v)
+    --  print(k,v)
 	-- end
 
 	-- data = data["Carryitems"]
 	-- local itemInfos = {}
 	-- for i=1,#data do
-	-- 	local temp_data = data[i]
-	-- 	local itemInfo = {}
-	-- 	itemInfo.id = temp_data[2]
-	-- 	itemInfo.name = dataController.getResourceValueByIdAndKey(itemInfo.id,"name")
-	-- 	itemInfo.icon = dataController.getResourceValueByIdAndKey(itemInfo.id,"iconName")
-	-- 	itemInfo.star = tonumber(dataController.getResourceValueByIdAndKey(itemInfo.id,"starNum"))
+    --  local temp_data = data[i]
+    --  local itemInfo = {}
+    --  itemInfo.id = temp_data[2]
+    --  itemInfo.name = dataController.getResourceValueByIdAndKey(itemInfo.id,"name")
+    --  itemInfo.icon = dataController.getResourceValueByIdAndKey(itemInfo.id,"iconName")
+    --  itemInfo.star = tonumber(dataController.getResourceValueByIdAndKey(itemInfo.id,"starNum"))
  --        if itemInfo.star == nil then itemInfo.star = 5 end
-	-- 	itemInfo.description = dataController.getResourceValueByIdAndKey(itemInfo.id,"desc")
-	-- 	itemInfo.costType = temp_data[1]
-	-- 	itemInfo.costs = tonumber(temp_data[3])
+    --  itemInfo.description = dataController.getResourceValueByIdAndKey(itemInfo.id,"desc")
+    --  itemInfo.costType = temp_data[1]
+    --  itemInfo.costs = tonumber(temp_data[3])
 
-	-- 	if not temp_data[4] then
-	-- 		temp_data[4] = 1
-	-- 	end
+    --  if not temp_data[4] then
+    --      temp_data[4] = 1
+    --  end
 		
-	-- 	itemInfo.num = tonumber(temp_data[4])
-	-- 	itemInfos[i] = itemInfo
+    --  itemInfo.num = tonumber(temp_data[4])
+    --  itemInfos[i] = itemInfo
 
-	-- 	-- print("enterBlackMarketData:",itemInfo.id,itemInfo.name,itemInfo.icon,itemInfo.star,itemInfo.description,itemInfo.costCoin)
+    --  -- print("enterBlackMarketData:",itemInfo.id,itemInfo.name,itemInfo.icon,itemInfo.star,itemInfo.description,itemInfo.costCoin)
 	-- end
 	
 	--检查数据是否需要刷新
@@ -1222,7 +1226,7 @@ end
 function EventLayer:changeToEnemyLayer( data,isOccupied )
 
 	-- if not self.controller:checkEnterNext() then
-	-- 	return
+    --  return
 	-- end	
 
 	print("changeToEnemyLayer",data)
@@ -1270,7 +1274,7 @@ function EventLayer:enterSupplyPoint(  )
 	-- print("datas",datas[1])
 
 	-- for k,v in pairs(datas[1]) do
-	-- 	print(k,v)
+    --  print(k,v)
 	-- end
 
 	for i=1,#datas do
@@ -1328,7 +1332,7 @@ function EventLayer:enterFightLayer( isNeedShipBattle,calBack )
 
     --战斗就不需要检查了。。。
 	-- if not self.controller:checkEnterNext() then
-	-- 	return
+    --  return
 	-- end	
 	
     local fightType = FightScene.FightType.shipWar
@@ -1360,8 +1364,8 @@ function EventLayer:enterFightLayer( isNeedShipBattle,calBack )
     self.needsPop = self.needsPop + 1
     print("needsPop",self.needsPop)
  --    if 1 then
-	-- 	self:fightIsOver(false)
-	-- 	return
+    --  self:fightIsOver(false)
+    --  return
 	-- end
 
     -- self:leaveToExploreMap( false )
@@ -1369,6 +1373,8 @@ end
 
 function EventLayer:showTipOccupiedLayer( layerInfo )
 
+	-- 战斗结束后不再显示战前的据点说明（例如“已被怪物占据”）。
+	self.midTip:setVisible(false)
 	local tipDes = layerInfo["occupationdescription"]
 	self.description:setString(tipDes)
 
@@ -1433,16 +1439,16 @@ function EventLayer:enterRewardLayer( dropDatas )
     scene:addChild(rewardscene)
     cc.Director:getInstance():pushScene(scene)
 
---	local rewardLayer = EventRewardLayer:create( data )
---	rewardLayer.packageCapicity = DataManager:getInstance():getRoleData(rolePackSize)
---	rewardLayer:setPosition(0,0)
---	rewardLayer.pickUpCallback = function (  )
---		ExploreBagController:getBagController():refreshBattlePack()
---		self:enterNextLayer(false,true)
---	end
---	print("rewardLayer.pickUpCallback",rewardLayer.pickUpCallback)
---	local gameScene = cc.Director:getInstance():getRunningScene()
---	gameScene:addChild(rewardLayer)
+--  local rewardLayer = EventRewardLayer:create( data )
+--  rewardLayer.packageCapicity = DataManager:getInstance():getRoleData(rolePackSize)
+--  rewardLayer:setPosition(0,0)
+--  rewardLayer.pickUpCallback = function (  )
+--      ExploreBagController:getBagController():refreshBattlePack()
+--      self:enterNextLayer(false,true)
+--  end
+--  print("rewardLayer.pickUpCallback",rewardLayer.pickUpCallback)
+--  local gameScene = cc.Director:getInstance():getRunningScene()
+--  gameScene:addChild(rewardLayer)
 
 end
 
@@ -1547,7 +1553,7 @@ function EventLayer:fightIsOver( result )
 		ExploreBagController:getBagController():refreshBattlePack()
 	else
 		-- local seq = cc.Sequence:create(cc.DelayTime:create(0.1),cc.CallFunc:create(function ()
-		-- 	self.controller:allMembersKilled()
+        --  self.controller:allMembersKilled()
 		-- end))
 		-- self:runAction(seq)
 		self.controller:allMembersKilled()

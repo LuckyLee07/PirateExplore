@@ -1,8 +1,8 @@
-Original font copyright: © 2017-2024 Adobe (http://www.adobe.com/).
-Original font license: This Font Software is licensed under the SIL Open Font License, Version 1.1. This Font Software is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the SIL Open Font License for the specific language, permissions and limitations governing your use of this Font Software.
-Original font license URL: http://scripts.sil.org/OFL
+Pirate Harbor Serif is a renamed UI subset of Noto Serif CJK Bold. CFF outlines were converted to TrueType for the legacy renderer. The derivative remains under SIL OFL 1.1.
 
-Pirate Harbor Serif Bold is a renamed UI-glyph subset derived from Noto Serif CJK Bold. CFF outlines were converted to TrueType for the legacy renderer. The derivative remains under SIL OFL 1.1. It is used only for the approved harbor UI headings.
+© 2017-2024 Adobe (http://www.adobe.com/).
+This Font Software is licensed under the SIL Open Font License, Version 1.1. This Font Software is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the SIL Open Font License for the specific language, permissions and limitations governing your use of this Font Software.
+http://scripts.sil.org/OFL
 
 Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: noto-cjk

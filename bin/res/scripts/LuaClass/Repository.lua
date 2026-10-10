@@ -1,6 +1,8 @@
 require "LuaClass/Header"
 require "LuaClass/BaseView"
+require "LuaClass/ManagementTheme"
 require "LuaClass/SDButton"
+require "LuaClass/ItemIcon"
 
 
 RepositoryLayer = class("RepositoryLayer", function ()
@@ -32,6 +34,7 @@ function RepositoryLayer:destory()
 end
 
 function RepositoryLayer:init()
+    self:applyManagementTheme()
     DataManager:getInstance():registerEvent(roleMapInfo, "RepositoryLayer", function()
         -- body
         local flag = DataManager:getInstance():checkDiamondStoreNewGoods()
@@ -74,39 +77,39 @@ function RepositoryLayer:init()
 	end, nil, true, zqAlchemyTime, false)
 
 	-- 添加顶部筛选按钮组的背景
-	local topButtonGroup = cc.Sprite:create("Images/UI/TopButtonGroupBg.png")
+	local topButtonGroup = ManagementTheme.surfaceLike("Images/UI/TopButtonGroupBg.png",'section')
 	topButtonGroup:setPosition(cc.p(visibleSize.width * 0.5, visibleSize.height - UITopHeight - self.titleHeight - topButtonGroup:getContentSize().height * 0.5))
 	self:addChild(topButtonGroup)
 
 	-- 添加全部筛选按钮
-	local allBtnNormal = cc.MenuItemImage:create("Images/UI/c_quanbu_b.png", "Images/UI/c_quanbu_b.png")
-	local allBtnSelected = cc.MenuItemImage:create("Images/UI/c_quanbu_a.png", "Images/UI/c_quanbu_a.png")
+	local allBtnNormal = ManagementTheme.tab("全部",false,104,45)
+	local allBtnSelected = ManagementTheme.tab("全部",true,104,45)
 	local allBtn = cc.MenuItemToggle:create(allBtnNormal, allBtnSelected)
 	allBtn:setPosition(cc.p(self.titleLabel:getPositionX() - 220, topButtonGroup:getPositionY()))
 
 	allBtn:setSelectedIndex(1)
 
 	-- 添加装备按钮
-	local equipBtnNormal = cc.MenuItemImage:create("Images/UI/c_zhuangbei_b.png", "Images/UI/c_zhuangbei_b.png")
-	local equipBtnSelected = cc.MenuItemImage:create("Images/UI/c_zhuangbei_a.png", "Images/UI/c_zhuangbei_a.png")
+	local equipBtnNormal = ManagementTheme.tab("装备",false,104,45)
+	local equipBtnSelected = ManagementTheme.tab("装备",true,104,45)
 	local equipBtn = cc.MenuItemToggle:create(equipBtnNormal, equipBtnSelected)
 	equipBtn:setPosition(cc.p(self.titleLabel:getPositionX() - 108, allBtn:getPositionY()))
 
 	-- 添加资源按钮
-	local resourceBtnNormal = cc.MenuItemImage:create("Images/UI/c_ziyuan_b.png", "Images/UI/c_ziyuan_b.png")
-	local resourceBtnSelected = cc.MenuItemImage:create("Images/UI/c_ziyuan_a.png", "Images/UI/c_ziyuan_a.png")
+	local resourceBtnNormal = ManagementTheme.tab("资源",false,104,45)
+	local resourceBtnSelected = ManagementTheme.tab("资源",true,104,45)
 	local resourceBtn = cc.MenuItemToggle:create(resourceBtnNormal, resourceBtnSelected)
 	resourceBtn:setPosition(cc.p(self.titleLabel:getPositionX(), allBtn:getPositionY()))
 
 	-- 添加碎片按钮
-	local pieceBtnNormal = cc.MenuItemImage:create("Images/UI/c_suipian_b.png", "Images/UI/c_suipian_b.png")
-	local pieceBtnSelected = cc.MenuItemImage:create("Images/UI/c_suipian_a.png", "Images/UI/c_suipian_a.png")
+	local pieceBtnNormal = ManagementTheme.tab("碎片",false,104,45)
+	local pieceBtnSelected = ManagementTheme.tab("碎片",true,104,45)
 	local pieceBtn = cc.MenuItemToggle:create(pieceBtnNormal, pieceBtnSelected)
 	pieceBtn:setPosition(cc.p(self.titleLabel:getPositionX() + 108, allBtn:getPositionY()))
 
 	-- 添加其他按钮
-	local otherBtnNormal = cc.MenuItemImage:create("Images/UI/c_qita_b.png", "Images/UI/c_qita_b.png")
-	local otherBtnSelected = cc.MenuItemImage:create("Images/UI/c_qita_a.png", "Images/UI/c_qita_a.png")
+	local otherBtnNormal = ManagementTheme.tab("其他",false,104,45)
+	local otherBtnSelected = ManagementTheme.tab("其他",true,104,45)
 	local otherBtn = cc.MenuItemToggle:create(otherBtnNormal, otherBtnSelected)
 	otherBtn:setPosition(cc.p(self.titleLabel:getPositionX() + 220, allBtn:getPositionY()))
 
@@ -338,7 +341,8 @@ function RepositoryLayer:initBagDataWithType(sortType)
     end
 	local num = 0
 	local leftSpr = nil
-	cc.Texture2D:setDefaultAlphaPixelFormat(kCCTexture2DPixelFormat_RGB565)
+    -- Paper/materials and runtime TTF labels require their alpha channel.
+    cc.Texture2D:setDefaultAlphaPixelFormat(kCCTexture2DPixelFormat_RGBA8888)
     for k,v in pairs(produceTable) do
         -- print(k,v)
         local csvData = self.produceCsv[k]
@@ -349,11 +353,7 @@ function RepositoryLayer:initBagDataWithType(sortType)
 	        local itemType = csvData["type"]
 	        local price = tonumber(csvData["worth"])
 	        if number > 0 and display == "1" and (itemType == self.lastSortType or self.lastSortType == "0") then
-	        	local sprName = "Images/UI/dibantiao_02.png"
-	        	if csvData["iconName"] ~= nil and csvData["iconName"] ~= "" then
-	        		sprName = "Images/Icon/"..csvData["iconName"]
-	        	end
-	        	leftSpr = SDButton:create(sprName, sprName, function ()
+                leftSpr = ItemIcon.sdButton(csvData["iconName"], function ()
 	                -- 点击之后显示详情 
 	                if csvData["desc"] ~= nil and csvData["desc"] ~= "" then
 	                	self:showInfoBox(csvData["desc"])
@@ -373,13 +373,13 @@ function RepositoryLayer:initBagDataWithType(sortType)
 		            local _alert = AlertView:create(0,0, "出售道具",nil)
 
 		            -- 添加顶部的说明文字
-		            local infoLabel = cc.LabelTTF:create("出售"..name.." 单价:"..price, BoldFont, 28.0)
-	            	infoLabel:setColor(BaseColor)
+		            local infoLabel = cc.LabelTTF:create("出售"..name.." 单价:"..price, ManagementTheme.bodyFont(), 28.0)
+                infoLabel:setColor(ManagementTheme.colors.white)
 	            	-- infoLabel:enableStroke(cc.c4b(16, 16, 16, 255), 1)
 	            	infoLabel:setPosition(cc.p(_alert.s_position.x, _alert.s_position.y + 114))
 	            	_alert:addChild(infoLabel)
 
-		            local _menuButton1 = cc.MenuItemImage:create("Images/btn/ann05_a.png", "Images/btn/ann05_b.png")
+		            local _menuButton1 = ManagementTheme.menuItem(190,64,'ink')
 		            _menuButton1:registerScriptTapHandler(function ()
 		                -- body
 		                if DataManager:getInstance():addPackItemWithId(k, -1) then
@@ -389,7 +389,7 @@ function RepositoryLayer:initBagDataWithType(sortType)
 		                _alert:removeFromParent()
 		            end)
 
-		            local _menuButton2 = cc.MenuItemImage:create("Images/btn/ann05_a.png", "Images/btn/ann05_b.png")
+		            local _menuButton2 = ManagementTheme.menuItem(190,64,'ink')
 		            _menuButton2:registerScriptTapHandler(function ()
 		                -- body
 		                local sellNum = 10
@@ -403,7 +403,7 @@ function RepositoryLayer:initBagDataWithType(sortType)
 		                _alert:removeFromParent()
 		            end)
 
-		            local _menuButton3 = cc.MenuItemImage:create("Images/btn/ann05_a.png", "Images/btn/ann05_b.png")
+		            local _menuButton3 = ManagementTheme.menuItem(190,64,'ink')
 		            _menuButton3:registerScriptTapHandler(function ()
 		                -- body
 		                sellNum = number
@@ -414,17 +414,17 @@ function RepositoryLayer:initBagDataWithType(sortType)
 		                _alert:removeFromParent()
 		            end)
 
-		            local _menuButton1Lable = cc.LabelTTF:create("出售1个", BoldFont, 30.0)
+		            local _menuButton1Lable = cc.LabelTTF:create("出售1个", ManagementTheme.bodyFont(), 30.0)
 		            _menuButton1Lable:setPosition(cc.p(_menuButton1:getContentSize().width * 0.5,_menuButton1:getContentSize().height * 0.5))
 		            -- _menuButton1Lable:enableStroke(cc.c4b(255, 255, 255, 255), 2)
 		            _menuButton1:addChild(_menuButton1Lable)
 
-		            local _menuButton2Lable = cc.LabelTTF:create("出售10个", BoldFont, 30.0)
+		            local _menuButton2Lable = cc.LabelTTF:create("出售10个", ManagementTheme.bodyFont(), 30.0)
 		            _menuButton2Lable:setPosition(cc.p(_menuButton2:getContentSize().width * 0.5,_menuButton2:getContentSize().height * 0.5))
 		            -- _menuButton2Lable:enableStroke(cc.c4b(255, 255, 255, 255), 2)
 		            _menuButton2:addChild(_menuButton2Lable)
 
-		            local _menuButton3Lable = cc.LabelTTF:create("出售所有", BoldFont, 30.0)
+		            local _menuButton3Lable = cc.LabelTTF:create("出售所有", ManagementTheme.bodyFont(), 30.0)
 		            _menuButton3Lable:setPosition(cc.p(_menuButton3:getContentSize().width * 0.5,_menuButton3:getContentSize().height * 0.5))
 		            -- _menuButton3Lable:enableStroke(cc.c4b(255, 255, 255, 255), 2)
 		            _menuButton3:addChild(_menuButton3Lable)
@@ -439,19 +439,25 @@ function RepositoryLayer:initBagDataWithType(sortType)
         		end)
 	        	leftSpr:setPosition(cc.p((num % 2) * (self.scrollViewContainer:getContentSize().width / 2) + 40, allHeight - (math.ceil((num + 1) / 2) - 1) * lineHeight - leftSpr:getContentSize().height * 0.5))
 	        	self.scrollViewContainer:addChild(leftSpr)
+                local rowWidth=self.scrollViewContainer:getContentSize().width/2
+                local row=ManagementTheme.panel(rowWidth-10,lineHeight-6,'paper')
+                row:setPosition(cc.p((num%2)*rowWidth+rowWidth/2,allHeight-math.floor(num/2)*lineHeight-lineHeight/2))
+                self.scrollViewContainer:addChild(row,-1)
 
 	        	-- 添加名字文本
-	            local label = cc.LabelTTF:create(name, BoldFont, 28.0)
+	            local label = cc.LabelTTF:create(name, ManagementTheme.bodyFont(), 24.0)
 	            label:setAnchorPoint(cc.p(0, 1))
-	            label:setColor(BaseColor)
+	            label:setColor(ManagementTheme.colors.ink)
 	            -- label:enableStroke(cc.c4b(16, 16, 16, 255), 1)
 	            label:setPosition(cc.p(leftSpr:getPositionX() + leftSpr:getContentSize().width * 0.6, leftSpr:getPositionY() + leftSpr:getContentSize().height * 0.5))
+	            ManagementTheme.styleLabel(label,'body',self.scrollViewContainer:getContentSize().width/2-96)
 	            self.scrollViewContainer:addChild(label)
 
 	            -- 添加数量文本
-	            local numLabel = cc.LabelTTF:create(number.."", BoldFont, 28.0)
+	            local numLabel = cc.LabelTTF:create(number.."", ManagementTheme.bodyFont(), 28.0)
 	            numLabel:setAnchorPoint(cc.p(0, 1))
-	            numLabel:setColor(WriteColor)
+	            numLabel:setColor(ManagementTheme.colors.muted)
+                numLabel:setFontSize(22)
 	            -- numLabel:enableStroke(cc.c4b(16, 16, 16, 255), 1)
 	            numLabel:setPosition(cc.p(leftSpr:getPositionX() + leftSpr:getContentSize().width * 0.6, label:getPositionY() - 30.0))
 	            self.scrollViewContainer:addChild(numLabel)

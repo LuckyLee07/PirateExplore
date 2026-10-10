@@ -33,6 +33,27 @@ local function checkBox(node, width, height, context)
     near(node:getContentSize().width, width, context..' width')
     near(node:getContentSize().height, height, context..' height')
 end
+-- Sample meaningful negative spaces in the rendered geometry. A dark paint
+-- patch is not a hole and would fail the requested-color check below.
+local function covers(draws,x,y)
+    for _,d in ipairs(draws) do
+        if d.points then
+            local inside=false;local q=d.points[#d.points]
+            for _,p in ipairs(d.points) do
+                if (p.y>y)~=(q.y>y) and x<(q.x-p.x)*(y-p.y)/(q.y-p.y)+p.x then inside=not inside end
+                q=p
+            end
+            if inside then return true end
+        elseif type(d[2])=='table' then
+            local a,b=d[1],d[2];local dx,dy=b.x-a.x,b.y-a.y
+            local t=math.max(0,math.min(1,((x-a.x)*dx+(y-a.y)*dy)/(dx*dx+dy*dy)))
+            if (x-a.x-t*dx)^2+(y-a.y-t*dy)^2<=d[3]^2 then return true end
+        elseif (x-d[1].x)^2+(y-d[1].y)^2<=d[2]^2 then return true end
+    end
+    return false
+end
+local negativeSpaces={crew={{.277,.25},{.723,.25}},anchor={{.5,.837}},key={{.735,.803}},
+    port={{.474,.5},{.478,.817},{.829,.213}},food={{.5,.83}},sail={{.536,.6}},ship={{.536,.6}}}
 local prefix = 'Images/UI/Adventure/Master/Polish/'
 local dimensions = {
     ['coral-action.png'] = {797, 202}, ['roster-blue.png'] = {431, 363},
@@ -123,15 +144,16 @@ for _, mode in ipairs(modes) do
             equal(icon:getChildren()[1].kind, 'DrawNode', mode..' '..kind..' native vector')
             assert(#icon:getChildren()[1].draws > 0, mode..' '..kind..' native vector is visible')
             walk(icon, function(child) assert(not child.path, mode..' '..kind..' native tree has no image') end)
-            if color == MasterTheme.colors.paper and kind ~= 'crew' then
-                local cutout = false
-                for _, draw in ipairs(icon:getChildren()[1].draws) do
-                    local paint = draw.fill or draw[4] or draw[3]
-                    if paint and paint.r == MasterTheme.colors.ink.r/255
-                        and paint.g == MasterTheme.colors.ink.g/255
-                        and paint.b == MasterTheme.colors.ink.b/255 then cutout = true end
-                end
-                assert(cutout, mode..' '..kind..' preserves a key inset/cutout')
+            -- Negative spaces are transparent geometry, not dark overpainting:
+            -- the same icons must work in cream on ink and ink on roster paper.
+            for _, draw in ipairs(icon:getChildren()[1].draws) do
+                local paint = draw.fill or draw[4] or draw[3]
+                near(paint.r,color.r/255,mode..' '..kind..' native requested red')
+                near(paint.g,color.g/255,mode..' '..kind..' native requested green')
+                near(paint.b,color.b/255,mode..' '..kind..' native requested blue')
+            end
+            for _,point in ipairs(negativeSpaces[kind]) do
+                assert(not covers(icon:getChildren()[1].draws,point[1]*43,point[2]*43),mode..' '..kind..' meaningful transparent negative space')
             end
             -- All geometry, including line widths and dot radii, must scale
             -- uniformly with the native icon's square logical size.
@@ -259,7 +281,7 @@ for _, mode in ipairs(modes) do
                 near(button:getPositionX(),160*(i-.5),context..' original navigation X')
                 near(button:getPositionY(),59,context..' original navigation Y')
             end
-            for _, currency in ipairs({{menu.homeCoinAddButton,199},{menu.homeDiamondAddButton,382}}) do
+            for _, currency in ipairs({{menu.homeCoinAddButton,193},{menu.homeDiamondAddButton,376}}) do
                 checkBox(currency[1],59,59,context..' original currency hitbox')
                 near(currency[1]:getPositionX(),currency[2],context..' original currency X')
                 near(currency[1]:getPositionY(),height-121,context..' original currency Y')

@@ -1,6 +1,7 @@
 require "AudioEngine"
 require "LuaClass/Header"
 require "LuaClass/BaseView"
+require "LuaClass/ManagementTheme"
 require "LuaClass/DataManager"
 require "LuaClass/NotificationNode"
 require "LuaClass/ToastUtil"
@@ -45,6 +46,7 @@ function ResourceLayer:destory()
 end
 
 function ResourceLayer:init()
+    self:applyManagementTheme()
     -- local a, b = DataManager:getInstance():unlockUnitWithType(kUnlockResource, "2")
     DataManager:getInstance():registerEvent(roleMapInfo, "ResourceLayer", function()
         -- body
@@ -156,7 +158,9 @@ function ResourceLayer:init()
     -- 添加资源更新底框
     local maskBgGap = 8.0
     -- local tempSpr = cc.Sprite:create("Images/UI/MaskBg.png")
-    local bottomMaskHeight = 180 * visibleSize.height / 1136
+    -- The harvest summary has its own compact band. Keeping the footer safe
+    -- area unchanged gives the worker list the space formerly left blank here.
+    local bottomMaskHeight = 84
     local maskSize = cc.size(self.areaWidth, bottomMaskHeight)
     -- local bottomMask = cc.Scale9Sprite:create("Images/UI/MaskBg.png", cc.rect(0, 0, tempSpr:getContentSize().width, tempSpr:getContentSize().height), cc.rect(12, 12, tempSpr:getContentSize().width - 24, tempSpr:getContentSize().height - 24))
     -- bottomMask:setContentSize(maskSize)
@@ -164,18 +168,19 @@ function ResourceLayer:init()
     -- self:addChild(bottomMask)
 
     -- 添加底部资源框的标题
-    local bottomMaskTitleBg = cc.Sprite:create("Images/UI/biaoti.png")
+    local bottomMaskTitleBg = ManagementTheme.panel(self.areaWidth,32,'section')
     bottomMaskTitleBg:setPosition(self.originPos.x + maskSize.width * 0.5, self.originPos.y + maskSize.height - bottomMaskTitleBg:getContentSize().height * 0.5)
     self:addChild(bottomMaskTitleBg)
 
     local bottomMaskTitleBgTopLine = cc.Sprite:create("Images/UI/anbeijintiao.png")
     bottomMaskTitleBgTopLine:setPosition(cc.p(bottomMaskTitleBg:getPositionX(), bottomMaskTitleBg:getPositionY() + bottomMaskTitleBg:getContentSize().height * 0.5))
+    bottomMaskTitleBgTopLine:setVisible(false)
     self:addChild(bottomMaskTitleBgTopLine)
 
     -- 添加底部资源框的title
-    self.bottomMaskLabel = cc.LabelTTF:create(" ", BoldFont, 28.0)
+    self.bottomMaskLabel = cc.LabelTTF:create(" ", ManagementTheme.bodyFont(), 28.0)
     self.bottomMaskLabel:setPosition(bottomMaskTitleBg:getPosition())
-    self.bottomMaskLabel:setColor(cc.c3b(255, 255, 255))
+    ManagementTheme.styleLabel(self.bottomMaskLabel,'heading')
     -- self.bottomMaskLabel:enableStroke(cc.c4b(16, 16, 16, 255), 2)
     self:addChild(self.bottomMaskLabel)
 
@@ -207,14 +212,14 @@ function ResourceLayer:init()
     -- self:addChild(topMask)
 
     -- 添加底部资源框的标题
-    local topMaskTitleBg = cc.Sprite:create("Images/UI/biaoti.png")
+    local topMaskTitleBg = ManagementTheme.surfaceLike("Images/UI/biaoti.png",'section')
     topMaskTitleBg:setPosition(cc.p(self.originPos.x + maskSize.width * 0.5, self.originPos.y + bottomMaskHeight + maskBgGap + maskSize.height - topMaskTitleBg:getContentSize().height * 0.5))
     self:addChild(topMaskTitleBg)
 
     -- 添加底部资源框的title
-    self.topMaskLabel = cc.LabelTTF:create("游民:(15/45)", BoldFont, 28.0)
+    self.topMaskLabel = cc.LabelTTF:create("游民:(15/45)", ManagementTheme.bodyFont(), 28.0)
     self.topMaskLabel:setPosition(topMaskTitleBg:getPosition())
-    self.topMaskLabel:setColor(cc.c3b(255, 255, 255))
+    ManagementTheme.styleLabel(self.topMaskLabel,'heading')
     -- self.topMaskLabel:enableStroke(cc.c4b(16, 16, 16, 255), 2)
     self:addChild(self.topMaskLabel)
 
@@ -241,6 +246,7 @@ function ResourceLayer:init()
 
     local TopMaskTitleBgBottomLine = cc.Sprite:create("Images/UI/anbeijin.png")
     TopMaskTitleBgBottomLine:setPosition(cc.p(topMaskTitleBg:getPositionX(), self.originPos.y + bottomMaskHeight + maskBgGap))
+    TopMaskTitleBgBottomLine:setVisible(false)
     self:addChild(TopMaskTitleBgBottomLine)
 
 
@@ -411,7 +417,8 @@ function ResourceLayer:setWorkerUIWithData()
     -- 临时计算高度用的图
     local tempSpr = cc.Sprite:create("Images/UI/Info.png")
     local singleHeight = tempSpr:getContentSize().height + 14
-    local allHeight = singleHeight * #self.workerData
+    local edgePadding=8
+    local allHeight = singleHeight * #self.workerData + edgePadding*2
     if allHeight < self.scrollView:getViewSize().height then
         allHeight = self.scrollView:getViewSize().height
     end
@@ -425,17 +432,19 @@ function ResourceLayer:setWorkerUIWithData()
         local workerCsvData = self.workerCsv[workerTable[dataKeyID]]
         -- 根据数据结果，开始画界面
         tempNode = cc.Node:create()
-        tempNode:setPosition(cc.p(self.scrollView:getContentSize().width * 0.5, allHeight - singleHeight * i - singleHeight * 0.5))
+        tempNode:setPosition(cc.p(self.scrollView:getViewSize().width * 0.5, allHeight - edgePadding - singleHeight * i - singleHeight * 0.5))
         tempNode:setTag(i + 1)
         self.scrollViewContainer:addChild(tempNode)
+        local row=ManagementTheme.panel(self.areaWidth-12,singleHeight-5,'paper')
+        tempNode:addChild(row,-1)
 
         -- 首先添加文字框
-        local numberBox = cc.Sprite:create("Images/UI/NumberBox.png")
+        local numberBox = ManagementTheme.surfaceLike("Images/UI/NumberBox.png",'section')
         tempNode:addChild(numberBox)
 
         -- 天健文字框中间的数字label
-        local numberLabel = cc.LabelTTF:create(workerTable[dataKeyNum], BoldFont, 24.0)
-        numberLabel:setColor(WriteColor)
+        local numberLabel = cc.LabelTTF:create(workerTable[dataKeyNum], ManagementTheme.bodyFont(), 24.0)
+        numberLabel:setColor(ManagementTheme.colors.ink)
         -- numberLabel:enableStroke(cc.c4b(16, 16, 16, 255), 2)
         tempNode:addChild(numberLabel)
 
@@ -455,6 +464,8 @@ function ResourceLayer:setWorkerUIWithData()
             end
         end
         local subBtn = SDButton:create("Images/UI/SubCircleBtn.png", "Images/UI/SubCircleBtn1.png", subButtonDidClick)
+        ManagementTheme.skinSDButton(subBtn,'ink')
+        subBtn:addChild(ManagementTheme.label('−',32,'action',25,25,.5),2)
         subBtn:registerLongPressed(subButtonDidClick)
         subBtn:setPosition(cc.p(-numberBox:getContentSize().width * 0.6 - subBtn:getContentSize().width * 0.5, 0))
         tempNode:addChild(subBtn)
@@ -476,6 +487,8 @@ function ResourceLayer:setWorkerUIWithData()
             end
         end
         local addBtn = SDButton:create("Images/UI/AddCircleBtn.png", "Images/UI/AddCircleBtn1.png", addButtonDidClick)
+        ManagementTheme.skinSDButton(addBtn,'coral')
+        addBtn:addChild(ManagementTheme.label('+',32,'action',25,25,.5),2)
         addBtn:registerLongPressed(addButtonDidClick)
         addBtn:setPosition(cc.p(numberBox:getContentSize().width * 0.6 + addBtn:getContentSize().width * 0.5, 0))
         tempNode:addChild(addBtn, 1)
@@ -489,14 +502,15 @@ function ResourceLayer:setWorkerUIWithData()
         addBtnLight:runAction(cc.RepeatForever:create(cc.RotateBy:create(0.1, 30)))
 
         -- 添加左侧工匠类型文本
-        local nameLabel = cc.LabelTTF:create(workerCsvData["name"], BoldFont, 24.0)
-        nameLabel:setColor(BaseColor)
+        local nameLabel = cc.LabelTTF:create(workerCsvData["name"], ManagementTheme.bodyFont(), 24.0)
+        nameLabel:setColor(ManagementTheme.colors.ink)
         -- nameLabel:enableStroke(cc.c4b(16, 16, 16, 255), 2)
         nameLabel:setPosition(cc.p(subBtn:getPositionX() - subBtn:getContentSize().width - nameLabel:getContentSize().width * 0.5, 0))
         nameLabel:setTag(9527)
         tempNode:addChild(nameLabel)
 
-        local infoBtn = cc.MenuItemImage:create("Images/UI/Info.png", "Images/UI/Info1.png")
+        local infoBtn = ManagementTheme.menuItem(54,54,'ink')
+        infoBtn:addChild(ManagementTheme.label('i',27,'action',27,27,.5),2)
         infoBtn:registerScriptTapHandler(function()
             -- cclog("点击信息按钮", i)
             self:showInfoBox(workerCsvData["produceDesc"].." "..workerCsvData["resumeDesc"])
@@ -511,6 +525,7 @@ function ResourceLayer:setWorkerUIWithData()
         self.workerUseNum = self.workerUseNum + tonumber(workerTable[dataKeyNum])
     end
     -- 刷新scrollView
+    self.scrollViewContainer:setContentSize(cc.size(self.scrollView:getViewSize().width, allHeight))
     self.scrollView:setContentSize(cc.size(self.scrollView:getViewSize().width, allHeight))
     self.scrollView:setContentOffset(cc.p(0, -(allHeight - self.scrollView:getViewSize().height)))
 end
@@ -567,12 +582,12 @@ function ResourceLayer:setResourceUIWithData()
         end
     end
     -- 循环取得的数据创建label
-    local lineNum = 4
-    local allHeight = math.floor(#self.produceTable / lineNum) * 30.0
-    if allHeight < self.resourceScrollViewContainer:getContentSize().height then
-        allHeight = self.resourceScrollViewContainer:getContentSize().height
-    end
-    self.resourceScrollViewContainer:setContentSize(cc.size(self.resourceScrollViewContainer:getContentSize().width, allHeight))
+    local lineNum,lineHeight = 4,36
+    local visibleCount=0
+    for _,v in pairs(self.produceTable) do if v[1]~=0 then visibleCount=visibleCount+1 end end
+    local viewSize=self.resourceScrollView:getViewSize()
+    local allHeight=math.max(viewSize.height,math.ceil(visibleCount/lineNum)*lineHeight+12)
+    self.resourceScrollViewContainer:setContentSize(cc.size(viewSize.width, allHeight))
     local num = 0
     for k,v in pairs(self.produceTable) do
         -- print(k,v)
@@ -583,20 +598,22 @@ function ResourceLayer:setResourceUIWithData()
             if number < 0 then
                 addSub = ""
             end
-            local label = cc.LabelTTF:create(name..addSub..number, BoldFont, 24.0)
+            local label = cc.LabelTTF:create(name..addSub..number, ManagementTheme.bodyFont(), 24.0)
             label:setAnchorPoint(cc.p(0, 1))
             if number < 0 then
-                label:setColor(RedColor)
+                label:setColor(ManagementTheme.colors.danger)
             else
-                label:setColor(WriteColor)
+                label:setColor(ManagementTheme.colors.ink)
             end
             
             -- label:enableStroke(cc.c4b(16, 16, 16, 255), 1)
-            label:setPosition(cc.p((num % lineNum) * (self.resourceScrollViewContainer:getContentSize().width / lineNum) + 20, allHeight - (math.ceil((num + 1) / lineNum) - 1) * 30.0))
+            label:setPosition(cc.p((num % lineNum) * (viewSize.width / lineNum) + 12, allHeight - 6 - (math.ceil((num + 1) / lineNum) - 1) * lineHeight))
             self.resourceScrollViewContainer:addChild(label)
             num = num + 1
         end
     end
+    self.resourceScrollView:setContentSize(cc.size(viewSize.width,allHeight))
+    self.resourceScrollView:setContentOffset(cc.p(0,viewSize.height-allHeight))
 end
 
 --[[

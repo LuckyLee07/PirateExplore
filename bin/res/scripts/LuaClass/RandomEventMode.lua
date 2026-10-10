@@ -6,6 +6,7 @@
 -- To change this template use File | Settings | File Templates.
 --
 require "LuaClass/Header"
+require "LuaClass/DialogTheme"
 require "LuaClass/AlertView"
 require "LuaClass/DataManager"
 require "LuaClass/MissionManagers"
@@ -502,11 +503,11 @@ function RandomEventView:init()
 
     local winSize = cc.Director:getInstance():getVisibleSize()
 
-    local layerbg = cc.LayerColor:create(cc.c4b(0,0,0,64));
+    local layerbg = cc.LayerColor:create(cc.c4b(3,20,29,90));
     self:addChild(layerbg)
 
     local pngname = "Images/UI/tankuang_03.png"
-    local background = cc.Scale9Sprite:create(pngname)
+    local background = DialogTheme.panelFromLegacy(pngname)
     local labelContentSize = cc.size(350,0)
 
     self.s_position = cc.p(winSize.width * 0.5, winSize.height * 0.5)
@@ -520,12 +521,12 @@ function RandomEventView:init()
     self.s_size = background:getContentSize()
     self.s_bg = background
 
-    local label = cc.LabelTTF:create("情 报", BoldFont, 36.0)
+    local label = cc.LabelTTF:create("情 报", MasterTheme.headingFont(false), 36.0)
     label:setColor(cc.c3b(255,255,255))
     label:setPosition(cc.p(msgBoxWidth * 0.5,msgBoxHeight-40))
     background:addChild(label)
 
-    local closeBtn = cc.MenuItemImage:create("Images/UI/cancel_button.png", "Images/UI/cancel_button.png")
+    local closeBtn = DialogTheme.closeItem()
     closeBtn:registerScriptTapHandler(function()
         self:close()
     end)
@@ -572,13 +573,12 @@ function RandomEventView:init()
         cell:removeAllChildren()
 
         -- background
-        local bg = cc.Scale9Sprite:create("Images/UI/tankuang_04.png")
-        bg:setPreferredSize(cc.size(530, 300.0))
+        local bg = DialogTheme.card(530, 300)
         bg:setPosition(265.0, 150.0)
         cell:addChild(bg)
 
         -- icon
-        local iconBg = cc.Sprite:create("Images/UI/shijd_01.png")
+        local iconBg = DialogTheme.cardFromLegacy("Images/UI/shijd_01.png", "ink")
         iconBg:setPosition(cc.p(50.0, 190.0))
         cell:addChild(iconBg)
         local icon = cc.Sprite:create("Images/UI/"..data.icon)
@@ -586,7 +586,7 @@ function RandomEventView:init()
         cell:addChild(icon)
 
         -- labelInfo
-        local labelInfo = cc.LabelTTF:create(event.description, BoldFont, 24.0)
+        local labelInfo = cc.LabelTTF:create(event.description, MasterTheme.headingFont(false), 24.0)
         labelInfo:setPosition(110.0, 280.0)
         labelInfo:setAnchorPoint(cc.p(0.0, 1.0))
         labelInfo:setDimensions(cc.size(400,100))
@@ -596,7 +596,7 @@ function RandomEventView:init()
 
         -- labelTime
         local labelTime = cc.LabelTTF:create(string.format("剩余时间：\n%s",
-            formatSecondToTimeCn(event.lifeTime-(os.time()-event.startTime))), BoldFont, 22.0)
+            formatSecondToTimeCn(event.lifeTime-(os.time()-event.startTime))), MasterTheme.headingFont(false), 22.0)
         labelTime:setColor(YellowColor)
         labelTime:setPosition(300.0, 165.0)
         labelTime:setAnchorPoint(cc.p(0.0, 1.0))
@@ -634,7 +634,7 @@ function RandomEventView:init()
                     local hero = csv[tostring(reward.id)]
                     iconName = hero.icon
                 end
-                local spJL = cc.Sprite:create("Images/UI/jiangl_01.png")
+                local spJL = DialogTheme.badgeFromLegacy("Images/UI/jiangl_01.png", "奖励", MasterTheme.colors.paper)
                 spJL:setAnchorPoint(cc.p(0.0, 0.5))
                 spJL:setPosition(120.0, 150.0)
                 cell:addChild(spJL)
@@ -643,7 +643,7 @@ function RandomEventView:init()
                     rewardIcon:setPosition(150.0, 100.0)
                     rewardIcon:setScale(0.8)
                     cell:addChild(rewardIcon)
-                    local rewardLabel = cc.LabelTTF:create(string.format("×%d", reward.num), BoldFont, 28.0)
+                    local rewardLabel = cc.LabelTTF:create(string.format("×%d", reward.num), MasterTheme.headingFont(false), 28.0)
                     rewardLabel:setColor(YellowColor)
                     rewardLabel:setPosition(cc.p(180, 90.0))
                     rewardLabel:setAnchorPoint(cc.p(0.0, 0.5))
@@ -653,7 +653,7 @@ function RandomEventView:init()
         end
 
         -- buttons
-        local jinbiButton = cc.MenuItemImage:create("Images/btn/ann03_a.png","Images/btn/ann03_b.png","")
+        local jinbiButton = DialogTheme.menuItem("Images/btn/ann03_a.png", "Images/btn/ann03_b.png", "secondary")
         jinbiButton:setScale(0.8)
         jinbiButton:setPosition(cc.p(150.0, 40.0))
         jinbiButton:registerScriptTapHandler(function()
@@ -673,12 +673,12 @@ function RandomEventView:init()
             end
         end)
         local jinbiButtonSize = jinbiButton:getContentSize()
-        local jinbiButtonLabel = cc.LabelTTF:create("取消", BoldFont, 32.0)
+        local jinbiButtonLabel = cc.LabelTTF:create("取消", MasterTheme.headingFont(false), 32.0)
         jinbiButtonLabel:setColor(cc.c3b(255,255,255))
         jinbiButtonLabel:setPosition(cc.p(jinbiButtonSize.width/2, jinbiButtonSize.height/2))
         jinbiButton:addChild(jinbiButtonLabel)
 
-        local diamondButton = cc.MenuItemImage:create("Images/btn/ann03_a.png","Images/btn/ann03_b.png","")
+        local diamondButton = DialogTheme.menuItem("Images/btn/ann03_a.png", "Images/btn/ann03_b.png")
         diamondButton:setScale(0.8)
         diamondButton:setPosition(cc.p(530.0-150.0, 40.0))
         diamondButton:registerScriptTapHandler(function()
@@ -704,7 +704,7 @@ function RandomEventView:init()
             end
         end)
         local diamondButtonSize = diamondButton:getContentSize()
-        local diamondButtonLabel = cc.LabelTTF:create("确定", BoldFont, 32.0)
+        local diamondButtonLabel = cc.LabelTTF:create("确定", MasterTheme.headingFont(false), 32.0)
         diamondButtonLabel:setColor(cc.c3b(255,255,255))
         diamondButtonLabel:setPosition(cc.p(diamondButtonSize.width/2, diamondButtonSize.height/2))
         diamondButton:addChild(diamondButtonLabel)
@@ -718,7 +718,7 @@ function RandomEventView:init()
             iconGold:setAnchorPoint(cc.p(1.0, 0.5))
             iconGold:setScale(0.6)
             cell:addChild(iconGold)
-            local jinbiCostLabel = cc.LabelTTF:create(string.format("×%s", talent.resumeCoin), BoldFont, 22.0)
+            local jinbiCostLabel = cc.LabelTTF:create(string.format("×%s", talent.resumeCoin), MasterTheme.headingFont(false), 22.0)
             jinbiCostLabel:setColor(YellowColor)
             jinbiCostLabel:setPosition(cc.p(jinbiButton:getPositionX()-20.0, jinbiButton:getPositionY()+40.0))
             jinbiCostLabel:setAnchorPoint(cc.p(0.0, 0.5))
@@ -730,14 +730,14 @@ function RandomEventView:init()
             iconDiamond:setAnchorPoint(cc.p(1.0, 0.5))
             iconDiamond:setScale(0.6)
             cell:addChild(iconDiamond)
-            local diamondCostLabel = cc.LabelTTF:create(string.format("×%s", talent.resumeNum), BoldFont, 22.0)
+            local diamondCostLabel = cc.LabelTTF:create(string.format("×%s", talent.resumeNum), MasterTheme.headingFont(false), 22.0)
             diamondCostLabel:setColor(YellowColor)
             diamondCostLabel:setPosition(cc.p(diamondButton:getPositionX()-20.0, diamondButton:getPositionY()+40.0))
             diamondCostLabel:setAnchorPoint(cc.p(0.0, 0.5))
             cell:addChild(diamondCostLabel)
         elseif tonumber(event.type) == RandomEvent.EventType.RandomEventMission then
             jinbiButtonLabel:setString("放 弃")
-            local stateLabel = cc.LabelTTF:create("", BoldFont, 28.0)
+            local stateLabel = cc.LabelTTF:create("", MasterTheme.headingFont(false), 28.0)
             stateLabel:setColor(RedColor)
             stateLabel:setPosition(cc.p(diamondButton:getPositionX(), 90.0))
             cell:addChild(stateLabel)
@@ -750,7 +750,7 @@ function RandomEventView:init()
                 iconDiamond:setAnchorPoint(cc.p(1.0, 0.5))
                 iconDiamond:setScale(0.6)
                 cell:addChild(iconDiamond)
-                local diamondCostLabel = cc.LabelTTF:create(string.format("×%s", mission:getCosts()), BoldFont, 22.0)
+                local diamondCostLabel = cc.LabelTTF:create(string.format("×%s", mission:getCosts()), MasterTheme.headingFont(false), 22.0)
                 diamondCostLabel:setColor(YellowColor)
                 diamondCostLabel:setPosition(cc.p(diamondButton:getPositionX()-20.0, diamondButton:getPositionY()+40.0))
                 diamondCostLabel:setAnchorPoint(cc.p(0.0, 0.5))
@@ -790,8 +790,8 @@ function RandomEventView:update()
     for i=1,#RandomEventManager:getInstance().eventList do
         local event = RandomEventManager:getInstance().eventList[i]
         if os.time() - event.startTime >= event.lifeTime then
-            RandomEventManager:getInstance().removeEvent(event)
-            self.tableview1.reloadData()
+            RandomEventManager:getInstance():removeEvent(event)
+            self.tableview1:reloadData()
             return
         end
     end

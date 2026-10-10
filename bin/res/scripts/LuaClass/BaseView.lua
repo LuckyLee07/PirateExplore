@@ -180,6 +180,37 @@ function BaseView:init()
     return true;
 end
 
+-- Opt in after BaseView construction. Accepted custom page layouts retain the
+-- original base geometry and visibility behavior unless they call this method.
+function BaseView:applyManagementTheme()
+    if self.managementTheme then return end
+    require 'LuaClass/ManagementTheme'
+    local T=ManagementTheme
+    self.managementTheme=true
+    local size=cc.Director:getInstance():getVisibleSize()
+    self.mainBg:removeFromParent()
+    self.mainBg=T.pagePaper(size.width,size.height,UIBottomHeight,UITopHeight)
+    self.mainBg:setAnchorPoint(cc.p(0,0));self:addChild(self.mainBg,-3)
+    -- Keep the background handle for legacy callers, without a large symbol
+    -- underneath inventory rows or empty management content.
+    self.bgIcon=cc.Node:create();self.bgIcon:setVisible(false)
+    self.mainBg:addChild(self.bgIcon)
+
+    local y=self.titleBg:getPositionY();local title=self.titleLabel:getString()
+    self.titleBg:removeFromParent()
+    self.titleBg=T.panel(size.width,self.titleHeight,'section')
+    self.titleBg:setPosition(cc.p(size.width*.5,y));self:addChild(self.titleBg)
+    self.titleLabel=T.label(title,40,'heading',size.width*.5,self.titleHeight*.5,.5)
+    self.titleBg:addChild(self.titleLabel)
+    self.LeftBg=T.panel(40,2,'line');self.RightBg=T.panel(40,2,'line')
+    self.LeftBg:setPosition(cc.p(size.width*.25,self.titleHeight*.5))
+    self.RightBg:setPosition(cc.p(size.width*.75,self.titleHeight*.5))
+    self.titleBg:addChild(self.LeftBg);self.titleBg:addChild(self.RightBg)
+    T.skinMenuItem(self.topLeftBtn,'ink');T.skinMenuItem(self.topRightBtn,'ink')
+    T.styleLabel(self.topLeftBtnLabel,'action');T.styleLabel(self.topRightBtnLabel,'action')
+    self.topLeftBtnLabel:setFontSize(22);self.topRightBtnLabel:setFontSize(22)
+end
+
 -- 在仓库和资源生产界面修改左侧侧按钮的函数
 function BaseView:resetTopLeftButtonToExpedition()
     self.topLeftBtnLabel:setString("设  置")
@@ -194,6 +225,7 @@ function BaseView:resetTopLeftButtonToExpedition()
         zqDispatch:gotoSetting()
     end)
     self.topLeftBtn:setVisible(GuideController:getInstance():getIsHaveStep(2))
+    if self.managementTheme then ManagementTheme.skinMenuItem(self.topLeftBtn,'ink') end
 end
 
 -- 在出征界面修改右侧按钮的函数
@@ -230,6 +262,7 @@ end
 不同的界面处理显示不同的背景
 ]]
 function BaseView:setBackgroundIcon(iconPath)
+    if self.managementTheme then return end
     -- body
     local tempSpr = cc.Sprite:create(iconPath)
     if nil ~= tempSpr then
@@ -702,5 +735,53 @@ function BaseView:addInfoNode(leftTitle, leftFunc, rightTitle, rightFunc, middle
 
     self.centerPos = cc.p(origin.x + visibleSize.width * 0.5, posY)
     self.originPos = cc.p(self.centerPos.x - self.areaWidth * 0.5, self.centerPos.y - self.areaHeight * 0.5)
+
+    if self.managementTheme then
+        local T=ManagementTheme
+        topSplit:setVisible(false);btnDecor:setVisible(false)
+        local paper=T.panel(visibleSize.width,self.infoNode:getContentSize().height,'light')
+        paper:setPosition(cc.p(visibleSize.width*.5,self.infoNode:getContentSize().height*.5))
+        self.infoNode:addChild(paper,-2)
+        local dock=T.actionDock(visibleSize.width-24,144)
+        dock:setPosition(cc.p(visibleSize.width*.5,self.setBtn:getPositionY()))
+        self.infoNode:addChild(dock,-1);self.managementActionDock=dock
+        local separators=cc.DrawNode:create()
+        for _,button in ipairs({self.leftBtn,self.rightBtn}) do
+            local x=(button:getPositionX()+self.setBtn:getPositionX())*.5-12
+            separators:drawSegment(cc.p(x,22),cc.p(x,122),.45,HomeTheme.rgba(T.colors.line,.65))
+        end
+        dock:addChild(separators)
+        local action=(middleNormalImage:find('zhaom') and '招募') or (middleNormalImage:find('caij') and '采集') or '炼金'
+        local glyph=action=='招募' and 'crew' or (action=='采集' and 'food' or 'anchor')
+        T.skinSDButton(self.setBtn,'coral',glyph,{width=208,height=67,text=action})
+        -- Keep the live timer, actions and percentages; display cooldown as a
+        -- quiet underline within the primary brush instead of the old circle.
+        self.setButtonProgrees:setSprite(cc.Sprite:create('Images/UI/hengt_01.png'))
+        self.setButtonProgrees:setType(cc.PROGRESS_TIMER_TYPE_BAR)
+        self.setButtonProgrees:setMidpoint(cc.p(0,0))
+        self.setButtonProgrees:setBarChangeRate(cc.p(1,0))
+        self.setButtonProgrees:setColor(T.colors.white);self.setButtonProgrees:setOpacity(255)
+        self.setButtonProgrees:setScaleX(176/177);self.setButtonProgrees:setScaleY(5)
+        self.setButtonProgrees:setPosition(cc.p(self.setBtn:getContentSize().width*.5,self.setBtn:getContentSize().height*.5-23))
+        self.setButtonProgrees:setLocalZOrder(2)
+        if self.setBtnLight then self.setBtnLight:stopAllActions();self.setBtnLight:setOpacity(0) end
+        self.setBtnText=T.caption(self.setBtnText,action)
+        self.setBtnText:setVisible(false)
+        T.skinMenuItem(self.leftBtn,'light','key',64);T.skinMenuItem(self.rightBtn,'light','sail',64)
+        self.leftBtnText=T.caption(self.leftBtnText,'天赋');self.rightBtnText=T.caption(self.rightBtnText,'情报')
+        self.leftBtnText:setFontSize(24);self.rightBtnText:setFontSize(24)
+        self.leftBtnText:setPositionY(self.leftBtn:getPositionY()-56)
+        self.rightBtnText:setPositionY(self.rightBtn:getPositionY()-56)
+        T.styleLabel(self.infoLabel,'muted');self.infoLabel:setFontSize(24)
+        local p=cc.p(self.bottomInfoBox:getPositionX(),self.bottomInfoBox:getPositionY())
+        local boxSize=self.bottomInfoBox:getContentSize()
+        self.bottomInfoBox:removeFromParent()
+        self.bottomInfoBox=T.panel(boxSize.width,boxSize.height,'paper')
+        self.bottomInfoBox:setPosition(p);self.bottomInfoBox:setVisible(false)
+        self.infoNode:addChild(self.bottomInfoBox,99999)
+        self.infoBoxLabel=T.label('',24,'body',boxSize.width*.5,boxSize.height*.5,.5)
+        self.infoBoxLabel:setDimensions(cc.size(boxSize.width-32,boxSize.height-24))
+        self.bottomInfoBox:addChild(self.infoBoxLabel)
+    end
 
 end

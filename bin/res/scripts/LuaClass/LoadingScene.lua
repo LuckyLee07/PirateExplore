@@ -1,3 +1,4 @@
+require 'LuaClass/StartupTheme'
 require "LuaClass/Header"
 require "LuaClass/WoWUtils.lua"
 --存放的index
@@ -40,13 +41,13 @@ local curSpeed = 1
 function LoadingScene:init()
 	local visibleSize = cc.Director:getInstance():getVisibleSize()
 
-	cc.Texture2D:setDefaultAlphaPixelFormat(kCCTexture2DPixelFormat_RGB888)
-	local bg = cc.Sprite:create("Images/UI/fm_01.png")
+	cc.Texture2D:setDefaultAlphaPixelFormat(kCCTexture2DPixelFormat_RGBA8888)
+	local bg = StartupTheme.background(visibleSize)
 	bg:setPosition(cc.p(visibleSize.width / 2, visibleSize.height / 2))
 	self:addChild(bg)
 
-	cc.Texture2D:setDefaultAlphaPixelFormat(kCCTexture2DPixelFormat_RGB5A1)
-	local title = cc.Sprite:create("Images/UI/logo_01.png")
+	cc.Texture2D:setDefaultAlphaPixelFormat(kCCTexture2DPixelFormat_RGBA8888)
+	local title = StartupTheme.title()
 	title:setPosition(cc.p(bg:getPositionX(),visibleSize.height * 0.9 - title:getContentSize().height * title:getScaleY() / 2))
 	self:addChild(title)
 
@@ -59,7 +60,7 @@ function LoadingScene:init()
 
 	local tipString = self:screeningTips()
 
-	local tips = cc.LabelTTF:create(tipString, BoldFont, 25)
+	local tips = cc.LabelTTF:create(tipString, MasterTheme.headingFont(false), 25)
 	tips:setPosition(cc.p(bg:getPositionX(),waves:getPositionY() - waves:getContentSize().height / 2 - tips:getContentSize().height))
 	self:addChild(tips)
 
@@ -71,7 +72,7 @@ function LoadingScene:init()
 	self.progressBar:setTextureRect(cc.rect(0,0,0,self.progressBar:getContentSize().height))
 	-- self.progressBar:setScaleX(0)
 
-	self.ship = cc.Sprite:create("Images/UI/fmloding_01.png")
+	self.ship = StartupTheme.ship()
 	self.ship:setAnchorPoint(0.74,0)
 	self.ship:setPosition(cc.p(self.progressBar:getPositionX() + self.ship:getContentSize().width * 0.8,self.progressBar:getPositionY()))
 	self:addChild(self.ship)

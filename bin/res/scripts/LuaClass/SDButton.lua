@@ -92,9 +92,23 @@ function SDButton:ctor(normalpng,selectpng,callbackfunc)
 
     self.m_longProgress       = false 
 
-    self.normalSpr = cc.Sprite:create(normalpng)
+    -- A missing/decode-failed image must not crash an otherwise usable control.
+    -- Keep valid image geometry exactly; a missing state inherits its peer size.
+    self.normalSpr = normalpng and normalpng ~= "" and cc.Sprite:create(normalpng) or nil
+    self.selectSpr = selectpng and selectpng ~= "" and cc.Sprite:create(selectpng) or nil
+    self._normalImageMissing = self.normalSpr == nil
+    self._selectedImageMissing = self.selectSpr == nil
+    local peer = self.normalSpr or self.selectSpr
+    local fallbackSize = peer and peer:getContentSize() or cc.size(64, 64)
+    if not self.normalSpr then
+        self.normalSpr = cc.Sprite:create()
+        self.normalSpr:setContentSize(fallbackSize)
+    end
+    if not self.selectSpr then
+        self.selectSpr = cc.Sprite:create()
+        self.selectSpr:setContentSize(fallbackSize)
+    end
     self.normalSpr:setAnchorPoint(cc.p(0, 0))
-    self.selectSpr = cc.Sprite:create(selectpng)
     self.selectSpr:setAnchorPoint(cc.p(0, 0))
     self.callbackfunc = callbackfunc
     self.winSize = cc.Director:getInstance():getWinSize()

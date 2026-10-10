@@ -24,7 +24,38 @@ parser.add_argument('--license-file', type=Path, required=True)
 parser.add_argument('--extra-text', type=Path, action='append', default=[], help='Optional decoded data-table glyph coverage')
 args = parser.parse_args()
 root = Path(__file__).resolve().parent.parent
-text = ''.join((root/'bin/res/scripts/LuaClass'/name).read_text() for name in ['Home.lua', 'MainMenu.lua', 'MasterTheme.lua'])
+def decode_packaged_csv(path):
+    # Same XOR/LZSS envelope as Record.cpp. Only reads original package bytes.
+    import re
+    key = re.search(r'm_keys = "([^"]+)"', (root/'src/NewPirate/common/UtilTools/Record.cpp').read_text()).group(1).encode() + b'\0'
+    raw = path.read_bytes()
+    data = bytes(value ^ key[0 if i == 0 else (i-1) % (len(key)-1)+1] for i,value in enumerate(raw))
+    width = data[0]
+    if width not in (4,8): raise ValueError(f'Invalid CSV envelope: {path}')
+    expected = int.from_bytes(data[1:1+width], 'little')
+    pos = 1+2*width; ring = bytearray(b' '*4096); cursor = 4078; flags = 0; out = bytearray()
+    def emit(value):
+        nonlocal cursor
+        out.append(value); ring[cursor] = value; cursor = (cursor+1)%4096
+    while pos < len(data):
+        flags >>= 1
+        if not flags & 256: flags = data[pos] | 0xff00; pos += 1
+        if flags & 1:
+            if pos >= len(data): break
+            emit(data[pos]); pos += 1
+        else:
+            if pos+1 >= len(data): break
+            a,b = data[pos:pos+2]; pos += 2; a += (b>>4)*256
+            for offset in range((b&15)+3): emit(ring[(a+offset)%4096])
+    if len(out) != expected: raise ValueError(f'CSV byte count differs: {path}')
+    return out.decode('utf-8-sig')
+
+# Cover runtime wording plus every real table entry, not only visible samples.
+text = ''.join(path.read_text() for path in (root/'bin/res/scripts/LuaClass').glob('*.lua'))
+text += ''.join(decode_packaged_csv(path) for path in (root/'bin/res/assets/data').glob('*.csv'))
+# Preserve all previously shipped glyphs when regenerating the expanded subset.
+existing = root/'bin/res/assets/fonts/HarborSerif-Bold.ttf'
+if existing.exists(): text += ''.join(chr(cp) for cp in TTFont(existing).getBestCmap())
 text += ''.join(path.read_text() for path in args.extra_text)
 # Real current roster types plus ASCII and the remaining fixed navigation terms.
 text += ''.join(chr(i) for i in range(32, 127)) + '×›←→海盗基地航行船员港务整备出航木盾舵手突击水手船医'

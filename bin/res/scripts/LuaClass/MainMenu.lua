@@ -42,6 +42,24 @@ local function transparentMenuItem(text, width, height, callback, size, color)
     item:registerScriptTapHandler(callback)
     return item
 end
+-- Legacy pages share compact paper currency controls. Their original 59-point
+-- targets and purchase callbacks remain independent of the approved Home UI.
+local function legacyCurrencyButton(callback)
+    local add=transparentMenuItem('+',59,59,callback,28,MENU_COLORS.ink)
+    add.bLabel:setFontName(MasterTheme.headingFont(false))
+    local chip=MasterTheme.material('currency-paper.png',48,48,cc.c3b(226,222,203))
+    chip:setPosition(cc.p(5.5,5.5));add:addChild(chip,1)
+    local n=cc.Node:create();n:setContentSize(cc.size(59,59));n:setAnchorPoint(cc.p(.5,.5))
+    n:setCascadeOpacityEnabled(true)
+    add:setPosition(cc.p(29.5,29.5))
+    local menu=cc.Menu:create(add);menu:setPosition(cc.p(0,0));n:addChild(menu)
+    n.item=add;n.label=add.bLabel;n.menu=menu
+    return n
+end
+local function legacyCurrencyPaper(node)
+    local paper=MasterTheme.material('currency-paper.png',254,42)
+    paper:setPosition(cc.p(0,-21));node:addChild(paper,-1)
+end
 -- Only these approved static ornaments use detail sprites. Dynamic amounts,
 -- purchase targets, navigation hitboxes and callbacks remain native components.
 local DETAIL_PATH = "Images/UI/Adventure/Master/Details/"
@@ -161,8 +179,10 @@ function MainMenuLayer:init()
         origin.x, origin.y + visibleSize.height - UITopHeight)
     self:addChild(TopBg)
     self.legacyTopBg = TopBg
-    TopBg:addChild(BTheme.label("海盗 · 远航日志", 29, colors.white, 24, 71))
-    TopBg:addChild(BTheme.label("PIRATE EXPLORE", 14, colors.pale, visibleSize.width - 24, 70, 1))
+    local headerWash = MasterTheme.material("ink-brush.png", visibleSize.width, UITopHeight)
+    TopBg:addChild(headerWash)
+    local headerTitle = MasterTheme.label("港口事务", 28, MENU_COLORS.paper, 24, 71, true)
+    TopBg:addChild(headerTitle)
     TopBg:addChild(BTheme.panel(visibleSize.width - 48, 1, colors.sea, 24, 48))
 
     local function moneyString(value)
@@ -173,8 +193,10 @@ function MainMenuLayer:init()
     self.coinNode:setCascadeOpacityEnabled(true)
     self.coinNode:setPosition(cc.p(origin.x + 24, origin.y + visibleSize.height - 77))
     self:addChild(self.coinNode)
-    self.coinNode:addChild(BTheme.label("金币", 19, colors.gold, 0, 0))
-    local coinLabel = BTheme.label(moneyString(DataManager:getInstance():getRoleData(roleMoney)), 23, colors.white, 56, 0)
+    legacyCurrencyPaper(self.coinNode)
+    local coinIcon = nativeIcon("coin");coinIcon:setPosition(cc.p(20,0));self.coinNode:addChild(coinIcon)
+    local coinLabel = BTheme.label(moneyString(DataManager:getInstance():getRoleData(roleMoney)), 24, MENU_COLORS.ink, 56, 0)
+    coinLabel:setFontName(MasterTheme.headingFont(false))
     self.coinNode:addChild(coinLabel)
     self.coinValueLabel = coinLabel
     DataManager:getInstance():registerEvent(roleMoney, "mainmenu", function()
@@ -183,9 +205,9 @@ function MainMenuLayer:init()
         if self.homeCoinLabel then self.homeCoinLabel:setString(moneyString(DataManager:getInstance():getRoleData(roleMoney))); BTheme.fitLabel(self.homeCoinLabel,72) end
     end)
     BTheme.fitLabel(coinLabel, 142)
-    local addCoinBtn = BTheme.button("+", 34, 30, function()
+    local addCoinBtn = legacyCurrencyButton(function()
         DataManager:getInstance():showBuyGoldBox()
-    end, {color = colors.sea, selectedColor = colors.coral, fontSize = 26})
+    end)
     addCoinBtn:setPosition(cc.p(224, 0))
     self.coinNode:addChild(addCoinBtn)
 
@@ -193,8 +215,10 @@ function MainMenuLayer:init()
     self.diamondNode:setCascadeOpacityEnabled(true)
     self.diamondNode:setPosition(cc.p(origin.x + visibleSize.width * 0.53, self.coinNode:getPositionY()))
     self:addChild(self.diamondNode)
-    self.diamondNode:addChild(BTheme.label("钻石", 19, colors.pale, 0, 0))
-    local diamondLabel = BTheme.label(moneyString(DataManager:getInstance():getRoleData(roleDiamond)), 23, colors.white, 56, 0)
+    legacyCurrencyPaper(self.diamondNode)
+    local diamondIcon = nativeIcon("diamond");diamondIcon:setPosition(cc.p(20,0));self.diamondNode:addChild(diamondIcon)
+    local diamondLabel = BTheme.label(moneyString(DataManager:getInstance():getRoleData(roleDiamond)), 24, MENU_COLORS.ink, 56, 0)
+    diamondLabel:setFontName(MasterTheme.headingFont(false))
     self.diamondNode:addChild(diamondLabel)
     self.diamondValueLabel = diamondLabel
     DataManager:getInstance():registerEvent(roleDiamond, "mainmenu", function()
@@ -203,8 +227,7 @@ function MainMenuLayer:init()
         if self.homeDiamondLabel then self.homeDiamondLabel:setString(moneyString(DataManager:getInstance():getRoleData(roleDiamond))); BTheme.fitLabel(self.homeDiamondLabel,65) end
     end)
     BTheme.fitLabel(diamondLabel, 142)
-    local addDiamondBtn = BTheme.button("+", 34, 30, function() ChargeLayer:create() end,
-        {color = colors.sea, selectedColor = colors.coral, fontSize = 26})
+    local addDiamondBtn = legacyCurrencyButton(function() ChargeLayer:create() end)
     addDiamondBtn:setPosition(cc.p(224, 0))
     self.diamondNode:addChild(addDiamondBtn)
 
@@ -438,7 +461,7 @@ function MainMenuLayer:init()
                 self.repositoryBtn:runAction(cc.Sequence:create(cc.ScaleTo:create(0.0, 2.0), cc.ScaleTo:create(0.8, 1.0)))
                 self.resourceBtn:runAction(cc.Sequence:create(cc.ScaleTo:create(0.0, 2.0), cc.ScaleTo:create(0.8, 1.0)))
                 -- 播放建设解锁剧情
-                local storyStr = {"它回应了你，一个新的功能被解锁！", "看看它能为你做些什么。"}
+                local storyStr = {"建设已解锁！", "点击底部“港务”，再选择“建设”。"}
                 self:playStory(storyStr)
                 GuideController:getInstance():addStep(101, true)
             else
@@ -932,9 +955,9 @@ function MainMenuLayer:setHomePresentation(active)
             local menu = cc.Menu:create(add); menu:setPosition(cc.p(0,0)); header:addChild(menu)
             return number, add
         end
-        self.homeCoinLabel, self.homeCoinAddButton = currency("coin", self.coinValueLabel:getString(), 35, 182, 199,
+        self.homeCoinLabel, self.homeCoinAddButton = currency("coin", self.coinValueLabel:getString(), 35, 182, 193,
             function() DataManager:getInstance():showBuyGoldBox() end)
-        self.homeDiamondLabel, self.homeDiamondAddButton = currency("diamond", self.diamondValueLabel:getString(), 230, 170, 382,
+        self.homeDiamondLabel, self.homeDiamondAddButton = currency("diamond", self.diamondValueLabel:getString(), 230, 170, 376,
             function() ChargeLayer:create() end)
     end
     self.homeHeader:setVisible(active)
@@ -944,4 +967,16 @@ function MainMenuLayer:setHomePresentation(active)
         BTheme.fitLabel(self.homeCoinLabel, 72); BTheme.fitLabel(self.homeDiamondLabel, 65)
     end
     self:applyHomeNavigationAppearance()
+end
+
+-- Approved secondary pages render their own live header. Hide only shared
+-- chrome; always restore navigation/header when returning to legacy or Home.
+function MainMenuLayer:setApprovedPagePresentation(active, keepNavigation)
+    self.approvedPagePresentation=active
+    if active then
+        self.legacyTopBg:setVisible(false)
+        self.coinNode:setVisible(false);self.diamondNode:setVisible(false)
+        if self.homeHeader then self.homeHeader:setVisible(false) end
+    end
+    self.navigationBg:setVisible(not active or keepNavigation)
 end

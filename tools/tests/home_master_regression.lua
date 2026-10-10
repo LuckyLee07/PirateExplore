@@ -118,6 +118,7 @@ function Node:drawPolygon(points,count,fill,borderWidth,border)
     equal(#points,count,'DrawNode polygon count')
     self.draws=self.draws or {};self.draws[#self.draws+1]={points=points,fill=fill,borderWidth=borderWidth,border=border}
 end
+function Node:drawTriangle(a,b,c,fill) self:drawPolygon({a,b,c},3,fill,0,fill) end
 function Node:drawDot(...) self.draws=self.draws or {};self.draws[#self.draws+1]={...} end
 function Node:drawSegment(...) self.draws=self.draws or {};self.draws[#self.draws+1]={...} end
 function Node:clear() self.draws={} end
@@ -472,6 +473,37 @@ for capacity=1,2 do
     equal(countText(home.crewNode,'未解锁'),3-capacity,'only unavailable positions say locked')
     assertReadonly(before,'capacity-aware slots');home:destory();equal(countListeners(),0,'capacity slots cleanup')
 end
+-- The actual starting profession must not look like an unfilled berth. Use
+-- the same packaged 100/101 portraits as loadout/combat, without altering data.
+for _,id in ipairs({'100','101'}) do
+    fixture();data[roleCabinSize]=1
+    data[roleSelectUnit]={[tostring(10000+tonumber(id))]=1}
+    data[roleSoildierQueue]={[id]={[dataKeyID]=id,[dataKeyNum]=1}}
+    equal(soldiers[id].name,id=='100' and '低级船员' or '水手','real starter/sailor CSV identity')
+    equal(soldiers[id].icon,id=='100' and 'j_1.png' or 'j_2.png','original CSV icon remains unchanged')
+    before=snapshot(data);home=assert(HomeLayer:create());assertSlots(home,{id})
+    assert(not home.crewSlots[1].neutral,'selected starter/sailor has its own portrait')
+    equal(home.summary.crew,1,'starter selected count');equal(home.summary.standby,0,'starter standby count')
+    local artCount=0
+    walkTree(home.crewNode,function(v)
+        if v.path=='Images/Icon/B/crew-'..id..'.png' then
+            artCount=artCount+1
+            equal(v:getScaleX(),v:getScaleY(),'starter portrait uniform aspect')
+            equal(v:getScaleX(),math.min(home.slotWidth/64,home.slotPortraitHeight/64),'original slot fit')
+        end
+    end)
+    equal(artCount,1,'one portrait for exactly one selected starter/sailor')
+    for i=2,3 do assert(home.crewSlots[i].empty and home.crewSlots[i].neutral and home.crewSlots[i].locked) end
+    assertReadonly(before,'starter/sailor portrait-only change');home:destory()
+end
+local originalPortraitSprite=cc.Sprite.create
+cc.Sprite.create=function()return nil end
+assert(MasterTheme.portrait('100',185,155)==nil,'failed starter portrait decoding keeps neutral fallback')
+cc.Sprite.create=originalPortraitSprite
+missingArt=true
+assert(MasterTheme.portrait('100',185,155)==nil and MasterTheme.portrait('101',185,155)==nil,'missing starter assets keep neutral fallback')
+missingArt=false
+print('PASS Master Home real 100/101 occupied portraits, distinct empty/locked slots and unchanged roster data')
 fixture();data[roleSelectUnit]={['10108']=1}
 before=snapshot(data);home=assert(HomeLayer:create())
 assertSlots(home,{'108'})
@@ -732,6 +764,7 @@ local originalDirector=cc.Director.getInstance
 cc.Director.getInstance=function()
     local director=originalDirector()
     director.getNotificationNode=function()return notification end
+    director.getRunningScene=function()return scene end
     return director
 end
 dofile(root..'ToastUtil.lua')
@@ -765,7 +798,10 @@ ToastUtil:downString('船坞已解锁')
 equal(downCalls,2,'errors and unlocks still enter original downString')
 equal(ToastUtil.infoQueue[1],'支付失败，请重试！','error retained in original toast queue')
 equal(ToastUtil.infoQueue[2],'船坞已解锁','unlock retained in original toast queue')
-equal(#notification.actions,2,'important Home toasts keep original scheduling path')
+local toastStack=notification:getChildren()[1]
+assert(toastStack and toastStack.isOrdinaryToastStack,'important Home toasts own their driver node')
+equal(#(notification.actions or {}),0,'notification host has no retained toast actions')
+equal(#toastStack.actions,1,'important Home toasts share one lifecycle-owned pending pump')
 local legacy=node('LegacyPage')
 function legacy:viewWillDestory()end
 function legacy:destory()end
@@ -774,7 +810,7 @@ dispatch:setViewWithDirection(legacy,false,1)
 ToastUtil:productionString('食物+7')
 equal(downCalls,3,'leaving Home restores routine production downString')
 equal(ToastUtil.infoQueue[3],'食物+7','legacy production uses the original queue')
-equal(#notification.actions,3,'legacy production uses original scheduling path')
+equal(#toastStack.actions,1,'legacy production uses the same pending pump')
 dispatch:moveToHome()
 local returnToastState=snapshot(ToastUtil)
 ToastUtil:productionString('金币+9')
@@ -793,6 +829,19 @@ local _,productionCalls=source:gsub('ToastUtil:productionString%(', '')
 equal(productionCalls,3,'only the three routine production call sites use the filter')
 assert(source:find('ToastUtil:downString("支付失败，请重试！")',1,true),'payment failure must retain direct error feedback')
 assertReadonly(before,'toast filter final state')
+-- Visible native modal ownership suppresses only routine production. No global
+-- counter survives removal, and nested dialogs remain independently accounted for.
+local modalA=node('Modal');modalA.isAdventureModal=true;scene:addChild(modalA)
+local modalB=node('Modal');modalB.isAdventureModal=true;scene:addChild(modalB)
+local priorCalls=downCalls
+ToastUtil:productionString('食物+5');equal(downCalls,priorCalls,'visible modal suppresses routine production')
+modalA:removeFromParent()
+ToastUtil:productionString('小麦+1');equal(downCalls,priorCalls,'remaining nested modal keeps production quiet')
+ToastUtil:downString('库存不足',true)
+equal(downCalls,priorCalls+1,'important modal error retains original feedback route')
+modalB:removeFromParent()
+ToastUtil:productionString('木材+2');equal(downCalls,priorCalls+2,'last modal close restores ordinary feedback')
+assertReadonly(before,'modal presentation isolation')
 cc.Director.getInstance=originalDirector
 require=originalRequire
 print('PASS Master Home production-only toast silence, original error/unlock feedback and off-Home restoration')

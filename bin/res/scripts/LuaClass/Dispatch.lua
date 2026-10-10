@@ -511,6 +511,7 @@ function Dispatch:setViewWithDirection(view, bIsMove, direction)
     self.BaseNode:addChild(self.rightNode)
     self:setUpdateSystemInfoLayer(self.rightNode)
     self.mainMenu:setHomePresentation(self.rightNode.isAdventureHome == true)
+    self.mainMenu:setApprovedPagePresentation(self.rightNode.approvedPage == true, self.rightNode.keepNavigation ~= false)
 
     -- -- 如果正在移动中，那么禁止移动
     -- if self.bIsMoving then

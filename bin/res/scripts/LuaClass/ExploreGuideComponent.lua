@@ -1,6 +1,19 @@
 require "LuaClass/Header"
 require "LuaClass/EffectUtil"
+require "LuaClass/DialogTheme"
 
+-- Keep the original Scale9 resize/position contract, replacing only its paint.
+-- These boxes change size for each line, so replace the prior surface each time.
+local function refreshGuideSurface(box)
+	if box.guideSurface then box.guideSurface:removeFromParent(true) end
+	local size = box:getContentSize()
+	box:setCascadeOpacityEnabled(false)
+	box:setOpacity(0)
+	local face = DialogTheme.card(size.width, size.height, "ink")
+	face:setAnchorPoint(cc.p(0, 0))
+	box:addChild(face, -1)
+	box.guideSurface = face
+end
 
 ExploreGuideComponent = class("ExploreGuideComponent",function ()
 	 return {}
@@ -59,20 +72,24 @@ function ExploreGuideComponent:init(parent)
 
 	--对话
 	self.desBox = cc.Scale9Sprite:create("Images/Map/Guide/desBox.png",cc.rect(0, 0, tempSpr:getContentSize().width, tempSpr:getContentSize().height), cc.rect(1, 1, tempSpr:getContentSize().width - 2, tempSpr:getContentSize().height - 2))
+	refreshGuideSurface(self.desBox)
 	self.desBox:setPosition(cc.p(winSize.width / 2,winSize.height / 2 + 50))
 	parent:addChild(self.desBox,1000)
 
-	self.desLaebl = cc.LabelTTF:create("描述话", BoldFont, 20)
+	self.desLaebl = cc.LabelTTF:create("描述话", MasterTheme.headingFont(false), 20)
+	self.desLaebl:setColor(MasterTheme.colors.white)
 	self.desLaebl:setPosition(cc.p(winSize.width / 2,winSize.height / 2 + 55))
 	parent:addChild(self.desLaebl,1000)
 
 	--提示
 	local tempSpr =  cc.Sprite:create("Images/Map/Guide/tipBox.png")
 	self.tipBox = cc.Scale9Sprite:create("Images/Map/Guide/tipBox.png",cc.rect(0, 0, tempSpr:getContentSize().width, tempSpr:getContentSize().height), cc.rect(1, 1, tempSpr:getContentSize().width - 2, tempSpr:getContentSize().height - 2))
+	refreshGuideSurface(self.tipBox)
 	self.tipBox:setPosition(cc.p(winSize.width / 2,winSize.height * 0.75))
 	parent:addChild(self.tipBox,1000)
 
-	self.tipLable = cc.LabelTTF:create("提示话", BoldFont, 30)
+	self.tipLable = cc.LabelTTF:create("提示话", MasterTheme.headingFont(false), 30)
+	self.tipLable:setColor(MasterTheme.colors.white)
 	self.tipLable:setPosition(cc.p(winSize.width / 2,winSize.height * 0.75))
 	parent:addChild(self.tipLable,1000)
 
@@ -165,6 +182,7 @@ function ExploreGuideComponent:showTipsByPosition(tips,position )
 
 	local boxSize = cc.size(self.tipLable:getContentSize().width * 1.1,self.tipLable:getContentSize().height * 1.1)
 	self.tipBox:setContentSize(boxSize)
+	refreshGuideSurface(self.tipBox)
 	-- self.tipBox:setScale(boxSize / self.tipBox:getContentSize().width)
 
 	self.tipLable:setVisible(true)
@@ -182,6 +200,7 @@ function ExploreGuideComponent:showDes( des,position )
 	local boxSize = cc.size(self.desLaebl:getContentSize().width * 1.1,self.desLaebl:getContentSize().height * 1.4)
 
 	self.desBox:setContentSize(boxSize)
+	refreshGuideSurface(self.desBox)
 
 	self.desLaebl:setVisible(true)
 	self.desBox:setVisible(true)

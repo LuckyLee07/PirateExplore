@@ -1,4 +1,5 @@
 require "LuaClass/Header"
+require "LuaClass/DialogTheme"
 require "LuaClass/BaseView"
 require "LuaClass/UIKit"
 require "LuaClass/Utils"
@@ -67,6 +68,8 @@ function AchievementLayer:init()
     -- self.scrollView:registerScriptHandler(scrollViewDidScroll, cc.SCROLLVIEW_SCRIPT_SCROLL)
     -- self:addChild(self.scrollView)
 
+    DialogTheme.applyBase(self)
+
     self:loadAchievementData()
 
     DataManager:getInstance():registerEvent(roleAchievement, "achievement", function()
@@ -90,9 +93,10 @@ function AchievementLayer:loadAchievementData()
     if (achievementPointLabel ~= nil) then
         achievementPointLabel:removeFromParent()
     end
-    achievementPointLabel = cc.LabelTTF:create("成就点数：" .. DataManager:getInstance():getRoleData(roleAchievementPoint), BoldFont, 32.0)
+    achievementPointLabel = cc.LabelTTF:create("成就点数：" .. DataManager:getInstance():getRoleData(roleAchievementPoint), MasterTheme.headingFont(false), 32.0)
     achievementPointLabel:setAnchorPoint(cc.p(0.0, 0.5))
-    achievementPointLabel:setColor(WriteColor)
+    achievementPointLabel:setColor(MasterTheme.colors.white)
+    DialogTheme.fit(achievementPointLabel, self.areaWidth - 50)
     achievementPointLabel:setPosition(cc.p(0.0, self.originPos.y + self.areaHeight - achievementPointLabel:getContentSize().height * 0.5))
     achievementPointLabel:setTag(2)
     self:addChild(achievementPointLabel)
@@ -111,12 +115,13 @@ function AchievementLayer:loadAchievementData()
             if (trigerLabel ~= nil) then
                 trigerLabel:removeFromParent()
             end
-            trigerLabel = cc.LabelTTF:create("点数达到" .. unlockedAchievement[1][dataKeyAchievement] .. "会获得神秘天赋奖励", BoldFont, 27.0)
+            trigerLabel = cc.LabelTTF:create("点数达到" .. unlockedAchievement[1][dataKeyAchievement] .. "会获得神秘天赋奖励", MasterTheme.headingFont(false), 27.0)
             trigerLabel:setAnchorPoint(cc.p(0.0, 0.5))
-            trigerLabel:setColor(WriteColor)
+            trigerLabel:setColor(MasterTheme.colors.paper)
+            DialogTheme.fit(trigerLabel, self.areaWidth - 50)
             trigerLabel:setPosition(cc.p(0.0, achievementPointLabel:getPositionY() - achievementPointLabel:getContentSize().height * 0.5 - trigerLabel:getContentSize().height * 0.5))
             self:addChild(trigerLabel)
-            achievementPointLabel:setTag(3)
+            trigerLabel:setTag(3)
             self.scrollViewHeight = self.scrollViewHeight - trigerLabel:getContentSize().height
 
         end
@@ -231,7 +236,7 @@ function AchievementLayer:loadAchievementData()
 
         -- end)
 
-        local button = SDButton:create("Images/btn/ann03_a.png","Images/btn/ann03_b.png",function ()
+        local button = DialogTheme.sdButton("Images/btn/ann03_a.png","Images/btn/ann03_b.png",function ()
             -- local tag = sender:getTag()
             local tag = index
 
@@ -250,15 +255,16 @@ function AchievementLayer:loadAchievementData()
             -- -- --  测试代码
 
             self:showInfoBox(showData)
-        end)
+        end, "secondary")
         button:setSwallowTouches(false)
         button:setPosition(cc.p(button:getContentSize().width * 0.5, 0.0))
         button:setTag(index)
         container:addChild(button)
 
-        local buttonLabel = cc.LabelTTF:create(tableData[dataKeyName], BoldFont, 32.0)
+        local buttonLabel = cc.LabelTTF:create(tableData[dataKeyName], MasterTheme.headingFont(false), 32.0)
 
-        buttonLabel:setColor(BaseColor)
+        buttonLabel:setColor(MasterTheme.colors.white)
+        DialogTheme.fit(buttonLabel, button:getContentSize().width - 24)
         buttonLabel:setPosition(cc.p(button:getContentSize().width * 0.5, button:getContentSize().height * 0.5))
         button:addChild(buttonLabel)
 

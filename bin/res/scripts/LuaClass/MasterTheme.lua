@@ -69,50 +69,120 @@ end
 function M.icon(kind,size,color)
     local n=cc.Node:create();n:setContentSize(cc.size(size,size));local d=cc.DrawNode:create();n:addChild(d)
     local c=HomeTheme.rgba(color or M.colors.paper);local function p(x,y)return cc.p(x*size,y*size)end
-    local function poly(points)local a={} for _,v in ipairs(points) do a[#a+1]=p(v[1],v[2]) end;d:drawPolygon(a,#a,c,0,c)end
-    local function line(x,y,a,b,w)d:drawSegment(p(x,y),p(a,b),(w or .026)*size,c)end
-    if kind=='sail' or kind=='ship' then
-        -- Unequal wind-filled sails, drawn as quiet broad shapes rather than
-        -- two symmetric triangles. Sampled curvature stays resolution-free.
-        poly({{.47,.88},{.42,.71},{.34,.53},{.23,.36},{.13,.28},{.28,.31},{.47,.31}})
-        poly({{.55,.94},{.65,.83},{.73,.68},{.77,.51},{.78,.36},{.73,.28},{.64,.3},{.55,.31}})
-        line(.52,.97,.52,.21,.015);poly({{.08,.22},{.92,.25},{.73,.09},{.24,.08}})
-        line(.16,.025,.76,.025,.012)
-        local dark=HomeTheme.rgba(M.colors.ink)
-        d:drawSegment(p(.24,.17),p(.75,.18),.008*size,dark)
-    elseif kind=='crew' then
-        for _,v in ipairs({{.24,.72,.105},{.76,.72,.105},{.50,.82,.12}}) do d:drawDot(p(v[1],v[2]),v[3]*size,c) end
-        poly({{.04,.13},{.09,.47},{.24,.54},{.35,.49},{.39,.1}})
-        poly({{.64,.1},{.65,.49},{.78,.54},{.91,.47},{.97,.13}})
-        poly({{.31,.06},{.35,.54},{.5,.64},{.65,.54},{.7,.06}})
-    elseif kind=='port' then
-        poly({{.05,.7},{.48,.98},{.89,.7}});poly({{.13,.06},{.13,.67},{.29,.67},{.29,.06}});poly({{.64,.06},{.64,.67},{.8,.67},{.8,.06}});poly({{.13,.56},{.8,.56},{.8,.67},{.13,.67}})
-        line(.03,.03,.96,.03,.025)
-        local dark=HomeTheme.rgba(M.colors.ink)
-        d:drawDot(p(.48,.79),size*.045,dark)
-        poly({{.68,.06},{.98,.06},{.98,.39},{.68,.39}})
-        d:drawSegment(p(.71,.1),p(.95,.36),.018*size,dark)
-        d:drawSegment(p(.71,.36),p(.95,.1),.013*size,dark)
-        line(.05,.2,.05,.46,.025);line(.01,.48,.11,.48,.025)
-    elseif kind=='anchor' then
-        d:drawDot(p(.5,.84),size*.115,c);d:drawDot(p(.5,.84),size*.052,HomeTheme.rgba(M.colors.ink))
-        line(.5,.76,.5,.18,.04);line(.23,.6,.77,.6,.032)
-        local left={{.15,.32},{.18,.24},{.23,.18},{.31,.13},{.40,.1},{.5,.085}}
-        for i=1,#left-1 do
-            local a,b=left[i],left[i+1]
-            line(a[1],a[2],b[1],b[2],.037);line(1-a[1],a[2],1-b[1],b[2],.037)
+    local function triangle(a,b,e)d:drawTriangle(p(a[1],a[2]),p(b[1],b[2]),p(e[1],e[2]),c)end
+    local function cross(a,b,e)return (b[1]-a[1])*(e[2]-a[2])-(b[2]-a[2])*(e[1]-a[1])end
+    -- Curved silhouettes can be concave. Native triangles preserve openings
+    -- and avoid DrawNode polygon-edge miters on the narrow curve samples.
+    local function poly(points)
+        local v={};local area=0
+        for i,a in ipairs(points) do local b=points[i%#points+1];area=area+a[1]*b[2]-b[1]*a[2] end
+        for i=1,#points do v[i]=points[area>0 and i or #points-i+1] end
+        while #v>3 do
+            local cut=false
+            for i=1,#v do
+                local a,b,e=v[(i-2)%#v+1],v[i],v[i%#v+1]
+                if cross(a,b,e)>1e-10 then
+                    local clear=true
+                    for j,q in ipairs(v) do
+                        if j~=i and j~=(i-2)%#v+1 and j~=i%#v+1
+                            and cross(a,b,q)>=-1e-10 and cross(b,e,q)>=-1e-10 and cross(e,a,q)>=-1e-10 then clear=false;break end
+                    end
+                    if clear then triangle(a,b,e);table.remove(v,i);cut=true;break end
+                end
+            end
+            if not cut then return end
         end
-        poly({{.06,.39},{.3,.33},{.16,.15}});poly({{.94,.39},{.7,.33},{.84,.15}})
+        if #v==3 then triangle(v[1],v[2],v[3]) end
+    end
+    local function line(x,y,a,b,w)d:drawSegment(p(x,y),p(a,b),(w or .026)*size,c)end
+    local function curve(a,x1,y1,x2,y2,x3,y3)
+        local q=a[#a];local x,y=q[1],q[2]
+        for i=1,10 do local t=i/10;local u=1-t
+            a[#a+1]={u*u*u*x+3*u*u*t*x1+3*u*t*t*x2+t*t*t*x3,u*u*u*y+3*u*u*t*y1+3*u*t*t*y2+t*t*t*y3}
+        end
+    end
+    local function ellipse(x,y,rx,ry)
+        local a={};for i=0,23 do local t=i*math.pi/12;a[#a+1]={x+rx*math.cos(t),y+ry*math.sin(t)} end;poly(a)
+    end
+    local function ring(x,y,rx,ry,w)
+        -- The opening stays genuinely transparent, including on pale paper.
+        for i=0,31 do local a=i*math.pi/16;local b=(i+1)*math.pi/16
+            poly({{x+rx*math.cos(a),y+ry*math.sin(a)},{x+rx*math.cos(b),y+ry*math.sin(b)},
+                {x+(rx-w)*math.cos(b),y+(ry-w)*math.sin(b)},{x+(rx-w)*math.cos(a),y+(ry-w)*math.sin(a)}})
+        end
+    end
+    if kind=='sail' or kind=='ship' then
+        local a={{.467,.847}}
+        curve(a,.385,.665,.231,.423,.103,.294);curve(a,.235,.343,.361,.332,.451,.288)
+        curve(a,.448,.482,.460,.695,.467,.847);table.remove(a);poly(a)
+        a={{.554,.926}}
+        curve(a,.726,.772,.823,.540,.795,.350);curve(a,.720,.360,.644,.333,.562,.291)
+        curve(a,.579,.496,.573,.761,.554,.926);table.remove(a);poly(a)
+        line(.512,.965,.512,.222,.013)
+        a={{.065,.225}};curve(a,.291,.180,.684,.186,.927,.265)
+        a[#a+1]={.759,.111};curve(a,.609,.077,.365,.081,.214,.120);poly(a)
+        a={{.222,.049}};curve(a,.390,.030,.603,.032,.760,.054)
+        for i=1,#a-1 do line(a[i][1],a[i][2],a[i+1][1],a[i+1][2],.011) end
+    elseif kind=='crew' then
+        ellipse(.205,.676,.099,.120);ellipse(.795,.676,.099,.120);ellipse(.5,.802,.121,.143)
+        local a={{.033,.117},{.049,.328}}
+        curve(a,.054,.424,.124,.493,.218,.483);curve(a,.245,.481,.271,.470,.287,.451)
+        curve(a,.266,.397,.255,.282,.251,.106);curve(a,.173,.100,.095,.103,.033,.117)
+        table.remove(a);poly(a)
+        local right={};for _,q in ipairs(a) do right[#right+1]={1-q[1],q[2]} end;poly(right)
+        a={{.294,.063},{.309,.326}}
+        curve(a,.315,.455,.391,.564,.5,.565);curve(a,.609,.564,.685,.455,.691,.326)
+        a[#a+1]={.706,.063};curve(a,.584,.039,.416,.039,.294,.063);table.remove(a);poly(a)
+    elseif kind=='port' then
+        -- Four roof pieces leave a small diamond window, without a painted hole.
+        poly({{.292,.856},{.478,.980},{.654,.856}})
+        poly({{.175,.778},{.292,.856},{.478,.856},{.441,.817},{.478,.778}})
+        poly({{.478,.856},{.654,.856},{.768,.778},{.478,.778},{.515,.817}})
+        poly({{.058,.700},{.175,.778},{.768,.778},{.880,.700}})
+        local a={{.143,.683},{.804,.683},{.804,.545},{.650,.545}}
+        curve(a,.649,.605,.588,.644,.474,.645);curve(a,.361,.644,.300,.605,.299,.545)
+        a[#a+1]={.143,.545};poly(a)
+        for _,b in ipairs({{.143,.299,.094,.248},{.143,.299,.273,.431},{.143,.299,.456,.559},
+            {.650,.804,.406,.431},{.650,.804,.456,.559},{.650,.678,.094,.381}}) do
+            poly({{b[1],b[3]},{b[2],b[3]},{b[2],b[4]},{b[1],b[4]}})
+        end
+        line(.034,.049,.972,.049,.021);line(.055,.145,.055,.414,.023);line(.021,.432,.103,.432,.020)
+        -- Broad crate faces are divided by a clean, open X brace.
+        poly({{.703,.083},{.703,.343},{.808,.213}});poly({{.956,.083},{.956,.343},{.850,.213}})
+        poly({{.724,.365},{.935,.365},{.829,.239}});poly({{.724,.062},{.935,.062},{.829,.187}})
+        line(.686,.064,.976,.064,.014);line(.686,.381,.976,.381,.014)
+        line(.686,.064,.686,.381,.014);line(.976,.064,.976,.381,.014)
+    elseif kind=='anchor' then
+        ring(.5,.837,.104,.114,.035);line(.5,.741,.5,.137,.040)
+        local a={{.228,.610}};curve(a,.368,.624,.632,.624,.772,.610)
+        for i=1,#a-1 do line(a[i][1],a[i][2],a[i+1][1],a[i+1][2],.033) end
+        line(.219,.610,.232,.641,.027);line(.781,.610,.768,.641,.027)
+        a={{.127,.372}};curve(a,.158,.253,.316,.163,.5,.154)
+        curve(a,.684,.163,.842,.253,.873,.372);a[#a+1]={.925,.309}
+        curve(a,.877,.159,.676,.063,.5,.052);curve(a,.324,.063,.123,.159,.075,.309);poly(a)
+        poly({{.056,.411},{.279,.326},{.106,.211}});poly({{.944,.411},{.721,.326},{.894,.211}})
     elseif kind=='key' then
-        d:drawDot(p(.73,.78),size*.16,c);d:drawDot(p(.73,.78),size*.085,HomeTheme.rgba(M.colors.ink))
-        line(.64,.66,.19,.16,.045);line(.29,.26,.39,.15,.04);line(.4,.39,.49,.29,.04)
+        ring(.735,.803,.161,.164,.065)
+        line(.626,.681,.187,.172,.050)
+        line(.292,.288,.398,.185,.047);line(.406,.418,.505,.318,.047)
     elseif kind=='food' then
-        poly({{.23,.1},{.15,.37},{.15,.65},{.24,.87},{.76,.87},{.85,.65},{.85,.37},{.77,.1}})
-        local dark=HomeTheme.rgba(M.colors.ink)
-        d:drawSegment(p(.18,.64),p(.82,.64),.032*size,dark);d:drawSegment(p(.2,.34),p(.8,.34),.032*size,dark)
-        d:drawSegment(p(.41,.17),p(.41,.8),.013*size,dark);d:drawSegment(p(.61,.17),p(.61,.8),.013*size,dark)
-        d:drawSegment(p(.28,.8),p(.71,.8),.032*size,dark)
-        d:drawDot(p(.28,.65),size*.018,dark);d:drawDot(p(.72,.65),size*.018,dark)
+        -- One oval opening joins a broad barrel body. Only two narrow hoop
+        -- grooves and two short stave seams interrupt the cream silhouette.
+        ring(.5,.823,.288,.114,.052)
+        local a={{.212,.823},{.264,.823}}
+        curve(a,.264,.789,.370,.761,.5,.761);curve(a,.630,.761,.736,.789,.736,.823)
+        a[#a+1]={.788,.823};curve(a,.806,.770,.817,.710,.818,.662)
+        curve(a,.650,.612,.350,.612,.182,.662);curve(a,.183,.710,.194,.770,.212,.823)
+        table.remove(a);poly(a)
+        a={{.173,.635}};curve(a,.230,.616,.306,.599,.385,.591)
+        a[#a+1]={.385,.305};curve(a,.302,.319,.229,.338,.175,.356)
+        curve(a,.151,.449,.150,.548,.173,.635);table.remove(a);poly(a)
+        local right={};for _,q in ipairs(a) do right[#right+1]={1-q[1],q[2]} end;poly(right)
+        a={{.411,.586}};curve(a,.470,.579,.530,.579,.589,.586)
+        a[#a+1]={.589,.298};curve(a,.530,.289,.470,.289,.411,.298);poly(a)
+        a={{.190,.325}};curve(a,.350,.240,.650,.240,.810,.325)
+        curve(a,.801,.270,.789,.210,.765,.170);curve(a,.630,.099,.370,.099,.235,.170)
+        curve(a,.211,.210,.199,.270,.190,.325);table.remove(a);poly(a)
     end
     return n
 end
@@ -132,10 +202,16 @@ function M.portraitBrush(w,h)
 end
 function M.portrait(id,w,h)
     local cells={['107']={37,70,663,587},['102']={764,87,666,570},['124']={1488,70,647,587}}
-    local r=cells[tostring(id)];local path=M.path..'crew-trio.png'
-    if not r or not cc.FileUtils:getInstance():isFileExist(path) then return nil end
+    -- The starter crew and sailor already have identity-matched portraits in
+    -- loadout/combat. Reuse those exact assets, keeping empty slots neutral.
+    local singles={['100']='Images/Icon/B/crew-100.png',['101']='Images/Icon/B/crew-101.png'}
+    local r=cells[tostring(id)];local path=singles[tostring(id)] or (r and M.path..'crew-trio.png')
+    if not path or not cc.FileUtils:getInstance():isFileExist(path) then return nil end
+    local s
+    if r then s=cc.Sprite:create(path,cc.rect(unpack(r))) else s=cc.Sprite:create(path) end
+    if not s then return nil end
+    local z=s:getContentSize();if z.width<=0 or z.height<=0 then return nil end
     local n=cc.Node:create();n:setContentSize(cc.size(w,h))
-    local s=cc.Sprite:create(path,cc.rect(unpack(r)));local z=s:getContentSize()
     s:setScale(math.min(w/z.width,h/z.height));s:setAnchorPoint(cc.p(.5,0));s:setPosition(cc.p(w/2,0));n:addChild(s)
     return n
 end

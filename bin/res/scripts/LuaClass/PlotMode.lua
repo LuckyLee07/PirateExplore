@@ -1,3 +1,4 @@
+require 'LuaClass/DialogTheme'
 --
 -- Created by IntelliJ IDEA.
 -- User: sunxy
@@ -87,7 +88,17 @@ function PlotScene:init(plotId, callback)
 
     if self.plotArray[1] >= 1 and self.plotArray[1] <= 7 then
         -- jumpBtn
-        local jumpBtn = cc.MenuItemImage:create("Images/UI/tiaoguo.png", "Images/UI/tiaoguo.png")
+        local jumpBtn = DialogTheme.menuItem("Images/UI/tiaoguo.png", "Images/UI/tiaoguo.png", "secondary")
+        -- Native skip marks over the B material; keep the original 36px target.
+        local size = jumpBtn:getContentSize()
+        local marks = cc.DrawNode:create()
+        local color = HomeTheme.rgba(MasterTheme.colors.paper)
+        for _, x in ipairs({0.20, 0.49}) do
+            marks:drawTriangle(cc.p(size.width*x, size.height*0.28),
+                cc.p(size.width*(x+0.27), size.height*0.5),
+                cc.p(size.width*x, size.height*0.72), color)
+        end
+        jumpBtn:addChild(marks)
         jumpBtn:setPosition(winSize.width-100.0, 100.0)
         jumpBtn:registerScriptTapHandler(function()
             self:next()
@@ -196,7 +207,7 @@ function PlotScene:init(plotId, callback)
         for i=1,#story do
             -- 弹文字
             local wordFunc = function()
-                local label = cc.LabelTTF:create(story[i][1], BoldFont, 30.0)
+                local label = cc.LabelTTF:create(story[i][1], MasterTheme.headingFont(false), 30.0)
                 label:setPosition(0.5*winSize.width, 0.5*winSize.height+100.0-170.0-20.0-40*i-100.0)
                 baseNode:addChild(label)
 

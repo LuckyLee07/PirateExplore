@@ -59673,6 +59673,25 @@ int lua_cocos2dx_TMXLayer_getTileGIDAt(lua_State* tolua_S)
 
     return 0;
 }
+// Safe read-only companion to getTileGIDAt. Lua cannot supply a native
+// TMXTileFlags pointer; keep output storage local and initialized.
+int lua_cocos2dx_TMXLayer_getTileFlagsAt(lua_State* tolua_S)
+{
+    tolua_Error error;
+    if (!tolua_isusertype(tolua_S, 1, "cc.TMXLayer", 0, &error))
+    {
+        tolua_error(tolua_S, "invalid TMXLayer in getTileFlagsAt", &error);
+        return 0;
+    }
+    cocos2d::TMXLayer* layer = static_cast<cocos2d::TMXLayer*>(tolua_tousertype(tolua_S, 1, nullptr));
+    cocos2d::Point point;
+    if (!layer || lua_gettop(tolua_S) != 2 || !luaval_to_point(tolua_S, 2, &point))
+        return 0;
+    cocos2d::TMXTileFlags flags = static_cast<cocos2d::TMXTileFlags>(0);
+    layer->getTileGIDAt(point, &flags);
+    tolua_pushnumber(tolua_S, static_cast<lua_Number>(flags));
+    return 1;
+}
 int lua_cocos2dx_TMXLayer_getPositionAt(lua_State* tolua_S)
 {
     int argc = 0;
@@ -60737,6 +60756,7 @@ int lua_register_cocos2dx_TMXLayer(lua_State* tolua_S)
 
     tolua_beginmodule(tolua_S,"TMXLayer");
         tolua_function(tolua_S,"getTileGIDAt",lua_cocos2dx_TMXLayer_getTileGIDAt);
+        tolua_function(tolua_S,"getTileFlagsAt",lua_cocos2dx_TMXLayer_getTileFlagsAt);
         tolua_function(tolua_S,"getPositionAt",lua_cocos2dx_TMXLayer_getPositionAt);
         tolua_function(tolua_S,"setLayerOrientation",lua_cocos2dx_TMXLayer_setLayerOrientation);
         tolua_function(tolua_S,"releaseMap",lua_cocos2dx_TMXLayer_releaseMap);

@@ -57,6 +57,8 @@ RenderTexture::RenderTexture()
 , _texture(0)
 , _textureCopy(0)
 , _UITextureImage(nullptr)
+, _backgroundListener(nullptr)
+, _foregroundListener(nullptr)
 , _pixelFormat(Texture2D::PixelFormat::RGBA8888)
 , _clearFlags(0)
 , _clearColor(Color4F(0,0,0,0))
@@ -72,16 +74,26 @@ RenderTexture::RenderTexture()
 #if CC_ENABLE_CACHE_TEXTURE_DATA
     // Listen this event to save render texture before come to background.
     // Then it can be restored after coming to foreground on Android.
-    auto toBackgroundListener = EventListenerCustom::create(EVENT_COME_TO_BACKGROUND, CC_CALLBACK_1(RenderTexture::listenToBackground, this));
-    _eventDispatcher->addEventListenerWithSceneGraphPriority(toBackgroundListener, this);
+    // A retained target still needs its pixels when its scene is paused under
+    // another scene. Scene-graph listeners are paused by Node::onExit().
+    _backgroundListener = EventListenerCustom::create(EVENT_COME_TO_BACKGROUND, CC_CALLBACK_1(RenderTexture::listenToBackground, this));
+    _eventDispatcher->addEventListenerWithFixedPriority(_backgroundListener, -1);
+    _backgroundListener->retain();
 
-    auto toForegroundListener = EventListenerCustom::create(EVENT_COME_TO_FOREGROUND, CC_CALLBACK_1(RenderTexture::listenToForeground, this));
-    _eventDispatcher->addEventListenerWithSceneGraphPriority(toForegroundListener, this);
+    _foregroundListener = EventListenerCustom::create(EVENT_COME_TO_FOREGROUND, CC_CALLBACK_1(RenderTexture::listenToForeground, this));
+    _eventDispatcher->addEventListenerWithFixedPriority(_foregroundListener, -1);
+    _foregroundListener->retain();
 #endif
 }
 
 RenderTexture::~RenderTexture()
 {
+    // Fixed-priority listeners have no node association and must be removed
+    // explicitly before their callback target is destroyed.
+    _eventDispatcher->removeEventListener(_backgroundListener);
+    _eventDispatcher->removeEventListener(_foregroundListener);
+    CC_SAFE_RELEASE(_backgroundListener);
+    CC_SAFE_RELEASE(_foregroundListener);
     CC_SAFE_RELEASE(_sprite);
     CC_SAFE_RELEASE(_textureCopy);
     
@@ -96,13 +108,15 @@ RenderTexture::~RenderTexture()
 void RenderTexture::listenToBackground(EventCustom *event)
 {
 #if CC_ENABLE_CACHE_TEXTURE_DATA
-    CC_SAFE_DELETE(_UITextureImage);
-    
-    // to get the rendered texture data
-    _UITextureImage = newImage(false);
+    if (!_texture || !_FBO) return;
+    // Keep the previous snapshot alive until its replacement is usable:
+    // VolatileTextureMgr retains a pointer into these image bytes.
+    Image* snapshot = newImage(false);
 
-    if (_UITextureImage)
+    if (snapshot)
     {
+        Image* previous = _UITextureImage;
+        _UITextureImage = snapshot;
         const Size& s = _texture->getContentSizeInPixels();
         VolatileTextureMgr::addDataTexture(_texture, _UITextureImage->getData(), s.width * s.height * 4, Texture2D::PixelFormat::RGBA8888, s);
         
@@ -110,20 +124,23 @@ void RenderTexture::listenToBackground(EventCustom *event)
         {
             VolatileTextureMgr::addDataTexture(_textureCopy, _UITextureImage->getData(), s.width * s.height * 4, Texture2D::PixelFormat::RGBA8888, s);
         }
+        CC_SAFE_DELETE(previous);
     }
     else
     {
         CCLOG("Cache rendertexture failed!");
     }
     
-    glDeleteFramebuffers(1, &_FBO);
-    _FBO = 0;
+    // An ordinary Android pause can preserve the GL context and does not send
+    // EVENT_COME_TO_FOREGROUND. Keep the live FBO valid in that case. A genuine
+    // context recreation frees its old name and listenToForeground replaces it.
 #endif
 }
 
 void RenderTexture::listenToForeground(EventCustom *event)
 {
 #if CC_ENABLE_CACHE_TEXTURE_DATA
+    if (!_texture) return;
     // -- regenerate frame buffer object and attach the texture
     glGetIntegerv(GL_FRAMEBUFFER_BINDING, &_oldFBO);
     

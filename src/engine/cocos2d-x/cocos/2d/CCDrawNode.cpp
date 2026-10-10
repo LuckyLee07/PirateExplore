@@ -455,7 +455,7 @@ void DrawNode::drawPolygon(Point *verts, int count, const Color4F &fillColor, fl
 
 void DrawNode::drawTriangle(const Point &p1, const Point &p2, const Point &p3, const Color4F &color)
 {
-    unsigned int vertex_count = 2*3;
+    unsigned int vertex_count = 3;
     ensureCapacity(vertex_count);
 
     Color4B col = Color4B(color);

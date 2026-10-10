@@ -2229,8 +2229,12 @@ function DataManager:createSuccessCheck(unitType, id)
         if data ~= nil then
     		-- 如果是建筑成功的话才发送系统消息
     		if bIsNewBuild then
-    			-- 发送成功建造的信息
-    			self:sendSystemInfo(data["successDesc"])
+                -- B 导航将采集收在港务内，仓库建成后明确下一步的入口。
+                local successDesc = data["successDesc"]
+                if id == "1" then
+                    successDesc = (successDesc or "") .. "\n点击底部“港务”，再选择“采集”。"
+                end
+                self:sendSystemInfo(successDesc)
     		end
     		-- 如果新手引导没走到第三步，那么直接return
     		if not GuideController:getInstance():getIsHaveStep(3) then
@@ -2605,7 +2609,7 @@ function DataManager:AlchemyButtonDidClick()
     local _addcoin = DataManager:getInstance():getRoleData(roleAlchemyUnit)
     local _result =  DataManager:getInstance():addCoin(_addcoin)
     if _result == 1 then
-        ToastUtil:downString("金币+".._addcoin.." 总共:"..DataManager:getInstance():getRoleData(roleMoney), true)
+        ToastUtil:alchemyCoins(_addcoin)
     end
 
     local achievementValue = DataManager:getInstance():getAchievementInfo(achievement_Alchemy)
@@ -2646,7 +2650,7 @@ function DataManager:AlchemyButtonDidClick()
                 end, nil)
                 _newalert:setOkRemove(false)
 
-                local showLabel1 = cc.LabelTTF:create("您是否花费40钻石\n购买5000金币？", BoldFont, 36.0)
+                local showLabel1 = cc.LabelTTF:create("您是否花费40钻石\n购买5000金币？", MasterTheme.headingFont(false), 36.0)
                 showLabel1:setColor(WriteColor)
                 showLabel1:setPosition(cc.p(_newalert.s_position.x, _newalert.s_position.y))
                 _newalert:addChild(showLabel1)
@@ -2663,7 +2667,7 @@ function DataManager:AlchemyButtonDidClick()
                 end, nil)
                 _newalert:setOkRemove(false)
 
-                local showLabel1 = cc.LabelTTF:create("长按炼金按钮，可持续获得金币，\n您是否花费398钻石获得此功能？", BoldFont, 36.0)
+                local showLabel1 = cc.LabelTTF:create("长按炼金按钮，可持续获得金币，\n您是否花费398钻石获得此功能？", MasterTheme.headingFont(false), 36.0)
                 showLabel1:setColor(WriteColor)
                 -- showLabel1:enableStroke(cc.c4b(16, 16, 16, 255), 2)
                 showLabel1:setPosition(cc.p(_newalert.s_position.x, _newalert.s_position.y))
@@ -2700,30 +2704,35 @@ end
 
 -- 显示购买金币的框
 function DataManager:showBuyGoldBox()
+    local DialogTheme = require "LuaClass/DialogTheme"
+    local ItemIcon = require "LuaClass/ItemIcon"
+    local resourceInfo = self:getCSVByID(csvOfResourceInfo)
+    local coinInfo = resourceInfo and resourceInfo["1001"]
     local _alert = AlertView:create(0, 0, "购买金币","",nil)
+    _alert:usePaperBody()
     
-    local showLabel1 = cc.LabelTTF:create("消耗钻石购买获得更多金币", BoldFont, 33.0)
-    showLabel1:setColor(cc.c3b(255, 255, 255))
+    local showLabel1 = cc.LabelTTF:create("消耗钻石购买获得更多金币", MasterTheme.headingFont(false), 28.0)
+    showLabel1:setColor(MasterTheme.colors.ink)
     -- showLabel1:enableStroke(cc.c4b(16, 16, 16, 255), 2)
     showLabel1:setPosition(cc.p(_alert.s_position.x, _alert.s_position.y + showLabel1:getContentSize().height * 1.8))
     _alert:addChild(showLabel1)
     
     for i = 1,2 do
-        local _backGround = cc.Sprite:create("Images/UI/dibantiao_03.png")
+        local rowSize=DialogTheme.legacySize("Images/UI/dibantiao_03.png")
+        local _backGround = DialogTheme.ledgerRow(rowSize.width,rowSize.height)
         _backGround:setPosition(cc.p(_alert.s_position.x, _alert.s_position.y - 10 - _backGround:getContentSize().height *1.2 * (i - 1)))
         _alert:addChild(_backGround)
         
         local _fontSize = 26
-        local _HeadSprite= nil--cc.Sprite:create("Images/Icon/".._soilder["icon"])
-        if _HeadSprite == nil then _HeadSprite= cc.Sprite:create("Images/Icon/r_9.png")  end
+        local _HeadSprite = ItemIcon.sprite(coinInfo and coinInfo.iconName)
         _HeadSprite:setPosition(cc.p(_backGround:getPositionX()-_backGround:getContentSize().width/2+_HeadSprite:getContentSize().width-5,_backGround:getPositionY()))
         _alert:addChild(_HeadSprite)
         --name
         local _xLeft = _HeadSprite:getPositionX() + _HeadSprite:getContentSize().width/2 + 10
         local _centerY = _HeadSprite:getPositionY() -5
-        local _name = cc.LabelTTF:create("金 币",BoldFont,_fontSize+4);
+        local _name = cc.LabelTTF:create("金 币",MasterTheme.headingFont(false),_fontSize+4);
         _name:setPosition(cc.p(_xLeft,_centerY+_fontSize+2))
-        _name:setColor(BaseColor)
+        _name:setColor(MasterTheme.colors.ink)
         -- _name:enableStroke(cc.c4b(255, 255, 255, 255), 1)
         _name:setAnchorPoint(cc.p(0,0.5))
         _alert:addChild(_name)
@@ -2739,14 +2748,14 @@ function DataManager:showBuyGoldBox()
             need_diamond = 500
         end
 
-        local _price = cc.LabelTTF:create("x"..coinnum,BoldFont,_fontSize+4);
+        local _price = cc.LabelTTF:create("x"..coinnum,MasterTheme.headingFont(false),_fontSize+4);
         _price:setPosition(cc.p(_xLeft,_centerY-_fontSize+7))
-        _price:setColor(WriteColor)
+        _price:setColor(MasterTheme.colors.muted)
         -- _price:enableStroke(cc.c4b(255, 255, 255, 255), 1)
         _price:setAnchorPoint(cc.p(0,0.5))
         _alert:addChild(_price)
         
-        local _menuButton = cc.MenuItemImage:create("Images/btn/ann10_a.png", "Images/btn/ann10_b.png")
+        local _menuButton = DialogTheme.menuItem("Images/btn/ann10_a.png", "Images/btn/ann10_b.png")
         
         _menuButton:registerScriptTapHandler(function()
             print("点击购买")
@@ -2781,14 +2790,14 @@ function DataManager:showBuyGoldBox()
         _menuButton:addChild(_diaIcon)
         
         
-        local _diaLable = cc.LabelTTF:create("x"..need_diamond, BoldFont, 25.0)
+        local _diaLable = cc.LabelTTF:create("x"..need_diamond, MasterTheme.headingFont(false), 25.0)
         _diaLable:setAnchorPoint(cc.p(0,0))
         _diaLable:setPosition(cc.p(_menuButton:getContentSize().width * 0.5,_menuButton:getContentSize().height * 0.5))
         -- _diaLable:enableStroke(cc.c4b(255, 255, 255, 255), 2)
         _menuButton:addChild(_diaLable)
         
         
-        local _zz = cc.LabelTTF:create("购 买", BoldFont, 25.0)
+        local _zz = cc.LabelTTF:create("购 买", MasterTheme.headingFont(false), 25.0)
         _zz:setAnchorPoint(cc.p(0.5,0))
         _zz:setPosition(cc.p(_menuButton:getContentSize().width * 0.5,0))
         -- _zz:enableStroke(cc.c4b(255, 255, 255, 255), 2)

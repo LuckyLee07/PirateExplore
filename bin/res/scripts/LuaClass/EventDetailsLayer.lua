@@ -1,5 +1,8 @@
 require "AudioEngine"
+local CrewSkillDetails = require "LuaClass/CrewSkillDetails"
 require "LuaClass/Header"
+require "LuaClass/DialogTheme"
+require "LuaClass/ItemIcon"
 require "LuaClass/EventBaseView"
 
 
@@ -33,15 +36,13 @@ local function getStandardCellItem(data)
     local temp = cc.Sprite:create("Images/UI/dibantiao_03.png")
     local bgSize = temp:getContentSize()
     local ccSize = temp:getContentSize()
-    local pBacksp = cc.Scale9Sprite:create("Images/UI/dibantiao_03.png", cc.rect(0, 0, bgSize.width, bgSize.height), cc.rect(17, 17, 30, 30))
+    local pBacksp = DialogTheme.cardFromLegacy("Images/UI/dibantiao_03.png")
     --pBacksp:setPosition(cc.p(ccSize.width*0.5, ccSize.height*0.5))
     cell:addChild(pBacksp)
     
     local emptyDis = -ccSize.width*0.5 + 25
     -- 添加CellIcon按钮
-    local pIcon = nil
-    local pPath = data.icon or "j_5.png"
-    pIcon = cc.MenuItemImage:create("Images/Icon/"..pPath, "Images/Icon/"..pPath)
+    local pIcon = ItemIcon.menuItem(data.icon)
     pIcon:setPosition(cc.p(emptyDis+pIcon:getContentSize().width*0.5, 0))
     pIcon:registerScriptTapHandler(function() cclog("click on cell Icon") end)
     
@@ -53,7 +54,7 @@ local function getStandardCellItem(data)
     local pPosX2 = pPosX1 + 185
     -- 名字
     local name = data.name or "无"
-    local pName = cc.LabelTTF:create(name, BoldFont, fontSize+3);
+    local pName = cc.LabelTTF:create(name, MasterTheme.headingFont(false), fontSize+3);
     pName:setPosition(cc.p(pPosX1, pName:getContentSize().height*0.5 + 15))
     pName:setColor(BaseColor)
     -- pName:enableStroke(cc.c4b(255, 255, 255, 255), 1)
@@ -62,7 +63,7 @@ local function getStandardCellItem(data)
     
     -- 技能
     local skill = "技能：" .. (data.skillName or "无")
-    local pSkill = cc.LabelTTF:create(skill, BoldFont, fontSize);
+    local pSkill = cc.LabelTTF:create(skill, MasterTheme.headingFont(false), fontSize);
     pSkill:setPosition(cc.p(pPosX1, -5))
     pSkill:setColor(WriteColor)
     -- pSkill:enableStroke(cc.c4b(255, 255, 255, 255), 1)
@@ -71,7 +72,7 @@ local function getStandardCellItem(data)
     
     -- 威力
     local power = "威力：" .. (data.power or data.attack or "无")
-    local pPower = cc.LabelTTF:create(power, BoldFont, fontSize);
+    local pPower = cc.LabelTTF:create(power, MasterTheme.headingFont(false), fontSize);
     pPower:setPosition(cc.p(pPosX1, -pPower:getContentSize().height*0.5 - 20))
     pPower:setColor(WriteColor)
     -- pPower:enableStroke(cc.c4b(255, 255, 255, 255), 1)
@@ -85,7 +86,7 @@ local function getStandardCellItem(data)
     
     -- 生命
     local life = "生命：" .. (data.hp or 0)
-    local plife = cc.LabelTTF:create(life, BoldFont, fontSize);
+    local plife = cc.LabelTTF:create(life, MasterTheme.headingFont(false), fontSize);
     plife:setPosition(cc.p(pPosX2, -5))
     plife:setColor(WriteColor)
     -- plife:enableStroke(cc.c4b(255, 255, 255, 255), 1)
@@ -94,7 +95,7 @@ local function getStandardCellItem(data)
     
     -- 速度
     local speed = "速度：" .. (data.speed or 0)
-    local pSpeed = cc.LabelTTF:create(speed, BoldFont, fontSize);
+    local pSpeed = cc.LabelTTF:create(speed, MasterTheme.headingFont(false), fontSize);
     pSpeed:setPosition(cc.p(pPosX2, -pSpeed:getContentSize().height*0.5 - 20))
     pSpeed:setColor(WriteColor)
     -- pSpeed:enableStroke(cc.c4b(255, 255, 255, 255), 1)
@@ -134,17 +135,14 @@ function EventDetailsLayer:resetTitle()
 
     self.buttonClicked = false
 
-    -- 默认是显示黑市
-    local spPath = nil
+    -- Keep the native category title visible instead of baked-in lettering.
+    self.titleLabel:setVisible(true)
     if self.type == 1 then
         self.titleLabel:setString("墓 地")
-        spPath = "Images/UI/topTitle_mudi.png"
     elseif self.type == 2 then
         self.titleLabel:setString("酒 馆")
-        spPath = "Images/UI/topTitle_jiuguan.png"
     elseif self.type == 3 then
         self.titleLabel:setString("黑 市")
-        spPath = "Images/UI/topTitle_heishi.png"
         --检查数据
         self:checkDatas()
 
@@ -166,18 +164,15 @@ function EventDetailsLayer:resetTitle()
         local seconds = disTime - minutes * 60
         local timeTip = string.format("距离下次刷新还有%02d : %02d : %02d",hours,minutes,seconds)
 
-        self.timeTip = cc.LabelTTF:create(timeTip, BoldFont, 30)
+        self.timeTip = cc.LabelTTF:create(timeTip, MasterTheme.headingFont(false), 30)
         self.timeTip:setPosition(cc.p(screenSize.width / 2, 160))
         self:addChild(self.timeTip)
 
     elseif self.type == 4 then
         self.titleLabel:setString("货 舱")
-    end
-    if spPath ~= nil then
-        self.titleLabel:setVisible(false)
-        local pTitle = cc.Sprite:create(spPath)
-        pTitle:setPosition(self.titleLabel:getPosition())
-        self:addChild(pTitle)
+        local sheet=DialogTheme.paperSheet(visibleSize.width-20,self.areaHeight+8)
+        sheet:setPosition(self.centerPos);self:addChild(sheet,-1)
+        self.tableview:setViewSize(cc.size(visibleSize.width,self.areaHeight-34))
     end
 end
 
@@ -283,16 +278,13 @@ function EventDetailsLayer:initCemeteryCell(cell, ccSize, data, index)
     -- 添加Cell背景图片
     local temp = cc.Sprite:create("Images/UI/dibantiao_02.png")
     local bgSize = temp:getContentSize()
-    local pBacksp = cc.Scale9Sprite:create("Images/UI/dibantiao_02.png", cc.rect(0, 0, bgSize.width, bgSize.height), cc.rect(17, 17, 30, 30))
-    pBacksp:setPreferredSize(cc.size(590, ccSize.height-10))
+    local pBacksp = DialogTheme.card(590, ccSize.height-10)
     pBacksp:setPosition(cc.p(ccSize.width*0.5, ccSize.height*0.5))
     cell:addChild(pBacksp)
     
     local emptyDis = (ccSize.width-590) * 0.5
     -- 添加CellIcon按钮
-    local pIcon = nil
-    local pPath = data.icon or "j_5.png"
-    pIcon = cc.MenuItemImage:create("Images/Icon/"..pPath, "Images/Icon/"..pPath)
+    local pIcon = ItemIcon.menuItem(data.icon)
     pIcon:setPosition(cc.p(emptyDis+pIcon:getContentSize().width*0.5+20, ccSize.height*0.5))
     pIcon:registerScriptTapHandler(function() cclog("click on cell Icon") end)
     
@@ -305,7 +297,7 @@ function EventDetailsLayer:initCemeteryCell(cell, ccSize, data, index)
         --pNums:setScale(2)
         pNums:setPosition(cc.p(pIcon:getPositionX()+pIcon:getContentSize().width*0.5-2, pIcon:getPositionY()+pIcon:getContentSize().height*0.5-2))
         cell:addChild(pNums)
-        local  fNum = cc.LabelTTF:create(data.num, BoldFont, fontSize);
+        local  fNum = cc.LabelTTF:create(data.num, MasterTheme.headingFont(false), fontSize);
         fNum:setColor(BaseColor)
         fNum:setPosition(pNums:getPosition())
         -- fNum:enableStroke(cc.c4b(215, 199, 165, 255), 1)
@@ -315,7 +307,7 @@ function EventDetailsLayer:initCemeteryCell(cell, ccSize, data, index)
     local pPosX1 = pIcon:getPositionX() + pIcon:getContentSize().width*0.5 + 20
     -- 名字
     local name = data.name or "无"
-    local pName = cc.LabelTTF:create(name, BoldFont, fontSize+3);
+    local pName = cc.LabelTTF:create(name, MasterTheme.headingFont(false), fontSize+3);
     pName:setPosition(cc.p(pPosX1, ccSize.height*0.5 + pName:getContentSize().height*0.5 + 20))
     pName:setColor(BaseColor)
     -- pName:enableStroke(cc.c4b(255, 255, 255, 255), 1)
@@ -324,7 +316,7 @@ function EventDetailsLayer:initCemeteryCell(cell, ccSize, data, index)
     
     -- 技能
     local skill = "技能：" .. (data.skillName or "无")
-    local pSkill = cc.LabelTTF:create(skill, BoldFont, fontSize);
+    local pSkill = cc.LabelTTF:create(skill, MasterTheme.headingFont(false), fontSize);
     pSkill:setPosition(cc.p(pPosX1, ccSize.height*0.5 - 5))
     pSkill:setColor(WriteColor)
     -- pSkill:enableStroke(cc.c4b(255, 255, 255, 255), 1)
@@ -333,7 +325,7 @@ function EventDetailsLayer:initCemeteryCell(cell, ccSize, data, index)
     
     -- 威力
     local power = "威力：" .. (data.attack or 0)
-    local pPower = cc.LabelTTF:create(power, BoldFont, fontSize);
+    local pPower = cc.LabelTTF:create(power, MasterTheme.headingFont(false), fontSize);
     pPower:setPosition(cc.p(pPosX1, ccSize.height*0.5 - pPower:getContentSize().height*0.5 - 20))
     pPower:setColor(WriteColor)
     -- pPower:enableStroke(cc.c4b(255, 255, 255, 255), 1)
@@ -348,7 +340,7 @@ function EventDetailsLayer:initCemeteryCell(cell, ccSize, data, index)
     
     -- 技能
     local life = "生命：" .. (data.hp or 0)
-    local plife = cc.LabelTTF:create(life, BoldFont, fontSize);
+    local plife = cc.LabelTTF:create(life, MasterTheme.headingFont(false), fontSize);
     plife:setPosition(cc.p(pPosX2, ccSize.height*0.5 - 5))
     plife:setColor(WriteColor)
     -- plife:enableStroke(cc.c4b(255, 255, 255, 255), 1)
@@ -357,7 +349,7 @@ function EventDetailsLayer:initCemeteryCell(cell, ccSize, data, index)
     
     -- 威力
     local speed = "速度：" .. (data.speed or 0)
-    local pSpeed = cc.LabelTTF:create(speed, BoldFont, fontSize);
+    local pSpeed = cc.LabelTTF:create(speed, MasterTheme.headingFont(false), fontSize);
     pSpeed:setPosition(cc.p(pPosX2, ccSize.height*0.5 - pSpeed:getContentSize().height*0.5 - 20))
     pSpeed:setColor(WriteColor)
     -- pSpeed:enableStroke(cc.c4b(255, 255, 255, 255), 1)
@@ -366,16 +358,16 @@ function EventDetailsLayer:initCemeteryCell(cell, ccSize, data, index)
     
     -- 复活/埋葬 按钮
     local rightPosx = ccSize.width - emptyDis - 15
-    local btnAlive = cc.MenuItemImage:create("Images/btn/ann01_a.png", "Images/btn/ann01_b.png")
+    local btnAlive = DialogTheme.menuItem("Images/btn/ann01_a.png", "Images/btn/ann01_b.png")
     btnAlive:setPosition(cc.p(rightPosx-btnAlive:getContentSize().width*0.5, ccSize.height*0.7))
-    local alive = cc.LabelTTF:create("复 活", BoldFont, 28.0)
+    local alive = cc.LabelTTF:create("复 活", MasterTheme.headingFont(false), 28.0)
     alive:setPosition(cc.p(btnAlive:getContentSize().width*0.5, btnAlive:getContentSize().height*0.5))
     -- alive:enableStroke(cc.c4b(255, 255, 255, 255), 2)
     btnAlive:addChild(alive)
     
-    local btnBury = cc.MenuItemImage:create("Images/btn/ann01_a.png", "Images/btn/ann01_b.png")
+    local btnBury = DialogTheme.menuItem("Images/btn/ann01_a.png", "Images/btn/ann01_b.png", "secondary")
     btnBury:setPosition(cc.p(rightPosx-btnBury:getContentSize().width*0.5, ccSize.height*0.3))
-    local bury = cc.LabelTTF:create("埋 葬", BoldFont, 28.0)
+    local bury = cc.LabelTTF:create("埋 葬", MasterTheme.headingFont(false), 28.0)
     bury:setPosition(cc.p(btnBury:getContentSize().width*0.5, btnBury:getContentSize().height*0.5))
     -- bury:enableStroke(cc.c4b(255, 255, 255, 255), 2)
     btnBury:addChild(bury)
@@ -395,16 +387,13 @@ function EventDetailsLayer:initPubBarCell(cell, ccSize, data, index)
     -- 添加Cell背景图片
     local temp = cc.Sprite:create("Images/UI/dibantiao_02.png")
     local bgSize = temp:getContentSize()
-    local pBacksp = cc.Scale9Sprite:create("Images/UI/dibantiao_02.png", cc.rect(0, 0, bgSize.width, bgSize.height), cc.rect(17, 17, 30, 30))
-    pBacksp:setPreferredSize(cc.size(590, ccSize.height-10))
+    local pBacksp = DialogTheme.card(590, ccSize.height-10)
     pBacksp:setPosition(cc.p(ccSize.width*0.5, ccSize.height*0.5))
     cell:addChild(pBacksp)
     
     local emptyDis = (ccSize.width-590) * 0.5
     -- 添加CellIcon按钮
-    local pIcon = nil
-    local pPath = data.icon or "d_1.png"
-    pIcon = cc.MenuItemImage:create("Images/Icon/"..pPath, "Images/Icon/"..pPath)
+    local pIcon = ItemIcon.menuItem(data.icon)
     pIcon:setPosition(cc.p(emptyDis+pIcon:getContentSize().width*0.5+20, ccSize.height*0.5))
     pIcon:registerScriptTapHandler(function() cclog("click on cell Icon") end)
     
@@ -416,7 +405,7 @@ function EventDetailsLayer:initPubBarCell(cell, ccSize, data, index)
     local pPosX2 = pPosX1 + 172 --visibleSize.width*0.5 - 18
     -- 名字
     local name = data.name or "无"
-    local pName = cc.LabelTTF:create(name, BoldFont, fontSize+3);
+    local pName = cc.LabelTTF:create(name, MasterTheme.headingFont(false), fontSize+3);
     --pName:setPosition(cc.p(pPosX1, ccSize.height*0.5 + pName:getContentSize().height*0.5 + 15))
     pName:setPosition(cc.p(pPosX1, ccSize.height*0.7))
     pName:setColor(BaseColor)
@@ -439,7 +428,7 @@ function EventDetailsLayer:initPubBarCell(cell, ccSize, data, index)
 
     -- 钻石
     cost = cost .. (data.costs or 0)
-    local pCost = cc.LabelTTF:create(cost, BoldFont, fontSize);
+    local pCost = cc.LabelTTF:create(cost, MasterTheme.headingFont(false), fontSize);
     pCost:setPosition(cc.p(pPosX1, ccSize.height*0.27))
     pCost:setColor(WriteColor)
     -- pCost:enableStroke(cc.c4b(255, 255, 255, 255), 1)
@@ -449,7 +438,7 @@ function EventDetailsLayer:initPubBarCell(cell, ccSize, data, index)
     --[[
     -- 技能
     local skill = "技能：" .. (data.skillName or "无")
-    local pSkill = cc.LabelTTF:create(skill, BoldFont, fontSize);
+    local pSkill = cc.LabelTTF:create(skill, MasterTheme.headingFont(false), fontSize);
     pSkill:setPosition(cc.p(pPosX1, ccSize.height*0.5 - 5))
     pSkill:setColor(WriteColor)
     -- pSkill:enableStroke(cc.c4b(255, 255, 255, 255), 1)
@@ -458,7 +447,7 @@ function EventDetailsLayer:initPubBarCell(cell, ccSize, data, index)
     
     -- 威力
     local power = "威力：" .. (data.power or "无")
-    local pPower = cc.LabelTTF:create(power, BoldFont, fontSize);
+    local pPower = cc.LabelTTF:create(power, MasterTheme.headingFont(false), fontSize);
     pPower:setPosition(cc.p(pPosX1, ccSize.height*0.5 - pPower:getContentSize().height*0.5 - 20))
     pPower:setColor(WriteColor)
     -- pPower:enableStroke(cc.c4b(255, 255, 255, 255), 1)
@@ -467,7 +456,7 @@ function EventDetailsLayer:initPubBarCell(cell, ccSize, data, index)
     
     -- 生命
     local life = "生命：" .. (data.hp or 0)
-    local plife = cc.LabelTTF:create(life, BoldFont, fontSize);
+    local plife = cc.LabelTTF:create(life, MasterTheme.headingFont(false), fontSize);
     plife:setPosition(cc.p(pPosX2, ccSize.height*0.5 - 5))
     plife:setColor(WriteColor)
     -- plife:enableStroke(cc.c4b(255, 255, 255, 255), 1)
@@ -476,7 +465,7 @@ function EventDetailsLayer:initPubBarCell(cell, ccSize, data, index)
     
     -- 速度
     local speed = "速度：" .. (data.speed or 0)
-    local pSpeed = cc.LabelTTF:create(speed, BoldFont, fontSize);
+    local pSpeed = cc.LabelTTF:create(speed, MasterTheme.headingFont(false), fontSize);
     pSpeed:setPosition(cc.p(pPosX2, ccSize.height*0.5 - pSpeed:getContentSize().height*0.5 - 20))
     pSpeed:setColor(WriteColor)
     -- pSpeed:enableStroke(cc.c4b(255, 255, 255, 255), 1)
@@ -486,9 +475,9 @@ function EventDetailsLayer:initPubBarCell(cell, ccSize, data, index)
     
     -- 购买 按钮
     local rightPosx = ccSize.width - emptyDis - 15
-    local btnBuy = cc.MenuItemImage:create("Images/btn/ann01_a.png", "Images/btn/ann01_b.png")
+    local btnBuy = DialogTheme.menuItem("Images/btn/ann01_a.png", "Images/btn/ann01_b.png")
     btnBuy:setPosition(cc.p(rightPosx-btnBuy:getContentSize().width*0.5, ccSize.height*0.5))
-    local buy = cc.LabelTTF:create("购 买", BoldFont, 28.0)
+    local buy = cc.LabelTTF:create("购 买", MasterTheme.headingFont(false), 28.0)
     buy:setPosition(cc.p(btnBuy:getContentSize().width*0.5, btnBuy:getContentSize().height*0.5))
     -- buy:enableStroke(cc.c4b(255, 255, 255, 255), 2)
     btnBuy:addChild(buy)
@@ -507,16 +496,13 @@ function EventDetailsLayer:initBMarketCell(cell, ccSize, data, index)
     -- 添加Cell背景图片
     local temp = cc.Sprite:create("Images/UI/dibantiao_02.png")
     local bgSize = temp:getContentSize()
-    local pBacksp = cc.Scale9Sprite:create("Images/UI/dibantiao_02.png", cc.rect(0, 0, bgSize.width, bgSize.height), cc.rect(17, 17, 30, 30))
-    pBacksp:setPreferredSize(cc.size(590, ccSize.height-10))
+    local pBacksp = DialogTheme.card(590, ccSize.height-10)
     pBacksp:setPosition(cc.p(ccSize.width*0.5, ccSize.height*0.5))
     cell:addChild(pBacksp)
     
     local emptyDis = (ccSize.width-590) * 0.5
     -- 添加CellIcon按钮
-    local pIcon = nil
-    local pPath = data.icon or "d_1.png"
-    pIcon = cc.MenuItemImage:create("Images/Icon/"..pPath, "Images/Icon/"..pPath)
+    local pIcon = ItemIcon.menuItem(data.icon)
     pIcon:setPosition(cc.p(emptyDis+pIcon:getContentSize().width*0.5+20, ccSize.height*0.5))
     
     local pIconButton = cc.Menu:create(pIcon)
@@ -536,7 +522,7 @@ function EventDetailsLayer:initBMarketCell(cell, ccSize, data, index)
     if data.num > 1 then
         name = name.." X "..data.num
     end
-    local pName = cc.LabelTTF:create(name, BoldFont, fontSize+3);
+    local pName = cc.LabelTTF:create(name, MasterTheme.headingFont(false), fontSize+3);
     pName:setPosition(cc.p(pPosX1, ccSize.height*0.7))
     pName:setColor(BaseColor)
     -- pName:enableStroke(cc.c4b(255, 255, 255, 255), 1)
@@ -559,7 +545,7 @@ function EventDetailsLayer:initBMarketCell(cell, ccSize, data, index)
 
     -- 钻石
     cost = cost .. (data.costs or 0)
-    local pCost = cc.LabelTTF:create(cost, BoldFont, fontSize);
+    local pCost = cc.LabelTTF:create(cost, MasterTheme.headingFont(false), fontSize);
     pCost:setPosition(cc.p(pPosX1, ccSize.height*0.27))
     pCost:setColor(WriteColor)
     -- pCost:enableStroke(cc.c4b(255, 255, 255, 255), 1)
@@ -568,9 +554,9 @@ function EventDetailsLayer:initBMarketCell(cell, ccSize, data, index)
     
     -- 购买 按钮
     local rightPosx = ccSize.width - emptyDis - 15
-    local btnBuy = cc.MenuItemImage:create("Images/btn/ann01_a.png", "Images/btn/ann01_b.png")
+    local btnBuy = DialogTheme.menuItem("Images/btn/ann01_a.png", "Images/btn/ann01_b.png")
     btnBuy:setPosition(cc.p(rightPosx-btnBuy:getContentSize().width*0.5, ccSize.height*0.5))
-    local buy = cc.LabelTTF:create("购 买", BoldFont, 28.0)
+    local buy = cc.LabelTTF:create("购 买", MasterTheme.headingFont(false), 28.0)
     buy:setPosition(cc.p(btnBuy:getContentSize().width*0.5, btnBuy:getContentSize().height*0.5))
     -- buy:enableStroke(cc.c4b(255, 255, 255, 255), 2)
     btnBuy:addChild(buy)
@@ -591,20 +577,13 @@ function EventDetailsLayer:initPackageCell(cell, ccSize, data, index)
     -- 添加Cell背景图片
     local temp = cc.Sprite:create("Images/UI/dibantiao_02.png")
     local bgSize = temp:getContentSize()
-    local pBacksp = cc.Scale9Sprite:create("Images/UI/dibantiao_02.png", cc.rect(0, 0, bgSize.width, bgSize.height), cc.rect(17, 17, 30, 30))
-    pBacksp:setPreferredSize(cc.size(590, ccSize.height-10))
+    local pBacksp = DialogTheme.ledgerRow(590, ccSize.height-10)
     pBacksp:setPosition(cc.p(ccSize.width*0.5, ccSize.height*0.5))
     cell:addChild(pBacksp)
     
     local emptyDis = (ccSize.width-590) * 0.5
     -- 添加CellIcon按钮
-    local pIcon = nil
-    if data.icon ~= nil and string.find(data.icon, "png") ~= nil then
-        pIcon = cc.MenuItemImage:create("Images/Icon/".. data.icon, "Images/Icon/".. data.icon)
-    else
-        pIcon = cc.MenuItemImage:create("Images/Icon/d_1.png", "Images/Icon/d_1.png")
-        --pIcon:setVisible(false)
-    end
+    local pIcon = ItemIcon.menuItem(data.icon)
     pIcon:setPosition(cc.p(emptyDis+pIcon:getContentSize().width*0.5+20, ccSize.height*0.5))
     
     local pIconButton = cc.Menu:create(pIcon)
@@ -618,9 +597,9 @@ function EventDetailsLayer:initPackageCell(cell, ccSize, data, index)
     local pPosX2 = visibleSize.width*0.5 - 20
     -- 名字
     local name = data.name
-    local pName = cc.LabelTTF:create(name, BoldFont, fontSize+3);
+    local pName = cc.LabelTTF:create(name, MasterTheme.headingFont(false), fontSize+3);
     pName:setPosition(cc.p(pPosX1, ccSize.height*0.7))
-    pName:setColor(BaseColor)
+    pName:setColor(MasterTheme.colors.ink)
     -- pName:enableStroke(cc.c4b(255, 255, 255, 255), 1)
     pName:setAnchorPoint(cc.p(0, 0.5))
     cell:addChild(pName)
@@ -632,9 +611,9 @@ function EventDetailsLayer:initPackageCell(cell, ccSize, data, index)
     
     -- 花费道具
     local cost = "数量：" .. (data.num or 0)
-    local pCost = cc.LabelTTF:create(cost, BoldFont, fontSize);
+    local pCost = cc.LabelTTF:create(cost, MasterTheme.headingFont(false), fontSize);
     pCost:setPosition(cc.p(pPosX1, ccSize.height*0.27))
-    pCost:setColor(WriteColor)
+    pCost:setColor(MasterTheme.colors.muted)
     -- pCost:enableStroke(cc.c4b(255, 255, 255, 255), 1)
     pCost:setAnchorPoint(cc.p(0, 0.5))
     cell:addChild(pCost)
@@ -673,7 +652,7 @@ function EventDetailsLayer:reliveCallBack(data, index)
     -- cost describe
     local cost = data.cost
     local desc = "花费" .. (cost.costNum or 0) .. (cost.name or "无") .. "复活一个" .. (data.name or "无") .. "?"
-    local descLabel = cc.LabelTTF:create(desc, BoldFont, 28.0)
+    local descLabel = cc.LabelTTF:create(desc, MasterTheme.headingFont(false), 28.0)
     descLabel:setPosition(cc.p(cellItem:getPositionX(), cellItem:getPositionY() + 105))
     -- descLabel:enableStroke(cc.c4b(153, 156, 156, 255), 1)
     descLabel:setColor(WriteColor)
@@ -738,14 +717,14 @@ function EventDetailsLayer:buryCallBack(data, index)
                                     
     -- get describe
     local desc = "你确定要埋葬" .. (data.name or "无") .. "吗?"
-    local descLabel = cc.LabelTTF:create(desc, BoldFont, 28)
+    local descLabel = cc.LabelTTF:create(desc, MasterTheme.headingFont(false), 28)
     descLabel:setPosition(cc.p(cellItem:getPositionX(), cellItem:getPositionY() + 115))
     -- descLabel:enableStroke(cc.c4b(153, 156, 156, 255), 1)
     descLabel:setColor(WriteColor)
     _layer:addChild(descLabel)
     
     local gets = "(可获得尸尘x" .. 1 .. ")"
-    local getsLabel = cc.LabelTTF:create(gets, BoldFont, 22)
+    local getsLabel = cc.LabelTTF:create(gets, MasterTheme.headingFont(false), 22)
     getsLabel:setPosition(cc.p(cellItem:getPositionX(), cellItem:getPositionY() + 80))
     -- getsLabel:enableStroke(cc.c4b(153, 156, 156, 255), 1)
     getsLabel:setColor(WriteColor)
@@ -783,7 +762,7 @@ function EventDetailsLayer:buyHeroCallBack(data, index)
     -- desc1
     local posY = cellItem:getPositionY() + 105
     local posX = _layer.s_position.x - 125
-    local costTip1 = cc.LabelTTF:create("花费", BoldFont, 28.0)
+    local costTip1 = cc.LabelTTF:create("花费", MasterTheme.headingFont(false), 28.0)
     costTip1:setPosition(cc.p(posX, posY))
     -- costTip1:enableStroke(cc.c4b(153, 156, 156, 255), 1)
     costTip1:setColor(WriteColor)
@@ -804,7 +783,7 @@ function EventDetailsLayer:buyHeroCallBack(data, index)
     
     -- desc2
     local desc = "x" .. (data.costs or 0) .. "购买一个" .. (data.name or "无") .. "?"
-    local costTip3 = cc.LabelTTF:create(desc, BoldFont, 28.0)
+    local costTip3 = cc.LabelTTF:create(desc, MasterTheme.headingFont(false), 28.0)
     costTip3:setPosition(cc.p(costTip2:getPositionX()+costTip2:getContentSize().width, posY))
     -- costTip3:enableStroke(cc.c4b(153, 156, 156, 255), 1)
     costTip3:setColor(WriteColor)
@@ -989,29 +968,48 @@ function EventDetailsLayer:showCellInfo( idx )
             infos = string.format("%s\n%s",infos,dataController.getResourceValueByIdAndKey(data.id,"desc"))
         else
             local soilderInfos = dataController.getSoilderInfoById(data.id)
-            local skillName = dataController.getSkillValueByIdAndKey(soilderInfos["skill"], "name")
-            local buffCsv = DataManager:getInstance():getCSVByID(csvOfBuff)
-            local skillInfo = "无"
-            if soilderInfos["skill"] ~= nil and soilderInfos["skill"] ~= "0" then
-                skillInfo = buffCsv[soilderInfos["skill"]]["description"]
+            local skillName, skillInfo = CrewSkillDetails.describe(soilderInfos and soilderInfos.skill,
+                DataManager:getInstance():getCSVByID(csvOfSkillAttribute),
+                DataManager:getInstance():getCSVByID(csvOfBuff))
+            if not soilderInfos then
+                infos = infos.."\n船员详情暂不可用"
+            else
+                infos = string.format("%s\n技能: %s\n技能效果:%s\n 生命: %d 威力: %d 速度: %0.1f",infos,skillName,skillInfo,soilderInfos["hp"],soilderInfos["attack"],soilderInfos["speed"])
             end
-            infos = string.format("%s\n技能: %s\n技能效果:%s\n 生命: %d 威力: %d 速度: %0.1f",infos,skillName,skillInfo,soilderInfos["hp"],soilderInfos["attack"],soilderInfos["speed"])
         end
         
     --酒馆
     elseif self.type == 2 then
         local soilderInfos = dataController.getSoilderInfoById(data.id)
-        local buffCsv = DataManager:getInstance():getCSVByID(csvOfBuff)
-        local skillInfo = "无"
-        if soilderInfos["skill"] ~= nil and soilderInfos["skill"] ~= "0" then
-            skillInfo = buffCsv[soilderInfos["skill"]]["description"]
+        local skillName, skillInfo = CrewSkillDetails.describe(soilderInfos and soilderInfos.skill,
+            DataManager:getInstance():getCSVByID(csvOfSkillAttribute),
+            DataManager:getInstance():getCSVByID(csvOfBuff))
+        if not soilderInfos then
+            infos = infos.."\n船员详情暂不可用"
+        else
+            infos = string.format("%s\n技能: %s\n技能效果:%s\n 生命: %d 威力: %d 速度: %0.1f",infos,skillName,skillInfo,soilderInfos["hp"],soilderInfos["attack"],soilderInfos["speed"])
         end
-        infos = string.format("%s\n技能: %s\n技能效果:%s\n 生命: %d 威力: %d 速度: %0.1f",infos,data.skillName,skillInfo,soilderInfos["hp"],soilderInfos["attack"],soilderInfos["speed"])
     end
     print("infos",infos)
     self.willCloseInfos = false
     self.infoNode:setVisible(true)
     self.infoLabel:setString(infos)
+    -- Grow upward from the existing footer boundary; native CJK line height
+    -- can exceed the legacy fixed 120px card even with only four lines.
+    if self.bottomInfoBox then
+        local old = self.bottomInfoBox
+        local size = old:getContentSize()
+        local height = math.max(120, self.infoLabel:getContentSize().height + 32)
+        local x = old:getPositionX()
+        local y = old:getPositionY() - size.height / 2 + height / 2
+        if size.height ~= height then
+            self.bottomInfoBox = DialogTheme.card(size.width, height)
+            self.infoNode:addChild(self.bottomInfoBox)
+            old:removeFromParent(true)
+        end
+        self.bottomInfoBox:setPosition(cc.p(x, y))
+        self.infoLabel:setPosition(cc.p(x, y))
+    end
     print("infos",self.infoLabel:getString())
 end
 

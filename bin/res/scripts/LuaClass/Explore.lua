@@ -13,7 +13,9 @@ require "LuaClass/GuideController"
 require "LuaClass/ExploreGuideComponent"
 require "LuaClass/RandomEventMode"
 require "LuaClass/SkirmishLogicManagers"
-require "LuaClass/BTheme"
+require "LuaClass/SeaChartTheme"
+local SeaChartSlice = require "LuaClass/SeaChartSlice"
+local PurchaseAvailability = require "LuaClass/PurchaseAvailability"
 
 
 playerOrderLevel = 5
@@ -31,6 +33,7 @@ local curExplor = nil
 
 local moveTime = 3
 local locationTime = 0.3
+local chartCameraActionTag = 7101
 
 function getExplor(  )
 	return curExplor
@@ -463,28 +466,8 @@ local function onTouchesMoved( target, touch, event )
 		local y = oy + verticalOffset
 
 
-		local winSize = cc.Director:getInstance():getVisibleSize()
-		
-		-- print("move!",winSize.width / 2,winSize.height / 2,x,y)
-
-		-- print("x,y",x,y)
-		-- print("max",math.max(x, winSize.width / 2),math.min(y, winSize.height / 2))
-
-		local scale = target.moveLayer:getScale()
-
-		--做上边界限制
-		x = math.min(x, winSize.width / 2 * scale);
-		y = math.min(y, winSize.height / 2 * scale);
-
-		-- print("winSize",winSize.width / 2,winSize.height / 2,horizontalOffset,verticalOffset,ox,oy,x,y)
-		-- print("x,y",x,y)
-
-		--做下边界限制，屏幕的中心点不能大于地图的宽减去屏幕宽的一半并且地图的高减去屏幕高的一半，否则会看到地图之外
-		x = math.max(x,  winSize.width / 2  * scale - target.mapSize.width );
-		y = math.max(y, winSize.height / 2 * scale - target.mapSize.height);
-		-- print("target.mapSize",target.mapSize.width,target.mapSize.height)
-		-- print("winSize / 2 - target.mapSize", winSize.width / 2 - target.mapSize.width,winSize.height / 2 - target.mapSize.height)
-		-- print("x,y",x,y)
+		local bounded = target:clampChartPosition(cc.p(x, y))
+		x, y = bounded.x, bounded.y
 
 		--由于边界限制，导致之前的偏移量不准，所以得算出真正的偏移量
 		horizontalOffset = x - ox
@@ -504,6 +487,7 @@ local function onTouchesMoved( target, touch, event )
 		end
 
 		-- print("onTouchesMovedtarget",lastPos, endPos)
+		target:stopChartCameraMotion()
 		target.moveLayer:setPosition(x , y )
 		-- print("setposition",cur_touchContentOffset)
 
@@ -784,7 +768,10 @@ function Explore:init(index)
 
 	local winSize = cc.Director:getInstance():getVisibleSize()
 
-	local bgLayer = cc.LayerColor:create(cc.c4b(0,0,0,255),winSize.width , winSize.height )
+	-- At minimum zoom a small map can be narrower than the chart viewport.
+	-- Its intentional outer margin belongs to the chart, not a black clear.
+	local ink = SeaChartTheme.colors.ink
+	local bgLayer = cc.LayerColor:create(cc.c4b(ink.r,ink.g,ink.b,255),winSize.width , winSize.height )
     bgLayer:setPosition(cc.p(0,0))
     self:addChild(bgLayer)
 
@@ -1115,13 +1102,13 @@ function Explore:startMapGuide( dirction )
 
 end
 
--- The chart remains the live TMX scene. Only the screen-space controls use the
--- adventure theme; all resource labels retain their original update references.
+-- The scene below is the original, playable TMX chart. Only its materials and
+-- screen-space HUD follow the approved sea-chart painting.
 function Explore:initTipLayer()
     local winSize = screenSize
     local u = winSize.width / 640
-    local colors = BTheme.colors
-    local topHeight, bottomHeight = 110 * u, 160 * u
+    local theme, colors = SeaChartTheme, SeaChartTheme.colors
+    local topHeight, bottomHeight = 124 * u, 222 * u
     self.adventureHudTop = winSize.height - topHeight
     self.adventureHudBottom = bottomHeight
 
@@ -1129,62 +1116,79 @@ function Explore:initTipLayer()
     self:addChild(tipLayer, topButtonOrderLevel)
     self.tipLayer = tipLayer
 
-    tipLayer:addChild(BTheme.panel(winSize.width, topHeight, colors.ink, 0, self.adventureHudTop))
-    tipLayer:addChild(BTheme.panel(winSize.width, bottomHeight, colors.sand, 0, 0))
-    tipLayer:addChild(BTheme.panel(winSize.width, 4 * u, colors.sea, 0, bottomHeight - 4 * u))
-    tipLayer:addChild(BTheme.panel(winSize.width, 2 * u, colors.line, 0, self.adventureHudTop))
+    -- Reuse the harbor's unlettered painted materials, with native live text.
+    tipLayer:addChild(theme.panel(winSize.width, topHeight, colors.ink, 0, self.adventureHudTop))
+    local header = theme.material("ink-brush.png", winSize.width + 16 * u, topHeight + 8 * u)
+    header:setPosition(cc.p(-8 * u, self.adventureHudTop - 2 * u))
+    tipLayer:addChild(header)
+    tipLayer:addChild(theme.panel(winSize.width, bottomHeight, colors.ink, 0, 0))
+    local paper = theme.material("crew-paper.png", winSize.width + 14 * u, bottomHeight + 4 * u)
+    paper:setPosition(cc.p(-7 * u, 3 * u))
+    tipLayer:addChild(paper)
 
     local function label(text, size, color, x, y)
-        local node = BTheme.label(text, size * u, color, x * u, y)
+        local node = theme.label(text, size * u, color, x * u, y)
         tipLayer:addChild(node, 1)
         return node
     end
+    local function icon(kind, size, x, y, parent)
+        local node = theme.icon(kind, size * u)
+        node:setPosition(cc.p(x * u, y))
+        local iconParent = parent or tipLayer
+        iconParent:addChild(node, 2)
+        return node
+    end
 
-    -- Native sail mark and type stay sharp at every viewport size.
-    local sail = cc.DrawNode:create()
-    local sailColor = cc.c4f(colors.sand.r / 255, colors.sand.g / 255, colors.sand.b / 255, 1)
-    sail:drawTriangle(cc.p(0, 0), cc.p(13 * u, 24 * u), cc.p(13 * u, 0), sailColor)
-    sail:drawTriangle(cc.p(17 * u, 0), cc.p(17 * u, 17 * u), cc.p(29 * u, 0), sailColor)
-    sail:drawSegment(cc.p(0, -5 * u), cc.p(29 * u, -5 * u), 2 * u, sailColor)
-    sail:setPosition(cc.p(22 * u, winSize.height - 47 * u))
-    tipLayer:addChild(sail, 1)
-    label("探索海图", 30, colors.white, 63, winSize.height - 35 * u)
+    icon("sail", 52, 28, winSize.height - 67 * u)
+    label("探索海图", 35, colors.white, 96, winSize.height - 38 * u)
+    theme.rule(tipLayer, 88 * u, winSize.height - 69 * u, 522 * u, cc.c3b(96, 145, 153))
 
     self.breadNum = self.bagController:getBreads()
-    self.breadtitile = label("食物", 18, colors.sand, 326, winSize.height - 35 * u)
-    self.bread = label(tostring(self.breadNum), 22,
-        self.breadNum < 10 and colors.coral or colors.white, 374, winSize.height - 35 * u)
-    label("货舱", 18, colors.sand, 454, winSize.height - 35 * u)
+    icon("food", 34, 310, winSize.height - 55 * u)
+    self.breadtitile = label("食物", 21, colors.white, 352, winSize.height - 39 * u)
+    self.bread = label(tostring(self.breadNum), 25,
+        self.breadNum < 10 and colors.coral or colors.white, 397, winSize.height - 39 * u)
+    theme.fit(self.bread, 49 * u)
+    icon("cargo", 35, 451, winSize.height - 56 * u)
+    label("货舱", 21, colors.white, 494, winSize.height - 39 * u)
     self.capacityTips = label(string.format("%d/%d", self.bagController.costSpace, self.bagController.limited),
-        21, colors.white, 500, winSize.height - 35 * u)
+        25, colors.white, 541, winSize.height - 39 * u)
+    theme.fit(self.capacityTips, 78 * u)
 
-    self.chapterTitle = label("", 18, colors.sand, 22, winSize.height - 82 * u)
-    label("总探索", 15, colors.sand, 152, winSize.height - 82 * u)
+    self.chapterTitle = label("", 23, colors.white, 34, winSize.height - 96 * u)
+    tipLayer:addChild(theme.panel(.7 * u, 20 * u, colors.white, 134 * u, winSize.height - 106 * u), 1)
+    tipLayer:addChild(theme.panel(.7 * u, 20 * u, colors.white, 295 * u, winSize.height - 106 * u), 1)
+    label("总探索", 21, colors.white, 171, winSize.height - 96 * u)
     self.occupation = DataManager:getInstance():getRoleData(roleExtents) or 0
-    self.occupationNum = label(tostring(self.occupation), 18, colors.white, 210, winSize.height - 82 * u)
-    label("本图", 15, colors.sand, 317, winSize.height - 82 * u)
-    self.extentTip = label(tostring(self.extent) .. "%", 18, colors.white, 356, winSize.height - 82 * u)
-    tipLayer:addChild(BTheme.panel(170 * u, 8 * u, colors.muted, 448 * u, winSize.height - 87 * u))
-    self.adventureExtentBar = BTheme.panel(170 * u, 8 * u, colors.sea, 448 * u, winSize.height - 87 * u)
+    self.occupationNum = label(tostring(self.occupation), 23, colors.white, 234, winSize.height - 96 * u)
+    theme.fit(self.occupationNum, 53 * u)
+    label("本图", 21, colors.white, 325, winSize.height - 96 * u)
+    self.extentTip = label(tostring(self.extent) .. "%", 23, colors.white, 371, winSize.height - 96 * u)
+    local barWidth, barHeight = 167 * u, 14 * u
+    local track = theme.pill(barWidth, barHeight, colors.sea)
+    track:setPosition(cc.p(438 * u, winSize.height - 103 * u))
+    tipLayer:addChild(track, 1)
+    local inset = theme.pill(barWidth - 2 * u, barHeight - 2 * u, colors.ink)
+    inset:setPosition(cc.p(u, u))
+    track:addChild(inset)
+    self.adventureExtentBar = theme.pill(barWidth - 2 * u, barHeight - 2 * u, colors.sea)
+    self.adventureExtentBar:setPosition(cc.p(u, u))
     self.adventureExtentBar:setScaleX(math.max(0, math.min(1, self.extent / 100)))
-    tipLayer:addChild(self.adventureExtentBar, 1)
+    track:addChild(self.adventureExtentBar, 1)
 
-    label("航线目标", 15, colors.muted, 22, 133 * u)
-    -- MapLayoutManagers:initEnemyInfo writes the real chapter/map name here.
-    self.nameTitle = label("", 28, colors.ink, 22, 102 * u)
-    label("逐格探索，揭开迷雾", 14, colors.muted, 22, 75 * u)
+    label("航线目标", 19, colors.muted, 25, 186 * u)
+    -- MapLayoutManagers:initEnemyInfo writes the actual chapter objective here.
+    self.nameTitle = label("", 36, colors.ink, 25, 152 * u)
+    label("逐格探索，揭开迷雾", 18, colors.muted, 25, 117 * u)
 
-    local function button(text, width, height, x, y, callback, coral)
-        local node = BTheme.button(text, width * u, height * u, callback, {
-            color = coral and colors.coral or colors.ink,
-            selectedColor = colors.sea, textColor = colors.white, fontSize = 22 * u
-        })
+    local function button(text, width, height, x, y, callback, coral, size)
+        local node = theme.button(text, width * u, height * u, callback, coral, (size or 27) * u)
         node:setPosition(cc.p(x * u, y * u))
         tipLayer:addChild(node, 2)
         return node
     end
 
-    local backBtn = button("返航", 108, 54, 561, 82, function()
+    local backBtn = button("返航", 113, 60, 569, 126, function()
         if self.isNeedGuide then
         	return
         end
@@ -1236,7 +1240,7 @@ function Explore:initTipLayer()
 			-- print("离开购买提示界面")
 		end)
 		-- print("_alert inited")
-        local showLabel1 = cc.LabelTTF:create(tipstring, BoldFont, 30)
+        local showLabel1 = cc.LabelTTF:create(tipstring, MasterTheme.headingFont(false), 30)
         showLabel1:setColor(cc.c3b(255, 255, 255))
         -- showLabel1:enableStroke(cc.c4b(16, 16, 16, 255), 1)
         showLabel1:setPosition(cc.p(_alert.s_position.x, _alert.s_position.y))
@@ -1245,8 +1249,12 @@ function Explore:initTipLayer()
         -- print("showLabel1 inited")
     end, true)
     self.adventureReturnButton = backBtn
-    button("货舱", 122, 42, 178, 30, function() self:goBag() end)
-    button("攻略", 88, 42, 66, 30, function() self:showCurMapStrategy() end)
+    local cargoButton = button("货舱", 136, 53, 232, 69, function() self:goBag() end)
+    cargoButton.label:setPosition(cc.p(83 * u, 27 * u))
+    icon("food", 33, 17, 10 * u, cargoButton.item)
+    local guideButton = button("攻略", 136, 53, 91, 69, function() self:showCurMapStrategy() end)
+    guideButton.label:setPosition(cc.p(82 * u, 27 * u))
+    icon("scroll", 33, 17, 10 * u, guideButton.item)
 
     -- These are explicit controls for the same movement queue and tutorial gate
     -- used by tapping the sea; no movement or event rules are duplicated here.
@@ -1257,29 +1265,32 @@ function Explore:initTipLayer()
         self:jointedCalBack(direction)
     end
     local function directionButton(direction, x, y, angle)
-        local node = button("", 44, 42, x, y, function() steer(direction) end)
+        local node = button("", 58, 55, x, y, function() steer(direction) end)
         local arrow = cc.DrawNode:create()
-        arrow:drawTriangle(cc.p(-9 * u, -6 * u), cc.p(9 * u, -6 * u), cc.p(0, 9 * u),
+        arrow:drawTriangle(cc.p(-12 * u, -8 * u), cc.p(12 * u, -8 * u), cc.p(0, 12 * u),
             cc.c4f(colors.white.r / 255, colors.white.g / 255, colors.white.b / 255, 1))
-        arrow:setPosition(cc.p(22 * u, 21 * u))
+        arrow:setPosition(cc.p(29 * u, 27 * u))
         arrow:setRotation(angle)
         node.item:addChild(arrow, 3)
     end
-    directionButton(UpDiriction, 403, 130, 0)
-    directionButton(LeftDirction, 353, 80, -90)
-    directionButton(RightDircion, 453, 80, 90)
-    directionButton(BottomDirction, 403, 30, 180)
+    directionButton(UpDiriction, 410, 178, 0)
+    directionButton(LeftDirction, 352, 125, -90)
+    directionButton(RightDircion, 468, 125, 90)
+    directionButton(BottomDirction, 410, 72, 180)
 
     -- Keep the existing food-warning actions, but use a restrained chart border.
-    self.warnningTips = BTheme.label("食物将耗尽\n请返回出发点补充食物", 24 * u,
-        colors.coral, winSize.width / 2, winSize.height * 0.6, 0.5, 0.5)
+    self.warnningTips = theme.label("食物将耗尽\n请返回出发点补充食物", 24 * u,
+        colors.coral, winSize.width / 2, winSize.height * 0.6, 0.5)
     tipLayer:addChild(self.warnningTips, 3)
-    self.warnningTips:runAction(cc.FadeOut:create(0))
+    -- LabelTTF can lazily create an opaque text Sprite after setOpacity(0).
+    -- Gate the entire subtree until a real low-food check enables the warning.
+    self.warnningTips:setVisible(false)
+    self.warnningTips:setOpacity(0)
     self.warnningBox = cc.Node:create()
     self.warnningBox:setCascadeOpacityEnabled(true)
-    self.warnningBox:addChild(BTheme.panel(4 * u, winSize.height - topHeight - bottomHeight,
+    self.warnningBox:addChild(theme.panel(4 * u, winSize.height - topHeight - bottomHeight,
         colors.coral, 0, bottomHeight))
-    self.warnningBox:addChild(BTheme.panel(4 * u, winSize.height - topHeight - bottomHeight,
+    self.warnningBox:addChild(theme.panel(4 * u, winSize.height - topHeight - bottomHeight,
         colors.coral, winSize.width - 4 * u, bottomHeight))
     tipLayer:addChild(self.warnningBox, 3)
     self.warnningBox:setVisible(false)
@@ -1302,6 +1313,7 @@ function Explore:warnningAction(  )
 		return
 	end
 
+	self.warnningTips:setVisible(true)
 	self.warnningBox:setOpacity(0)
 	self.warnningBox:setVisible(true)
 
@@ -1353,12 +1365,15 @@ function Explore:warnningAction(  )
 end
 
 function Explore:stopWarnningAction(  )
+	self.warnningTips:setVisible(false)
+	self.warnningTips:stopAllActions()
+	self.warnningTips:setOpacity(0)
 	self.warnningBox:stopAllActions()
 	self.warnningBox:setVisible(false)
 	self.breadtitile:setOpacity(255)
 	self.breadtitile:stopAllActions()
 	self.bread:setOpacity(255)
-	self.breadtitile:stopAllActions()
+	self.bread:stopAllActions()
 end
 
 function Explore:checkMapScale( scale )
@@ -1378,7 +1393,9 @@ function Explore:setMapScale( scale )
 
 	scale = self:checkMapScale(scale)
 
+	self:stopChartCameraMotion()
 	self.moveLayer:setScale(scale)
+	self.moveLayer:setPosition(self:clampChartPosition(cc.p(self.moveLayer:getPosition())))
 end
 
 function Explore:initEventManger( )
@@ -1505,6 +1522,8 @@ function Explore:initMapByMapIndex( mapIndex,isclear )
 	-- print("map",mapString)
 	--初始化地图
 	self.map = cc.TMXTiledMap:create(mapString);
+    self.seaChartAppliedTextures = SeaChartTheme.applyTileArt(self.map)
+    self.seaChartSliceEvents = SeaChartTheme.applySliceEventArt(self.map, self.mapIndex)
 	-- self.map:setScale(0.8) --不能直接对mapsetscale,因为我是对movelayer进行偏移的!!!
     -- scrollview:setContainer(self.map)
     -- scrollview:updateInset()
@@ -1530,9 +1549,11 @@ function Explore:initMapByMapIndex( mapIndex,isclear )
    	--开始对地图进行布局
    	self.mapLayoutManagers:setOwner(self)
    	self.mapLayoutManagers:tryToLayoutMapByMapIndex()
+    self.seaChartLandDetails = SeaChartTheme.addLandDetails(self.map)
+    self.seaChartSlice = SeaChartSlice.build(self.map, self.mapIndex)
 
-    BTheme.fitLabel(self.nameTitle, screenSize.width * 0.44)
-    BTheme.fitLabel(self.chapterTitle, screenSize.width * 0.18)
+    SeaChartTheme.fit(self.nameTitle, screenSize.width * 0.45)
+    SeaChartTheme.fit(self.chapterTitle, screenSize.width * 0.145)
 
    
 
@@ -1691,8 +1712,9 @@ function Explore:initPlayer( )
                 player = cc.Sprite:create()
                 player:setContentSize(cc.size(tileSize, tileSize))
                 local artSize = ship:getContentSize()
-                ship:setScale(tileSize * 1.35 / math.max(artSize.width, artSize.height))
+                ship:setScale(tileSize * 1.75 / math.max(artSize.width, artSize.height))
                 ship:setPosition(cc.p(tileSize / 2, tileSize / 2))
+                player:addChild(SeaChartTheme.shipHalo(tileSize), -1)
                 player:addChild(ship)
                 self.adventureShipVisual = ship
             end
@@ -1894,6 +1916,36 @@ function Explore:jointedCalBack( dirction )
 	self:tryToMoveForDirction(targetDirction)
 end
 
+-- Camera geometry uses native content points, not TMX source pixels or the
+-- legacy mapSize cache (which used to switch units after the first pinch).
+-- Clamp only the visible chart between the unchanged HUD bands. A map smaller
+-- than either viewport dimension is centered on that axis without changing the
+-- permitted zoom or any tile, movement, fog, event or save data.
+function Explore:stopChartCameraMotion()
+    -- Only the camera tween is interrupted. Gameplay completion and saving
+    -- are scheduled on Explore/its managers and retain their original timing.
+    self.moveLayer:stopActionByTag(chartCameraActionTag)
+end
+
+function Explore:clampChartPosition(position)
+    local size = self.map:getContentSize()
+    local scale = self.moveLayer:getScale()
+    -- A Layer defaults to a centered anchor. Even with ignored positioning,
+    -- scaling contributes anchor * (1-scale) to its rendered origin. Resolve
+    -- that offset through the real transforms instead of treating position as
+    -- the map's lower-left corner.
+    local origin = self:convertToNodeSpace(self.map:convertToWorldSpace(cc.p(0, 0)))
+    local offsetX = origin.x - self.moveLayer:getPositionX()
+    local offsetY = origin.y - self.moveLayer:getPositionY()
+    local bottom, top = self.adventureHudBottom or 0, self.adventureHudTop or screenSize.height
+    local function axis(value, low, high, extent)
+        if extent <= high - low then return (low + high - extent) / 2 end
+        return math.max(high - extent, math.min(low, value))
+    end
+    return cc.p(axis(position.x + offsetX, 0, screenSize.width, size.width * scale) - offsetX,
+        axis(position.y + offsetY, bottom, top, size.height * scale) - offsetY)
+end
+
 function Explore:getCenterViewPositionByActualPosition( actualPosition )
 
 
@@ -1910,16 +1962,7 @@ function Explore:getCenterViewPositionByActualPosition( actualPosition )
 	viewCenter.x = self.moveLayer:getPositionX() + contentOffset.x
 	viewCenter.y = self.moveLayer:getPositionY() + contentOffset.y
 
-	--对最终目标点做限制
-	--上边界检查，x和y任何一个不能大于可视区域的一半,否则看到的边界将会太大
-	viewCenter.x = math.min(screenSize.width / 2,viewCenter.x)
-	viewCenter.y = math.min(screenSize.height / 2,viewCenter.y)
-
-	--下边界检查,x和y任何一个都不能小于可视区域的一半减去当前地图的大小，否则则会看到的边界超过屏幕大小的一半
-	viewCenter.x = math.max(screenSize.width / 2 * self.moveLayer:getScale() - self.mapSize.width, viewCenter.x)
-	viewCenter.y = math.max(screenSize.height / 2  * self.moveLayer:getScale() - self.mapSize.height, viewCenter.y)
-
-	return viewCenter;
+	return self:clampChartPosition(viewCenter)
 end
 
 --直接跳置目标点，使其成为中心
@@ -1941,6 +1984,7 @@ function Explore:setViewpointCenter( position )
 
 	self.jointed.enable = true
 
+	self:stopChartCameraMotion()
 	self.moveLayer:setPosition(centerPosition);
 end
 
@@ -1959,6 +2003,7 @@ end
 
 function Explore:setZoomScale( scale )
 	scale = self:checkMapScale(scale)
+	self:stopChartCameraMotion()
 
 	--获得原始地图大小
 	self:obtainTheOriginalMapSize()
@@ -1966,14 +2011,6 @@ function Explore:setZoomScale( scale )
 	local viewCenter = getRelativePositionOfViewCenterByNode(self.moveLayer)
 	-- print("setZoomScale:viewCenter",viewCenter.x,viewCenter.y)
 
-	-- --改变地图大小
-	self.mapSize.width = self.mapSize.width * scale
-	self.mapSize.height = self.mapSize.height * scale
-	-- local center = cc.p(self.mapSize.width / 2,self.mapSize.height / 2)
-	-- center = self:convertToWorldSpace(center);
-	-- print("zoomCenter",center.x,center.y)
-	-- local oldCenter = self.moveLayer:convertToNodeSpace(center)
-	-- print("oldCenter",oldCenter.x,oldCenter.y)
 	self.moveLayer:setScale(scale)		
 
 	local newCenter = getRelativePositionOfViewCenterByNode(self.moveLayer)
@@ -1991,7 +2028,8 @@ function Explore:setZoomScale( scale )
 		-- print("ERROR offset")
 	-- end
 	
-	self.moveLayer:setPosition(cc.p(self.moveLayer:getPositionX() + offset.x,self.moveLayer:getPositionY() + offset.y))
+	self.moveLayer:setPosition(self:clampChartPosition(cc.p(
+		self.moveLayer:getPositionX() + offset.x,self.moveLayer:getPositionY() + offset.y)))
 
 end
 
@@ -2009,6 +2047,7 @@ function Explore:slowlyMoveViewpointCenter( position ,duration )
 	local centerPositionPercent = cc.p(0,0)
 	local centerPosition,centerPositionPercent = self:getCenterViewPositionByActualPosition(position)
 	self.targetMovePosition = centerPosition;
+	local seq
 
 	if duration == nil then
 
@@ -2069,6 +2108,8 @@ function Explore:slowlyMoveViewpointCenter( position ,duration )
 
 	-- check2dxLuaApi(cc.CallFunc)
 	--执行动画
+	self:stopChartCameraMotion()
+	seq:setTag(chartCameraActionTag)
 	self.moveLayer:runAction(seq) 
 	local calSeq = cc.Sequence:create(cc.DelayTime:create(duration * 0.9),cc.CallFunc:create(function ()
 			self:moveEnd()
@@ -2091,7 +2132,7 @@ function Explore:moveEnd()
 		-- if DataManager:getInstance():getRoleData(roleMapInfo).mapIndex >= 2 then
 			local _alert = AlertView:create(2, 2, "", function()
 				-- 触发充值功能，充值成功之后请调用returnToBase
-				purchase("4")
+				PurchaseAvailability.request("4")
 
 			end, function()
 
@@ -2120,7 +2161,9 @@ function Explore:moveEnd()
 				transformLayer:transform()
 				-- self:returnToBase("NoBread")
 			end, "确认死亡", "安全回城")
-			_alert:setOkRemove(0)
+			-- Keep retry/decline available while awaiting the native result.
+			-- Lua treats 0 as true, so this must be a boolean.
+			_alert:setOkRemove(false)
 			-- 添加提示框的叹号图
 			local alertIcon = cc.Sprite:create("Images/charging/fuhuo_02.png")
 			alertIcon:setPosition(cc.p(_alert.s_position.x - 180.0, _alert.s_position.y + 30.0))
@@ -2524,11 +2567,12 @@ function Explore:costbread( )
 	end
 	-- print("costbreadover",self.breadCostDecimal)
 	self.bread:setString(tostring(self.breadNum))
+    SeaChartTheme.fit(self.bread, screenSize.width * 49 / 640)
 
     if self.breadNum < 10 then
-        self.bread:setColor(BTheme.colors.coral)
+        self.bread:setColor(SeaChartTheme.colors.coral)
     else
-        self.bread:setColor(BTheme.colors.white)
+        self.bread:setColor(SeaChartTheme.colors.white)
     end
 
 	if self.breadNum == 0 and self.breadCostDecimal ~= 0 then
@@ -2547,6 +2591,7 @@ function Explore:updataCapacityTips( costSpace,capacity )
 	
 	if self.capacityTips then
 		self.capacityTips:setString(string.format("%d/%d",costSpace,capacity))
+        SeaChartTheme.fit(self.capacityTips, screenSize.width * 78 / 640)
 	end
 
 end
@@ -2557,6 +2602,7 @@ function Explore:updataOccupation(  )
   	self.occupation = roleExtentNum
 
 	self.occupationNum:setString(tostring(self.occupation))
+    SeaChartTheme.fit(self.occupationNum, screenSize.width * 53 / 640)
 
   	--探索成就进度触发且添加探索度
 	achievementValue = DataManager:getInstance():getAchievementInfo(achievement_Exploration)
@@ -2918,6 +2964,7 @@ function Explore:showCurMapStrategy(  )
 	local tipView = AlertView:create(3,1,"本图攻略",function (  )
 	end)
 
+	tipView:usePaperBody()
 	local mapTip = ""
 	local tip = nil
 
@@ -2932,13 +2979,13 @@ function Explore:showCurMapStrategy(  )
 
 	end
 
-	local tipLabel = cc.LabelTTF:create(mapTip, BoldFont, 30)
+	local tipLabel = cc.LabelTTF:create(mapTip:gsub("仓库招募界面", "船员招募界面"), MasterTheme.headingFont(false), 28)
 	tipLabel:setHorizontalAlignment(cc.TEXT_ALIGNMENT_LEFT)
 	tipLabel:setVerticalAlignment(cc.VERTICAL_TEXT_ALIGNMENT_CENTER)
-	tipLabel:setColor(cc.c3b(196, 213, 215))
-	tipLabel:setDimensions(cc.size(tipView.s_size.width * 0.94,cc.Director:getInstance():getVisibleSize().height))
+	tipLabel:setColor(MasterTheme.colors.ink)
+	tipLabel:setDimensions(cc.size(tipView.s_size.width - 84,tipView.s_size.height - 120))
         -- showLabel1:enableStroke(cc.c4b(16, 16, 16, 255), 1)
-    tipLabel:setPosition(cc.p(tipView.s_position.x, tipView.s_position.y))
+    tipLabel:setPosition(cc.p(tipView.s_position.x, tipView.s_position.y-30))
         -- print("showLabel1 will add")
     tipView:addChild(tipLabel)
 

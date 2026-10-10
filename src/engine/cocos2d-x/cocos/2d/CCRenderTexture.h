@@ -36,6 +36,7 @@ THE SOFTWARE.
 NS_CC_BEGIN
 
 class EventCustom;
+class EventListenerCustom;
 
 /**
  * @addtogroup textures
@@ -192,6 +193,8 @@ protected:
     Texture2D* _texture;
     Texture2D* _textureCopy;    // a copy of _texture
     Image*     _UITextureImage;
+    EventListenerCustom* _backgroundListener;
+    EventListenerCustom* _foregroundListener;
     Texture2D::PixelFormat _pixelFormat;
     
     // code for "auto" update
