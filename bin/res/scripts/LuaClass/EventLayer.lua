@@ -394,6 +394,44 @@ end
 --全局中介函数
 transformFunc = nil
 
+-- These are the original map-halo ranks and defeat-guide names. They describe
+-- the site, not the player's chance of winning its next fight.
+local strongholdRanks = {
+    {"白色 · 低级据点", 255,255,255}, {"绿色 · 中级据点", 43,229,0},
+    {"蓝色 · 高级据点", 37,88,255}, {"紫色 · 精英据点", 229,0,221},
+    {"橙色 · boss据点及特殊据点", 255,157,42}
+}
+function EventLayer:refreshDifficulty(info, isOccupied)
+    local size = cc.Director:getInstance():getVisibleSize()
+    if not self.difficultyLabel then
+        self.difficultyGroup = cc.Node:create()
+        self:addChild(self.difficultyGroup)
+        self.difficultyMarker = cc.LayerColor:create(cc.c4b(255,255,255,255),10,10)
+        self.difficultyGroup:addChild(self.difficultyMarker)
+        self.difficultyLabel = eventLabel("", BoldFont, 22)
+        self.difficultyGroup:addChild(self.difficultyLabel)
+    end
+    local rank = info and not isOccupied and info.eventFucString == "changeToEnemyLayer"
+        and strongholdRanks[tonumber(info.especial)] or nil
+    self.difficultyGroup:setVisible(rank ~= nil)
+    self.difficultyLabel:setVisible(rank ~= nil)
+    if rank then
+        self.difficultyLabel:setString(rank[1])
+        -- Keep readable paper text on the dark sea; the original halo hue
+        -- is supplementary, never the only way to distinguish the rank.
+        self.difficultyLabel:setColor(MasterTheme.colors.paper)
+        self.difficultyMarker:setColor(cc.c3b(rank[2],rank[3],rank[4]))
+        local width = self.difficultyLabel:getContentSize().width + 22
+        self.difficultyMarker:setPosition(cc.p(-width / 2,-5))
+        self.difficultyLabel:setPosition(cc.p(11,0))
+        self.difficultyGroup:setPosition(cc.p(size.width / 2,size.height - 104))
+        self.difficultyGroup:setScale(math.min(1,(size.width-48)/math.max(1,width)))
+    end
+    -- Long site names stay on their existing single title line rather than
+    -- colliding with the newly explicit rank beneath it.
+    self.title:setScale(math.min(1,(size.width-48)/math.max(1,self.title:getContentSize().width)))
+end
+
 function EventLayer:refreshLayerByInfo( info , isOccupied)
 	
 	print("getsAndSetsLayerInfoById",info)
@@ -417,6 +455,11 @@ function EventLayer:refreshLayerByInfo( info , isOccupied)
 	if not isOccupied then
 	
 		des = info["description"]
+        -- The shipped reef's encounter queue is octopus then strongman, not
+        -- skeletons. Guard both identity and obsolete text; never rewrite data.
+        if tostring(info.ID) == "3106" and des == "骷髅战士在礁石上盘踞，挡住了前路。杀死他！" then
+            des = "礁石间潜伏着危险的敌人，挡住了前路。"
+        end
 
 		local costDatas = info["requiredtool"]
 
@@ -482,6 +525,8 @@ function EventLayer:refreshLayerByInfo( info , isOccupied)
 	self.title:setString(title)
 	self.description:setString(description)
 	self.midTip:setString(des)
+    self.difficultyInfo = info
+    self:refreshDifficulty(info,isOccupied)
 	
 
 
@@ -534,6 +579,8 @@ function EventLayer:show()
 end
 
 function EventLayer:hide()
+    if self.difficultyGroup then self.difficultyGroup:setVisible(false) end
+    if self.difficultyLabel then self.difficultyLabel:setVisible(false) end
 	print("EventLayer:hide")
 	self:setVisible(false)
 	self:hideMultipleButtons()
@@ -726,6 +773,7 @@ function EventLayer:getsAndSetsEnemyLayerInfoByEnemy( enemy,addDropInfo,calBack 
 		if index == 1 then 
 			--设置title
 			self.title:setString(string.format("%s(第%d层)",self.name,self.enemysIndex))
+            self:refreshDifficulty(self.difficultyInfo,false)
 			self.description:setString(fightFighterData.description)
 			self.buttons[1]:registerSingleCLick(function() 
         		self:enterFightLayer(false,calBack)
@@ -1372,6 +1420,7 @@ function EventLayer:enterFightLayer( isNeedShipBattle,calBack )
 end
 
 function EventLayer:showTipOccupiedLayer( layerInfo )
+    self:refreshDifficulty(nil,true)
 
 	-- 战斗结束后不再显示战前的据点说明（例如“已被怪物占据”）。
 	self.midTip:setVisible(false)

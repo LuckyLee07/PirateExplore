@@ -565,7 +565,7 @@ function MainMenuLayer:init()
     -- 播放船走的动画
     local boatBtn = nil
     boatBtn = SDButton:create("Images/DiamondStore/GoldenBoat.png", "Images/DiamondStore/GoldenBoat.png", function()
-        PushGiftView:create():show()
+        self:openGiftOffer()
         -- 移动小船到准备出发的位置
         self.boatSpr:stopAllActions()
         self.boatSpr:setPosition(cc.p(visibleSize.width + boatBtn:getContentSize().width, UIBottomHeight + boatBtn:getContentSize().height * 0.5))
@@ -583,15 +583,8 @@ function MainMenuLayer:init()
         self.boatSpr:runAction(cc.MoveTo:create(10.0, cc.p(-boatBtn:getContentSize().width * 0.5, self.boatSpr:getPositionY())))
     end
 
-    -- 没解锁船坞并且没进入过地图的情况下不弹礼包推送 by 杨杰，厉晔的需求
-    if DataManager:getInstance():getRoleData(roleMapInfo) ~= nil and not isEnterMap then
-        local delay = cc.DelayTime:create(0.3)
-        local call = cc.CallFunc:create(function()
-            PushGiftView:create():show()
-        end)
-        local seq = cc.Sequence:create(delay, call)
-        self:runAction(seq)
-    end
+    -- Returning home never interrupts play with a paid offer. The same gift
+    -- remains available deliberately through Port and the original boat.
     -- 出征之后才会显示金船走过 by 杨杰 厉晔的需求
     if DataManager:getInstance():getRoleData(roleMapInfo) ~= nil then
         self:runAction(cc.RepeatForever:create(cc.Sequence:create(cc.DelayTime:create(60.0), cc.CallFunc:create(playBoatRun))))
@@ -793,8 +786,28 @@ function MainMenuLayer:closeNavigationGroup()
     overlay:removeFromParent()
 end
 
+-- Keep ownership on the menu, with a native cleanup observer so a dismissed
+-- or scene-replaced dialog never leaves a stale Cocos wrapper to query.
+function MainMenuLayer:openGiftOffer()
+    if DataManager:getInstance():getRoleData(roleMapInfo) == nil or isEnterMap then
+        ToastUtil:downString("出征返港后可查看付费礼包")
+        return
+    end
+    if self.giftDialog then return end
+    local view = PushGiftView:create()
+    if not view then return end
+    self.giftDialog = view
+    local owner = cc.Node:create()
+    owner:registerScriptHandler(function(event)
+        if event == "cleanup" and self.giftDialog == view then self.giftDialog = nil end
+    end)
+    view:addChild(owner)
+    view:show()
+end
+
 function MainMenuLayer:openUtilityRoute(key)
     self:closeNavigationGroup()
+    if key == "gift" then self:openGiftOffer(); return end
     local dispatch = zqDispatch
     if not dispatch then return end
     local routes = {
@@ -839,7 +852,7 @@ function MainMenuLayer:openNavigationGroup(group)
             {"make", "制造", 5}, {"resource", "采集", 6},
             {"store", "市场", 7}, {"alchemy", "炼金"},
             {"ranking", "榜单"}, {"settings", "设置"},
-            {"diamondStore", "钻石商城"}
+            {"diamondStore", "钻石商城"}, {"gift", "礼包（付费）"}
         }
     end
     local overlay = cc.Layer:create()
@@ -878,6 +891,9 @@ function MainMenuLayer:openNavigationGroup(group)
         local legacy = route and ({[2]=self.trainBtn,[3]=self.buildBtn,[4]=self.repositoryBtn,
             [5]=self.makeBtn,[6]=self.resourceBtn,[7]=self.storeBtn})[route]
         if (key == "achievement" or key == "ranking") and not GuideController:getInstance():getIsHaveStep(8) then
+            item.bLabel:setColor(cc.c3b(112,129,122))
+        end
+        if key == "gift" and (DataManager:getInstance():getRoleData(roleMapInfo) == nil or isEnterMap) then
             item.bLabel:setColor(cc.c3b(112,129,122))
         end
         if legacy then

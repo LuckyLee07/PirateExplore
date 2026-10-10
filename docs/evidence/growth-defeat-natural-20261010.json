@@ -1,0 +1,59 @@
+{
+  "natural": true,
+  "date": "2026-10-10",
+  "cargoUpgrade": {
+    "before": 20,
+    "after": 30,
+    "craftCost": {
+      "cloth": 5,
+      "wood": 5
+    },
+    "clothPurchase": {
+      "quantity": 5,
+      "goldTotal": 10
+    },
+    "alchemyAcceptedClicks": 4,
+    "alchemyPhysicalAttempts": 5,
+    "alchemyGold": 8
+  },
+  "voyage": {
+    "departureFood": 30,
+    "starterCrew": 1,
+    "reefFirstEnemy": {
+      "name": "章鱼",
+      "hp": 4,
+      "goldLoot": 4,
+      "won": true
+    },
+    "reefSecondEnemy": {
+      "name": "力士",
+      "hp": 6,
+      "won": false
+    },
+    "revivalUsed": false,
+    "foodLost": 24,
+    "goldLootLost": 4,
+    "crewLost": 1
+  },
+  "recovery": {
+    "campGold": 30,
+    "recruitGold": 3,
+    "alchemyAcceptedClicks": 17,
+    "alchemyGold": 34,
+    "finalGold": 1,
+    "diamondSpent": 0,
+    "capacityKept": 30,
+    "replacementCrew": 1,
+    "loadedFood": 30,
+    "ready": true
+  },
+  "finalClosed": {
+    "gold": 1,
+    "diamond": 1,
+    "wood": 54,
+    "stone": 40,
+    "foodTotal": 247
+  },
+  "realPayments": false,
+  "historicalFilesUnchanged": 8
+}

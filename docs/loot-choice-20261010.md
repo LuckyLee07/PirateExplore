@@ -1,6 +1,6 @@
 # Capacity-safe, understandable loot choices
 
-Status: source implementation and callback regression passed; native acceptance pending. This is the second small iteration after the preserved first-round checkpoint `c9daa074`.
+Status: source regression and the bounded native acceptance below passed. This is the second small iteration after the preserved first-round checkpoint `c9daa074`.
 
 ## Before evidence
 
@@ -43,7 +43,7 @@ The test loads the production `FightRewardScene` and list helper, decodes the ac
 - Bulk pickup still may reload moved-out food; no hidden preference was introduced.
 - Original button boundaries and list tops at viewport widths 480, 540 and 640, including simulated taller CJK line metrics. The reserved 50 px strip must not intercept list input.
 
-These tests do not replace native typography, hit-target or synthetic 2/5-volume fixture acceptance. The independent player will use an isolated controlled profile for those item volumes and a natural second voyage for ordinary food/material decisions when feasible.
+These tests do not replace native typography, hit-target or synthetic 2/5-volume fixture acceptance. The independent player used isolated controlled profiles for those item volumes. No natural second voyage or naturally obtained advanced item is claimed in this iteration.
 
 No changes to gift prompts, paid long-press, alchemy, resource prices, chart travel, combat or other inventories are in this patch.
 
@@ -52,7 +52,7 @@ No changes to gift prompts, paid long-press, alchemy, resource prices, chart tra
 
 Native screenshot `growth-play-20261010/32-fixture-cargo2-before.png` at 540 pixels showed the second hint line crossing the paper's irregular bottom edge. Its dark lower glyphs fell onto the dark action background and became unreadable; source bounding-box tests alone had missed this texture boundary. The same controlled run confirmed that 19/20 cargo plus a 2-space reward no longer picks a fractional-fit unit.
 
-The correction moves both lines fully onto paper at y=184/156 and reserves the bottom 50 px of each list view so the text cannot overlap or intercept a row. The list tops, first-row position and both original buttons remain fixed. Updated regression checks each line's lower extent is at least 143 and upper extent is below 200, with a 26 px height cap. Native 480/540 screenshots and actual final-row scrolling/tapping remain required before accepting the revised layout.
+The correction moves both lines fully onto paper at y=184/156 and reserves the bottom 50 px of each list view so the text cannot overlap or intercept a row. The list tops, first-row position and both original buttons remain fixed. Updated regression checks each line's lower extent is at least 143 and upper extent is below 200, with a 26 px height cap. Native 480/540 screenshots and actual final-row scrolling/tapping subsequently passed, as recorded below.
 
 ## Missing artwork found during native inspection
 
@@ -60,4 +60,17 @@ The actual shipped CSV has an empty `iconName` for siege ram 1039. Its name, qua
 
 Both loot columns now use the existing `ItemIcon.sprite` helper at the same (50,60) position. Correct artwork retains its exact source path, dimensions and scale. Nil/empty icon names, missing files and decode failures use the pre-existing bounded neutral paper placeholder; tests execute both actual cell-rendering callbacks for all five cases. This is safe missing-art presentation, **not dedicated siege-ram artwork**. A future identity-correct siege-ram illustration remains outstanding and has not been substituted with a different weapon.
 
-The final narrow native recheck will verify the same placeholder before and after transferring the ram between columns, while food retains its existing artwork. No more runtime changes are planned within this bounded iteration.
+The final narrow native recheck verified the same placeholder before and after transferring the ram between columns, while food retained its existing artwork. Runtime code is frozen for this bounded iteration.
+
+
+## Final native acceptance
+
+The independent [portrait and cargo native report](portrait-cargo-native-20261010.md), committed at `01b338c5`, and its [minimal capacity ledger](evidence/cargo-native-20261010.json) close this iteration. They distinguish physical GUI actions in isolated synthetic item fixtures from the previously preserved natural save.
+
+- Two-space dark steel: 19/20 rejects bulk pickup; moving out one food allows exactly one steel for 20/20. The full hold rejects taking food, and reversing the steel/food exchange restores 19 food. Closing saves only that chosen left inventory.
+- Five-space ram: 19/20 rejects bulk pickup; moving out four food allows one ram for 20/20. Reversing it and recovering the four food restores 19 food. Closing keeps only the chosen food.
+- Revised 480-pixel hints are fully readable on paper in 46/47. The 540-pixel twelve-row fixture in 48–50 scrolls to and successfully selects the last dark-steel row, changing capacity 1→3 without the hint swallowing input.
+- Final `000f129` cold screenshots 51/52 show neutral ram placeholders in both columns after a physical transfer; both food images retain their original artwork. The ram still has no dedicated illustration.
+- The final aggregate run exited 0. The last native instance was stopped and desktop process absence was verified; all eight historical save hashes were unchanged, and the natural save remained byte-identical throughout the synthetic cargo fixtures.
+
+The rejected first hint layout in 32 is retained as failure evidence. No whole-game, late-game balance, real purchase or new natural-voyage acceptance is inferred from these fixtures.

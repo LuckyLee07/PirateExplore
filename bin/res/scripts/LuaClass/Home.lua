@@ -3,6 +3,7 @@ require 'LuaClass/DataManager'
 require 'LuaClass/GuideController'
 require 'LuaClass/MasterTheme'
 require 'LuaClass/HarborGoals'
+require 'LuaClass/CrewRecovery'
 
 -- Read-only harbor. Coordinates follow the approved 941x1672 master artwork;
 -- no role data, tutorial reward, or expedition initialization is performed here.
@@ -118,6 +119,11 @@ function HomeLayer:refreshSummary()
     elseif s.crew==0 then self.hintLabel:setString(s.standby>0 and '请编入船员' or '请招募船员');self.departureButton.label:setString('整备出航  ›')
     elseif s.food==0 then self.hintLabel:setString('请装入食物');self.departureButton.label:setString('整备出航  ›')
     else self.hintLabel:setString('补给已备妥');self.departureButton.label:setString('整备出航  ›') end
+    self.recovery=CrewRecovery.next(dm,GuideController:getInstance())
+    if self.recovery then
+        self.hintLabel:setString('补充船员');self.departureButton.label:setString('补充船员  ›')
+    end
+    self:refreshRecoveryDialog()
     self.goals=HarborGoals.list(dm,GuideController:getInstance():getIsHaveStep(60))
     local canSuggest=s.unlocked and s.crew>0 and s.food>0 and #self.goals>0
     self.goalButton.item:setEnabled(canSuggest)
@@ -211,9 +217,56 @@ function HomeLayer:openGoalAt(index)
     elseif goal.route=='build' then zqDispatch:gotoBuild(goal.routeId) end
 end
 function HomeLayer:openPrimary()
+    if self.homeDisposed then return end
+    self:refreshSummary()
+    if self.recovery then self:openRecovery();return end
     if self.summary.unlocked then self:openRoute(1)
     elseif GuideController:getInstance():getIsHaveStep(1) then self:openRoute(3)
     else zqDispatch:moveToRepository() end
+end
+-- Recovery is an opt-in preview; its actions only navigate to original screens.
+function HomeLayer:openRecovery()
+    if self.homeDisposed or self.recoveryDialog then return end
+    self.recovery=CrewRecovery.next(DataManager:getInstance(),GuideController:getInstance())
+    if not self.recovery then return end
+    require 'LuaClass/AlertView'
+    local dialog=AlertView:create(1,0,'补充船员',nil,nil,nil,'关 闭')
+    self.recoveryDialog=dialog
+    dialog:registerScriptHandler(function(event)
+        if (event=='exit' or event=='cleanup') and self.recoveryDialog==dialog then
+            self.recoveryDialog=nil;self.recoveryDetail=nil;self.recoveryAction=nil
+        end
+    end)
+    local M=MasterTheme;local w,h=dialog.s_size.width,dialog.s_size.height
+    self.recoveryDetail=M.label('',22,M.colors.paper,30,h-105,false)
+    self.recoveryDetail:setAnchorPoint(cc.p(0,1));self.recoveryDetail:setDimensions(cc.size(w-60,160))
+    self.recoveryDetail:setHorizontalAlignment(cc.TEXT_ALIGNMENT_LEFT);dialog.s_bg:addChild(self.recoveryDetail)
+    self.recoveryAction=M.button('',190,46,function() self:openRecoveryAction() end,
+        {material='coral-brush.png',fontSize=24,textColor=M.colors.white})
+    self.recoveryAction:setPosition(cc.p(w/2,110));dialog.s_bg:addChild(self.recoveryAction)
+    self:refreshRecoveryDialog()
+end
+function HomeLayer:closeRecovery()
+    local dialog=self.recoveryDialog
+    self.recoveryDialog=nil;self.recoveryDetail=nil;self.recoveryAction=nil
+    if dialog then dialog:removeFromParent(true) end
+end
+function HomeLayer:refreshRecoveryDialog()
+    if not self.recoveryDialog then return end
+    if not self.recovery then self:closeRecovery();return end
+    self.recoveryDetail:setString(self.recovery.detail)
+    self.recoveryAction.label:setString(self.recovery.action)
+    self.recoveryAction.item:setEnabled(self.recovery.route~=nil)
+end
+function HomeLayer:openRecoveryAction()
+    if self.homeDisposed then return end
+    self:refreshSummary() -- Re-evaluate crew, funds and the original unlock gate.
+    local recovery=self.recovery
+    if not recovery or not recovery.route then return end
+    self:closeRecovery()
+    if recovery.route=='alchemy' then zqDispatch:moveToRepository()
+    elseif recovery.route=='build' then zqDispatch:gotoBuild('58')
+    elseif recovery.route=='recruit' then self:openRoute(2) end
 end
 function HomeLayer:openRoute(index)
     if zqDispatch and zqDispatch.mainMenu then zqDispatch.mainMenu:openRoute(index) end
@@ -226,6 +279,7 @@ function HomeLayer:viewWillDestory() end
 function HomeLayer:destory()
     if self.homeDisposed then return end
     self.homeDisposed=true
+    self:closeRecovery()
     if self.goalDialog then self.goalDialog:removeFromParent(true);self.goalDialog=nil;self.goalRows=nil end
     for _,key in ipairs(HOME_EVENTS) do DataManager:getInstance():unregisterEvent(key,'adventureHome') end
     if pNeedUpdateLayer==self then pNeedUpdateLayer=nil end

@@ -21,8 +21,8 @@ if [[ -z "$LUA" ]]; then
     -lm -ldl -o "$BUILD/tests/lua-ui-tests"
   LUA="$BUILD/tests/lua-ui-tests"
 fi
-"$LUA" -e 'for _,f in ipairs({"BTheme","HomeTheme","MasterTheme","Home","HarborGoals","LocalProduction","MainMenu","Dispatch","Expedition","DepartureTheme","Explore","SeaChartTheme","SeaChartWorldTheme","SeaChartSlice","Talent","ToastUtil","NotificationNode","ManagementTheme","DialogTheme","CombatTheme","ResourceTheme","ItemIcon","CrewSkillDetails","EventDetailsLayer","TrainMode","PurchaseAvailability","StartupTheme","WorldMapLayer","EventLayer","FightMode","Update","LoadingScene"}) do assert(loadfile("bin/res/scripts/LuaClass/"..f..".lua")); print("PARSE PASS "..f) end'
-for test in loot_capacity_regression large_crew_portrait_regression gather_cooldown_regression local_production_regression local_production_integration harbor_goals_regression refined_icons_regression management_ui_regression dialog_theme_regression dialogue_lifecycle_regression home_master_regression static_home_art_regression home_polish_regression expedition_ui_regression explore_hud_smoke food_warning_regression talent_ui_regression intelligence_expiry_regression quest_reward_regression tutorial_lifecycle_regression onboarding_navigation_regression alchemy_feedback_regression toast_stack_regression auxiliary_ui_regression item_icon_offer_regression crew_skill_details_regression purchase_availability_regression material_caption_regression chest_footer_regression resource_theme_regression sea_chart_camera_regression sea_chart_slice_regression sea_slice_event_regression; do
+"$LUA" -e 'for _,f in ipairs({"BTheme","HomeTheme","MasterTheme","Home","HarborGoals","CrewRecovery","LocalProduction","MainMenu","Dispatch","Expedition","DepartureTheme","Explore","SeaChartTheme","SeaChartWorldTheme","SeaChartSlice","Talent","ToastUtil","NotificationNode","ManagementTheme","DialogTheme","CombatTheme","ResourceTheme","ItemIcon","CrewSkillDetails","EventDetailsLayer","TrainMode","PurchaseAvailability","StartupTheme","WorldMapLayer","EventLayer","FightMode","Update","LoadingScene"}) do assert(loadfile("bin/res/scripts/LuaClass/"..f..".lua")); print("PARSE PASS "..f) end'
+for test in crew_recovery_regression loot_capacity_regression large_crew_portrait_regression gather_cooldown_regression local_production_regression local_production_integration harbor_goals_regression refined_icons_regression management_ui_regression dialog_theme_regression dialogue_lifecycle_regression home_master_regression static_home_art_regression home_polish_regression expedition_ui_regression explore_hud_smoke food_warning_regression talent_ui_regression intelligence_expiry_regression quest_reward_regression tutorial_lifecycle_regression onboarding_navigation_regression alchemy_feedback_regression toast_stack_regression auxiliary_ui_regression item_icon_offer_regression crew_skill_details_regression purchase_availability_regression material_caption_regression chest_footer_regression resource_theme_regression sea_chart_camera_regression sea_chart_slice_regression sea_slice_event_regression; do
   "$LUA" "tools/tests/$test.lua"
 done
 
@@ -48,3 +48,5 @@ python3 tools/tests/run_atomic_save_regression.py
 python3 tools/tests/refined_icon_assets_regression.py
 
 python3 tools/tests/large_crew_assets_regression.py
+
+python3 tools/tests/missing_item_icons_regression.py "$LUA"

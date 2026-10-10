@@ -230,3 +230,17 @@ for _,case in ipairs({{1,40,5000,'您是否花费40钻石\n购买5000金币？'}
     if case[3]then equal(coinAmounts[#coinAmounts],case[3])else equal(data[roleAlchemyCanLongPress],1);equal(backed,1)end
 end
 print('PASS real coin shop 30/5000 and 500/120000, auto offer 40/5000 and hold upgrade 398 retain all costs, outcomes and callbacks')
+
+-- New art is resolved centrally before any screen receives the same records.
+-- Render both new identities through actual warehouse and generic loot/menu
+-- factories; the shared steel sword must keep its original framed icon.
+pack={['1039']=1,['1049']=1,['1053']=1};data[rolePack]=pack
+repo=repository();repo:initBagDataWithType('0')
+for _,case in ipairs({{'1039','B/siege-ram-1039.png'},{'1049','B/iron-sword-1049.png'},{'1053','w_12.png'}})do
+    equal(resources[case[1]].iconName,case[2]);assert(labels(repo.scrollViewContainer,resources[case[1]].name))
+    assert(#collect(repo.scrollViewContainer,function(n)return n.path=='Images/Icon/'..case[2]end)>0)
+    local sprite=ItemIcon.sprite(resources[case[1]].iconName)
+    equal(sprite.path,'Images/Icon/'..case[2]);equal(sprite:getContentSize().width,64)
+    equal(ItemIcon.menuItem(resources[case[1]].iconName):getContentSize().width,64)
+end
+print('PASS new ram and exact iron sword render in production warehouse/loot factories; steel sword retains original shared art')

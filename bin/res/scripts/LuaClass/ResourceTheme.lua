@@ -24,6 +24,12 @@ R.crewIcons = {
     ['107']={'j_4.png', 'crew-107.png'}, -- exact already-approved wood-shield helmsman
     ['124']={'j_7.png', 'crew-124.png'} -- exact already-approved ship doctor
 }
+-- Exact item identities only: empty names are never a global fallback, and
+-- the iron sword must not redefine steel/higher-tier aliases of w_12.png.
+R.itemIcons = {
+    ['1039']={original='', replacement='siege-ram-1039.png'},
+    ['1049']={original='w_12.png', replacement='iron-sword-1049.png'}
+}
 
 function R.applyIcons(records)
     if type(records) ~= 'table' or not cc or not cc.FileUtils then return 0 end
@@ -34,6 +40,15 @@ function R.applyIcons(records)
         local row = records[id]
         local replacement = 'B/' .. original
         if type(row) == 'table' and tostring(row.ID) == id and row.iconName == original
+            and files:isFileExist('Images/Icon/' .. replacement) then
+            row.iconName = replacement
+            count = count + 1
+        end
+    end
+    for id, names in pairs(R.itemIcons) do
+        local row = records[id]
+        local replacement = 'B/' .. names.replacement
+        if type(row) == 'table' and tostring(row.ID) == id and row.iconName == names.original
             and files:isFileExist('Images/Icon/' .. replacement) then
             row.iconName = replacement
             count = count + 1

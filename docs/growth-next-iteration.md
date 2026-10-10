@@ -1,6 +1,6 @@
 # Next small experience iteration
 
-Status at proposal: design only, 2026-10-10. The first build has since completed native acceptance. The cargo correctness/guidance portion is now implemented for a separate second-round native check; see [the implementation and test record](loot-choice-20261010.md). Gift and long-press proposals remain unimplemented. This document itself changes no runtime rules.
+Status at proposal: design only, 2026-10-10. The first build has since completed native acceptance. The cargo correctness/guidance portion has now passed its separate bounded second-round native check; see [the implementation and test record](loot-choice-20261010.md). Gift and long-press proposals remain unimplemented. This document itself changes no runtime rules.
 
 ## 1. Make full-cargo choices discoverable
 

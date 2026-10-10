@@ -311,6 +311,7 @@ dofile(root..'BTheme.lua')
 dofile(root..'HomeTheme.lua')
 dofile(root..'MasterTheme.lua')
 dofile(root..'HarborGoals.lua')
+dofile(root..'CrewRecovery.lua')
 dofile(root..'Home.lua')
 dofile(root..'MainMenu.lua')
 dofile(root..'Dispatch.lua')
@@ -637,7 +638,7 @@ local function assertOverlayClosed(context)
     equal(countListeners(),HOME_TOTAL,context..' listener baseline')
     equal(countTouches(),0,context..' no leaked touch listener')
 end
-local expectedGroups={crew={'recruit','growth','achievement'},port={'build','repository','make','resource','store','alchemy','ranking','settings','diamondStore'}}
+local expectedGroups={crew={'recruit','growth','achievement'},port={'build','repository','make','resource','store','alchemy','ranking','settings','diamondStore','gift'}}
 for group,keys in pairs(expectedGroups)do
     tap(menu.navigationButtons[group=='crew' and 3 or 4],group..' persistent tab')
     assert(menu.navigationOverlay and menu.navigationOverlay:getParent()==menu,'group overlay attached')
@@ -648,6 +649,43 @@ for group,keys in pairs(expectedGroups)do
     equal(itemCount,#keys,group..' preserves approved grouping without legacy strip')
     tap(menu.navigationCloseButton,'close '..group);assertOverlayClosed('close '..group)
 end
+-- A stable opt-in paid gift occupies the existing tenth port cell. It must
+-- not spend or navigate, and an already-open offer cannot be stacked.
+local giftCreates=0
+local giftScene=node('Scene')
+PushGiftView={create=function()
+    giftCreates=giftCreates+1
+    local view=node('Gift')
+    function view:show()giftScene:addChild(self)end
+    function view:close()self:removeFromParent()end
+    return view
+end}
+local savedMap=data[roleMapInfo];local savedSea=isEnterMap
+for _,state in ipairs({{map=false,sea=false},{map=true,sea=true},{map=true,sea=false}})do
+    data[roleMapInfo]=state.map and {} or nil;isEnterMap=state.sea
+    local previous=giftCreates;local oldRoutes=#routed
+    menu:openNavigationGroup('port')
+    equal(menu.groupRouteButtons.gift.bLabel:getString(),'礼包（付费）','paid entry is explicit')
+    local stale=menu.groupRouteButtons.gift
+    tap(stale,'voluntary gift')
+    assertOverlayClosed('gift route')
+    if state.map and not state.sea then
+        equal(giftCreates,previous+1,'returned harbor opens original offer')
+        local gift=menu.giftDialog;assert(gift and gift:getParent()==giftScene)
+        tap(stale,'repeated stale gift tap');equal(giftCreates,previous+1,'cannot stack gifts')
+        gift:close();equal(menu.giftDialog,nil,'cleanup releases offer owner')
+        menu:openNavigationGroup('port');tap(menu.groupRouteButtons.gift,'reopen gift')
+        equal(giftCreates,previous+2,'closed offer can reopen');menu.giftDialog:close()
+    else
+        equal(giftCreates,previous,'pre-voyage and sea states preserve availability gate')
+    end
+    equal(#routed,oldRoutes,'gift does not navigate or enter checkout')
+end
+data[roleMapInfo]=savedMap;isEnterMap=savedSea
+local menuSource=assert(io.open('bin/res/scripts/LuaClass/MainMenu.lua')):read('*a')
+local initSource=menuSource:sub(assert(menuSource:find('function MainMenuLayer:init()',1,true)),assert(menuSource:find('function MainMenuLayer:playStory',1,true))-1)
+assert(not initSource:find('PushGiftView:create()',1,true),'no direct automatic return offer')
+print('PASS voluntary paid gift gate, original dialog route, repeat/close/reopen and no return auto-open')
 for _=1,8 do
     menu:openNavigationGroup('crew');local old=menu.navigationOverlay
     menu:openNavigationGroup('port')

@@ -10,8 +10,14 @@ if native then require('extern') else
     function Node:setVisible(visible)self.visible=visible end
     function Node:isVisible()return self.visible end
     function Node:setFontSize(size)self.fontSize=size end
-    cc={p=function(x,y)return{x=x,y=y}end,Layer={create=node},Node={create=node},
-        LabelTTF={create=node},Director={getInstance=function()return{getVisibleSize=function()return{height=1136}end}end}}
+    function Node:setColor(color)self.color=color end
+    function Node:setPosition(pos)self.pos=pos end
+    function Node:setScale(scale)self.scale=scale end
+    function Node:getContentSize()return{width=#self.text*(self.fontSize or 22)/3,height=self.fontSize or 22}end
+    MasterTheme={colors={paper={}},label=function(text,size)local n=node();n.text=text;n.fontSize=size;return n end}
+    viewport={width=540,height=900}
+    cc={c4b=function(r,g,b,a)return{r=r,g=g,b=b,a=a}end,LayerColor={create=function()return node()end},c3b=function(r,g,b)return{r=r,g=g,b=b}end,p=function(x,y)return{x=x,y=y}end,Layer={create=node},Node={create=node},
+        LabelTTF={create=node},Director={getInstance=function()return{getVisibleSize=function()return viewport end}end}}
     dofile('src/engine/cocos2d-x/cocos/scripting/lua-bindings/script/extern.lua')
 end
 local originalRequire=require
@@ -103,4 +109,88 @@ boss:showTipOccupiedLayer(fixture.boss)
 equal(boss.description:getString(),fixture.boss.occupationdescription,'boss completion retains original prose')
 equal(boss.midTip:isVisible(),false,'shared boss completion also clears stale combat subtitle')
 print('PASS non-material tavern route and shared boss completion retain their original descriptions/actions')
+-- Real reef 3106 used a skeleton scene description with octopus/strongman
+-- enemies. Correct only that exact obsolete copy, never combat or history.
+local reef=fixture.reef
+local original=reef.description
+local history={'unchanged previous skeleton battle'};SystemInfoData=history
+local view=fresh(reef)
+view:refreshLayerByInfo(reef,false)
+local corrected='礁石间潜伏着危险的敌人，挡住了前路。'
+equal(view.description:getString(),corrected..' ','reef entry has truthful scene copy')
+equal(view.midTip:getString(),corrected,'reef combat context matches entry')
+equal(view.difficultyLabel:getString(),'绿色 · 中级据点','real reef rank visible before first fight')
+equal(reef.description,original,'display does not mutate source record')
+local enemyData
+FightDataManager.addEnemyFighterData=function(_,data)enemyData=data end
+local function matrix(value)
+    local result={};for row in value:gmatch('[^;]+')do
+        local cells={};for cell in row:gmatch('[^_]+')do cells[#cells+1]=cell end
+        result[#result+1]=cells
+    end;return result
+end
+dataController.getSoilderInfoById=function(id)
+    local source=assert(fixture.reefEnemies[id]);local copy={}
+    for k,v in pairs(source)do copy[k]=v end
+    copy.dropitems=matrix(source.dropitems);return copy
+end
+dataController.getResourceValueByIdAndKey=function()return 'original drop resource' end
+getRandomNumByRange=function(range)return range.min end
+for level,id in ipairs({'10002','10098'})do
+    view.enemysIndex=level
+    view:getsAndSetsEnemyLayerInfoByEnemy({id})
+    local row=fixture.reefEnemies[id]
+    equal(enemyData.soilderId,id,'actual enemy ID preserved')
+    equal(enemyData.hp,tonumber(row.hp),'actual enemy HP preserved')
+    equal(enemyData.power,tonumber(row.attack),'actual attack preserved')
+    equal(view.description:getString(),row.description,'actual current enemy description preserved')
+    equal(view.midTip:getString(),corrected,'both floors retain truthful context')
+    equal(view.difficultyLabel:isVisible(),true,'rank stays visible on both floors')
+    local drops=matrix(row.dropitems)
+    for i,drop in ipairs(drops)do
+        equal(FightDataManager.dropData[i].id,drop[1],'original reward identity')
+        equal(FightDataManager.dropData[i].num,tonumber(drop[2]),'original reward range minimum')
+    end
+end
+view:refreshLayerByInfo(reef,true)
+equal(view.description:getString(),reef.occupationdescription..' ','occupied reef untouched')
+equal(view.difficultyLabel:isVisible(),false,'occupied rank hidden')
+equal(view.difficultyGroup:isVisible(),false,'occupied complete group hidden')
+local other=fresh(fixture.otherReef);other:refreshLayerByInfo(fixture.otherReef,false)
+equal(other.description:getString(),fixture.otherReef.description..' ','other reef untouched')
+reef.description='An intentionally revised future scene description'
+view:refreshLayerByInfo(reef,false)
+equal(view.description:getString(),reef.description..' ','exact-copy guard does not override future data')
+reef.description=original
+equal(SystemInfoData,history,'history table unchanged');equal(#history,1,'history retained')
+local rankLabels={'白色 · 低级据点','绿色 · 中级据点','蓝色 · 高级据点','紫色 · 精英据点','橙色 · boss据点及特殊据点'}
+if not native then
+ for _,w in ipairs({480,540})do
+  viewport.width=w;viewport.height=w==480 and 800 or 900
+  for rank=1,5 do
+   for _,name in ipairs({'礁石','一个非常非常长的据点名称用于验证开战前标题和难度提示'})do
+    view.title:setString(name..'(第2层)')
+    view:refreshDifficulty({especial=tostring(rank),eventFucString='changeToEnemyLayer'},false)
+    local label=view.difficultyLabel
+    equal(label:getString(),rankLabels[rank],'exact existing rank and color name')
+    equal(label.color,MasterTheme.colors.paper,'rank text uses readable paper color')
+    equal(view.difficultyGroup:isVisible(),true,'complete group is visible')
+    assert((label:getContentSize().width+22)*view.difficultyGroup.scale<=w-48,'marker and text fit together')
+    equal(label.pos.x,11,'text and marker group is centered')
+    equal(view.difficultyMarker.pos.x,-(label:getContentSize().width+22)/2,'marker precedes text without overlap')
+    assert(view.title:getContentSize().width*view.title.scale<=w-48,'long title stays in viewport')
+    assert(view.difficultyGroup.pos.y+label:getContentSize().height/2<viewport.height-50-36/2,'rank remains below title')
+   end
+  end
+ end
+end
+for _,info in ipairs({{especial='6',eventFucString='changeToEnemyLayer'},{especial='0',eventFucString='changeToEnemyLayer'},
+ {especial='2',eventFucString='changeToMaterialsLayer'},{eventFucString='changeToEnemyLayer'}})do
+ view:refreshDifficulty(info,false);equal(view.difficultyLabel:isVisible(),false,'unknown and non-enemy sites do not invent a rank')
+end
+view:refreshDifficulty(reef,false);view:showTipOccupiedLayer(reef)
+equal(view.difficultyLabel:isVisible(),false,'completion clears difficulty')
+equal(view.difficultyGroup:isVisible(),false,'completion hides marker and text together')
+print('PASS five original ranks, narrow/wide viewports, long titles, unknown/non-combat and completion hiding')
+print('PASS actual reef 3106 scene correction, both real enemies/HP/rewards, other reef, future copy and history preservation')
 if native then nativeExit(scene);scene:cleanup();scene:release();nativeDrain()end
