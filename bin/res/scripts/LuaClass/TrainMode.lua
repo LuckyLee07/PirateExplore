@@ -4,6 +4,7 @@ require "LuaClass/BaseView"
 require "LuaClass/ManagementTheme"
 require "LuaClass/ToastUtil"
 require "LuaClass/DataManager"
+require "LuaClass/ProductionSources"
 require "LuaClass/AlertView"
 require "LuaClass/DialogueView"
 
@@ -355,8 +356,10 @@ function TrainLayer:init()
     self.tableview:registerScriptHandler(function(view, cell)
 
     local idx = cell:getTag()
-    local _soilderTable = self.data[self:getDataKeyByIndex(idx)]
-    local _soilder =  self.csvData[_soilderTable[dataKeyID]]
+    if self.dataIndex and not self.dataIndex[idx] then return end
+    local _soilderTable = (self.data or {})[self:getDataKeyByIndex(idx)]
+    local _soilder = _soilderTable and self.csvData[_soilderTable[dataKeyID]]
+    if not _soilder then return end
     local skillName, buffDescription = CrewSkillDetails.describe(_soilder["skill"], SkillData, self.bufData)
     local _skillNameStr = "技能："..skillName.."\n"
     local _skillBuf = "技能效果："..buffDescription.."\n"
@@ -473,7 +476,6 @@ end
 
 function TrainLayer:changeJobCallBack(Soilder,Index)
     --print("TrainLayer:changeJobCallBack=",Index)
-    ToastUtil:toastString("转职成功！")
     -- 新专职出来的兵种的idq
     local _soilderID = Soilder[dataKeyID]
     if Soilder == nil or _soilderID == nil then
@@ -511,6 +513,11 @@ function TrainLayer:changeJobCallBack(Soilder,Index)
         end
         self.data[_soilderID][dataKeyNum] = self.data[_soilderID][dataKeyNum] + 1
     end 
+    -- The row details belong to this page. A promotion can replace that row;
+    -- discard its old tooltip without touching other views or crew choices.
+    if self.bottomInfoBox then self.bottomInfoBox:setVisible(false) end
+    if self.infoBoxLabel then self.infoBoxLabel:setString('') end
+    self.bIsFirstClick = false
     self:setDataKey()
     self.tableview:reloadData()
     DataManager:getInstance():setRoleData(roleSoildierQueue,self.data,nil)
@@ -546,6 +553,7 @@ function TrainLayer:changeJobCallBack(Soilder,Index)
     end
     -- 重新写入一次数据，要不然会被防内存修改盖掉
     DataManager:getInstance():setRoleData(roleSelectUnit, clone(selectedData))
+    ToastUtil:toastString((Soilder.name or '船员').."进阶成功！\n请在出航整备中重新编入")
 end
 --------------------------------===========================================================----------------
 ChangeJobView = class("ChangeJobView", function ()
@@ -1321,7 +1329,7 @@ function MaterialView:init(Type,Material,CurrNum,MaxNum,StoreUnlockData,Index,Go
                         _showTip:setVisible(true)
                         local _name = self:getChildByTag(self.nameTag+i)
                         if _name ~= nil then
-                            ToastUtil:toastString("需要先制造".._name:getString())
+                            ToastUtil:toastString("还缺".._name:getString().."，点击材料查看获取方式")
                         end
                     end
                     break;
@@ -1410,11 +1418,14 @@ function MaterialView:init(Type,Material,CurrNum,MaxNum,StoreUnlockData,Index,Go
         local _back2 = ManagementTheme.surfaceLike("Images/UI/dibantiao_03.png",'paper')
         _back2:setPosition(cc.p(_title2:getPositionX(),_back1:getPositionY()-120))
         self:addChild(_back2)
-        local _back2Font1 = cc.LabelTTF:create("生产：需花费一些时间",ManagementTheme.bodyFont(),_fontSize)
+        local source = ProductionSources.find(DataManager:getInstance(), GuideController:getInstance(), GoodsID)
+        local _back2Font1 = cc.LabelTTF:create(ProductionSources.caption(source),ManagementTheme.bodyFont(),_fontSize)
         _back2Font1:setAnchorPoint(cc.p(0,0.5))
         _back2Font1:setColor(ManagementTheme.colors.ink)
         -- _back2Font1:enableStroke(cc.c4b(255, 255, 255, 255), 1)
         _back2Font1:setPosition(cc.p(_back1Font1:getPositionX(),_back2:getPositionY()))
+        _back2Font1:setDimensions(cc.size(_back2:getContentSize().width-(source and 180 or 44),72))
+        _back2Font1:setHorizontalAlignment(cc.TEXT_ALIGNMENT_LEFT)
         self:addChild(_back2Font1)
 
         --button
@@ -1429,7 +1440,7 @@ function MaterialView:init(Type,Material,CurrNum,MaxNum,StoreUnlockData,Index,Go
             if _result == 0 then
                  ToastUtil:toastString("缺少金币".."X".._defGoil)
              else
-                ToastUtil:toastString("购买成功！"..Material.."+"..tonumber(MaxNum))
+                ToastUtil:toastString("购买成功！"..Material.."+"..tonumber(CurrNum))
                 --存购买的物品
                 --if self.packageData[tostring(GoodsID)] == nil then
                 --    self.packageData[tostring(GoodsID)] = 0
@@ -1448,12 +1459,22 @@ function MaterialView:init(Type,Material,CurrNum,MaxNum,StoreUnlockData,Index,Go
         local _produceButton = ManagementTheme.menuItem(128,59,'coral')
         _produceButton:setPosition(cc.p(_buyButton:getPositionX(),_back2:getPositionY()))
         _produceButton:registerScriptTapHandler(function()
+            if not ProductionSources.find(DataManager:getInstance(), GuideController:getInstance(), GoodsID) then
+                _back2Font1:setString(ProductionSources.caption(nil))
+                _back2Font1:setDimensions(cc.size(_back2:getContentSize().width-44,72))
+                _produceButton:setEnabled(false)
+                _produceButton:setVisible(false)
+                if self.productionLabel then self.productionLabel:setVisible(false) end
+                return
+            end
             --生产
             --关闭所有窗口
             --self:close()
             DialogueViewManager:sharedInstance():removeAllView()
             zqDispatch:moveToResource()
         end)
+        _produceButton:setEnabled(source ~= nil)
+        _produceButton:setVisible(source ~= nil)
 
         local menuIcon = cc.Menu:create(_buyButton,_produceButton)
         menuIcon:setPosition(0.0, 0.0)
@@ -1465,10 +1486,12 @@ function MaterialView:init(Type,Material,CurrNum,MaxNum,StoreUnlockData,Index,Go
         _buyLabel:setPosition(_buyButton:getPosition())
         self:addChild(_buyLabel)
 
-        local _produceButtonLabel = cc.LabelTTF:create("生 产", ManagementTheme.bodyFont(), 32.0)
+        local _produceButtonLabel = cc.LabelTTF:create("查看生产", ManagementTheme.bodyFont(), 26.0)
         -- _produceButtonLabel:enableStroke(cc.c4b(16, 16, 16, 255), 2)
         _produceButtonLabel:setColor(cc.c3b(255,255,255))
         _produceButtonLabel:setPosition(_produceButton:getPosition())
+        _produceButtonLabel:setVisible(source ~= nil)
+        self.productionLabel = _produceButtonLabel
         self:addChild(_produceButtonLabel)
     elseif Type == 3 then
         local _fontSize = 30

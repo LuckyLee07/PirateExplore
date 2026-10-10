@@ -1,0 +1,386 @@
+{
+  "naturalSource": "ed12d4e9e5d54ea94a44925e05120e608eb9efb6",
+  "acceptedRuntime": "0633df89385445695a0c7a715bf07c639bcf9e82",
+  "binarySha256": "14cbe4972a550dfaab8b9583c4513a9f1ab194f4e8ed8c453ac7defc177b370c",
+  "ProductionSourcesSha256": "300f9c970e28acc41c1fa14ef73659833f44827ac959a2764db75a3ed79f211f",
+  "naturalActions": {
+    "alchemyInputs": 39,
+    "effectiveAlchemyActions": 38,
+    "earnedGold": 76,
+    "leatherBought": 22,
+    "leatherCost": 66,
+    "ironBought": 7,
+    "ironCost": 21,
+    "craftedChain": 1,
+    "craftedSword": 1,
+    "promotedSailor": 1,
+    "manuallySelectedSailor": 1,
+    "voyageStarted": false
+  },
+  "naturalFinal": {
+    "8": 0,
+    "19": 1,
+    "6": 30,
+    "23": {
+      "101": {
+        "ID": "101",
+        "N": 1
+      }
+    },
+    "34": {
+      "10101": 1,
+      "1005": 22
+    },
+    "62": 0
+  },
+  "originalAndNaturalProtection": {
+    "fresh-profile": true,
+    "round3-recovered-natural-profile": true,
+    "round4-returned-natural-profile": true,
+    "original/gameMap4": true,
+    "original/UserDefault.xml": true,
+    "original/gameMap3": true,
+    "original/gameMap1": true,
+    "original/gameRole": true,
+    "original/gameMap2": true,
+    "original/gameMap6": true,
+    "original/gameMap5": true,
+    "round6-natural-equals-closed": true
+  },
+  "controlledTransitions": {
+    "sailor": [
+      {
+        "wall": 1791607878,
+        "gold": 87,
+        "diamond": 1,
+        "crew": {
+          "100": {
+            "ID": "100",
+            "N": 1
+          }
+        },
+        "selected": {
+          "10100": 1,
+          "1005": 22
+        }
+      },
+      {
+        "wall": 1791607905,
+        "gold": 87,
+        "diamond": 1,
+        "crew": {
+          "100": {
+            "ID": "100",
+            "N": 1
+          }
+        },
+        "selected": {
+          "10100": 1,
+          "1005": 22
+        },
+        "tooltip": false,
+        "tooltipText": ""
+      },
+      {
+        "wall": 1791607907,
+        "gold": 87,
+        "diamond": 1,
+        "crew": {
+          "100": {
+            "ID": "100",
+            "N": 1
+          }
+        },
+        "selected": {
+          "10100": 1,
+          "1005": 22
+        },
+        "tooltip": true,
+        "tooltipText": "技能：冲锋\n技能效果：无额外附加效果\n生命：5 威力：1 速度：4.3"
+      },
+      {
+        "wall": 1791607969,
+        "gold": 21,
+        "diamond": 1,
+        "crew": {
+          "100": {
+            "ID": "100",
+            "N": 1
+          }
+        },
+        "selected": {
+          "10100": 1,
+          "1005": 22
+        },
+        "tooltip": true,
+        "tooltipText": "技能：冲锋\n技能效果：无额外附加效果\n生命：5 威力：1 速度：4.3"
+      },
+      {
+        "wall": 1791608005,
+        "gold": 0,
+        "diamond": 1,
+        "crew": {
+          "100": {
+            "ID": "100",
+            "N": 1
+          }
+        },
+        "selected": {
+          "10100": 1,
+          "1005": 22
+        },
+        "tooltip": true,
+        "tooltipText": "技能：冲锋\n技能效果：无额外附加效果\n生命：5 威力：1 速度：4.3"
+      },
+      {
+        "wall": 1791608020,
+        "gold": 0,
+        "diamond": 1,
+        "crew": {
+          "101": {
+            "ID": "101",
+            "N": 1
+          }
+        },
+        "selected": {
+          "1005": 22
+        },
+        "tooltip": false,
+        "tooltipText": ""
+      },
+      {
+        "wall": 1791608036,
+        "gold": 0,
+        "diamond": 1,
+        "crew": {
+          "101": {
+            "ID": "101",
+            "N": 1
+          }
+        },
+        "selected": {
+          "1005": 22
+        },
+        "tooltip": true,
+        "tooltipText": "技能：冲锋\n技能效果：无额外附加效果\n生命：6 威力：3 速度：3.8"
+      }
+    ],
+    "production": [
+      {
+        "wall": 1791608079,
+        "gold": 87,
+        "diamond": 1,
+        "crew": {
+          "100": {
+            "ID": "100",
+            "N": 1
+          }
+        },
+        "selected": {
+          "10100": 1,
+          "1005": 22
+        }
+      },
+      {
+        "wall": 1791608092,
+        "gold": 87,
+        "diamond": 1,
+        "crew": {
+          "100": {
+            "ID": "100",
+            "N": 1
+          }
+        },
+        "selected": {
+          "10100": 1,
+          "1005": 22
+        },
+        "tooltip": false,
+        "tooltipText": ""
+      },
+      {
+        "wall": 1791608093,
+        "gold": 87,
+        "diamond": 1,
+        "crew": {
+          "100": {
+            "ID": "100",
+            "N": 1
+          }
+        },
+        "selected": {
+          "10100": 1,
+          "1005": 22
+        },
+        "tooltip": true,
+        "tooltipText": "技能：冲锋\n技能效果：无额外附加效果\n生命：5 威力：1 速度：4.3"
+      },
+      {
+        "wall": 1791608110,
+        "gold": 87,
+        "diamond": 1,
+        "crew": {
+          "100": {
+            "ID": "100",
+            "N": 1
+          }
+        },
+        "selected": {
+          "10100": 1,
+          "1005": 22
+        }
+      },
+      {
+        "wall": 1791608153,
+        "gold": 87,
+        "diamond": 1,
+        "crew": {
+          "100": {
+            "ID": "100",
+            "N": 1
+          }
+        },
+        "selected": {
+          "10100": 1,
+          "1005": 22
+        },
+        "tooltip": true,
+        "tooltipText": "技能：冲锋\n技能效果：无额外附加效果\n生命：5 威力：1 速度：4.3"
+      },
+      {
+        "wall": 1791608172,
+        "gold": 21,
+        "diamond": 1,
+        "crew": {
+          "100": {
+            "ID": "100",
+            "N": 1
+          }
+        },
+        "selected": {
+          "10100": 1,
+          "1005": 22
+        },
+        "tooltip": true,
+        "tooltipText": "技能：冲锋\n技能效果：无额外附加效果\n生命：5 威力：1 速度：4.3"
+      },
+      {
+        "wall": 1791608191,
+        "gold": 0,
+        "diamond": 1,
+        "crew": {
+          "100": {
+            "ID": "100",
+            "N": 1
+          }
+        },
+        "selected": {
+          "10100": 1,
+          "1005": 22
+        },
+        "tooltip": true,
+        "tooltipText": "技能：冲锋\n技能效果：无额外附加效果\n生命：5 威力：1 速度：4.3"
+      },
+      {
+        "wall": 1791608207,
+        "gold": 0,
+        "diamond": 1,
+        "crew": {
+          "101": {
+            "ID": "101",
+            "N": 1
+          }
+        },
+        "selected": {
+          "1005": 22
+        },
+        "tooltip": false,
+        "tooltipText": ""
+      },
+      {
+        "wall": 1791608223,
+        "gold": 0,
+        "diamond": 1,
+        "crew": {
+          "101": {
+            "ID": "101",
+            "N": 1
+          }
+        },
+        "selected": {
+          "1005": 22
+        },
+        "tooltip": true,
+        "tooltipText": "技能：冲锋\n技能效果：无额外附加效果\n生命：6 威力：3 速度：3.8"
+      },
+      {
+        "wall": 1791608260,
+        "gold": 0,
+        "diamond": 1,
+        "crew": {
+          "101": {
+            "ID": "101",
+            "N": 1
+          }
+        },
+        "selected": {
+          "1005": 22
+        },
+        "tooltip": false,
+        "tooltipText": "技能：冲锋\n技能效果：无额外附加效果\n生命：6 威力：3 速度：3.8"
+      },
+      {
+        "wall": 1791608261,
+        "gold": 0,
+        "diamond": 1,
+        "crew": {
+          "101": {
+            "ID": "101",
+            "N": 1
+          }
+        },
+        "selected": {
+          "1005": 22
+        }
+      }
+    ]
+  },
+  "stop": {
+    "atUTC": "2026-10-10T05:00:31Z",
+    "verifiedNoGameProcess": true,
+    "exactFrozenExecutableChecked": true
+  },
+  "screenHashes": {
+    "149-fixed-sailor-promotion-guidance-480.jpg": "97329af84906712d383be59a8123d483f70916a7efe5e9bcda6c8f804baff94e",
+    "153-fixed-leather-no-production-540.jpg": "b605d66bc561329750dab51dc69f4af8a41e4206021d7dde29353e4c8a701db4",
+    "152-fixed-iron-zero-workers-540.jpg": "544f2e9afa826e27d52431a1a100a440dc9049e7790fc26b1ee28cf99be5f4a9",
+    "132-natural-leather-source-deadend-540.jpg": "7afca7f3613bfc5c0fb88fa3f353fffbefc0b0f28b0a8d83ab951ea5a59a8bac",
+    "159-fixed-generic-iron-source-540.jpg": "e7b097398fd3f193b65892c7b47e6f4da9a9c0ae7050516bf63ee81df3d22343",
+    "145-fixed-leather-no-production-480.jpg": "a1ecb25364793600c2a8d641af0d431f03d01556367352f011d7850e39f0eb16",
+    "137-natural-chain-crafted-540.jpg": "5be8576bcd4fc2b8aebcaeda2076f330ec520182e5804f3dc06e7a08720ac750",
+    "158-fixed-generic-leather-shortage-540.jpg": "ef4a45ff3389cf17f8d7da423ace14f4d6ca02e598f3b41824e382a90b8ba2c4",
+    "154-fixed-leather-purchase-540.jpg": "bbac0ca5434cc09841235526ddcc2670207825a93f0cb08676a4cdafec72e369",
+    "135-natural-sailor-budget-540.jpg": "1a5c6f2e6aa1c3e2e260ff9fe57dffa6d6aa97db9f8e6e40bca181c0da14fb04",
+    "161-fixed-generic-leather-source-480.jpg": "69e6714b1a3e842f6c81d59f7f54311e807069fa325e43aa09c006109663171d",
+    "131-natural-sailor-start-540.jpg": "fe8daf357b8e5882dd5ff62b0ca34ecf74d85f8dde35cc9d7447ca871a8e1148",
+    "150-fixed-sailor-current-details-480.jpg": "e4194fc764795724e532ad9a63e458c119ec2bf0f64a3aa666e4224fcd11f6cf",
+    "148-fixed-iron-purchase-480.jpg": "fa1d7383eb15e22d5a340fb40675216db587909ade7673e453ab7ba0b8723f5b",
+    "160-fixed-generic-iron-source-480.jpg": "a4e74c2887ce7f485f25c462c63bfb5ac1207727930f110cbd750b50c2b83bab",
+    "142-natural-sailor-ready-to-select-540.jpg": "f162d75dfa2844d18583c80b87df35677309257d1ed82d7b1303f0388d4c8fb0",
+    "147-fixed-iron-locked-production-480.jpg": "f4125edd8d11051aa9782ce785304abf64d22ab94fd5f6cc294663683336cb77",
+    "134-natural-iron-shortfall-540.jpg": "2e8842f74e0410828fc35a5bbc38c73d407b314657121b5d3a97e753a7a76c82",
+    "139-natural-sword-crafted-540.jpg": "598de33aaabc255d69f14f3e176655a07596b2970e2f42ffc9be2afd76837986",
+    "141-natural-promoted-home-unassigned-540.jpg": "48311c33429d10da3beb4b8ee21c4157af1745ea094e861704bfcfb21aa5a94d",
+    "146-fixed-leather-purchase-480.jpg": "b5b4e355a3a99a32980248117a015c472783e54db6b69a0a5f36e92b2c5bd288",
+    "151-fixed-iron-production-available-540.jpg": "93046d2594cc20c1fb7d85274c2e3f57f769356986867a414cdbe96c1b69e62b",
+    "155-fixed-iron-purchase-540.jpg": "126e3a6387d62adaa77ad20975e858b7b3db4d8aeba86374e678871e32afba7e",
+    "138-natural-iron-purchase-toast-540.jpg": "cb10e20de283ec4edd2aa0461387e3107a5bbda265714234a45f1f7ee783cac0",
+    "140-natural-sailor-promoted-540.jpg": "e5c0e12e5b8f3f5bb78c5954498d667594825a6664c86e9a8d70be6e716664a7",
+    "136-natural-leather-purchase-toast-540.jpg": "c3a2a1ee45eccb53a938f16bfd0895494c94bc8cc150f9b3ed6b6d7c2d476ee2",
+    "144-natural-sailor-home-ready-540.jpg": "39cb3e86845e34b999f276c70502f3891c5f7cce3036c01ee44afb37e2faecbc",
+    "157-fixed-sailor-current-details-540.jpg": "d371cdf06788e2b0be8b86fce1d977e4427a2424839dabd0dd5295058810b6db",
+    "156-fixed-sailor-promotion-guidance-540.jpg": "fc5f0d59a7365fa7039ca3650bebe84b9ea42bb284d60ca19cd3a4bcd4736829",
+    "143-natural-sailor-assigned-ready-540.jpg": "10f92858f00404f970ad6d726c87cd57b47c3180d7f20279c476e5745bbb3118",
+    "133-natural-leather-production-deadend-540.jpg": "b48bb0dabfed8c929652d3a4686a8a8cd2b037dfecc2c273a3bca4a6cf872bc9"
+  }
+}

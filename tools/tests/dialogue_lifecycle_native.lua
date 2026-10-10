@@ -56,7 +56,7 @@ assert(manager:Count()==0)
 -- handler, its reflush, and its rebuilt close button. Only economy/guide/toast
 -- boundaries are in memory; no DataManager initialization or save is loaded.
 require=function()return true end
-for _,name in ipairs({'HomeTheme','MasterTheme','ManagementTheme','Lackmaterial'})do
+for _,name in ipairs({'HomeTheme','MasterTheme','ManagementTheme','ProductionSources','Lackmaterial'})do
     dofile('bin/res/scripts/LuaClass/'..name..'.lua')
 end
 require=originalRequire
@@ -66,10 +66,11 @@ ManagementTheme.menuItem=function(...)
 end
 local charged,granted,callbacks=0,0,0
 DataManager={getInstance=function(self)return self end,
+    getCSVByID=function()return {}end,getRoleData=function()return {}end,
     getSound_off=function()return 1 end,getStoreUnlockTable=function()return{['1007']=true,['1008']=true}end,
     addCoin=function(_,value)charged=charged+value;return 1 end,
     addPackItemWithId=function(_,id,n)assert(id=='1007' and n==2);granted=granted+n end}
-GuideController={getInstance=function(self)return self end,getIsHaveStep=function(_,id)assert(id==5);return true end}
+GuideController={getInstance=function(self)return self end,getIsHaveStep=function(_,id)assert(id==2 or id==5);return true end}
 ToastUtil={toastString=function()end}
 local rows={{mtId='1007',mtname='wood',mtprice='3',mtnum='2',mtStar='1',mtonlyProduce='0'},
     {mtId='1008',mtname='iron',mtprice='4',mtnum='1',mtStar='1',mtonlyProduce='0'}}
