@@ -1,0 +1,36 @@
+{
+  "baselineSource": "7d5812b2c7df2835ca6f6bcb1f4aeb48bfb7afb1",
+  "firstCandidate": "ffa6f671fd7883a2102ad0e61e3236c8a9970730",
+  "finalRuntime": "baea4824a6ef60f4c0c595e29b0293ca58d3e580",
+  "nativeSha256": "14cbe4972a550dfaab8b9583c4513a9f1ab194f4e8ed8c453ac7defc177b370c",
+  "natural": {
+    "departureUTC": "2026-10-10T03:17:59Z",
+    "portVerifiedUTC": "2026-10-10T03:20:17Z",
+    "gainedIron": 5,
+    "food30To22": true,
+    "movementFood": 6,
+    "discardedFood": 2,
+    "gold1To1": true,
+    "crewSurvived": true,
+    "combatStarted": false,
+    "alchemyFiveClicks": {
+      "startUTC": "2026-10-10T03:21:04.450Z",
+      "endUTC": "2026-10-10T03:21:06.778Z",
+      "gold1To11": true
+    }
+  },
+  "protectOriginal8": true,
+  "protectNaturalClosed": true,
+  "protectPreviousRecovery": true,
+  "finalDesktopStopAudit": [
+    "2026-10-10T03:41:57Z",
+    "Verified game executable: round4-final-fixture-runtime/PirateExplore",
+    "VERIFIED_NO_PIRATEEXPLORE_PROCESS"
+  ],
+  "cleanNativeScreens": {
+    "115-final-enemy-floor2-540.jpg": "fe2ca78313a9fa380ed2dbf6d65041aa2ab816633e114fca1edda44501682be0",
+    "114-final-source-forge-540.jpg": "7f5dab1e8b59759e048fce3b20774ad01a7f2e96ad91d6562523e9f072a91221",
+    "113-final-source-forge-480.jpg": "ef90fd8cdad8117253645e36f2163916d853632d1ee4ab9735475579f1e0f609"
+  },
+  "finalSnapshotFiles": 791
+}

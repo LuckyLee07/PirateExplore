@@ -9,7 +9,7 @@ require 'LuaClass/CrewRecovery'
 -- no role data, tutorial reward, or expedition initialization is performed here.
 HomeLayer=class('HomeLayer',function() return cc.Layer:create() end)
 HomeLayer.__index=HomeLayer
-local HOME_EVENTS={rolePack,roleSelectUnit,roleSoildierQueue,rolePackSize,roleCabinSize,roleGuideStep,roleShipId,roleMake,roleBuilding,roleAlchemyUnit,roleMoney}
+local HOME_EVENTS={rolePack,roleSelectUnit,roleSoildierQueue,rolePackSize,roleCabinSize,roleGuideStep,roleShipId,roleMake,roleBuilding,roleAlchemyUnit,roleMoney,roleStore,roleProducerQueue,roleLivingUnitNum}
 function HomeLayer:create()
     local view=HomeLayer.new();if view and view:init() then return view end
 end
@@ -125,11 +125,12 @@ function HomeLayer:refreshSummary()
     end
     self:refreshRecoveryDialog()
     self.goals=HarborGoals.list(dm,GuideController:getInstance():getIsHaveStep(60))
-    local canSuggest=s.unlocked and s.crew>0 and s.food>0 and #self.goals>0
+    local canSuggest=not self.recovery and s.unlocked and s.crew>0 and s.food>0 and #self.goals>0
     self.goalButton.item:setEnabled(canSuggest)
     if canSuggest then self.hintLabel:setString('回港升级  ›') end
     MasterTheme.fit(self.hintLabel,280*self.masterScaleX)
     self:refreshGoalsDialog()
+    self:refreshSourcesDialog()
     self:renderCrew()
 end
 function HomeLayer:renderCrew()
@@ -168,7 +169,7 @@ function HomeLayer:renderCrew()
 end
 -- The existing status plaque is the only new entry point. Details are opt-in.
 function HomeLayer:openGoals()
-    if self.homeDisposed or not self.goals or #self.goals==0 or self.goalDialog then return end
+    if self.homeDisposed or not self.goals or #self.goals==0 or self.goalDialog or self.sourceDialog or self.recovery then return end
     require 'LuaClass/AlertView'
     local dialog=AlertView:create(1,0,'回港升级',nil,nil,nil,'关 闭')
     self.goalDialog=dialog;self.goalRows={}
@@ -183,29 +184,40 @@ function HomeLayer:openGoals()
         local y=h-112-(i-1)*125
         local title=M.label('',26,M.colors.white,30,y,true)
         holder:addChild(title)
-        local detail=M.label('',22,M.colors.paper,30,y-33,false)
-        detail:setAnchorPoint(cc.p(0,1));detail:setDimensions(cc.size(w-60,65))
+        local detail=M.label('',20,M.colors.paper,30,y-33,false)
+        detail:setAnchorPoint(cc.p(0,1));detail:setDimensions(cc.size(w-206,72))
         detail:setHorizontalAlignment(cc.TEXT_ALIGNMENT_LEFT);holder:addChild(detail)
         local button=M.button('查看',124,43,function() self:openGoalAt(i) end,
             {material='coral-brush.png',fontSize=22,textColor=M.colors.white})
         button:setPosition(cc.p(w-92,y));holder:addChild(button)
-        self.goalRows[i]={holder=holder,title=title,detail=detail,button=button}
+        local sources=M.button('材料来源',124,40,function() self:openSourcesAt(i) end,
+            {fontSize=21,textColor=M.colors.paper})
+        sources:setPosition(cc.p(w-92,y-61));holder:addChild(sources)
+        self.goalRows[i]={holder=holder,title=title,detail=detail,button=button,sources=sources}
     end
     self:refreshGoalsDialog()
 end
 function HomeLayer:refreshGoalsDialog()
     if not self.goalDialog or not self.goalRows then return end
+    if self.recovery then
+        local dialog=self.goalDialog;self.goalDialog=nil;self.goalRows=nil
+        dialog:removeFromParent(true);return
+    end
     for i,row in ipairs(self.goalRows) do
         local goal=self.goals[i];row.holder:setVisible(goal~=nil)
         if goal then
             row.title:setString(goal.title);MasterTheme.fit(row.title,self.goalDialog.s_size.width-194)
             row.detail:setString(goal.detail)
+            local sources=HarborGoals.sources(DataManager:getInstance(),GuideController:getInstance(),goal.id)
+            row.sources:setVisible(#sources>0);row.sources.item:setEnabled(#sources>0)
             row.button.label:setString(goal.action);row.button.item:setEnabled(goal.route~=nil)
         end
     end
 end
 function HomeLayer:openGoalAt(index)
-    if self.homeDisposed then return end
+    if self.homeDisposed or not self.goalDialog then return end
+    self:refreshSummary()
+    if self.recovery or not self.goalDialog then return end
     -- Re-read the state at the actual click; a stale preview cannot buy or unlock.
     local goals=HarborGoals.list(DataManager:getInstance(),GuideController:getInstance():getIsHaveStep(60))
     local shown=self.goals and self.goals[index];local goal
@@ -215,6 +227,79 @@ function HomeLayer:openGoalAt(index)
     if dialog then dialog:removeFromParent(true) end
     if goal.route=='make' then zqDispatch:gotoMake(goal.routeId)
     elseif goal.route=='build' then zqDispatch:gotoBuild(goal.routeId) end
+end
+-- One modal at a time: source details replace the choices and offer a way back.
+function HomeLayer:closeSources()
+    local dialog=self.sourceDialog
+    self.sourceDialog=nil;self.sourceRows=nil;self.sourceGoalId=nil;self.sourceBack=nil
+    if dialog then dialog:removeFromParent(true) end
+end
+function HomeLayer:openSourcesAt(index)
+    if self.homeDisposed or self.sourceDialog or self.recovery or not self.goalDialog then return end
+    local goal=self.goals and self.goals[index]
+    if not goal then return end
+    local sources=HarborGoals.sources(DataManager:getInstance(),GuideController:getInstance(),goal.id)
+    if #sources==0 then self:refreshSummary();return end
+    local old=self.goalDialog;self.goalDialog=nil;self.goalRows=nil
+    if old then old:removeFromParent(true) end
+    local dialog=AlertView:create(1,0,'材料来源',nil,nil,nil,'关 闭')
+    self.sourceDialog=dialog;self.sourceGoalId=goal.id;self.sourceRows={}
+    dialog:registerScriptHandler(function(event)
+        if (event=='exit' or event=='cleanup') and self.sourceDialog==dialog then
+            self.sourceDialog=nil;self.sourceRows=nil;self.sourceGoalId=nil;self.sourceBack=nil
+        end
+    end)
+    local M=MasterTheme;local w,h=dialog.s_size.width,dialog.s_size.height
+    for i=1,3 do
+        local holder=cc.Node:create();dialog.s_bg:addChild(holder)
+        local y=h-106-(i-1)*78
+        local title=M.label('',22,M.colors.white,30,y,true);holder:addChild(title)
+        local detail=M.label('',19,M.colors.paper,30,y-24,false)
+        detail:setAnchorPoint(cc.p(0,1));detail:setDimensions(cc.size(w-60,46))
+        detail:setHorizontalAlignment(cc.TEXT_ALIGNMENT_LEFT);holder:addChild(detail)
+        local row={holder=holder,title=title,detail=detail}
+        row.button=M.button('',124,36,function() self:openSource(row.materialId) end,
+            {material='coral-brush.png',fontSize=20,textColor=M.colors.white})
+        row.button:setPosition(cc.p(w-92,y));holder:addChild(row.button)
+        self.sourceRows[i]=row
+    end
+    local back=M.button('返回升级',132,32,function()
+        if self.sourceDialog~=dialog then return end
+        self:closeSources();self:refreshSummary();self:openGoals()
+    end,{fontSize=20,textColor=M.colors.paper})
+    -- Keep the original centered Close target untouched; the left footer
+    -- action is horizontally separated from its 176x61 legacy touch bounds.
+    back:setPosition(cc.p(30+132/2,50));dialog.s_bg:addChild(back);self.sourceBack=back
+    self:refreshSourcesDialog()
+end
+function HomeLayer:refreshSourcesDialog()
+    if not self.sourceDialog then return end
+    local sources=HarborGoals.sources(DataManager:getInstance(),GuideController:getInstance(),self.sourceGoalId)
+    if #sources==0 or self.recovery then self:closeSources();return end
+    for i,row in ipairs(self.sourceRows) do
+        local item=sources[i];row.holder:setVisible(item~=nil);row.materialId=item and item.id
+        if item then
+            row.title:setString(item.title);MasterTheme.fit(row.title,self.sourceDialog.s_size.width-194)
+            row.detail:setString(item.detail);row.button.label:setString(item.action)
+            row.button.item:setEnabled(item.route~=nil)
+        end
+    end
+end
+function HomeLayer:openSource(materialId)
+    if self.homeDisposed or not self.sourceDialog or not materialId then return end
+    -- Re-read before navigating; completion, unlock and inventory may have changed.
+    self:refreshSummary()
+    if not self.sourceDialog then return end
+    local sources=HarborGoals.sources(DataManager:getInstance(),GuideController:getInstance(),self.sourceGoalId)
+    for _,item in ipairs(sources) do
+        if item.id==materialId and item.route then
+            self:closeSources()
+            if item.route=='store' then zqDispatch:gotoStore(false,item.routeId)
+            elseif item.route=='resource' then zqDispatch:moveToResource()
+            elseif item.route=='alchemy' then zqDispatch:moveToRepository() end
+            return
+        end
+    end
 end
 function HomeLayer:openPrimary()
     if self.homeDisposed then return end
@@ -280,6 +365,7 @@ function HomeLayer:destory()
     if self.homeDisposed then return end
     self.homeDisposed=true
     self:closeRecovery()
+    self:closeSources()
     if self.goalDialog then self.goalDialog:removeFromParent(true);self.goalDialog=nil;self.goalRows=nil end
     for _,key in ipairs(HOME_EVENTS) do DataManager:getInstance():unregisterEvent(key,'adventureHome') end
     if pNeedUpdateLayer==self then pNeedUpdateLayer=nil end

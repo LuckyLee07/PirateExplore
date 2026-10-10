@@ -432,7 +432,49 @@ function EventLayer:refreshDifficulty(info, isOccupied)
     self.title:setScale(math.min(1,(size.width-48)/math.max(1,self.title:getContentSize().width)))
 end
 
+-- Prepared boarding data is also the source consumed by FightScene. Never
+-- prepare an encounter here: preparation rolls drops and consumes RNG.
+function EventLayer:refreshEnemyPreview(fighter)
+    local size = cc.Director:getInstance():getVisibleSize()
+    local descriptionY = size.height * 0.7 - 50
+    self.description:setPosition(cc.p(size.width / 2,descriptionY))
+    self.description:setScale(1)
+    self.midTip:setScale(1)
+    if self.enemyPreview then self.enemyPreview:setVisible(false) end
+    local hp = fighter and tonumber(fighter.hp)
+    local power = fighter and tonumber(fighter.power)
+    if not fighter or type(fighter.name) ~= "string" or fighter.name == ""
+        or not hp or hp <= 0 or hp == math.huge
+        or not power or power < 0 or power == math.huge
+        or hp ~= hp or power ~= power then return end
+    if not self.enemyPreview then
+        self.enemyPreview = cc.Node:create()
+        self:addChild(self.enemyPreview)
+        self.enemyNameLabel = eventLabel("", BoldFont, 22)
+        self.enemyStatsLabel = eventLabel("", BoldFont, 22)
+        self.enemyPreview:addChild(self.enemyNameLabel)
+        self.enemyPreview:addChild(self.enemyStatsLabel)
+    end
+    self.enemyNameLabel:setString("当前敌人 · " .. fighter.name)
+    -- Boarding enemies start at full health (Fighter:reset). This is starting
+    -- HP and base attack, not damage prediction or a saved injured enemy.
+    self.enemyStatsLabel:setString(string.format("开战生命 %s · 攻击 %s",tostring(hp),tostring(power)))
+    self.enemyNameLabel:setPosition(cc.p(size.width / 2,descriptionY + 60))
+    self.enemyStatsLabel:setPosition(cc.p(size.width / 2,descriptionY + 30))
+    for _,label in ipairs({self.enemyNameLabel,self.enemyStatsLabel}) do
+        label:setScale(math.min(1,(size.width-48)/math.max(1,label:getContentSize().width)))
+    end
+    -- Reserve distinct bands for scene context, current opponent and prose.
+    -- Existing buttons retain their original positions and touch targets.
+    local midSize = self.midTip:getContentSize()
+    self.midTip:setScale(math.min(1,72/math.max(1,midSize.height)))
+    self.description:setPosition(cc.p(size.width / 2,descriptionY - 24))
+    self.description:setScale(math.min(1,60/math.max(1,self.description:getContentSize().height)))
+    self.enemyPreview:setVisible(true)
+end
+
 function EventLayer:refreshLayerByInfo( info , isOccupied)
+    self:refreshEnemyPreview(nil)
 	
 	print("getsAndSetsLayerInfoById",info)
 	-- local id = tonumber(s_id)
@@ -579,6 +621,7 @@ function EventLayer:show()
 end
 
 function EventLayer:hide()
+    self:refreshEnemyPreview(nil)
     if self.difficultyGroup then self.difficultyGroup:setVisible(false) end
     if self.difficultyLabel then self.difficultyLabel:setVisible(false) end
 	print("EventLayer:hide")
@@ -594,6 +637,7 @@ local curEnemyInfo = nil
 
 --enemy最好是个通过表的解析过的数据，不要id号
 function EventLayer:getsAndSetsEnemyLayerInfoByEnemy( enemy,addDropInfo,calBack )
+    self:refreshEnemyPreview(nil)
 
 	-- enemyFighters,enemyCanoon
 
@@ -780,6 +824,7 @@ function EventLayer:getsAndSetsEnemyLayerInfoByEnemy( enemy,addDropInfo,calBack 
     		end)
 			self.description:setFontSize(cc.Director:getInstance():getVisibleSize().height * 0.025)
 			self.midTip:setVisible(true)
+            self:refreshEnemyPreview(fightFighterData)
 			-- self.buttons[1]:registerSingleCLick(function() 
             --  self.enemysIndex = self.enemysIndex + 1
    --           self:fightIsOver(true)
@@ -1420,6 +1465,7 @@ function EventLayer:enterFightLayer( isNeedShipBattle,calBack )
 end
 
 function EventLayer:showTipOccupiedLayer( layerInfo )
+    self:refreshEnemyPreview(nil)
     self:refreshDifficulty(nil,true)
 
 	-- 战斗结束后不再显示战前的据点说明（例如“已被怪物占据”）。

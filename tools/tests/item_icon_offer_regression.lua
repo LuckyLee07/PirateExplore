@@ -197,8 +197,8 @@ FightScene.showFailInfoAndReturn(eternal);runCallbacks(eternal.children[1].actio
 equal(#collect(eternal,function(n)return n.onSingleCLick~=nil end),0,'eternal still auto-returns with no gift buttons')
 print('PASS real defeat controls retain scale, expanded hitbox, original return/gift callbacks and eternal auto-return')
 
--- Original coin-shop and auto-alchemy offers retain their intentionally different
--- exchange rates. Callback invocation only touches this in-memory data fixture.
+-- Original voluntary coin-shop exchanges remain unchanged. Legacy alchemy
+-- counters still roll over without showing automatic paid offers.
 local lastAlert
 AlertView={create=function(_,kind,box,title,callback)
     local n=H.node('Alert');n.s_position=cc.p(320,568);n.offerCallback=callback;n.title=title;lastAlert=n
@@ -209,6 +209,7 @@ end}
 local diamondCosts,coinAmounts={},{}
 dm.addDiamond=function(_,n)diamondCosts[#diamondCosts+1]=n;return 1 end
 dm.addCoin=function(_,n)coinAmounts[#coinAmounts+1]=n;return 1 end
+GuideController={getInstance=function()return {addStep=function()end,getIsHaveStep=function()return true end}end}
 ResourceTheme.applyIcons(resources)
 DataManager.showBuyGoldBox(dm)
 equal(#diamondCosts,0);equal(#coinAmounts,0)
@@ -217,30 +218,31 @@ for i,amount in ipairs({30,500})do
     local price=labels(shop,'x'..amount);assert(price);equal(price.font,MasterTheme.headingFont(false))
     price.parent.callback();equal(diamondCosts[i],-amount);equal(coinAmounts[i],i==1 and 5000 or 120000)
 end
-GuideController={getInstance=function()return {addStep=function()end,getIsHaveStep=function()return true end}end}
 dm.getAchievementInfo=function()return 0 end;dm.setAchievementInfo=function()end
 dm.setRoleData=function(_,k,v)data[k]=v end
 local backed=0;zqDispatch={backToLastView=function()backed=backed+1 end}
 data[roleAlchemyUnit]=1;data[roleAlchemyCanLongPress]=0;data[roleMoney]=0
-for _,case in ipairs({{1,40,5000,'您是否花费40钻石\n购买5000金币？'},{3,398,nil,'长按炼金按钮，可持续获得金币，\n您是否花费398钻石获得此功能？'}})do
-    data[roleAlchemyBtnClickCount]=100;data[roleAlchemyShowCount]=case[1]
-    local before=#diamondCosts;DataManager.AlchemyButtonDidClick(dm);equal(#diamondCosts,before,'showing automatic offer does not charge')
-    local caption=assert(labels(lastAlert,case[4]));equal(caption.font,MasterTheme.headingFont(false))
-    lastAlert.offerCallback();equal(diamondCosts[#diamondCosts],-case[2])
-    if case[3]then equal(coinAmounts[#coinAmounts],case[3])else equal(data[roleAlchemyCanLongPress],1);equal(backed,1)end
+for _,case in ipairs({{1,100},{2,100},{3,100},{4,300},{9,300}})do
+    data[roleAlchemyBtnClickCount]=case[2];data[roleAlchemyShowCount]=case[1]
+    local before=#diamondCosts;local previous=lastAlert
+    DataManager.AlchemyButtonDidClick(dm)
+    equal(#diamondCosts,before,'threshold never charges');equal(lastAlert,previous,'threshold never opens offer')
+    equal(data[roleAlchemyBtnClickCount],1,'original post-threshold counter')
+    equal(data[roleAlchemyShowCount],case[1]+1,'original promotion counter boundary')
+    equal(data[roleAlchemyCanLongPress],0,'threshold never grants hold')
 end
-print('PASS real coin shop 30/5000 and 500/120000, auto offer 40/5000 and hold upgrade 398 retain all costs, outcomes and callbacks')
+print('PASS real coin shop 30/5000 and 500/120000; original 100/300 counter rollovers without automatic paid offers')
 
 -- New art is resolved centrally before any screen receives the same records.
--- Render both new identities through actual warehouse and generic loot/menu
--- factories; the shared steel sword must keep its original framed icon.
-pack={['1039']=1,['1049']=1,['1053']=1};data[rolePack]=pack
+-- Render all explicit equipment identities through actual warehouse and generic
+-- loot/menu factories; unselected epic sword aliases keep the shared icon.
+pack={['1039']=1,['1049']=1,['1053']=1,['1073']=1,['1065']=1};data[rolePack]=pack
 repo=repository();repo:initBagDataWithType('0')
-for _,case in ipairs({{'1039','B/siege-ram-1039.png'},{'1049','B/iron-sword-1049.png'},{'1053','w_12.png'}})do
+for _,case in ipairs({{'1039','B/siege-ram-1039.png'},{'1049','B/iron-sword-1049.png'},{'1053','B/steel-sword-1053.png'},{'1073','B/sacred-silver-sword-1073.png'},{'1065','w_12.png'}})do
     equal(resources[case[1]].iconName,case[2]);assert(labels(repo.scrollViewContainer,resources[case[1]].name))
     assert(#collect(repo.scrollViewContainer,function(n)return n.path=='Images/Icon/'..case[2]end)>0)
     local sprite=ItemIcon.sprite(resources[case[1]].iconName)
     equal(sprite.path,'Images/Icon/'..case[2]);equal(sprite:getContentSize().width,64)
     equal(ItemIcon.menuItem(resources[case[1]].iconName):getContentSize().width,64)
 end
-print('PASS new ram and exact iron sword render in production warehouse/loot factories; steel sword retains original shared art')
+print('PASS ram, iron, steel and sacred-silver swords render in production warehouse/loot factories; unselected epic sword retains shared art')

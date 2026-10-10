@@ -1,6 +1,7 @@
 require "LuaClass/Header"
 require "LuaClass/BaseView"
 require "LuaClass/ManagementTheme"
+require "LuaClass/HarborGoals"
 require "LuaClass/AlertView"
 require "LuaClass/SDButton"
 
@@ -15,9 +16,9 @@ StoreLayer.csvData = nil
 StoreLayer.ResoucecsvData = nil
 StoreLayer.dataIndex = nil
 
-function StoreLayer:create(bIsMoveToBottom)
+function StoreLayer:create(bIsMoveToBottom, focusResourceId)
     local view = StoreLayer.new()
-    if view and view:init(bIsMoveToBottom) then
+    if view and view:init(bIsMoveToBottom, focusResourceId) then
         return view
     end
     return nil
@@ -30,7 +31,7 @@ function StoreLayer:destory()
     self:superDestory()
 end
 
-function StoreLayer:init(bIsMoveToBottom)
+function StoreLayer:init(bIsMoveToBottom, focusResourceId)
     self:applyManagementTheme()
 
     local visibleSize = cc.Director:getInstance():getVisibleSize()
@@ -327,7 +328,21 @@ function StoreLayer:init(bIsMoveToBottom)
         self.tableview:setContentOffset(cc.p(0, 0), false);
     end
 
+    self:focusEntry(focusResourceId)
     return true
+end
+
+-- Read-only optional focus; the original bottom-entry flag remains supported.
+function StoreLayer:focusEntry(id)
+    if not id then return false end
+    for index,row in ipairs(self.roleStoreData or {}) do
+        if tostring(row[dataKeyID])==tostring(id) then
+            local offset=HarborGoals.focusOffset(#self.roleStoreData,index,self.areaHeight,self.cellhight)
+            self.tableview:setContentOffset(cc.p(0,offset),false)
+            return true
+        end
+    end
+    return false
 end
 
 -- 检查资源是否充足

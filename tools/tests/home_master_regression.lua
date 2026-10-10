@@ -321,7 +321,7 @@ function HomeLayer:refreshSummary(...)
     return refresh(self,...)
 end
 
-local HOME_EVENTS={rolePack,roleSelectUnit,roleSoildierQueue,rolePackSize,roleCabinSize,roleGuideStep,roleShipId,roleMake,roleBuilding,roleAlchemyUnit,roleMoney}
+local HOME_EVENTS={rolePack,roleSelectUnit,roleSoildierQueue,rolePackSize,roleCabinSize,roleGuideStep,roleShipId,roleMake,roleBuilding,roleAlchemyUnit,roleMoney,roleStore,roleProducerQueue,roleLivingUnitNum}
 local function fixture()
     data={
         [roleMoney]=1250,[roleDiamond]=213,[roleCabinSize]=3,[rolePackSize]=60,[roleShipId]='1299',
@@ -447,10 +447,12 @@ assertReadonly(before,'ship change')
 pNeedUpdateLayer=home;home:destory()
 equal(countListeners(),0,'Home destroy removes native listeners')
 equal(pNeedUpdateLayer,nil,'Home releases active-log pointer')
-local stopped=home.refreshCount;dm:postEvent(roleSelectUnit,nil)
-equal(home.refreshCount,stopped,'destroyed Home does not receive events')
+local stopped=home.refreshCount
+for _,key in ipairs(HOME_EVENTS)do
+    dm:postEvent(key,nil);equal(home.refreshCount,stopped,'destroyed Home does not receive '..key)
+end
 home:destory();equal(countListeners(),0,'idempotent destroy')
-print('PASS Master Home real packaged CSV, 107 x 3 identical slots, ship title, read-only refresh and eleven-event lifecycle')
+print('PASS Master Home real packaged CSV, 107 x 3 identical slots, ship title, read-only refresh and fourteen-event lifecycle')
 
 for selected=0,2 do
     fixture();data[roleSelectUnit]=selected>0 and {['10107']=selected} or {}

@@ -1,5 +1,8 @@
 # Remaining item icon pass: siege ram and iron sword
 
+Historical first pass: steel1053 was intentionally unchanged here. The subsequent
+[weapon-tier pass](../weapon-tier-icons/README.md) explicitly adds1053 and1073.
+
 2026-10-10. Bounded follow-on to `docs/icon-refinement-audit.md`.
 
 ## Audit and identity

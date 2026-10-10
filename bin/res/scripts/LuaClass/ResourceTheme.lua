@@ -25,10 +25,12 @@ R.crewIcons = {
     ['124']={'j_7.png', 'crew-124.png'} -- exact already-approved ship doctor
 }
 -- Exact item identities only: empty names are never a global fallback, and
--- the iron sword must not redefine steel/higher-tier aliases of w_12.png.
+-- each sword tier is opt-in and must not redefine other aliases of w_12.png.
 R.itemIcons = {
     ['1039']={original='', replacement='siege-ram-1039.png'},
-    ['1049']={original='w_12.png', replacement='iron-sword-1049.png'}
+    ['1049']={original='w_12.png', replacement='iron-sword-1049.png'},
+    ['1053']={original='w_12.png', replacement='steel-sword-1053.png'},
+    ['1073']={original='w_12.png', replacement='sacred-silver-sword-1073.png'}
 }
 
 function R.applyIcons(records)

@@ -717,12 +717,12 @@ function Dispatch:gotoTrain()
 end
 
 -- 跳转到建造模块
-function Dispatch:gotoStore(bIsMoveToBottom)
+function Dispatch:gotoStore(bIsMoveToBottom, focusResourceId)
     if bIsMoveToBottom == nil then
         bIsMoveToBottom = false
     end
     require "LuaClass/StoreMode"
-    self:setViewWithDirection(StoreLayer:create(bIsMoveToBottom), true, 1)
+    self:setViewWithDirection(StoreLayer:create(bIsMoveToBottom, focusResourceId), true, 1)
     self.mainMenu:activeButtonWithIndex(7)
 end
 

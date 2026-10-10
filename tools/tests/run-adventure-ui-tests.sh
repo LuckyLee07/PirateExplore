@@ -50,3 +50,9 @@ python3 tools/tests/refined_icon_assets_regression.py
 python3 tools/tests/large_crew_assets_regression.py
 
 python3 tools/tests/missing_item_icons_regression.py "$LUA"
+
+python3 tools/tests/prebattle_enemy_preview_regression.py "$LUA"
+
+python3 tools/tests/weapon_tier_icons_regression.py "$LUA"
+
+"$LUA" tools/tests/voluntary_alchemy_regression.lua

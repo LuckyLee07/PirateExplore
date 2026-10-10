@@ -60,6 +60,75 @@ function G.list(dm,returned)
     end
     return result
 end
+-- Resolve only actual shortages in the current prerequisite or recipe. A CSV
+-- price alone is not proof that a material is currently offered in the market.
+function G.sources(dm,guide,goalId)
+    local goal
+    for _,candidate in ipairs(G.list(dm,guide:getIsHaveStep(60))) do
+        if candidate.id==goalId then goal=candidate end
+    end
+    if not goal or not goal.route then return {} end
+    local resources=dm:getCSVByID(csvOfResourceInfo) or {}
+    local recipe=goal.route=='build' and (dm:getCSVByID(csvOfBuild) or {})[goal.routeId] or resources[goal.routeId]
+    local pack=dm:getRoleData(rolePack) or {};local result={}
+    local store=dm:getCSVByID(csvOfStore) or {}
+    local workers=dm:getCSVByID(csvOfWorker) or {}
+    local builds=dm:getCSVByID(csvOfBuild) or {}
+    for _,need in ipairs(rows(recipe and recipe.resume)) do
+        local id=tostring(need[1]);local resource=resources[id] or {}
+        local have=id=='1001' and (tonumber(dm:getRoleData(roleMoney)) or 0) or (tonumber(pack[id]) or 0)
+        local gap=math.max(0,(tonumber(need[2]) or 0)-have)
+        if gap>0 then
+            local item={id=id,title=(resource.name or id)..' 还缺 '..gap,
+                detail='暂未找到已解锁的获取途径',action='暂无途径'}
+            if id=='1001' then
+                item.detail='前往仓库，手动炼金获得金币';item.route='alchemy';item.action='前往炼金'
+            elseif (id=='1006' or id=='1007') and guide:getIsHaveStep(2) then
+                item.detail='资源页手动采集，冷却结束后可再次采集';item.route='resource';item.action='前往采集'
+            else
+                local listed=entry(dm:getRoleData(roleStore),id)
+                local offer=listed and store[tostring(listed.sortId)]
+                local price=tonumber(resource.price)
+                if guide:getIsHaveStep(104,true) and offer and tostring(offer.resourceInfoID)==id and price and price>0 then
+                    item.detail='市场 '..price..'金币/个；补齐需 '..(gap*price)..'金币'
+                    item.route='store';item.routeId=id;item.action='查看市场'
+                else
+                    -- Production is offered only for a saved unlocked worker,
+                    -- never merely because a recipe happens to exist in the CSV.
+                    for _,worker in ipairs(dm:getRoleData(roleProducerQueue) or {}) do
+                        local recipe=workers[tostring(worker[dataKeyID])]
+                        local buildingName
+                        for buildId,building in pairs(builds) do
+                            local saved=entry(dm:getRoleData(roleBuilding),buildId)
+                            for _,unlock in ipairs(rows(building.activateID)) do
+                                if tostring(unlock[1])=='4' and tostring(unlock[2])==tostring(worker[dataKeyID])
+                                    and saved and (tonumber(saved[dataKeyNum]) or 0)>0 then buildingName=building.name end
+                            end
+                        end
+                        for _,output in ipairs(rows(recipe and recipe.produce)) do
+                            if tostring(output[1])==id and buildingName and guide:getIsHaveStep(2) then
+                                local count=tonumber(worker[dataKeyNum]) or 0
+                                item.detail=buildingName..'已建；'..(recipe.name or '工人')..' '..count..'人（需安排）\n每人每轮'..(recipe.resumeDesc or '按原配方消耗')
+                                item.route='resource';item.action='查看生产';break
+                            end
+                        end
+                        if item.route then break end
+                    end
+                    if not item.route then
+                        for _,offer in pairs(store) do
+                            if tostring(offer.resourceInfoID)==id then
+                                item.detail=guide:getIsHaveStep(104,true) and '市场尚未出售此材料' or '市场尚未开放；暂无已解锁来源'
+                                break
+                            end
+                        end
+                    end
+                end
+            end
+            result[#result+1]=item
+        end
+    end
+    return result
+end
 -- CCTableView uses a bottom-origin offset even for top-down row filling.
 function G.focusOffset(count,index,height,rowHeight)
     local bottom=math.min(0,height-count*rowHeight)
