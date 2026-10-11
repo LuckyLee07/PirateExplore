@@ -1,6 +1,8 @@
 -- A real modal: scene-owned, touch-swallowing, bounded to the current viewport.
 local D={}
 function D.show(title,body,options,owner)
+    local warm=require("LuaClass/WarmTheme")
+    if type(warm)=="table" and warm.enabled() then return require("LuaClass/WarmDialog").show(title,body,options,owner) end
     owner=owner or cc.Director:getInstance():getRunningScene()
     if owner.adventureDialog then return owner.adventureDialog end
     require 'LuaClass/DialogTheme'

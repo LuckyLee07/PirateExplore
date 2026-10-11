@@ -49,7 +49,7 @@ local function read(path)local f=assert(io.open(path,'rb'));local s=f:read('*a')
 local S=require 'LuaClass/AdventureSea'
 local source=read('bin/res/scripts/LuaClass/Explore.lua')
 local prefix=assert(source:match('(function Explore:initMapByMapIndex.-)\n\tself.halos = {}'))
-Explore={};assert(loadstring('local AdventureSea=...\n'..prefix..'\nend'))(S)
+Explore={};assert(loadstring('local AdventureSea=...\nlocal CleanVoyageView=require \"LuaClass/CleanVoyageView\"\n'..prefix..'\nend'))(S)
 local oldRemove=methods.removeFromParent
 local function release(n)
     for _,child in ipairs(n.children)do release(child)end

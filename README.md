@@ -1,5 +1,14 @@
 # NewPirate
 
+Clean first-voyage integration (new-profile map 1 only):
+[scope, actual native voyage, old-save parity and verification limits](docs/clean-first-voyage/ACCEPTANCE.md).
+This branch is based on recovered Warm Stage 1. Historical later Warm work was
+not recovered; this checkpoint does not claim a completed all-page redesign.
+
+Warm Q v1 native adaptation: [build / patch notes](docs/warm-v1-build-notes.md),
+[30-screen coverage](docs/warm-v1-screen-coverage.md), and
+[verified native behavior](docs/warm-v1-native-acceptance.md).
+
 This repository keeps the original Cocos2d-x project intact, but exposes a flatter project layout similar to `HelloOgre3D`.
 
 ## Layout

@@ -8,6 +8,10 @@ require "LuaClass/DiamondStore"
 require "LuaClass/UIKit"
 require "LuaClass/BTheme"
 require "LuaClass/MasterTheme"
+local WarmTheme = require "LuaClass/WarmTheme"
+local function warmEnabled()
+    return type(WarmTheme) == "table" and WarmTheme.enabled and WarmTheme.enabled() == true
+end
 
 
 -- Main-menu chrome is deliberately separate from the legacy page theme.
@@ -461,7 +465,9 @@ function MainMenuLayer:init()
                 self.repositoryBtn:runAction(cc.Sequence:create(cc.ScaleTo:create(0.0, 2.0), cc.ScaleTo:create(0.8, 1.0)))
                 self.resourceBtn:runAction(cc.Sequence:create(cc.ScaleTo:create(0.0, 2.0), cc.ScaleTo:create(0.8, 1.0)))
                 -- 播放建设解锁剧情
-                local storyStr = {"建设已解锁！", "点击底部“港务”，再选择“建设”。"}
+                local storyStr = {"建设已解锁！", warmEnabled()
+                    and "返回船上，打开“船务”中的“建设船港”。"
+                    or "点击底部“港务”，再选择“建设”。"}
                 self:playStory(storyStr)
                 GuideController:getInstance():addStep(101, true)
             else
@@ -593,6 +599,7 @@ function MainMenuLayer:init()
     -- self:addChild(RichText)
     
     cc.Texture2D:setDefaultAlphaPixelFormat(kCCTexture2DPixelFormat_RGBA8888)
+    if warmEnabled() then self:applyWarmNavigationAppearance() end
     return true
 end
 
@@ -732,6 +739,8 @@ end
 -- Four persistent groups share legacy routes; the current route index remains
 -- compatible with Dispatch and all guide data. Utility pages use a separate key.
 function MainMenuLayer:applyHomeNavigationAppearance()
+    if warmEnabled() then self:applyWarmNavigationAppearance(); return end
+    if self.warmReturnButton then self.warmReturnButton:setVisible(false) end
     if not self.navigationButtons then return end
     local group = self.navigationGroupOverride
     if not group then
@@ -817,7 +826,7 @@ function MainMenuLayer:openUtilityRoute(key)
         ToastUtil:downString("您需要建造船坞，可激活该功能")
         return
     end
-    if key == "settings" and not GuideController:getInstance():getIsHaveStep(2) then
+    if key == "settings" and not warmEnabled() and not GuideController:getInstance():getIsHaveStep(2) then
         ToastUtil:downString("您需要建造仓库，可激活该功能")
         return
     end
@@ -825,6 +834,8 @@ function MainMenuLayer:openUtilityRoute(key)
     -- This is the same shop guide side effect as the original BaseView button.
     if key == "diamondStore" then GuideController:getInstance():addStep(61) end
     dispatch[route](dispatch)
+    -- Settings stays over the same page and must not change its route state.
+    if key == "settings" and warmEnabled() then return end
     self.utilityRoute = key
     self.navigationGroupOverride = (key == "growth" or key == "achievement") and 3 or 4
     self:applyHomeNavigationAppearance()
@@ -925,6 +936,13 @@ function MainMenuLayer:setHomePresentation(active)
     self:closeNavigationGroup()
     self.homePresentation = active
     if active then ToastUtil:quietHomeProductionToasts() end
+    if warmEnabled() then
+        self.legacyTopBg:setVisible(not active)
+        self.coinNode:setVisible(not active); self.diamondNode:setVisible(not active)
+        if self.homeHeader then self.homeHeader:setVisible(false) end
+        self:applyWarmNavigationAppearance()
+        return
+    end
     self.legacyTopBg:setVisible(not active)
     self.coinNode:setVisible(not active); self.diamondNode:setVisible(not active)
     if not self.homeHeader then
@@ -984,10 +1002,36 @@ end
 -- chrome; always restore navigation/header when returning to legacy or Home.
 function MainMenuLayer:setApprovedPagePresentation(active, keepNavigation)
     self.approvedPagePresentation=active
+    self.approvedKeepNavigation=keepNavigation
     if active then
         self.legacyTopBg:setVisible(false)
         self.coinNode:setVisible(false);self.diamondNode:setVisible(false)
         if self.homeHeader then self.homeHeader:setVisible(false) end
     end
     self.navigationBg:setVisible(not active or keepNavigation)
+    if warmEnabled() then self:applyWarmNavigationAppearance() end
+end
+
+-- Only the active native business page needs a return control. Home owns its
+-- own header and activities; hidden legacy targets still serve guide methods.
+function MainMenuLayer:applyWarmNavigationAppearance()
+    self.groupNavigation:setVisible(false)
+    self.MainMenuButtonGroup:setVisible(false)
+    self.navigationBg:setVisible(false)
+    if self.homeHeader then self.homeHeader:setVisible(false) end
+    if self.boatSpr then self.boatSpr:setVisible(false) end
+    if not self.warmReturnButton then
+        local size = cc.Director:getInstance():getVisibleSize()
+        local origin = cc.Director:getInstance():getVisibleOrigin()
+        local width = math.min(278, size.width - 48)
+        local button = WarmTheme.button("返回船上", width, 68, function()
+            self:openRoute(0)
+        end, {size=27})
+        button:setPosition(cc.p(origin.x + size.width / 2, origin.y + 61))
+        self:addChild(button, 4)
+        self.warmReturnButton = button
+    end
+    -- Approved pages such as Talent already have their own bottom back action.
+    local pageOwnsBack = self.approvedPagePresentation and self.approvedKeepNavigation == false
+    self.warmReturnButton:setVisible(not self.homePresentation and not pageOwnsBack)
 end

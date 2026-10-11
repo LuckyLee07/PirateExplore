@@ -1,0 +1,42 @@
+{
+  "completed_utc": "2026-10-11T09:37:36.066852+00:00",
+  "source_directory": "/workspace/scratch/79976da795e7/PirateExplore-clean-first-voyage-20261011",
+  "source_base_commit": "f9691e6cc593e7a3320611cf0da86f1bf74ceb96",
+  "native_source_git_status": "clean",
+  "build_directory": "/workspace/scratch/79976da795e7/clean-first-voyage-native-build",
+  "build_type": "RelWithDebInfo",
+  "compiler": "GNU C/C++ 14.2.0 (Debian 14.2.0-19)",
+  "cmake": "3.31.6",
+  "build_jobs": 4,
+  "reuse_of_initial_build_objects_or_archives": false,
+  "native_input_files_verified_unchanged": 2235,
+  "native_input_manifest_sha256": "89dda57ab7376af4d755c7f545ca43c6a31e0019e8931c7e1083b24d04d2b565",
+  "binary_sha256": "9e292e313ea60446e3db75d0f1643a2d03b00195ad837deb70db271a3ec108c3",
+  "binary_bytes": 68275608,
+  "elf_build_id": "872a034b5172996e036139e6b8c9642b00e8db30",
+  "installed_runtime_executable": "/workspace/scratch/79976da795e7/clean-first-voyage-runtime/bin/PirateExplore",
+  "ldd_missing_libraries": false,
+  "old_initial_tree_runtime_dependencies": false,
+  "checked_shared_build_library": {
+    "path": "/workspace/scratch/79976da795e7/clean-first-voyage-native-build/lib/libkazmath.so.0.0.1",
+    "sha256": "7294ea7e5ead25781dc967d2e1b6a9bb08468ee163c50971556a3a1855bd89af"
+  },
+  "isolated_lua_51_test_runner": "/workspace/scratch/79976da795e7/clean-first-voyage-native-build/tests/lua-ui-tests",
+  "checks_passed": [
+    "Full clean CMake production native build",
+    "No-op rebuild",
+    "Native input manifest before/after equality",
+    "Dynamic dependency resolution",
+    "Atomic save replacement and failure preservation",
+    "Real TMX flags binding, all eight combinations and invalid input",
+    "Actual DrawTriangle repeated initialized vertex submission",
+    "Build entry wrapper preflight and developer menu disabled",
+    "Actual Record encode/atomic/decode/cold-reader, failed save preservation, real Lua bool binding, baseline byte equality, bidirectional legacy format compatibility"
+  ],
+  "boundaries": [
+    "No game GUI launched by this build task",
+    "No Apple/mobile build claimed",
+    "No player save profile opened",
+    "Lua and assets may change concurrently; native source was verified stable"
+  ]
+}

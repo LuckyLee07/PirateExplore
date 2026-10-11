@@ -30,7 +30,7 @@ function V.routeOverlay(owner,result)
     local function mark(tile,text)
         if not tile then return end
         local p=owner:positionForTilePosition(tile)
-        local label=SeaChartTheme.label(text,19,SeaChartTheme.colors.white,p.x,p.y+12,.5)
+        local label=(SeaChartTheme.mapLabel or SeaChartTheme.label)(text,19,SeaChartTheme.colors.white,p.x,p.y+12,.5)
         overlay:addChild(label)
     end
     mark(result.port,'港')

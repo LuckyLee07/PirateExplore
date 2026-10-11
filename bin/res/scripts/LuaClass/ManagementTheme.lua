@@ -3,11 +3,38 @@ require 'LuaClass/MasterTheme'
 
 ManagementTheme = {}
 local T = ManagementTheme
-T.colors = {
+-- Resolve at use time: MasterTheme/HomeTheme can still be loading, and legacy
+-- logic fixtures intentionally replace require with a non-table sentinel.
+local function warm()
+    if rawget(_G,'WARM_PIRATE_V1')==false then return nil end
+    local W=rawget(_G,'WarmTheme')
+    if type(W)~='table' then
+        local ok,value=pcall(require,'LuaClass/WarmTheme')
+        if ok then W=value end
+    end
+    if type(W)=='table' and type(W.enabled)=='function' and W.enabled() then return W end
+end
+local originalColors = {
     ink=MasterTheme.colors.ink, paper=cc.c3b(246,237,216), light=cc.c3b(255,249,232),
     muted=cc.c3b(79,104,107), line=cc.c3b(211,198,168), sea=cc.c3b(45,126,142),
     coral=MasterTheme.colors.coral, white=MasterTheme.colors.white, danger=cc.c3b(170,61,45)
 }
+local warmColors={light=cc.c3b(255,252,241),section=cc.c3b(250,234,211),danger=cc.c3b(178,57,40)}
+T.colors=setmetatable({},{__index=function(_,key)
+    local W=warm()
+    if W then return warmColors[key] or W.colors[key] end
+    return originalColors[key]
+end})
+
+local function icon(glyph,size,color)
+    local W=warm()
+    local aliases={build='hammer',cargo='chest',wheel='settings'}
+    local name=aliases[glyph] or glyph
+    if W and ({sail=true,crew=true,hammer=true,chest=true,settings=true,bag=true,log=true,map=true,back=true})[name] then
+        return W.icon(name,size)
+    end
+    return MasterTheme.icon(glyph,size,color)
+end
 
 function T.bodyFont() return MasterTheme.headingFont(false) end
 
@@ -28,6 +55,13 @@ end
 -- Like legacy sprites these have a central anchor; button faces reset it to 0.
 function T.panel(w,h,style)
     style=style or 'paper'
+    local W=warm()
+    if W then
+        local color=T.colors[style] or T.colors.light
+        local n=W.panel(w,h,color,math.min(18,w/2,h/2))
+        n:setAnchorPoint(cc.p(.5,.5))
+        return n
+    end
     local n=cc.Node:create();n:setContentSize(cc.size(w,h));n:setAnchorPoint(cc.p(.5,.5))
     n:setCascadeOpacityEnabled(true)
     if style=='ink' or style=='coral' then
@@ -53,9 +87,9 @@ function T.face(w,h,style,glyph)
     local n=T.panel(w,h,style);n:setAnchorPoint(cc.p(0,0))
     if glyph then
         local color=(style=='ink' or style=='coral') and T.colors.white or T.colors.ink
-        local icon=MasterTheme.icon(glyph,math.min(w,h)*.54,color)
-        icon:setPosition(cc.p((w-icon:getContentSize().width)/2,(h-icon:getContentSize().height)/2))
-        n:addChild(icon,2)
+        local art=icon(glyph,math.min(w,h)*.54,color)
+        art:setPosition(cc.p((w-art:getContentSize().width)/2,(h-art:getContentSize().height)/2))
+        n:addChild(art,2)
     end
     return n
 end
@@ -77,8 +111,8 @@ function T.insetFace(w,h,style,glyph,visualSize)
     local vw,vh=wide and visualSize.width or visualSize,wide and visualSize.height or visualSize
     local visual=T.face(vw,vh,style,not wide and glyph or nil)
     if wide then
-        local icon=MasterTheme.icon(glyph,36,T.colors.white)
-        icon:setPosition(cc.p(28,(vh-36)/2));visual:addChild(icon,2)
+        local art=icon(glyph,36,T.colors.white)
+        art:setPosition(cc.p(28,(vh-36)/2));visual:addChild(art,2)
         visual:addChild(T.label(visualSize.text,30,'action',vw*.61,vh*.5,.5),2)
     end
     visual:setPosition(cc.p((w-vw)/2,(h-vh)/2));n:addChild(visual)
@@ -118,6 +152,13 @@ end
 -- changing the legacy table, title, or footer safe areas.
 function T.pagePaper(w,h,bottom,top)
     local n=T.panel(w,h,'paper');n:setAnchorPoint(cc.p(0,0))
+    local W=warm()
+    if W then
+        -- Only the narrow outer gutter carries scenery; the real inventory
+        -- lists and their labels remain on a continuous opaque cream sheet.
+        local sea=W.cover(W.path..'sea-home.png',w,h)
+        if sea then n:addChild(sea) end
+    end
     local sheet=T.panel(w-16,h-bottom-top,'light')
     sheet:setPosition(cc.p(w/2,bottom+(h-bottom-top)/2));n:addChild(sheet)
     return n

@@ -2235,7 +2235,7 @@ function DataManager:createSuccessCheck(unitType, id)
                 -- B 导航将采集收在港务内，仓库建成后明确下一步的入口。
                 local successDesc = data["successDesc"]
                 if id == "1" then
-                    successDesc = (successDesc or "") .. "\n点击底部“港务”，再选择“采集”。"
+                    successDesc = (successDesc or "") .. ((type(require("LuaClass/WarmTheme")) == "table" and require("LuaClass/WarmTheme").enabled()) and "\n返回船上，打开“船务”中的“采集补给”。" or "\n点击底部“港务”，再选择“采集”。")
                 end
                 self:sendSystemInfo(successDesc)
     		end

@@ -1,6 +1,13 @@
 -- Versioned adventure ledger. Absent ledger means a legacy save: never infer a
 -- new-game grant from guide steps, map index, or missing buildings.
 local A = { KEY = 'adventureProgressV1', VERSION = 1 }
+-- Optional presentation extension. Legacy/mocked require() may return true;
+-- never index a sentinel or load the extension when warm mode is disabled.
+local function warmMemories()
+    if rawget(_G,'WARM_PIRATE_V1')==false then return nil end
+    local ok,module=pcall(require,'LuaClass/WarmMemories')
+    if ok and type(module)=='table' and type(module.prepareDeparture)=='function' then return module end
+end
 local function copy(t)
     if type(t)~='table' then return t end
     local out={};for k,v in pairs(t) do out[k]=copy(v) end;return out
@@ -51,6 +58,9 @@ function A.initializeNewRole(user,dm)
     local guide=user:getRoleData(roleGuideStep) or ''
     for _,n in ipairs({1,2,3,5,8}) do guide=step(guide,n) end
     local fields={ [A.KEY]={version=1,enabled=true,objective='rescue',voyage=0,firstReturnClaimed=false,npcRescued=false},
+        -- Independent layout opt-in, committed with the genuinely new role.
+        -- Existing AdventureProgress v1 saves deliberately receive no marker.
+        cleanFirstMapVersion=1,
         [roleBuilding]=buildings,[roleStore]=store,[roleProducerQueue]=workers,[roleLivingUnitNum]=population,[roleGuideStep]=guide }
     return user:commitAdventure(fields)
 end
@@ -74,6 +84,7 @@ function A.beginVoyage(dm)
     local s=A.getState(dm);if not s.enabled then return true end
     if s.activeVoyage then return false,'voyage_active' end
     s.voyage=(s.voyage or 0)+1;s.activeVoyage=s.voyage;s.pending=nil
+    local memories=warmMemories();local marker=memories and memories.prepareDeparture(dm,s);if marker then s.warmMemoriesVoyageV1=marker end
     return A.commit(dm,{[A.KEY]=s})
 end
 function A.depart(dm,selected)
@@ -101,6 +112,7 @@ function A.depart(dm,selected)
     if food<1 or people<1 or people>(tonumber(dm:getRoleData(roleCabinSize)) or 1) then return false,'invalid_selection' end
     if A.capacity(dm,battle)>(tonumber(dm:getRoleData(rolePackSize)) or 0) then return false,'cargo_full' end
     s.voyage=(s.voyage or 0)+1;s.activeVoyage=s.voyage;s.pending=nil
+    local memories=warmMemories();local marker=memories and memories.prepareDeparture(dm,s);if marker then s.warmMemoriesVoyageV1=marker end
     return A.commit(dm,{[A.KEY]=s,[rolePack]=pack,[roleSoildierQueue]=crew,[roleBattlePack]=battle,[roleBattleQueue]=party,[roleSelectUnit]={},[roleStatue]=1})
 end
 -- Read-only quote for the existing return button. Rechecked at confirmation;
@@ -132,6 +144,7 @@ function A.returnVoyage(dm,statue,returnRequest)
     if statue=='Killed' or statue=='NoBread' then return false,'failed_voyage' end
     local s=A.getState(dm);if not s.enabled then return false,'legacy' end
     if not s.activeVoyage then return true,false end
+    local memories=warmMemories();local memoryState=memories and copy(s)
     local cargo=copy(dm:getRoleData(roleBattlePack) or {})
     local pack=copy(dm:getRoleData(rolePack) or {});local crew=copy(dm:getRoleData(roleSoildierQueue) or {})
     local selected={};local resources=dm:getCSVByID(csvOfResourceInfo) or {}
@@ -190,6 +203,11 @@ function A.returnVoyage(dm,statue,returnRequest)
         [roleBattlePack]={},[roleBattleQueue]={},[roleSelectUnit]=selected,[roleMapCoin]=0,
         [roleStatue]=0,[roleBreadCostDecimal]=0,[roleMapInfo]=map,
         [roleGuideStep]=step(dm:getRoleData(roleGuideStep) or '',60)}
+    if memories then
+        fields[memories.KEY]=memories.prepareReturn(dm,memoryState,cargo,map,fields,{statue=statue,returnRequest=returnRequest})
+        local marker=memoryState.warmMemoriesVoyageV1
+        if type(marker)=='table' and marker.version==1 and marker.voyage==memoryState.activeVoyage then s.warmMemoriesVoyageV1=nil end
+    end
     local ok,err=A.commit(dm,fields);return ok,ok and awarded or err
 end
 function A.setTutorialPoint(dm,point)
@@ -249,6 +267,7 @@ function A.resolveEvent(dm,id)
     for item,num in pairs(option.rewards) do pack[item]=pack[item] or {id=item,num=0};pack[item].num=pack[item].num+num end
     if A.capacity(dm,pack)>(tonumber(dm:getRoleData(rolePackSize)) or 0) then return false,'cargo_full' end
     s.pending={voyage=s.activeVoyage,choice=option.choice,action=id,episode=episode}
+    local memories=warmMemories();if memories then s.pending=memories.prepareEvent(dm,s) or s.pending end
     if episode=='first' then s.choice=option.choice end
     local buildings=copy(dm:getRoleData(roleBuilding) or {});local found=false
     for _,b in ipairs(buildings) do if tostring(b[dataKeyID])=='57' then found=true end end
@@ -260,6 +279,7 @@ end
 function A.failVoyage(dm,deathInformation)
     local s=A.getState(dm);if not s.enabled then return false,'legacy' end
     if not s.activeVoyage then return true end
+    local memories=warmMemories();local memoryState=memories and copy(s)
     s.pending=nil;s.activeVoyage=nil
     local map=copy(dm:getRoleData(roleMapInfo) or {});map.playerTitlePosition=nil;map.willFight=nil
     local restrictions=copy(dm:getRoleData(roleBlackMarketRestrictions) or {});restrictions.tempRestrictions=nil
@@ -274,10 +294,16 @@ function A.failVoyage(dm,deathInformation)
             else pack[id]=(tonumber(pack[id]) or 0)+num end
         end
     end
-    return A.commit(dm,{[rolePack]=pack,[roleMoney]=money,[roleDiamond]=diamonds,[A.KEY]=s,[roleBattlePack]={},[roleBattleQueue]={},[roleMapCoin]=0,
+    local fields={[rolePack]=pack,[roleMoney]=money,[roleDiamond]=diamonds,[A.KEY]=s,[roleBattlePack]={},[roleBattleQueue]={},[roleMapCoin]=0,
         [roleDeathInformation]=copy(deathInformation or dm:getRoleData(roleDeathInformation) or {}),
         [roleMapInfo]=map,[roleBlackMarketRestrictions]=restrictions,[roleTempReceivedDatas]={},
-        [roleStatue]=0,[roleBreadCostDecimal]=0,[roleGuideStep]=step(dm:getRoleData(roleGuideStep) or '',60)})
+        [roleStatue]=0,[roleBreadCostDecimal]=0,[roleGuideStep]=step(dm:getRoleData(roleGuideStep) or '',60)}
+    if memories then
+        fields[memories.KEY]=memories.prepareFailure(dm,memoryState,dm:getRoleData(roleBattlePack) or {},map,fields)
+        local marker=memoryState.warmMemoriesVoyageV1
+        if type(marker)=='table' and marker.version==1 and marker.voyage==memoryState.activeVoyage then s.warmMemoriesVoyageV1=nil end
+    end
+    return A.commit(dm,fields)
 end
 function A.finishVoyage(dm,success,returnedPack)
     if success then return A.returnVoyage(dm,nil) end

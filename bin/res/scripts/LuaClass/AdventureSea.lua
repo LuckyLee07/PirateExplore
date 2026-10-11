@@ -2,6 +2,9 @@ local A=require 'LuaClass/AdventureProgress'
 local N=require 'LuaClass/AdventureNavigation'
 local V=require 'LuaClass/AdventureNavigationView'
 local S={}
+local function hudColor(color)
+    return SeaChartTheme.hudTextColor and SeaChartTheme.hudTextColor(color) or color
+end
 -- These nodes belong to moveLayer, which is destroyed in-place on chapter
 -- changes while Explore and its tipLayer HUD survive. Release their Lua owners
 -- before Cocos releases the old map's children; never call a stale userdata.
@@ -44,7 +47,7 @@ function S.refresh(owner,coefficient)
         local label=cc.LabelTTF:create('',BoldFont,18*u)
         label:setDimensions(cc.size(size.width-40*u,48*u))
         label:setHorizontalAlignment(cc.TEXT_ALIGNMENT_CENTER)
-        label:setColor(SeaChartTheme.colors.white)
+        label:setColor(hudColor(SeaChartTheme.colors.white))
         local item=cc.MenuItemLabel:create(label)
         item:setPosition(cc.p(size.width/2,(owner.adventureHudBottom or 222*u)+103*u))
         item:registerScriptTapHandler(function()
@@ -77,7 +80,7 @@ function S.refresh(owner,coefficient)
     owner.adventureObjectiveItem:setContentSize(cc.size(size.width-40*u,48*u))
     owner.adventureObjectiveLabel:setPosition(cc.p(0,0))
     if not owner.adventurePatrolLabel then
-        local label=cc.LabelTTF:create('',BoldFont,16*u);label:setDimensions(cc.size(size.width-40*u,32*u));label:setHorizontalAlignment(cc.TEXT_ALIGNMENT_CENTER);label:setColor(SeaChartTheme.colors.white)
+        local label=cc.LabelTTF:create('',BoldFont,16*u);label:setDimensions(cc.size(size.width-40*u,32*u));label:setHorizontalAlignment(cc.TEXT_ALIGNMENT_CENTER);label:setColor(hudColor(SeaChartTheme.colors.white))
         label:setPosition(cc.p(size.width/2,(owner.adventureHudBottom or 222*u)+147*u));owner.tipLayer:addChild(label,4)
         owner.adventurePatrolLabel=label
     end
@@ -104,6 +107,7 @@ function S.refresh(owner,coefficient)
             local pos=owner:positionForTilePosition(p);marker:setPosition(cc.p(pos.x,pos.y+25));owner.moveLayer:addChild(marker,10);owner.adventureWreckMarker=marker
         end
     end
+    if owner.cleanVoyageView then require('LuaClass/CleanVoyageView').refresh(owner) end
 end
 function S.tryEvent(owner,manual,source)
     local dm=DataManager:getInstance();local s=A.getState(dm)

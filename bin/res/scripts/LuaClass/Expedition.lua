@@ -6,6 +6,7 @@ require "LuaClass/UIKit"
 local BTheme = require "LuaClass/BTheme"
 local MasterTheme = require "LuaClass/MasterTheme"
 local DepartureTheme = require "LuaClass/DepartureTheme"
+local WarmTheme = require "LuaClass/WarmTheme"
 
 
 ExpeditionLayer = class("ExpeditionLayer", function ()
@@ -127,7 +128,12 @@ function ExpeditionLayer:init()
         if AdventureProgress.getState(DataManager:getInstance()).enabled then
             self.departureInProgress=true
             local ok,reason=AdventureProgress.depart(DataManager:getInstance(),self.selectedData)
-            if not ok then self.departureInProgress=false;ToastUtil:toastString("出航未保存，请检查装载后重试："..tostring(reason));return end
+            if not ok then
+                self.departureInProgress=false
+                if self.isWarmDeparture then require("LuaClass/WarmDeparture").failure(self,reason)
+                else ToastUtil:toastString("出航未保存，请检查装载后重试："..tostring(reason)) end
+                return
+            end
             self.selectedData={}
             zqDispatch:moveToFightLayer()
             return
@@ -230,6 +236,7 @@ end
 -- Project the approved sheet into screen coordinates. The root stays unscaled
 -- so SDButton and ScrollView keep their original screen-space hit testing.
 function ExpeditionLayer:createAdventureUI()
+    if WarmTheme.enabled() then return require("LuaClass/WarmDeparture").create(self) end
     local size=cc.Director:getInstance():getVisibleSize()
     local origin=cc.Director:getInstance():getVisibleOrigin()
     local M,D=MasterTheme,DepartureTheme
@@ -354,6 +361,7 @@ function ExpeditionLayer:createAdventureUI()
 end
 
 function ExpeditionLayer:updateAdventureReadiness()
+    if self.isWarmDeparture then return require("LuaClass/WarmDeparture").update(self) end
     local food=tonumber(self.selectedData['1005']) or 0
     local ship=self.produceCsv[tostring(DataManager:getInstance():getRoleData(roleShipId) or '')] or {}
     self.shipNameLabel:setString(ship.name or '战船');MasterTheme.fit(self.shipNameLabel,205*self.adventureScaleX)
@@ -437,12 +445,17 @@ function ExpeditionLayer:setResourceUIWithData()
         local aID, bID = tonumber(a[dataKeyID]), tonumber(b[dataKeyID])
         local aGroup = aID == 1005 and 0 or (aID >= 10000 and 1 or 2)
         local bGroup = bID == 1005 and 0 or (bID >= 10000 and 1 or 2)
+        if self.isWarmDeparture then
+            aGroup=aID>=10000 and 0 or (aID==1005 and 1 or 2)
+            bGroup=bID>=10000 and 0 or (bID==1005 and 1 or 2)
+        end
         return aGroup == bGroup and aID < bID or aGroup < bGroup
     end)
     local singleHeight = self.adventureRowHeight
     local ux,uy=self.adventureScaleX,self.adventureScaleY
     local D,M=DepartureTheme,MasterTheme
-    local allHeight = singleHeight * dataNum
+    local C=self.isWarmDeparture and WarmTheme.colors or M.colors
+    local allHeight = self.isWarmDeparture and require("LuaClass/WarmDeparture").prepareRows(self) or singleHeight * dataNum
     if allHeight < self.scrollView:getViewSize().height then
         allHeight = self.scrollView:getViewSize().height
     end
@@ -514,15 +527,15 @@ function ExpeditionLayer:setResourceUIWithData()
         tempNode = cc.Node:create()
         tempNode:setPosition(cc.p(self.scrollView:getViewSize().width * 0.5, allHeight - singleHeight * (i - 1) - singleHeight * 0.5))
         local divider=cc.DrawNode:create()
-        divider:drawSegment(cc.p(-self.adventureWidth/2,-singleHeight/2),cc.p(self.adventureWidth/2,-singleHeight/2),.65,HomeTheme.rgba(M.colors.muted,.45))
-        tempNode:addChild(divider)
+        divider:drawSegment(cc.p(-self.adventureWidth/2,-singleHeight/2),cc.p(self.adventureWidth/2,-singleHeight/2),.65,HomeTheme.rgba(C.muted,.45))
+        tempNode:addChild(divider);tempNode.divider=divider
         self.scrollViewContainer:addChild(tempNode)
         tempNode.itemId=tostring(k)
-        local numberLabel=D.label(itemNum..'',47*ux,M.colors.ink,122.5*ux,0,.5)
+        local numberLabel=D.label(itemNum..'',47*ux,C.ink,122.5*ux,0,.5)
         tempNode:addChild(numberLabel);tempNode.quantityLabel=numberLabel
 
         -- 定义数字按钮上的label
-        local numLable = D.label("1",28*ux,M.colors.muted,0,0)
+        local numLable = D.label("1",28*ux,C.muted,0,0)
 
         local function setNumLabel(intNum)
             -- 开始设置数量文本
@@ -544,6 +557,7 @@ function ExpeditionLayer:setResourceUIWithData()
 
         -- 然后添加左右加减按钮
         local function subButtonDidClick()
+            if self.departureInProgress then return end
             -- cclog("点击减少按钮", i)
             local val = tonumber(numberLabel:getString())
             if val > 0 then
@@ -573,6 +587,7 @@ function ExpeditionLayer:setResourceUIWithData()
         tempNode:addChild(subBtn)
 
         local function addButtonDidClick()
+            if self.departureInProgress then return end
             -- cclog("点击增加按钮", i)
             local val = tonumber(numberLabel:getString())
             if bagType == 0 then
@@ -616,6 +631,7 @@ function ExpeditionLayer:setResourceUIWithData()
         -- 添加加号右侧的“装满”按钮
         local addFullBtn = D.menuItem("装满",122*ux,68*uy,nil,{fontSize=35*ux})
         addFullBtn:registerScriptTapHandler(function()
+            if self.departureInProgress then return end
             cclog("点击装满按钮", i)
             local val = tonumber(numberLabel:getString())
             if bagType == 0 then
@@ -658,23 +674,26 @@ function ExpeditionLayer:setResourceUIWithData()
 
         -- The portrait and name are one real details control. All rows come
         -- from the existing merged inventory, including types outside the mock.
-        local nameBtn=D.menuItem('',383*ux,singleHeight,nil,{clear=true})
+        local detailWidth=self.isWarmDeparture and (tostring(k)=='1005' and 260 or 330)*self.warmScale or 383*ux
+        local nameBtn=D.menuItem('',detailWidth,singleHeight,nil,{clear=true})
         nameBtn:registerScriptTapHandler(function() self:showInfoBox(infoString) end)
         nameBtn:setPosition(cc.p(-225*ux,0))
         local portrait=D.portrait(v,145*ux,124*uy)
         portrait:setPosition(cc.p(8*ux,1*uy));nameBtn:addChild(portrait)
-        local nameLabel=D.label(name,40*ux,M.colors.ink,184*ux,(bagType==1 and 89 or 80)*uy)
+        local nameLabel=D.label(name,40*ux,C.ink,184*ux,(bagType==1 and 89 or 80)*uy)
         M.fit(nameLabel,196*ux);nameBtn:addChild(nameLabel)
+        tempNode.nameLabel=nameLabel;tempNode.portrait=portrait;tempNode.isCrew=bagType==1;tempNode.stars={}
         if bagType==1 then
             for j=1,tonumber(starNum) or 0 do
                 local star=D.label('★',25*ux,cc.c3b(162,115,37),(184+(j-1)*28)*ux,56*uy)
-                nameBtn:addChild(star)
+                nameBtn:addChild(star);tempNode.stars[#tempNode.stars+1]=star
             end
         end
         numLable:setPosition(cc.p(184*ux,(bagType==1 and 25 or 38)*uy))
         M.fit(numLable,195*ux);nameBtn:addChild(numLable)
         tempNode.controls={minus=subBtn,plus=addBtn,full=addFullBtn,details=nameBtn}
         tempNode.remainingLabel=numLable
+        if self.isWarmDeparture then require("LuaClass/WarmDeparture").styleRow(self,tempNode) end
 
         local buttonArr = {nameBtn, addFullBtn}
         local menu = cc.Menu:create(unpack(buttonArr))
@@ -687,6 +706,7 @@ function ExpeditionLayer:setResourceUIWithData()
         self.scrollViewContainer:addChild(BTheme.label("暂无可携带物品或船员", 23,
             MasterTheme.colors.muted, self.adventureWidth * 0.5, allHeight * 0.5, 0.5, 0.5))
     end
+    if self.isWarmDeparture then require("LuaClass/WarmDeparture").decorateGroups(self,allHeight) end
     -- 设置兵将与背包数量
     resetQueueData(false)
     self.scrollView:setContentSize(cc.size(self.scrollView:getViewSize().width, allHeight))

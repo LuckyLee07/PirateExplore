@@ -1,9 +1,11 @@
 -- Native presentation helpers for the approved 941 x 1672 departure sheet.
 -- Artwork contains no inventory, labels, buttons, or other game state.
 local M = require 'LuaClass/MasterTheme'
+local W = require 'LuaClass/WarmTheme'
 local D = {colors=M.colors, path='Images/UI/Adventure/Departure/'}
 
 function D.label(text,size,color,x,y,anchor)
+    if W.enabled() then return W.label(text,size,color,x,y,true,anchor or 0) end
     return M.label(text,size,color,x,y,true,anchor or 0)
 end
 function D.image(path,w,h)
@@ -29,10 +31,11 @@ function D.menuItem(text,w,h,callback,opts)
         if opts.clear then
             return cc.LayerColor:create(cc.c4b(8,53,68,selected and 18 or 0),w,h)
         end
+        if W.enabled() then return W.panel(w,h,selected and W.colors.line or W.colors.white,14) end
         return M.material(opts.material or 'ink-brush.png',w,h,selected and cc.c3b(205,219,211) or nil)
     end
     local item=cc.MenuItemSprite:create(background(false),background(true))
-    item.bLabel=D.label(text,opts.fontSize or 26,opts.textColor or M.colors.white,w/2,h/2,.5)
+    item.bLabel=D.label(text,opts.fontSize or 26,opts.textColor or (W.enabled() and W.colors.ink or M.colors.white),w/2,h/2,.5)
     item:addChild(item.bLabel,3)
     if callback then item:registerScriptTapHandler(callback) end
     return item
@@ -48,8 +51,8 @@ function D.quantity(button,text,w,h,fontSize)
         s:setPosition(cc.p((w-targetW)/2,(h-targetH)/2));s:setOpacity(0)
     end
     button:setContentSize(cc.size(w,h))
-    button:addChild(M.material('ink-brush.png',w,h))
-    button:addChild(D.label(text,fontSize,M.colors.white,w/2,h/2,.5))
+    button:addChild(W.enabled() and W.panel(w,h,W.colors.white,16) or M.material('ink-brush.png',w,h))
+    button:addChild(D.label(text,fontSize,W.enabled() and W.colors.ink or M.colors.white,w/2,h/2,.5))
 end
 function D.currencyIcon(kind,size)
     local n=cc.Node:create();n:setContentSize(cc.size(size,size))
@@ -111,6 +114,16 @@ function D.portrait(data,w,h)
     local n=cc.Node:create();n:setContentSize(cc.size(w,h))
     local id=tostring(data[dataKeyID]);local realId=tonumber(id)
     local art,hasBrush
+    if W.enabled() then
+        -- Identity-matched art only. No decorative crew is passed off as owned.
+        n:addChild(W.panel(w,h,W.colors.white,16))
+        if realId==10100 then art=D.image(W.path..'crew-100.png',w,h) end
+        if not art and realId and realId>=10000 then art=M.portrait(tostring(realId-10000),w,h) end
+        if not art and data.icon and data.icon~='' then art=D.image('Images/Icon/'..data.icon,w*.88,h*.88) end
+        if not art then art=W.icon(realId and realId>=10000 and 'crew' or id=='1005' and 'food' or 'bag',math.min(w,h)*.6)
+            art:setPosition(cc.p(w*.2,h*.2)) end
+        n:addChild(art);return n
+    end
     if realId and realId>=10000 then
         art=M.portrait(tostring(realId-10000),w,h)
     elseif id=='1005' or id=='1037' or id=='1038' or id=='1061' then

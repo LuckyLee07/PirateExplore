@@ -1,0 +1,117 @@
+{
+  "generatedAt": "2026-10-11T10:04:00Z",
+  "generator": "OpenAI built-in image_gen.imagegen",
+  "generationMode": "Four separate transparent-background calls: three generated props plus one material-only iron variant edit. No fallback CLI.",
+  "postprocessing": "None. Original generated PNGs copied without alteration.",
+  "renderingNotes": "Visual-only props for existing traversable interaction-sea event tiles. Do not derive collision or island terrain from the sprite. Anchors are suggested Cocos normalized bottom-left anchors and should be checked in-engine.",
+  "assets": [
+    {
+      "key": "iron",
+      "file": "event-iron-raft-clean-v1.png",
+      "source": "generation-id:exec-1461d06e-881e-4e9f-a352-fb3a944b6a86.png",
+      "width": 1619,
+      "height": 971,
+      "bbox": [
+        71,
+        83,
+        1575,
+        917
+      ],
+      "anchor": [
+        0.5,
+        0.38
+      ],
+      "logicalWidth": 108,
+      "eventId": 3068,
+      "sha256": "446d355b4e0bf30f514ffee542626f2400e18a68eccd25162c73a6c0fc8e4aca",
+      "alphaMode": "RGBA",
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "bboxThreshold": 32,
+      "prompt": "Use case: precise-object-edit. Asset type: production 2.5D isometric tropical pirate game sprite. Input image 1 is the target: a compact low floating quarry-stone cargo raft. Input image 2 is a material reference only: the approved iron islet. Create the IRON ORE resource variant of image 1 by changing ONLY the stone material. Add a few broad subtle rusty orange and ochre iron-mineral seams on the three larger grey faceted stones, inspired by image 2, and very modest mineral color on the two rubble pieces. Keep grey rock as the majority of each stone, with warm beige-lit top facets and cool grey shaded facets. Preserve image 1's exact raft, rope, stone shapes and placement, proportions, orthographic 30-degree isometric camera, top-left lighting, honey-gold wood, compact low silhouette, framing, and clean polished low-poly rendering. This is a floating cargo resource on traversable sea, not terrain. Do not copy any island, grass, soil, foliage, ground, coastline, or background from image 2. No gold nuggets, gems, crystals, neon, UI, text, characters or water. Genuinely transparent background with real alpha; preserve transparent isolation and minimal margins. Exactly one prop."
+    },
+    {
+      "key": "quarry",
+      "file": "event-quarry-raft-clean-v1.png",
+      "source": "generation-id:exec-c3fd0c5b-b925-4395-ade6-13d7856d3191.png",
+      "width": 1619,
+      "height": 971,
+      "bbox": [
+        72,
+        85,
+        1575,
+        917
+      ],
+      "anchor": [
+        0.5,
+        0.38
+      ],
+      "logicalWidth": 108,
+      "eventId": 3067,
+      "sha256": "2a9e6e9a4b7642e06149a0d92875276f6e062d91d0ed34eeffcdd7c867235900",
+      "alphaMode": "RGBA",
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "bboxThreshold": 32,
+      "prompt": "Use case: stylized-concept. Asset type: production 2.5D isometric tropical pirate game sprite. Create exactly ONE isolated prop on a genuinely transparent background with real alpha; no backdrop. Clean dimensional low-poly modeled/rendered art, crisp large faceted planes, softly beveled edges, warm sunlit top-left lighting and restrained ambient occlusion. Match a friendly polished low-poly pirate game with honey-gold wooden boats and neutral grey faceted rocks. Orthographic isometric camera about 30 degrees above horizontal; long object axis lower-left to upper-right. Strong readable compact silhouette at 100 game pixels wide, footprint about a 134 by 74 isometric event tile. Close framing and minimal transparent margins. No characters, text, interface, selection circles, badges, pedestals, ground tiles, solid terrain islands, coastline, sea background, large shadows, ore, gems, crystals or glow. Subject: one very small flat floating cargo raft made of five honey-brown timber planks tied with discreet rope, holding a squat cluster of three plain grey quarry stones and two small rubble pieces. Stones are a little rounded but have clean large low-poly polygon facets, warm neutral light grey top faces and cool grey shaded sides; no orange ore veins or colored mineral speckles. The center stone is only moderately taller than the others; this is a compact obtainable stone cargo resource, not a gigantic geological formation. Raft remains visible along the base edges. Entire prop low and broad, 1.6:1 bounding silhouette. The floating raft touches the waterline but draw no water. Everything fully visible and isolated."
+    },
+    {
+      "key": "wood",
+      "file": "event-timber-raft-clean-v1.png",
+      "source": "generation-id:exec-c3bdc87c-5bf9-44d2-8d27-bddefb8bb3bf.png",
+      "width": 1642,
+      "height": 958,
+      "bbox": [
+        67,
+        46,
+        1611,
+        916
+      ],
+      "anchor": [
+        0.5,
+        0.38
+      ],
+      "logicalWidth": 106,
+      "eventId": 3070,
+      "sha256": "5958fd1aeaf129eae96ded739b9cbd4907ca63df0c8538de1e9aa78a571ecbcf",
+      "alphaMode": "RGBA",
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "bboxThreshold": 32,
+      "prompt": "Use case: stylized-concept. Asset type: production 2.5D isometric tropical pirate game sprite. Create exactly ONE isolated prop on a genuinely transparent background with real alpha; no backdrop. Clean dimensional low-poly modeled/rendered art, crisp large faceted planes, softly beveled edges, warm sunlit top-left lighting and restrained ambient occlusion. Match a friendly polished low-poly pirate game with honey-gold wooden boats and neutral grey faceted rocks. Orthographic isometric camera about 30 degrees above horizontal; long object axis lower-left to upper-right. Strong readable compact silhouette at 100 game pixels wide, footprint about a 134 by 74 isometric event tile. Close framing and minimal transparent margins. No characters, text, interface, selection circles, badges, pedestals, ground tiles, solid terrain islands, coastline, sea background, large shadows, ore, gems, crystals or glow. Subject: one compact flat floating wooden cargo bundle/raft made from about five warm honey-brown logs, with three short neatly stacked timber logs on top, two discreet rope ties and a small fresh green palm frond with a few modest tropical leaves caught at one rear corner. Clearly readable cut circular log ends in warm pale wood. Polished clean wood facets with only two or three broad wood-grain accents, not photoreal noise. No palm tree, no trunk growing out of earth, no soil. Low broad silhouette about 1.7:1 bounding silhouette. The floating timber prop touches the waterline but draw no water. Everything fully visible and isolated."
+    },
+    {
+      "key": "wreck",
+      "file": "event-wreck-hull-clean-v1.png",
+      "source": "generation-id:exec-2383a87a-e7eb-41d4-b63b-1b061d309887.png",
+      "width": 1672,
+      "height": 941,
+      "bbox": [
+        182,
+        29,
+        1537,
+        915
+      ],
+      "anchor": [
+        0.5,
+        0.4
+      ],
+      "logicalWidth": 123,
+      "eventRole": "original tutorial wreck",
+      "sha256": "f205002fef3f39c2022c816fa16f01720e1f2f41cb16745106bfeac540e6c9c8",
+      "alphaMode": "RGBA",
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "bboxThreshold": 32,
+      "prompt": "Use case: stylized-concept. Asset type: production 2.5D isometric tropical pirate game sprite. Create exactly ONE isolated prop on a genuinely transparent background with real alpha; no backdrop. Clean dimensional low-poly modeled/rendered art, crisp large faceted planes, softly beveled edges, warm sunlit top-left lighting and restrained ambient occlusion. Match a friendly polished low-poly pirate game with honey-gold wooden boats and neutral grey faceted rocks. Orthographic isometric camera about 30 degrees above horizontal; long object axis lower-left to upper-right. Strong readable compact silhouette at 100 game pixels wide, footprint about a 134 by 74 isometric event tile. Close framing and minimal transparent margins. No characters, text, interface, selection circles, badges, pedestals, ground tiles, solid terrain islands, coastline, sea background, large shadows, ore, gems, crystals or glow. Subject: a small broken wooden rowboat hull floating as salvage wreckage, NO people. One partial honey-brown boat hull with visible ribs and snapped planking, its bow still recognizable at upper right and a broken open stern at lower left. Three broad loose wood plank fragments float close beside it in a tight footprint; one short broken spar lies diagonally inside the hull. No intact tall mast, no sail, no flag, no treasure, no skull, no skeleton. Warm weathered amber wood with broad darker interior facets, clean softened broken edges without tiny debris noise. Low broad silhouette about 1.8:1 bounding silhouette. Hull touches the waterline but draw no water. Everything fully visible and isolated."
+    }
+  ]
+}

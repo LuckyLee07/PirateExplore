@@ -1,13 +1,36 @@
--- Explicit presentation helpers for the B adventure dialogs and side pages.
+-- Shared legacy dialogs and side pages, with an opt-out warm v1 presentation.
 -- Legacy assets are measured only: their geometry, touch targets and callbacks
 -- remain the caller's contract. No engine APIs or game data are patched.
 require 'LuaClass/MasterTheme'
 DialogTheme = {}
 local D = DialogTheme
 local M = MasterTheme
-D.colors = M.colors
+local function warm()
+    if rawget(_G,'WARM_PIRATE_V1')==false then return nil end
+    local W=rawget(_G,'WarmTheme')
+    if type(W)~='table' then
+        local ok,value=pcall(require,'LuaClass/WarmTheme')
+        if ok then W=value end
+    end
+    if type(W)=='table' and type(W.enabled)=='function' and W.enabled() then return W end
+end
+local function palette(key)
+    local W=warm();return W and W.colors[key] or M.colors[key]
+end
+D.colors=setmetatable({},{__index=function(_,key)return palette(key)end})
 D.raised = cc.c3b(15, 61, 73)
 D.line = cc.c3b(100, 126, 124)
+local function lineColor()
+    return warm() and cc.c3b(176,137,106) or D.line
+end
+local function material(name,w,h,tint)
+    local W=warm()
+    if not W then return M.material(name,w,h,tint) end
+    local c=name=='coral-brush.png' and W.colors.coral or
+        (name=='ink-brush.png' and W.colors.ink or W.colors.paper)
+    if tint then c=cc.c3b(c.r*tint.r/255,c.g*tint.g/255,c.b*tint.b/255) end
+    return W.panel(w,h,c,math.min(20,h/2))
+end
 local sizes = {}
 local function cascade(node)
     node:setCascadeOpacityEnabled(true)
@@ -31,24 +54,37 @@ local function surface(w, h, tone, selected)
     n:setAnchorPoint(cc.p(.5, .5))
     n:setCascadeOpacityEnabled(true)
     local paper = tone == 'paper'
-    local color = paper and M.colors.paper or D.raised
-    if tone == 'ink' or tone == 'panel' then color = M.colors.ink end
+    local W=warm()
+    if W then
+        -- Unknown caller-owned white labels require a dark body. Only callers
+        -- explicitly asking for paper receive a light surface.
+        local c=paper and W.colors.paper or cc.c3b(108,73,53)
+        if tone=='ink' or tone=='panel' then c=W.colors.ink end
+        if selected then c=paper and cc.c3b(244,225,199) or cc.c3b(126,87,63) end
+        n:addChild(W.panel(w,h,c,math.min(24,w/2,h/2)))
+        if tone=='panel' and h>110 then
+            HomeTheme.rule(n,24,h-77,math.max(0,w-48),lineColor())
+        end
+        return n
+    end
+    local color = paper and palette('paper') or D.raised
+    if tone == 'ink' or tone == 'panel' then color = palette('ink') end
     if selected then color = paper and cc.c3b(224, 217, 194) or cc.c3b(34, 91, 102) end
     local field = HomeTheme.rounded(w, h, color, math.min(6,w*.5,h*.5))
     n:addChild(field)
     -- Paper/ink edges replace the old luminous rectangular outlines. Content
     -- geometry and all caller-owned label colors remain unchanged.
     if paper then
-        n:addChild(M.material('crew-paper.png',w,h))
+        n:addChild(material('crew-paper.png',w,h))
     else
         local edgeHeight=math.min(16,h*.18)
-        local edge=M.material('ink-brush.png',w,edgeHeight)
+        local edge=material('ink-brush.png',w,edgeHeight)
         edge:setPosition(cc.p(0,h-edgeHeight));n:addChild(edge)
         HomeTheme.rule(n,14,5,math.max(0,w-28),cc.c3b(50,84,89))
     end
     if tone == 'panel' then
         -- A quiet opaque interior keeps all existing white caller labels legible.
-        local wash = M.material('ink-brush.png', w-8, math.min(88, h*.22))
+        local wash = material('ink-brush.png', w-8, math.min(88, h*.22))
         wash:setPosition(cc.p(4, h-math.min(88, h*.22)-4));n:addChild(wash)
         HomeTheme.rule(n, 24, h-77, math.max(0, w-48), D.line)
     end
@@ -58,18 +94,20 @@ end
 -- A single continuous parchment under a real list, not a rectangle per row.
 function D.paperSheet(w,h)
     local n=cc.Node:create();n:setContentSize(cc.size(w,h));n:setAnchorPoint(cc.p(.5,.5))
+    local W=warm()
+    if W then n:addChild(W.panel(w,h,W.colors.paper,20));return n end
     local path='Images/UI/Adventure/Talent/paper.png'
     if cc.FileUtils:getInstance():isFileExist(path) then
         local paper=cc.Sprite:create(path);local z=paper:getContentSize()
         paper:setScaleX(w/z.width);paper:setScaleY(h/z.height)
         paper:setAnchorPoint(cc.p(0,0));n:addChild(paper)
-    else n:addChild(HomeTheme.rounded(w,h,M.colors.paper,5)) end
+    else n:addChild(HomeTheme.rounded(w,h,palette('paper'),5)) end
     return n
 end
 
 function D.ledgerRow(w,h)
     local n=cc.Node:create();n:setContentSize(cc.size(w,h));n:setAnchorPoint(cc.p(.5,.5))
-    HomeTheme.rule(n,16,2,w-32,cc.c3b(208,196,166))
+    HomeTheme.rule(n,16,2,w-32,warm() and palette('line') or cc.c3b(208,196,166))
     return n
 end
 
@@ -84,12 +122,12 @@ end
 function D.outlineFromLegacy(path)
     local z=D.legacySize(path);local n=cc.Node:create();n:setContentSize(z);n:setAnchorPoint(cc.p(.5,.5))
     local d=cc.DrawNode:create();local p={cc.p(2,2),cc.p(z.width-2,2),cc.p(z.width-2,z.height-2),cc.p(2,z.height-2)}
-    d:drawPolygon(p,#p,cc.c4f(0,0,0,0),1.5,HomeTheme.rgba(M.colors.coral));n:addChild(d)
+    d:drawPolygon(p,#p,cc.c4f(0,0,0,0),1.5,HomeTheme.rgba(palette('coral')));n:addChild(d)
     return n
 end
 function D.badgeFromLegacy(path, text, color)
     local z=D.legacySize(path);local n=cc.Node:create();n:setContentSize(z);n:setAnchorPoint(cc.p(.5,.5))
-    local label=D.label(text,math.min(24,z.height*.58),color or M.colors.paper)
+    local label=D.label(text,math.min(24,z.height*.58),color or palette('paper'))
     D.fit(label,z.width-8);label:setPosition(cc.p(z.width*.5,z.height*.5));n:addChild(label)
     return n
 end
@@ -98,11 +136,11 @@ function D.buttonFace(path, tone, selected)
     local z = D.legacySize(path)
     local n = cc.Node:create();n:setContentSize(z);n:setAnchorPoint(cc.p(.5,.5))
     n:setCascadeOpacityEnabled(true)
-    local material = tone == 'secondary' and 'ink-brush.png' or 'coral-brush.png'
-    local paint = M.material(material, z.width, z.height, selected and cc.c3b(196,210,205) or nil)
+    local paintName = tone == 'secondary' and 'ink-brush.png' or 'coral-brush.png'
+    local paint = material(paintName, z.width, z.height, selected and cc.c3b(196,210,205) or nil)
     n:addChild(cascade(paint))
     if tone == 'secondary' then
-        HomeTheme.rule(n, 12, 5, math.max(0,z.width-24), D.line)
+        HomeTheme.rule(n, 12, 5, math.max(0,z.width-24), lineColor())
     end
     return n
 end
@@ -126,10 +164,11 @@ function D.sdButton(normal, selected, callback, tone)
 end
 
 function D.closeFace(path, selected)
-    local z=D.legacySize(path);local n=D.card(z.width,z.height,'ink',selected)
-    local d=cc.DrawNode:create();local color=HomeTheme.rgba(M.colors.paper)
-    d:drawSegment(cc.p(z.width*.34,z.height*.34),cc.p(z.width*.66,z.height*.66),1.5,color)
-    d:drawSegment(cc.p(z.width*.34,z.height*.66),cc.p(z.width*.66,z.height*.34),1.5,color)
+    local W=warm()
+    local z=D.legacySize(path);local n=D.card(z.width,z.height,W and 'paper' or 'ink',selected)
+    local d=cc.DrawNode:create();local stroke=HomeTheme.rgba(W and W.colors.ink or palette('paper'))
+    d:drawSegment(cc.p(z.width*.34,z.height*.34),cc.p(z.width*.66,z.height*.66),1.5,stroke)
+    d:drawSegment(cc.p(z.width*.34,z.height*.66),cc.p(z.width*.66,z.height*.34),1.5,stroke)
     n:addChild(d);return n
 end
 function D.closeItem(path)
@@ -147,26 +186,27 @@ function D.closeSD(callback)
 end
 
 function D.label(text, size, color)
-    local n=M.label(text,size,color or M.colors.white,0,0,true,.5)
+    local n=M.label(text,size,color or palette('white'),0,0,true,.5)
     return n
 end
 function D.fit(label, width) return M.fit(label, width) end
 
 function D.screen(parent, size)
-    local field=cc.LayerColor:create(cc.c4b(8,53,68,255),size.width,size.height)
+    local W=warm();local ink=palette('ink')
+    local field=cc.LayerColor:create(cc.c4b(ink.r,ink.g,ink.b,255),size.width,size.height)
     parent:addChild(field,-20)
-    local art=M.cover(M.path..'harbor-full.png',size.width,size.height)
+    local art=M.cover(W and W.path..'sea-home.png' or M.path..'harbor-full.png',size.width,size.height)
     if art then art:setOpacity(38);parent:addChild(art,-19) end
     return field
 end
 
-function D.rule(parent, x, y, width) return HomeTheme.rule(parent,x,y,width,D.line) end
+function D.rule(parent, x, y, width) return HomeTheme.rule(parent,x,y,width,lineColor()) end
 
 function D.skinMenuItem(item, tone)
     local z=item:getContentSize()
     local function face(selected)
         local n=cc.Node:create();n:setContentSize(z);n:setCascadeOpacityEnabled(true)
-        n:addChild(cascade(M.material(tone=='secondary' and 'ink-brush.png' or 'coral-brush.png',z.width,z.height,
+        n:addChild(cascade(material(tone=='secondary' and 'ink-brush.png' or 'coral-brush.png',z.width,z.height,
             selected and cc.c3b(196,210,205) or nil)))
         return n
     end
@@ -185,7 +225,7 @@ function D.applyBase(view)
     view.titleBg:removeFromParent(true)
     view.titleBg=D.card(z.width,view.titleHeight,'paper')
     view.titleBg:setPosition(cc.p(x,y));view:addChild(view.titleBg)
-    view.titleLabel=D.label(title,38,M.colors.ink)
+    view.titleLabel=D.label(title,38,palette('ink'))
     view.titleLabel:setPosition(cc.p(z.width*.5,view.titleHeight*.5))
     view.titleBg:addChild(view.titleLabel)
     -- Empty native placeholders retain the title layout/visibility contract.
@@ -197,7 +237,7 @@ function D.applyBase(view)
     D.skinMenuItem(view.topLeftBtn,'secondary');D.skinMenuItem(view.topRightBtn,'secondary')
     view.topLeftBtnLabel:setFontName(M.headingFont(true))
     view.topRightBtnLabel:setFontName(M.headingFont(true))
-    view.topLeftBtnLabel:setColor(M.colors.white);view.topRightBtnLabel:setColor(M.colors.white)
+    view.topLeftBtnLabel:setColor(palette('white'));view.topRightBtnLabel:setColor(palette('white'))
     D.fit(view.titleLabel,z.width*.40)
     if view.infoNode then
         -- This opt-in page has the original alchemy footer. Cover decorative
@@ -222,7 +262,7 @@ function D.applyBase(view)
             for i,face in ipairs({button.normalSpr,button.selectSpr}) do
                 face:setContentSize(b);face:setCascadeOpacityEnabled(true)
                 face:setAnchorPoint(cc.p(0,0))
-                local visual=cascade(M.material(i==1 and 'coral-brush.png' or 'ink-brush.png',92,92))
+                local visual=cascade(material(i==1 and 'coral-brush.png' or 'ink-brush.png',92,92))
                 visual:setPosition(cc.p((b.width-92)*.5,(b.height-92)*.5));face:addChild(visual)
                 local icon=M.icon('anchor',50)
                 icon:setPosition(cc.p((b.width-icon:getContentSize().width)*.5,(b.height-icon:getContentSize().height)*.5))
@@ -231,7 +271,7 @@ function D.applyBase(view)
             button.normalSpr:setVisible(normalVisible);button.selectSpr:setVisible(selectedVisible)
         end
         skinSD(view.setBtn)
-        view.setButtonProgrees:setLocalZOrder(1);view.setButtonProgrees:setColor(M.colors.coral)
+        view.setButtonProgrees:setLocalZOrder(1);view.setButtonProgrees:setColor(palette('coral'))
         view.setButtonProgrees:setOpacity(105)
         view.setButtonProgrees:setScale(92/view.setBtn:getContentSize().width)
         view.setBtnText:setPositionY(view.setBtn:getPositionY()-60)
@@ -244,7 +284,7 @@ function D.applyBase(view)
             entry[1]:addChild(icon)
         end
         D.surfaceAfterSizing(view.bottomInfoBox,'ink')
-        view.infoBoxLabel:setColor(M.colors.white);view.infoLabel:setColor(M.colors.white)
+        view.infoBoxLabel:setColor(palette('white'));view.infoLabel:setColor(palette('white'))
         view.infoBoxLabel:setFontName(M.headingFont(false));view.infoLabel:setFontName(M.headingFont(false))
         view.infoBoxLabel:disableStroke();view.infoLabel:disableStroke()
         view.infoLabel:setFontSize(22)
@@ -258,13 +298,13 @@ function D.chargeOffer(offer)
     icon:setPosition(cc.p(68,z.height*.56));item:addChild(icon)
     local quantity=D.label(tostring(offer.diamond)..' 钻石',36)
     quantity:setAnchorPoint(cc.p(0,.5));quantity:setPosition(cc.p(118,z.height*.61));item:addChild(quantity)
-    local price=D.label(tostring(offer.money)..' 元',30,M.colors.paper)
+    local price=D.label(tostring(offer.money)..' 元',30,palette('paper'))
     price:setPosition(cc.p(z.width-80,z.height*.72));item:addChild(price)
-    local action=M.material('coral-brush.png',128,51)
+    local action=material('coral-brush.png',128,51)
     action:setPosition(cc.p(z.width-144,24));item:addChild(action)
     local caption=D.label('购 买',26);caption:setPosition(cc.p(z.width-80,49));item:addChild(caption)
     if offer.bg=='Images/charging/cz_03.png' then
-        local recommended=D.label('推荐',20,M.colors.coral)
+        local recommended=D.label('推荐',20,palette('coral'))
         recommended:setPosition(cc.p(68,26));item:addChild(recommended)
     end
     return item

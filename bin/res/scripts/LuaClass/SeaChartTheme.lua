@@ -11,11 +11,58 @@ S.colors = {
 }
 S.path = "Images/UI/Adventure/SeaChart/"
 
+-- Warm mode owns only the screen-space shell. Keep S.colors and all chart
+-- programs/materials below intact: Explore also uses them for the live map.
+local function warmTheme()
+    if rawget(_G, 'WARM_PIRATE_V1') == false then return nil end
+    local theme = rawget(_G, 'WarmTheme')
+    if type(theme) ~= 'table' then
+        local ok, loaded = pcall(require, 'LuaClass/WarmTheme')
+        if not ok then return nil end
+        theme = loaded
+    end
+    -- Legacy fixtures intentionally return true for optional require calls.
+    if type(theme) == 'table' and type(theme.enabled) == 'function' and theme.enabled() then return theme end
+end
+
+function S.hudTextColor(color)
+    local W = warmTheme()
+    if not W then return color end
+    if color == S.colors.white or color == S.colors.ink then return W.colors.ink end
+    if color == S.colors.muted then return W.colors.muted end
+    if color == S.colors.coral then return W.colors.coral end
+    return color
+end
+
+function S.cargoButtonIcon()
+    return warmTheme() and 'cargo' or 'food'
+end
+
 function S.label(text, size, color, x, y, anchorX)
+    local W = warmTheme()
+    if W then return W.label(text, size, S.hudTextColor(color), x, y, true, anchorX) end
+    return MasterTheme.label(text, size, color, x, y, true, anchorX)
+end
+
+-- World-space route marks retain their original high-contrast chart lettering.
+function S.mapLabel(text, size, color, x, y, anchorX)
     return MasterTheme.label(text, size, color, x, y, true, anchorX)
 end
 
 function S.panel(width, height, color, x, y)
+    local W = warmTheme()
+    if W then
+        local fill = color == S.colors.ink and W.colors.paper
+            or color == S.colors.white and W.colors.line
+            or color == S.colors.coral and W.colors.coral or color
+        -- Thin separators and the existing food-warning borders remain exact.
+        if width > 12 and height > 24 then
+            local node = W.panel(width, height, fill, math.min(22, height / 3))
+            node:setPosition(cc.p(x or 0, y or 0))
+            return node
+        end
+        color = fill
+    end
     local node = cc.LayerColor:create(cc.c4b(color.r, color.g, color.b, color.a or 255), width, height)
     node:setAnchorPoint(cc.p(0, 0))
     node:ignoreAnchorPointForPosition(false)
@@ -24,10 +71,19 @@ function S.panel(width, height, color, x, y)
 end
 
 function S.material(kind, width, height)
+    local W = warmTheme()
+    if W then return W.panel(width, height, W.colors.paper, 24) end
     return MasterTheme.material(kind, width, height)
 end
 
 function S.button(text, width, height, callback, coral, fontSize)
+    local W = warmTheme()
+    if W then
+        return W.button(text, width, height, callback, {
+            primary = coral, size = fontSize,
+            color = coral and W.colors.coral or W.colors.white
+        })
+    end
     return MasterTheme.button(text, width, height, callback, {
         material = coral and "coral-brush.png" or "ink-brush.png",
         textColor = S.colors.white, fontSize = fontSize, bold = true
@@ -40,6 +96,13 @@ end
 
 -- These marks share the harbor's native silhouettes and remain real UI nodes.
 function S.icon(kind, size)
+    local W = warmTheme()
+    if W then
+        local names = {sail='sail', cargo='chest', scroll='map'}
+        if names[kind] then return W.icon(names[kind], size) end
+        -- Food has no warm atlas cell; preserve its real barrel silhouette.
+        if kind == 'food' then return MasterTheme.icon(kind, size, W.colors.ink) end
+    end
     if kind == "sail" or kind == "food" then
         return MasterTheme.icon(kind, size, S.colors.white)
     end
@@ -80,6 +143,8 @@ function S.icon(kind, size)
 end
 
 function S.rule(parent, x, y, width, color)
+    local W = warmTheme()
+    if W then color = W.colors.line end
     local draw = cc.DrawNode:create()
     draw:drawSegment(cc.p(x, y), cc.p(x + width, y), .45, HomeTheme.rgba(color))
     parent:addChild(draw, 1)
@@ -87,6 +152,11 @@ function S.rule(parent, x, y, width, color)
 end
 
 function S.pill(width, height, color)
+    local W = warmTheme()
+    if W then
+        color = color == S.colors.sea and W.colors.sea
+            or color == S.colors.ink and W.colors.line or color
+    end
     local node = cc.Node:create()
     node:setContentSize(cc.size(width, height))
     local draw = cc.DrawNode:create()

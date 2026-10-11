@@ -7,6 +7,10 @@ require "LuaClass/Repository"
 require "LuaClass/Resource"
 require "LuaClass/RandomEventMode"
 require "LuaClass/GuideController"
+local WarmTheme = require "LuaClass/WarmTheme"
+local function warmEnabled()
+    return type(WarmTheme) == "table" and WarmTheme.enabled and WarmTheme.enabled() == true
+end
 
 
 Dispatch = class("Dispatch", function ()
@@ -42,6 +46,8 @@ end
 
 -- 清理函数
 function Dispatch:destory()
+    if self.dispatchDisposed then return end
+    self.dispatchDisposed = true
     if self ~= nil then
         if self:getParent() ~= nil then
             cclog("Dispatch:我自由了！")
@@ -71,6 +77,9 @@ end
 function Dispatch:init(bIsDead)
     local visibleSize = cc.Director:getInstance():getVisibleSize()
     local origin = cc.Director:getInstance():getVisibleOrigin()
+    self.rightNode = nil
+    self.rightNodeStack = {}
+    self.dispatchDisposed = false
 
     -- 添加主界面层
     self.mainMenu = MainMenuLayer:create()
@@ -200,12 +209,23 @@ end
 
 -- Read-only harbor dashboard: no ExpeditionLayer construction on entry.
 function Dispatch:moveToHome()
-    if self.rightNode and self.rightNode.isAdventureHome then
+    local warm = warmEnabled()
+    if self.rightNode and self.rightNode.isAdventureHome
+        and (self.rightNode.warmHomePresentation == true) == warm then
         self.rightNode:refreshSummary()
         self.mainMenu:activeButtonWithIndex(0)
         return
     end
-    self:setViewWithDirection(HomeLayer:create(), true, 1)
+    local view
+    if warm then
+        require "LuaClass/WarmHome"
+        view = WarmHomeLayer:create()
+    else
+        view = HomeLayer:create()
+    end
+    if not view then return end
+    view.warmHomePresentation = warm
+    self:setViewWithDirection(view, true, 1)
     self.mainMenu:activeButtonWithIndex(0)
 end
 
@@ -469,6 +489,15 @@ function Dispatch:setUpdateSystemInfoLayer(view)
 end
 
 function Dispatch:backToLastView()
+    -- A settings sheet never replaces the live route underneath it.
+    local settingsOwner = self.rightNode or self
+    if settingsOwner.warmSettingsModal then
+        settingsOwner.warmSettingsModal:close()
+        return
+    end
+    -- Warm utilities return to the ship rather than rebuilding a utility
+    -- whose inherited legacy selected index can point back to itself.
+    if warmEnabled() then self:moveToHome(); return end
     -- 根据mainmenu的pageindex移动界面
     if self.mainMenu == nil then
         return
@@ -500,11 +529,17 @@ end
  direction：移动方向，0是左，1是右
 ]]
 function Dispatch:setViewWithDirection(view, bIsMove, direction)
+    if not view or view == self.rightNode then return end
     if self.rightNode ~= nil then
-        self.rightNode:viewWillDestory()
-        self.rightNode:destory()
-        self.rightNode:removeFromParent()
+        local previous = self.rightNode
         self.rightNode = nil
+        if previous.warmSettingsModal then previous.warmSettingsModal:close() end
+        -- Keep the native wrapper alive if a view removes itself in destory.
+        if previous.retain then previous:retain() end
+        previous:viewWillDestory()
+        previous:destory()
+        if previous:getParent() then previous:removeFromParent() end
+        if previous.release then previous:release() end
     end
     self.rightNode = view
     self.rightNode:setPosition(cc.p(0, 0))
@@ -739,6 +774,9 @@ end
 
 -- 移动到设置模块
 function Dispatch:gotoSetting()
+    if warmEnabled() then
+        return require("LuaClass/WarmSettings").open(self.rightNode or self)
+    end
     require "LuaClass/Setting"
     self:setViewWithDirection(SettingLayer:create(), true, 1)
 end

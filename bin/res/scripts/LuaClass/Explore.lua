@@ -1,5 +1,7 @@
 local AdventureProgress = require "LuaClass/AdventureProgress"
 local AdventureSea = require "LuaClass/AdventureSea"
+local CleanVoyageView = require "LuaClass/CleanVoyageView"
+local CleanFirstMap = require "LuaClass/CleanFirstMap"
 require "LuaClass/Header"
 require "LuaClass/ExploreDataManager"
 require "LuaClass/Jointed"
@@ -382,7 +384,13 @@ end
 
 -- zoomCenter = cc.p(0,0)
 local function onTouchesBegan( target,touch, event )
-    if target.adventureDialog then return false end
+    if target.adventureDialog or target.warmPause then return false end
+    if target.cleanVoyageView then
+        local p=target:convertToNodeSpace(touch:getLocation());local view=target.cleanVoyageView
+        if p.y<=166*view.u or p.y>=screenSize.height-92*view.u or view.animating or target.statue~="ready" then return false end
+        target.cleanTouchStart=touch:getLocation()
+        return true
+    end
     if target.adventureObjectiveItem and AdventureSea.isHudPoint(target,target:convertToNodeSpace(touch:getLocation())) then return false end
 
     if target.adventureHudTop and target.adventureHudBottom then
@@ -444,6 +452,7 @@ local function onTouchesBegan( target,touch, event )
 end
 
 local function onTouchesMoved( target, touch, event )
+    if target.cleanVoyageView then return end
 	
 	--若地图在引导当中，不能让其有放大和缩小的操作,只能有船移动的操作
 	if target.isNeedGuide then
@@ -515,6 +524,11 @@ local function onTouchesMoved( target, touch, event )
 end
 
 local function onTouchesEnd( target, touch, event )
+    if target.cleanVoyageView then
+        local p=touch:getLocation();local start=target.cleanTouchStart;target.cleanTouchStart=nil
+        if start and getDistance(start,p)<24 then CleanVoyageView.touch(target,target:convertToNodeSpace(p)) end
+        return
+    end
 
 	local dragging = _dragging
 
@@ -676,6 +690,7 @@ end
 
 --touch事件异常结束，要将对应的变量清零
 local function onTouchCancelled( target, touch, event )
+    if target.cleanVoyageView then target.cleanTouchStart=nil;return end
 	-- print("onTouchCancelled")
 	clearAllTouchArgs(target)
 end
@@ -1268,9 +1283,17 @@ function Explore:initTipLayer()
         -- print("showLabel1 inited")
     end, true)
     self.adventureReturnButton = backBtn
+    local warmTheme = rawget(_G,'WARM_PIRATE_V1')~=false and require('LuaClass/WarmTheme')
+    if type(warmTheme)=='table' and warmTheme.enabled() then
+        local pause = warmTheme.button('暂歇',56*u,40*u,function()
+            require('LuaClass/WarmPause').open(self)
+        end,{size=18*u})
+        pause:setPosition(cc.p(267*u,winSize.height-38*u));tipLayer:addChild(pause,8)
+        self.warmPauseButton=pause
+    end
     local cargoButton = button("货舱", 136, 53, 232, 69, function() self:goBag() end)
     cargoButton.label:setPosition(cc.p(83 * u, 27 * u))
-    icon("food", 33, 17, 10 * u, cargoButton.item)
+    icon(theme.cargoButtonIcon and theme.cargoButtonIcon() or "food", 33, 17, 10 * u, cargoButton.item)
     local guideButton = button("攻略", 136, 53, 91, 69, function() self:showCurMapStrategy() end)
     guideButton.label:setPosition(cc.p(82 * u, 27 * u))
     icon("scroll", 33, 17, 10 * u, guideButton.item)
@@ -1286,8 +1309,9 @@ function Explore:initTipLayer()
     local function directionButton(direction, x, y, angle)
         local node = button("", 58, 55, x, y, function() steer(direction) end)
         local arrow = cc.DrawNode:create()
+        local arrowColor = theme.hudTextColor and theme.hudTextColor(colors.white) or colors.white
         arrow:drawTriangle(cc.p(-12 * u, -8 * u), cc.p(12 * u, -8 * u), cc.p(0, 12 * u),
-            cc.c4f(colors.white.r / 255, colors.white.g / 255, colors.white.b / 255, 1))
+            cc.c4f(arrowColor.r / 255, arrowColor.g / 255, arrowColor.b / 255, 1))
         arrow:setPosition(cc.p(29 * u, 27 * u))
         arrow:setRotation(angle)
         node.item:addChild(arrow, 3)
@@ -1431,6 +1455,7 @@ function Explore:initEventManger( )
 end
 
 function Explore:initMapByMapIndex( mapIndex,isclear )
+    CleanVoyageView.unmount(self)
 	--在加载的时候，不允许任何操作
 	self.statue = "loading"
 
@@ -1538,7 +1563,7 @@ function Explore:initMapByMapIndex( mapIndex,isclear )
 		self:addChild(self.moveLayer)
 	end   
 	-- curMapDatas = {}
-	local mapString = string.format("Images/Map/map_%d.tmx",self.mapIndex)
+	local mapString = CleanFirstMap.mapPath(DataManager:getInstance(),self.mapIndex)
 	-- print("map",mapString)
 	--初始化地图
 	self.map = cc.TMXTiledMap:create(mapString);
@@ -1704,6 +1729,7 @@ function Explore:initMapByMapIndex( mapIndex,isclear )
 	self.statue = "ready"
     self.adventureBreadCoefficient=breadCoefficient
     AdventureSea.refresh(self,breadCoefficient)
+    CleanVoyageView.mount(self)
 end
 
 function Explore:initPlayer( )
@@ -1838,6 +1864,10 @@ function Explore:startJumpAction(  )
 	print("startJumpAction")
 	local tempData = DataManager:getInstance():getRoleData(roleMapInfo)
 	if tempData.willFight == nil then
+        local warmTheme=rawget(_G,'WARM_PIRATE_V1')~=false and require('LuaClass/WarmTheme')
+        if type(warmTheme)=='table' and warmTheme.enabled() and require('LuaClass/WarmPause').resumeNotice(self,function()
+            AdventureSea.tryEvent(self,false,'resume_continue')
+        end) then return end
         AdventureSea.tryEvent(self,false,'scene_enter')
 		print("NONONONON")
 		return
@@ -1901,7 +1931,7 @@ function Explore:checkMoveWaitingQueue( moveType )
 end
 
 function Explore:jointedCalBack( dirction )
-    if self.adventureDialog then return end
+    if self.adventureDialog or self.warmPause then return end
 	
 	if not AdventureProgress.getState(DataManager:getInstance()).enabled and not GuideController:getInstance():getIsHaveStep(63) then
 		return
@@ -2611,9 +2641,9 @@ function Explore:costbread( )
     SeaChartTheme.fit(self.bread, screenSize.width * 49 / 640)
 
     if self.breadNum < 10 then
-        self.bread:setColor(SeaChartTheme.colors.coral)
+        self.bread:setColor(SeaChartTheme.hudTextColor and SeaChartTheme.hudTextColor(SeaChartTheme.colors.coral) or SeaChartTheme.colors.coral)
     else
-        self.bread:setColor(SeaChartTheme.colors.white)
+        self.bread:setColor(SeaChartTheme.hudTextColor and SeaChartTheme.hudTextColor(SeaChartTheme.colors.white) or SeaChartTheme.colors.white)
     end
 
 	if self.breadNum == 0 and self.breadCostDecimal ~= 0 then
@@ -3146,8 +3176,15 @@ end
 function Explore:returnToBase( statue, returnRequest )
     local adventure=AdventureProgress.getState(DataManager:getInstance())
     local adventureReturned=false
+    local resultModule,resultBefore,returnReceipt
     if adventure.enabled then
         if statue~='Killed' and statue~='NoBread' then
+            if rawget(_G,'WARM_PIRATE_V1')~=false then
+                local loaded,module=pcall(require,'LuaClass/WarmReturnResult')
+                if loaded and type(module)=='table' and type(module.before)=='function' then
+                    resultModule=module;resultBefore=module.before(DataManager:getInstance(),adventure)
+                end
+            end
             local cargoText=self:getbackObjectStr()
             local ok,awarded=AdventureProgress.returnVoyage(DataManager:getInstance(),statue,returnRequest)
             if not ok then
@@ -3155,6 +3192,7 @@ function Explore:returnToBase( statue, returnRequest )
                 ToastUtil:toastString(messages[awarded] or '返港未保存，请重试。物品、费用和奖励均未结算。');return false
             end
             adventureReturned=true
+            if resultModule then returnReceipt=resultModule.complete(DataManager:getInstance(),resultBefore,ok) end
             self.bagController.battlePackData={};self.bagController.mapCoin=0
             DataManager:getInstance():sendSystemInfo('本航带回：'..cargoText)
             if awarded then DataManager:getInstance():sendSystemInfo('首返补助：25金币、15石、5木、5布。铁匠铺已待建，带回2铁后可按真实配方扩舱20→30。') end
@@ -3222,6 +3260,9 @@ function Explore:returnToBase( statue, returnRequest )
 	clearAllTouchArgs(self)
 	isEnterMap = false
 	gotoMainUI(true)
+    if returnReceipt and zqDispatch and zqDispatch.rightNode then
+        resultModule.show(DataManager:getInstance(),returnReceipt,zqDispatch.rightNode)
+    end
 end
 
 
