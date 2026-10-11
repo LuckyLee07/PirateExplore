@@ -166,7 +166,7 @@ function PlotLayer:plotsPlay(  )
     end
 
     --添加新的文字
-    self.curTTf = cc.LabelTTF:create(self.plots[1][1],MasterTheme.headingFont(false),winSize.height * 0.03)
+    self.curTTf = cc.LabelTTF:create(self.plots[1][1],(rawget(_G,'WARM_PIRATE_V1')~=false and require('LuaClass/WarmTheme').font) or MasterTheme.headingFont(false),winSize.height * 0.03)
     self.curTTf:setColor(MasterTheme.colors.white)
     DialogTheme.fit(self.curTTf, winSize.width - 70)
     self.curTTf:setPosition(cc.p(winSize.width / 2,self.startY))

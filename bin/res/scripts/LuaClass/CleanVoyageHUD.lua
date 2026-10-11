@@ -15,7 +15,7 @@ function H.guarded(owner,view,callback)
  end
 end
 local function text(value,size,parent,x,y)
- local n=cc.LabelTTF:create(value,H.font,size);n:setPosition(cc.p(x,y));n:setColor(cc.c3b(70,74,65));parent:addChild(n,2);return n
+ local n=cc.LabelTTF:create(value,H.font,size);n:setPosition(cc.p(x,y));n:setColor(cc.c3b(38,65,68));parent:addChild(n,2);return n
 end
 local function panel(parent,x,y,w,h)
  local n=cc.LayerColor:create(cc.c4b(255,247,229,244),w,h);n:setPosition(cc.p(x,y));parent:addChild(n);return n
@@ -62,7 +62,7 @@ function H.refresh(owner,view)
  local food=owner.bagController:getBreads()
  view.hudFood=food;view.hudCost=owner.bagController.costSpace;view.hudLimit=owner.bagController.limited
  view.foodLabel:setString('口粮 '..tostring(food))
- view.foodLabel:setColor(food<10 and cc.c3b(187,85,58) or cc.c3b(70,74,65))
+ view.foodLabel:setColor(food<10 and cc.c3b(187,85,58) or cc.c3b(38,65,68))
  view.cargoLabel:setString('货舱 '..tostring(owner.bagController.costSpace or 0)..'/'..tostring(owner.bagController.limited or 0))
  local goal='点击相邻海格，向迷雾前进'
  if s.pending then goal='成果已装船 · 安全带回港口'

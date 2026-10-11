@@ -1,6 +1,10 @@
 -- Native-API-shaped contract test. The legacy suite supplies its Cocos fixture;
 -- it is also run first to assert mode-off behavior was not regressed.
 dofile('tools/tests/home_master_regression.lua')
+-- This fixture models a running scene; full native exit-order coverage lives
+-- in coherent_pause_close_native.lua, not this API-shaped navigation fixture.
+local NavigationNode=getmetatable(cc.Node:create()).__index
+function NavigationNode:isRunning() return not self.cleaned end
 local root = 'bin/res/scripts/LuaClass/'
 local originalRequire = require
 local function equal(actual, expected, context)

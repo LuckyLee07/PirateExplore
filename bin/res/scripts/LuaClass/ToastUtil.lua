@@ -9,6 +9,9 @@
 require "LuaClass/Header"
 require "LuaClass/NotificationNode"
 
+local function cleanToast()return rawget(_G,'WARM_PIRATE_V1')~=false end
+local function toastFont()return cleanToast() and 'fonts/CleanVoyageSans-Regular.ttf' or BoldFont end
+
 local MAX_Z_ORDER = 2147483647   -- 32(or 64)位机器上int的最大值
 
 -- ToastUtil
@@ -110,7 +113,7 @@ function ToastUtil:alchemyCoins(amount)
         root = cc.Node:create()
         root.isAlchemyToast = true
         root.alchemyAmount = 0
-        root.alchemyTitle = cc.LabelTTF:create('', BoldFont, 28.0)
+        root.alchemyTitle = cc.LabelTTF:create('', toastFont(), 28.0)
         root.alchemyTitle:setColor(cc.c3b(255, 250, 237))
         root.alchemyBackdrop = cc.LayerColor:create(cc.c4b(22, 53, 62, 240))
         root.alchemyBackdrop:setAnchorPoint(cc.p(0.5, 0.5))
@@ -203,7 +206,7 @@ local function ordinaryStack(owner, notification, size)
             if kind == 'production' and owner:isProductionQuiet() then
                 table.remove(owner.infoQueue, 1); table.remove(owner.infoKinds, 1)
             else
-                local title = cc.LabelTTF:create(text, BoldFont, 38.0)
+                local title = cc.LabelTTF:create(text, toastFont(), cleanToast() and 28 or 38.0)
                 local maxWidth = math.max(100, size.width - 96)
                 if title:getContentSize().width > maxWidth then
                     title:setDimensions(cc.size(maxWidth, 0))

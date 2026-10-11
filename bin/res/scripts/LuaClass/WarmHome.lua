@@ -16,32 +16,26 @@ function WarmHomeLayer:init()
  local size=cc.Director:getInstance():getVisibleSize();local origin=cc.Director:getInstance():getVisibleOrigin()
  self.viewport=size;local w,h=size.width,size.height;local k=w/640;self.k=k
  local root=cc.Node:create();root:setPosition(origin);self:addChild(root);self.content=root
- local sea=W.cover(W.path..'sea-home.png',w,h);if sea then root:addChild(sea) end
- local stage=cc.Node:create();stage:setPosition(cc.p(w*.5,210*k));root:addChild(stage);self.shipStage=stage
- local ship=W.sprite(W.path..'ship-home.png',w*1.04,h-200*k)
- if ship then
-  ship:setAnchorPoint(cc.p(.5,0));stage:addChild(ship)
-  local scaled=ship:getContentSize();local scale=ship:getScale();self.shipW=scaled.width*scale;self.shipH=scaled.height*scale
- else self.shipW=w;self.shipH=h-220*k end
- local sw,sh=self.shipW,self.shipH
- local captain=W.crewArt(1,sw*.25,sh*.29)
- if captain then captain:setPosition(cc.p(sw*.22,sh*.335));stage:addChild(captain,3) end
- local mate=W.crewArt(2,sw*.22,sh*.25)
- if mate then mate:setPosition(cc.p(-sw*.09,sh*.455));stage:addChild(mate,2);self.mate=mate end
+ -- A calm harbor scene uses the exact clean voyage world art. The boat's
+ -- painted crew is scenery, not a portrait/ownership control.
+ local world,harbor,boat=W.harborWorld(w,h,{boat=true});root:addChild(world)
+ self.harborArt=harbor;self.boatArt=boat
+ local stage=cc.Node:create();stage:setPosition(cc.p(w*.62,h*.40));root:addChild(stage,5);self.shipStage=stage
+ self.shipW=w*.55;self.shipH=h*.40
  self.growth=cc.Node:create();stage:addChild(self.growth,5)
  self.exhibit=cc.Node:create();stage:addChild(self.exhibit,6)
- local titlePaper=W.panel(240*k,80*k,W.colors.paper,20*k);titlePaper:setPosition(cc.p(12*k,h-86*k));root:addChild(titlePaper)
- local title=W.label('海上的小家',30*k,W.colors.ink,26*k,h-39*k,true);root:addChild(title)
- local sub=W.label('船是起点，也是归处',16*k,W.colors.muted,27*k,h-70*k,false);root:addChild(sub)
+ local titlePaper=W.panel(272*k,80*k,W.colors.paper,20*k);titlePaper:setPosition(cc.p(12*k,h-86*k));root:addChild(titlePaper)
+ local title=W.label('晴湾船港',30*k,W.colors.ink,26*k,h-39*k,true);root:addChild(title)
+ local sub=W.label('整备船只，再启新航',16*k,W.colors.muted,27*k,h-70*k,false);root:addChild(sub)
  local purse=W.panel(128*k,42*k,W.colors.paper,21*k);purse:setPosition(cc.p(w-208*k,h-61*k));root:addChild(purse)
  self.coinLabel=W.label('',21*k,W.colors.ink,18*k,21*k,true);purse:addChild(self.coinLabel)
  local settings=W.button('',52*k,48*k,function()self:openSettings()end,{icon='settings',size=18*k});settings:setPosition(cc.p(w-42*k,h-40*k));root:addChild(settings);self.settingsButton=settings
  local function hotspot(text,x,y,kind,icon)
-  local b=W.button(text,136*k,45*k,function()self:openActivity(kind)end,{size=20*k,icon=icon})
+  local b=W.button(text,136*k,45*k,function()self:openActivity(kind)end,{size=20*k})
   b:setPosition(cc.p(x,y));root:addChild(b,10);return b
  end
- self.logButton=hotspot('航海日志',w*.25,h*.43,'log','log')
- self.collectionButton=hotspot('船舱珍藏',w*.76,h*.31,'collection','chest')
+ self.logButton=hotspot('航海日志',w*.24,h*.36,'log','log')
+ self.collectionButton=hotspot('船舱珍藏',w*.76,h*.36,'collection','chest')
  local status=W.panel(w-48*k,53*k,W.colors.paper,20*k);status:setPosition(cc.p(24*k,166*k));root:addChild(status,11)
  self.statusLabel=W.label('',19*k,W.colors.ink,16*k,27*k,false);status:addChild(self.statusLabel)
  self.primaryButton=W.button('准备出航',w-74*k,74*k,function()self:openPrimary()end,{primary=true,icon='sail',size=32*k});self.primaryButton:setPosition(cc.p(w/2,116*k));root:addChild(self.primaryButton,11)
@@ -73,7 +67,7 @@ function WarmHomeLayer:refreshSummary()
  elseif food==0 then hint='给货舱装些食物，就可以去探索了' end
  self.statusLabel:setString(hint);W.fit(self.statusLabel,self.viewport.width-80*self.k)
  self.primaryButton.label:setString(self.recovery and '补充船员' or (self.summary.unlocked and '准备出航' or '准备我们的船'))
- if self.mate then self.mate:setVisible(c>0 or held>0 or s.npcRescued==true)end
+ self.crewButton.label:setString(c>0 and ('船员 · 已选 '..c) or ('船员 · '..held..' 人'));W.fit(self.crewButton.label,self.viewport.width*.43-62*self.k)
  local memories=require('LuaClass/WarmMemories').get(dm)
  self.exhibit:removeAllChildren()
  if memories.displayId and memories.items and memories.items[memories.displayId] then
@@ -113,10 +107,10 @@ end
 function WarmHomeLayer:openPort(page)
  if self:blocked()then return end
  local w,h=self.viewport.width,self.viewport.height;local k=self.k
- local layer=cc.LayerColor:create(cc.c4b(52,35,26,115),w,h);self.warmPort=layer;self:addChild(layer,20000)
+ local layer=cc.LayerColor:create(cc.c4b(25,49,52,115),w,h);self.warmPort=layer;self:addChild(layer,20000)
  local pw,ph=w-64*k,596*k;local p=W.panel(pw,ph,W.colors.paper,28*k);p:setPosition(cc.p(32*k,(h-ph)/2));layer:addChild(p)
  p:addChild(W.label('船上的事务',30*k,W.colors.ink,28*k,ph-44*k,true))
- p:addChild(W.label('原有功能，都在这里',18*k,W.colors.muted,28*k,ph-78*k))
+ p:addChild(W.label('补给、制造与日常事务',18*k,W.colors.muted,28*k,ph-78*k))
  local function close()if self.warmPort==layer then self.warmPort=nil;layer:removeFromParent(true)end end
  page=page or 1
  local entries=page==1 and {{'建设船港',3},{'制造与改装',5},{'采集补给',6},{'炼金与仓库',4},{'商店',7}} or {{'船员成长 / 天赋','growth'},{'成就记录','achievement'},{'航海榜单','ranking'},{'钻石商城','diamondStore'},{'礼包（付费）','gift'}}

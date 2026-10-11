@@ -19,10 +19,10 @@ local originalColors = {
     muted=cc.c3b(79,104,107), line=cc.c3b(211,198,168), sea=cc.c3b(45,126,142),
     coral=MasterTheme.colors.coral, white=MasterTheme.colors.white, danger=cc.c3b(170,61,45)
 }
-local warmColors={light=cc.c3b(255,252,241),section=cc.c3b(250,234,211),danger=cc.c3b(178,57,40)}
+local warmColors={light=cc.c3b(255,252,242),section=cc.c3b(240,243,226),danger=cc.c3b(178,57,40)}
 T.colors=setmetatable({},{__index=function(_,key)
     local W=warm()
-    if W then return warmColors[key] or W.colors[key] end
+    if W then return key=='coral' and W.colors.sea or warmColors[key] or W.colors[key] end
     return originalColors[key]
 end})
 
@@ -30,17 +30,18 @@ local function icon(glyph,size,color)
     local W=warm()
     local aliases={build='hammer',cargo='chest',wheel='settings'}
     local name=aliases[glyph] or glyph
-    if W and ({sail=true,crew=true,hammer=true,chest=true,settings=true,bag=true,log=true,map=true,back=true})[name] then
-        return W.icon(name,size)
-    end
+    if W then return W.icon(name,size,color) end
     return MasterTheme.icon(glyph,size,color)
 end
 
-function T.bodyFont() return MasterTheme.headingFont(false) end
+function T.bodyFont()
+    local W=warm();return W and W.font or MasterTheme.headingFont(false)
+end
 
 function T.styleLabel(label, role, width)
     role=role or 'body'
-    label:setFontName(role=='heading' and MasterTheme.headingFont(true) or T.bodyFont())
+    local W=warm()
+    label:setFontName(W and W.font or (role=='heading' and MasterTheme.headingFont(true) or T.bodyFont()))
     label:setColor(T.colors[role] or (role=='action' and T.colors.white) or T.colors.ink)
     if width then MasterTheme.fit(label,width) end
     return label
@@ -58,7 +59,7 @@ function T.panel(w,h,style)
     local W=warm()
     if W then
         local color=T.colors[style] or T.colors.light
-        local n=W.panel(w,h,color,math.min(18,w/2,h/2))
+        local n=W.panel(w,h,color,math.min(8,w/2,h/2))
         n:setAnchorPoint(cc.p(.5,.5))
         return n
     end
@@ -152,13 +153,8 @@ end
 -- changing the legacy table, title, or footer safe areas.
 function T.pagePaper(w,h,bottom,top)
     local n=T.panel(w,h,'paper');n:setAnchorPoint(cc.p(0,0))
-    local W=warm()
-    if W then
-        -- Only the narrow outer gutter carries scenery; the real inventory
-        -- lists and their labels remain on a continuous opaque cream sheet.
-        local sea=W.cover(W.path..'sea-home.png',w,h)
-        if sea then n:addChild(sea) end
-    end
+    -- The entire legacy content area uses the same quiet cream surface as
+    -- the clean voyage. Item illustrations provide the visual detail.
     local sheet=T.panel(w-16,h-bottom-top,'light')
     sheet:setPosition(cc.p(w/2,bottom+(h-bottom-top)/2));n:addChild(sheet)
     return n

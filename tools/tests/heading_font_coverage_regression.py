@@ -11,7 +11,7 @@ missing = {}
 for path in sorted((root / 'bin/res/scripts/LuaClass').glob('*.lua')):
     # The build script includes runtime source text (including future headings).
     # Check CJK only: ASCII/layout symbols can legitimately use platform fallback.
-    active_cmap = sans_cmap if path.name in {"CleanVoyageHUD.lua", "CleanVoyageView.lua"} else cmap
+    active_cmap = sans_cmap if (path.name.startswith("Warm") or path.name in {"CleanVoyageHUD.lua", "CleanVoyageView.lua"}) else cmap
     for char in set(path.read_text(encoding='utf-8')):
         if 0x3400 <= ord(char) <= 0x9fff and ord(char) not in active_cmap:
             missing.setdefault(char, []).append(path.name)

@@ -15,11 +15,7 @@ function S.background(size)
     local root=cc.Node:create();root:setContentSize(size);root:setAnchorPoint(cc.p(.5,.5))
     local W=warm()
     if W then
-        root:addChild(W.panel(size.width,size.height,W.colors.sea,0))
-        local art=W.cover(W.path..'sea-home.png',size.width,size.height)
-        if art then root:addChild(art) end
-        local ship=W.sprite(W.path..'ship-home.png',size.width*.8,size.height*.58)
-        if ship then ship:setPosition(cc.p(size.width*.5,size.height*.54));root:addChild(ship) end
+        local world=W.harborWorld(size.width,size.height);root:addChild(world)
         -- The caller owns white loading tips/progress labels in the lower
         -- 240 pixels; retain an opaque warm backing at exactly that boundary.
         local wash=W.panel(size.width+20,240,W.colors.ink,24)

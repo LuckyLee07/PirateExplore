@@ -174,7 +174,7 @@ function U.open(owner,goalId)
  if owner.warmUpgrade and not owner.warmUpgrade.disposed then return owner.warmUpgrade end
  local W=require 'LuaClass/WarmTheme';local dm=DataManager:getInstance()
  local size=cc.Director:getInstance():getVisibleSize();local scale=math.min(size.width/480,size.height/800)
- local layer=cc.LayerColor:create(cc.c4b(54,42,34,185),size.width,size.height)
+ local layer=cc.LayerColor:create(cc.c4b(25,49,52,185),size.width,size.height)
  owner:addChild(layer,20000);owner.warmUpgrade=layer;layer.goalId=tostring(goalId)
  local canvas=cc.Node:create();canvas:setContentSize(cc.size(480,800));canvas:setScale(scale)
  canvas:setPosition(cc.p((size.width-480*scale)/2,(size.height-800*scale)/2));layer:addChild(canvas);layer.canvas=canvas
@@ -215,8 +215,8 @@ function U.open(owner,goalId)
   label(q.id=='1148' and '更宽敞的货舱，带回更多收获' or '在港口提升每次手动炼金收益',17,40,698,400,W.colors.muted)
   -- Keep the effect caption in its own warm-paper row, below the ship
   -- bounds and above the capability text (including at short viewports).
-  local art=W.sprite(W.path..'ship-home.png',408,238)
-  if art then art:setPosition(cc.p(240,577));canvas:addChild(art)end
+  local art=W.sprite(W.worldPath..'boat-clean-ne.png',408,218)
+  if art then art:setPosition(cc.p(240,570));canvas:addChild(art)end
   if q.id=='1148' then
    local crate=W.icon('chest',66);crate:setPosition(cc.p(137,483));canvas:addChild(crate)
    label(done and '货舱已扩容' or '新增货舱 · 效果预览',16,40,447,400,W.colors.muted,true)

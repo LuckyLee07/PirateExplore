@@ -16,16 +16,30 @@ end
 
 -- Main-menu chrome is deliberately separate from the legacy page theme.
 -- The old route buttons remain hidden guide targets; only four groups render.
-local MENU_COLORS = {
+local ORIGINAL_MENU_COLORS = {
     ink = cc.c3b(5, 47, 61), paper = cc.c3b(247, 238, 213),
     pale = cc.c3b(224, 226, 205), coral = cc.c3b(239, 102, 72),
     sea = cc.c3b(31, 111, 126), line = cc.c3b(91, 137, 145)
 }
+local MENU_COLORS=setmetatable({},{__index=function(_,key)
+    if warmEnabled() then
+        if key=='pale' then return WarmTheme.colors.muted end
+        if key=='coral' then return WarmTheme.colors.sea end
+        return WarmTheme.colors[key]
+    end
+    return ORIGINAL_MENU_COLORS[key]
+end})
+local function menuFont(bold)
+    return warmEnabled() and WarmTheme.font or (bold and BoldFont or "Arial")
+end
+local function businessFont(bold)
+    return warmEnabled() and WarmTheme.font or MasterTheme.headingFont(bold)
+end
 local function menuRGBA(color, alpha)
     return cc.c4f(color.r / 255, color.g / 255, color.b / 255, alpha or 1)
 end
 local function menuLabel(text, size, color, x, y, bold, anchor)
-    local label = cc.LabelTTF:create(tostring(text or ""), bold and BoldFont or "Arial", size)
+    local label = cc.LabelTTF:create(tostring(text or ""), menuFont(bold), size)
     label:setColor(color); label:setAnchorPoint(cc.p(anchor or 0, 0.5))
     label:setPosition(cc.p(x, y)); return label
 end
@@ -33,6 +47,11 @@ local function headingFont()
     return MasterTheme.headingFont and MasterTheme.headingFont() or BoldFont
 end
 local function masterGraphic(name, width, height)
+    if warmEnabled() then
+        local c=name=='ink-brush.png' and WarmTheme.colors.ink or
+            (name=='coral-brush.png' and WarmTheme.colors.sea or WarmTheme.colors.paper)
+        return WarmTheme.panel(width,height,c,8)
+    end
     return MasterTheme.material(name, width, height)
 end
 local function transparentMenuItem(text, width, height, callback, size, color)
@@ -50,8 +69,10 @@ end
 -- targets and purchase callbacks remain independent of the approved Home UI.
 local function legacyCurrencyButton(callback)
     local add=transparentMenuItem('+',59,59,callback,28,MENU_COLORS.ink)
-    add.bLabel:setFontName(MasterTheme.headingFont(false))
-    local chip=MasterTheme.material('currency-paper.png',48,48,cc.c3b(226,222,203))
+    add.bLabel:setFontName(businessFont(false))
+    if warmEnabled() then add.bLabel:setColor(WarmTheme.colors.white) end
+    local chip=warmEnabled() and WarmTheme.panel(48,48,WarmTheme.colors.sea,8) or
+        MasterTheme.material('currency-paper.png',48,48,cc.c3b(226,222,203))
     chip:setPosition(cc.p(5.5,5.5));add:addChild(chip,1)
     local n=cc.Node:create();n:setContentSize(cc.size(59,59));n:setAnchorPoint(cc.p(.5,.5))
     n:setCascadeOpacityEnabled(true)
@@ -61,7 +82,8 @@ local function legacyCurrencyButton(callback)
     return n
 end
 local function legacyCurrencyPaper(node)
-    local paper=MasterTheme.material('currency-paper.png',254,42)
+    local paper=warmEnabled() and WarmTheme.panel(254,42,WarmTheme.colors.white,8) or
+        MasterTheme.material('currency-paper.png',254,42)
     paper:setPosition(cc.p(0,-21));node:addChild(paper,-1)
 end
 -- Only these approved static ornaments use detail sprites. Dynamic amounts,
@@ -81,6 +103,7 @@ local function detailSprite(name, width, height)
     return sprite
 end
 local function selectedBrush(width, height)
+    if warmEnabled() then return WarmTheme.panel(width,height,WarmTheme.colors.sea,2) end
     local sprite = detailSprite("nav-selected-stroke.png", width, height)
     if not sprite then return masterGraphic("coral-brush.png", width, height) end
     local node = cc.Node:create(); node:setContentSize(cc.size(width, height))
@@ -89,6 +112,20 @@ local function selectedBrush(width, height)
 end
 -- Missing assets keep the already-tested native-symbol compatibility fallback.
 local function nativeIcon(kind)
+    if warmEnabled() then
+        local node=cc.DrawNode:create()
+        if kind=='coin' then
+            local gold=menuRGBA(WarmTheme.colors.gold)
+            node:drawDot(cc.p(0,0),14,gold)
+            node:drawSegment(cc.p(0,-7),cc.p(0,7),1.5,menuRGBA(WarmTheme.colors.paper))
+        else
+            local p={cc.p(-14,4),cc.p(-7,13),cc.p(7,13),cc.p(14,4),cc.p(0,-14)}
+            local sea=menuRGBA(WarmTheme.colors.sea)
+            node:drawPolygon(p,#p,sea,0,sea)
+            node:drawSegment(cc.p(-14,4),cc.p(14,4),.7,menuRGBA(WarmTheme.colors.paper))
+        end
+        return node
+    end
     local painted = detailSprite(kind == "coin" and "coin-detail.png" or "gem-detail.png", 34, 34)
     if painted then return painted end
     local node = cc.DrawNode:create()
@@ -169,7 +206,7 @@ function MainMenuLayer:init()
     local visibleSize = cc.Director:getInstance():getVisibleSize()
     local origin = cc.Director:getInstance():getVisibleOrigin()
 
-    local colors = BTheme.colors
+    local colors = warmEnabled() and MENU_COLORS or BTheme.colors
     self.selectedIndex = -1
     self.storyQueue = {}
     self.bIsStartStory = false
@@ -179,15 +216,20 @@ function MainMenuLayer:init()
     UITopHeight = 100
     UIBottomHeight = 136
     self.navigationHeight = 118
-    local TopBg = BTheme.panel(visibleSize.width, UITopHeight, colors.ink,
+    local TopBg = BTheme.panel(visibleSize.width, UITopHeight, warmEnabled() and colors.paper or colors.ink,
         origin.x, origin.y + visibleSize.height - UITopHeight)
     self:addChild(TopBg)
     self.legacyTopBg = TopBg
-    local headerWash = MasterTheme.material("ink-brush.png", visibleSize.width, UITopHeight)
-    TopBg:addChild(headerWash)
-    local headerTitle = MasterTheme.label("港口事务", 28, MENU_COLORS.paper, 24, 71, true)
+    if not warmEnabled() then
+        local headerWash = MasterTheme.material("ink-brush.png", visibleSize.width, UITopHeight)
+        TopBg:addChild(headerWash)
+    end
+    local headerTitle = MasterTheme.label("港口事务", 28,
+        warmEnabled() and MENU_COLORS.ink or MENU_COLORS.paper, 24, 71, true)
+    if warmEnabled() then headerTitle:setFontName(WarmTheme.font) end
     TopBg:addChild(headerTitle)
-    TopBg:addChild(BTheme.panel(visibleSize.width - 48, 1, colors.sea, 24, 48))
+    TopBg:addChild(BTheme.panel(visibleSize.width - 48, 1,
+        warmEnabled() and MENU_COLORS.line or colors.sea, 24, 48))
 
     local function moneyString(value)
         value = tonumber(value) or 0
@@ -200,7 +242,7 @@ function MainMenuLayer:init()
     legacyCurrencyPaper(self.coinNode)
     local coinIcon = nativeIcon("coin");coinIcon:setPosition(cc.p(20,0));self.coinNode:addChild(coinIcon)
     local coinLabel = BTheme.label(moneyString(DataManager:getInstance():getRoleData(roleMoney)), 24, MENU_COLORS.ink, 56, 0)
-    coinLabel:setFontName(MasterTheme.headingFont(false))
+    coinLabel:setFontName(businessFont(false))
     self.coinNode:addChild(coinLabel)
     self.coinValueLabel = coinLabel
     DataManager:getInstance():registerEvent(roleMoney, "mainmenu", function()
@@ -222,7 +264,7 @@ function MainMenuLayer:init()
     legacyCurrencyPaper(self.diamondNode)
     local diamondIcon = nativeIcon("diamond");diamondIcon:setPosition(cc.p(20,0));self.diamondNode:addChild(diamondIcon)
     local diamondLabel = BTheme.label(moneyString(DataManager:getInstance():getRoleData(roleDiamond)), 24, MENU_COLORS.ink, 56, 0)
-    diamondLabel:setFontName(MasterTheme.headingFont(false))
+    diamondLabel:setFontName(businessFont(false))
     self.diamondNode:addChild(diamondLabel)
     self.diamondValueLabel = diamondLabel
     DataManager:getInstance():registerEvent(roleDiamond, "mainmenu", function()
@@ -281,7 +323,8 @@ function MainMenuLayer:init()
             groupCallbacks[index], 23, MENU_COLORS.paper)
         item:setPosition(cc.p(spacing * (index - 0.5), self.navigationHeight / 2))
         item.bLabel:setPosition(cc.p(spacing / 2, 38))
-        local icon = MasterTheme.icon(groupIcons[index], 48, MENU_COLORS.paper)
+        local icon = warmEnabled() and WarmTheme.icon(groupIcons[index],48,MENU_COLORS.paper) or
+            MasterTheme.icon(groupIcons[index], 48, MENU_COLORS.paper)
         icon:setPosition(cc.p(spacing / 2 - 24, 62)); item:addChild(icon)
         local brush = selectedBrush(50, 7)
         brush:setPosition(cc.p(spacing / 2 - 25, 54)); item:addChild(brush)

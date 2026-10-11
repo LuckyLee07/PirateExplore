@@ -2294,7 +2294,7 @@ function FightScene:showFailInfoAndReturn()
 
             colorLayer:addChild(backBtnLabel,100000)
 
-            local strengtheningBtnLabel = CombatTheme.label("变 强", BoldFont, 35.0)
+            local strengtheningBtnLabel = CombatTheme.label(rawget(_G,'WARM_PIRATE_V1')==false and "变 强" or "查看礼包", BoldFont, 30.0)
             -- strengtheningBtnLabel:setPosition(cc.p(trapDes2:getPositionX() + trapDes2:getContentSize().width / 2 + 10 + strengtheningBtnLabel:getContentSize().width / 2,trapDes2:getPositionY()))
             strengtheningBtnLabel:setColor(cc.c3b(255,255,255))
             strengtheningBtnLabel:setPosition(cc.p(abord:getPositionX() + buttonInterval + strengtheningBtnLabel:getContentSize().width / 2,trapDes1:getPositionY() - trapDes1:getContentSize().height - strengtheningBtnLabel:getContentSize().height))
@@ -3316,7 +3316,7 @@ function FightRewardScene:init(haveDatas, dropDatas)
         if data then
             -- labe
             local label = CombatTheme.label(tostring(data.name), BoldFont, 30.0)
-            label:setFontName(MasterTheme.headingFont(false))
+            label:setFontName((rawget(_G,'WARM_PIRATE_V1')~=false and require('LuaClass/WarmTheme').font) or MasterTheme.headingFont(false))
             label:setColor(MasterTheme.colors.ink)
             label:setPosition(100.0, 75.0)
             label:setAnchorPoint(cc.p(0.0, 0.5))
@@ -3325,7 +3325,7 @@ function FightRewardScene:init(haveDatas, dropDatas)
 
         -- num
         local num = CombatTheme.label("数量".."  +"..tostring(item.num), BoldFont, 30.0)
-        num:setFontName(MasterTheme.headingFont(false))
+        num:setFontName((rawget(_G,'WARM_PIRATE_V1')~=false and require('LuaClass/WarmTheme').font) or MasterTheme.headingFont(false))
         num:setColor(MasterTheme.colors.muted)
         num:setPosition(100.0, 40.0)
         num:setAnchorPoint(cc.p(0.0, 0.5))
@@ -3404,7 +3404,7 @@ function FightRewardScene:init(haveDatas, dropDatas)
         -- labe
         if data then
             local label = CombatTheme.label(tostring(data.name), BoldFont, 30.0)
-            label:setFontName(MasterTheme.headingFont(false))
+            label:setFontName((rawget(_G,'WARM_PIRATE_V1')~=false and require('LuaClass/WarmTheme').font) or MasterTheme.headingFont(false))
             label:setColor(MasterTheme.colors.ink)
             label:setPosition(100.0, 75.0)
             label:setAnchorPoint(cc.p(0.0, 0.5))
@@ -3413,7 +3413,7 @@ function FightRewardScene:init(haveDatas, dropDatas)
 
         -- num
         local num = CombatTheme.label("数量".."  +"..tostring(item.num), BoldFont, 30.0)
-        num:setFontName(MasterTheme.headingFont(false))
+        num:setFontName((rawget(_G,'WARM_PIRATE_V1')~=false and require('LuaClass/WarmTheme').font) or MasterTheme.headingFont(false))
         num:setColor(MasterTheme.colors.muted)
         num:setPosition(100.0, 40.0)
         num:setAnchorPoint(cc.p(0.0, 0.5))

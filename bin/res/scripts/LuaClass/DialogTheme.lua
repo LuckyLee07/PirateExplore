@@ -15,21 +15,21 @@ local function warm()
     if type(W)=='table' and type(W.enabled)=='function' and W.enabled() then return W end
 end
 local function palette(key)
-    local W=warm();return W and W.colors[key] or M.colors[key]
+    local W=warm();return W and (key=='coral' and W.colors.sea or W.colors[key]) or M.colors[key]
 end
 D.colors=setmetatable({},{__index=function(_,key)return palette(key)end})
 D.raised = cc.c3b(15, 61, 73)
 D.line = cc.c3b(100, 126, 124)
 local function lineColor()
-    return warm() and cc.c3b(176,137,106) or D.line
+    return warm() and cc.c3b(81,110,111) or D.line
 end
 local function material(name,w,h,tint)
     local W=warm()
     if not W then return M.material(name,w,h,tint) end
-    local c=name=='coral-brush.png' and W.colors.coral or
+    local c=name=='coral-brush.png' and W.colors.sea or
         (name=='ink-brush.png' and W.colors.ink or W.colors.paper)
     if tint then c=cc.c3b(c.r*tint.r/255,c.g*tint.g/255,c.b*tint.b/255) end
-    return W.panel(w,h,c,math.min(20,h/2))
+    return W.panel(w,h,c,math.min(8,h/2))
 end
 local sizes = {}
 local function cascade(node)
@@ -58,10 +58,10 @@ local function surface(w, h, tone, selected)
     if W then
         -- Unknown caller-owned white labels require a dark body. Only callers
         -- explicitly asking for paper receive a light surface.
-        local c=paper and W.colors.paper or cc.c3b(108,73,53)
+        local c=paper and W.colors.paper or cc.c3b(48,78,83)
         if tone=='ink' or tone=='panel' then c=W.colors.ink end
-        if selected then c=paper and cc.c3b(244,225,199) or cc.c3b(126,87,63) end
-        n:addChild(W.panel(w,h,c,math.min(24,w/2,h/2)))
+        if selected then c=paper and cc.c3b(235,240,223) or cc.c3b(50,88,91) end
+        n:addChild(W.panel(w,h,c,math.min(8,w/2,h/2)))
         if tone=='panel' and h>110 then
             HomeTheme.rule(n,24,h-77,math.max(0,w-48),lineColor())
         end
@@ -95,7 +95,7 @@ end
 function D.paperSheet(w,h)
     local n=cc.Node:create();n:setContentSize(cc.size(w,h));n:setAnchorPoint(cc.p(.5,.5))
     local W=warm()
-    if W then n:addChild(W.panel(w,h,W.colors.paper,20));return n end
+    if W then n:addChild(W.panel(w,h,W.colors.paper,8));return n end
     local path='Images/UI/Adventure/Talent/paper.png'
     if cc.FileUtils:getInstance():isFileExist(path) then
         local paper=cc.Sprite:create(path);local z=paper:getContentSize()
@@ -185,8 +185,15 @@ function D.closeSD(callback)
     return button
 end
 
+local function font(strong)
+    local W=warm();return W and W.font or M.headingFont(strong)
+end
+local function icon(name,size)
+    local W=warm();return W and W.icon(name,size,W.colors.white) or M.icon(name,size)
+end
 function D.label(text, size, color)
     local n=M.label(text,size,color or palette('white'),0,0,true,.5)
+    n:setFontName(font(true))
     return n
 end
 function D.fit(label, width) return M.fit(label, width) end
@@ -195,8 +202,10 @@ function D.screen(parent, size)
     local W=warm();local ink=palette('ink')
     local field=cc.LayerColor:create(cc.c4b(ink.r,ink.g,ink.b,255),size.width,size.height)
     parent:addChild(field,-20)
-    local art=M.cover(W and W.path..'sea-home.png' or M.path..'harbor-full.png',size.width,size.height)
-    if art then art:setOpacity(38);parent:addChild(art,-19) end
+    if not W then
+        local art=M.cover(M.path..'harbor-full.png',size.width,size.height)
+        if art then art:setOpacity(38);parent:addChild(art,-19) end
+    end
     return field
 end
 
@@ -235,8 +244,8 @@ function D.applyBase(view)
     view.RightBg:setPosition(cc.p(z.width*.72,view.titleHeight*.5))
     view.titleBg:addChild(view.LeftBg);view.titleBg:addChild(view.RightBg)
     D.skinMenuItem(view.topLeftBtn,'secondary');D.skinMenuItem(view.topRightBtn,'secondary')
-    view.topLeftBtnLabel:setFontName(M.headingFont(true))
-    view.topRightBtnLabel:setFontName(M.headingFont(true))
+    view.topLeftBtnLabel:setFontName(font(true))
+    view.topRightBtnLabel:setFontName(font(true))
     view.topLeftBtnLabel:setColor(palette('white'));view.topRightBtnLabel:setColor(palette('white'))
     D.fit(view.titleLabel,z.width*.40)
     if view.infoNode then
@@ -250,7 +259,7 @@ function D.applyBase(view)
         for _,entry in ipairs({{'setBtnText','炼金'},{'leftBtnText','天赋'},{'rightBtnText','情报'}}) do
             local old=view[entry[1]];local label=D.label(entry[2],24)
             label:setPosition(old:getPosition());label:setOpacity(old:getOpacity())
-            label:setFontName(M.headingFont(false));label:setFontSize(22)
+            label:setFontName(font(false));label:setFontSize(22)
             old:removeFromParent(true);view.infoNode:addChild(label,3);view[entry[1]]=label
         end
         local function skinSD(button)
@@ -264,9 +273,9 @@ function D.applyBase(view)
                 face:setAnchorPoint(cc.p(0,0))
                 local visual=cascade(material(i==1 and 'coral-brush.png' or 'ink-brush.png',92,92))
                 visual:setPosition(cc.p((b.width-92)*.5,(b.height-92)*.5));face:addChild(visual)
-                local icon=M.icon('anchor',50)
-                icon:setPosition(cc.p((b.width-icon:getContentSize().width)*.5,(b.height-icon:getContentSize().height)*.5))
-                face:addChild(icon);button:addChild(face)
+                local glyph=icon('anchor',50)
+                glyph:setPosition(cc.p((b.width-glyph:getContentSize().width)*.5,(b.height-glyph:getContentSize().height)*.5))
+                face:addChild(glyph);button:addChild(face)
             end
             button.normalSpr:setVisible(normalVisible);button.selectSpr:setVisible(selectedVisible)
         end
@@ -279,13 +288,13 @@ function D.applyBase(view)
         view.rightBtnText:setPositionY(view.rightBtn:getPositionY()-56)
         D.skinMenuItem(view.leftBtn,'secondary');D.skinMenuItem(view.rightBtn,'secondary')
         for _,entry in ipairs({{view.leftBtn,'key'},{view.rightBtn,'sail'}}) do
-            local b=entry[1]:getContentSize();local icon=M.icon(entry[2],math.min(b.width,b.height)*.5)
-            icon:setPosition(cc.p((b.width-icon:getContentSize().width)*.5,(b.height-icon:getContentSize().height)*.5))
-            entry[1]:addChild(icon)
+            local b=entry[1]:getContentSize();local glyph=icon(entry[2],math.min(b.width,b.height)*.5)
+            glyph:setPosition(cc.p((b.width-glyph:getContentSize().width)*.5,(b.height-glyph:getContentSize().height)*.5))
+            entry[1]:addChild(glyph)
         end
         D.surfaceAfterSizing(view.bottomInfoBox,'ink')
         view.infoBoxLabel:setColor(palette('white'));view.infoLabel:setColor(palette('white'))
-        view.infoBoxLabel:setFontName(M.headingFont(false));view.infoLabel:setFontName(M.headingFont(false))
+        view.infoBoxLabel:setFontName(font(false));view.infoLabel:setFontName(font(false))
         view.infoBoxLabel:disableStroke();view.infoLabel:disableStroke()
         view.infoLabel:setFontSize(22)
     end

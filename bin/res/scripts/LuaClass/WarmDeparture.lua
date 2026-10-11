@@ -1,4 +1,4 @@
--- Warm v1 departure presentation. Expedition remains the owner of inventory,
+-- A quiet harbor manifest. Expedition remains the owner of inventory,
 -- selection, production listeners and its guarded departure transaction.
 local W=require 'LuaClass/WarmTheme'
 local M=require 'LuaClass/MasterTheme'
@@ -19,7 +19,7 @@ function D.create(view)
     view.keepNavigation=false
     local bottom=origin.y+12*u
     view.warmOriginX=origin.x;view.warmBottom=bottom
-    local hero=math.min(292*u,size.height*.26)
+    local hero=math.floor(math.min(306*u,size.height*.29))
     local sheetTop=origin.y+size.height-hero
     view.isWarmDeparture=true;view.warmScale=u
     view.adventureScaleX=size.width/941;view.adventureScaleY=.88*u
@@ -34,14 +34,14 @@ function D.create(view)
     -- This is the existing dark details popup, so retain its light foreground.
     view.infoBoxLabel:setColor(M.colors.white)
     local root=cc.Node:create();view.adventureRoot=root;view:addChild(root,2)
-    put(root,W.panel(size.width,size.height,C.sea,0),origin.x,origin.y)
-    local art=W.cover(W.path..'sea-home.png',size.width,size.height)
-        or W.cover('Images/UI/Adventure/Departure/backdrop.png',size.width,size.height)
-    if art then put(root,art,origin.x,origin.y) end
-    -- The same separate world/ship layers as home keep preparation in its port.
-    -- The lower cream sheet naturally occludes the ship's lower deck.
-    local shipArt=W.sprite(W.path..'ship-home.png',420*u,630*u)
-    if shipArt then put(root,shipArt,origin.x+173*u,sheetTop+90*u) end
+    put(root,W.panel(size.width,size.height,C.paper,0),origin.x,origin.y)
+    -- One shared harbor scene connects Home and preparation to the real sea.
+    -- It is decorative only; ship identity and all quantities remain live data.
+    local world,harbor,boat=W.harborWorld(size.width,hero,{compact=true,boat=true})
+    if boat then boat:setScale(boat:getScale()*.65);boat:setPosition(cc.p(size.width*.72,hero*.50)) end
+    view.departureWorld=world
+    put(root,world,origin.x,sheetTop)
+    put(root,W.panel(size.width,90*u,C.ink,0),origin.x,origin.y+size.height-90*u)
     local function label(text,font,color,x,y,bold,anchor)
         return put(root,W.label(text,font*u,color,0,0,bold,anchor),origin.x+x*u,y)
     end
@@ -49,31 +49,30 @@ function D.create(view)
         opts=opts or {};opts.size=(opts.size or 23)*u
         return put(root,W.button(text,w*u,h*u,callback,opts),origin.x+x*u,y)
     end
-    local back=button('返回',73,origin.y+size.height-50*u,110,60,function()
+    local back=button('返回',68,origin.y+size.height-45*u,96,58,function()
         if not view.departureInProgress then zqDispatch:moveToHome() end
-    end,{size=23})
+    end,{size=22,color=C.ink,textColor=C.white})
     view.departureBackButton=back.item
-    put(root,W.panel(276*u,60*u,C.paper,22*u),origin.x+140*u,origin.y+size.height-80*u)
-    label('出航准备',31,C.ink,278,origin.y+size.height-50*u,true,.5)
-    -- Live money is visible, but preparation has no competing shop CTA.
-    put(root,W.panel(158*u,56*u,C.paper,24*u),origin.x+458*u,origin.y+size.height-78*u)
-    local coin=require('LuaClass/DepartureTheme').currencyIcon('coin',34*u)
-    put(root,coin,origin.x+470*u,origin.y+size.height-67*u)
-    view.departureCoinLabel=label('',25,C.ink,513,origin.y+size.height-50*u,true)
+    label('出航准备',30,C.white,141,origin.y+size.height-35*u,true)
+    label('安排伙伴与本航补给',16,C.white,143,origin.y+size.height-67*u,false)
+    -- Live balance is informational; no competing shop route in preparation.
+    label('金币',16,C.white,606,origin.y+size.height-24*u,false,1)
+    view.departureCoinLabel=label('',24,C.white,606,origin.y+size.height-53*u,true,1)
     local function refreshMoney()
         local n=tonumber(DataManager:getInstance():getRoleData(roleMoney)) or 0
         view.departureCoinLabel:setString(n>=1000000 and math.floor(n/10000)..'万' or tostring(n))
-        M.fit(view.departureCoinLabel,87*u)
+        M.fit(view.departureCoinLabel,132*u)
     end
     refreshMoney();DataManager:getInstance():registerEvent(roleMoney,'approvedDeparture',refreshMoney)
     -- The actual current ship and voyage, rather than a fictional destination.
-    put(root,W.panel(248*u,61*u,C.paper,22*u),origin.x+24*u,sheetTop+22*u)
-    view.shipNameLabel=label('',26,C.ink,45,sheetTop+54*u,true)
+    put(root,W.panel(size.width,82*u,C.paper,0),origin.x,sheetTop)
+    label('当前战船',16,C.muted,35,sheetTop+62*u,false)
+    view.shipNameLabel=label('',25,C.ink,35,sheetTop+31*u,true)
     local state=A.getState(DataManager:getInstance())
     if state.enabled then
-        put(root,W.panel(164*u,40*u,C.paper,18*u),origin.x+454*u,sheetTop+87*u)
-        view.voyageLabel=label('第 '..((tonumber(state.voyage) or 0)+1)..' 次出航',21,C.ink,602,sheetTop+107*u,true,1)
-        view.objectiveButton=button(objectiveText()..'  ›',446,sheetTop+53*u,342,61,function()
+        put(root,W.panel(160*u,34*u,C.paper,7*u),origin.x+25*u,sheetTop+97*u)
+        view.voyageLabel=label('第 '..((tonumber(state.voyage) or 0)+1)..' 次出航',18,C.ink,105,sheetTop+114*u,true,.5)
+        view.objectiveButton=button(objectiveText()..'  ›',456,sheetTop+39*u,318,56,function()
             if view.departureInProgress then return end
             require('LuaClass/AdventureDialog').show('本航目标','目标也可在沉船处改选。首航巡逻航段暂停普通随机遭遇；粮耗与主动战斗照常，离段后恢复风险。',{
                 {label='救援：带人安全返港',detail='消耗额外食物，换取港口伙伴与章门方位',action=function()
@@ -89,7 +88,7 @@ function D.create(view)
                 {label='暂不更改'}},view)
         end,{size=22})
     end
-    put(root,W.panel(size.width,sheetTop-bottom+20*u,C.paper,30*u),origin.x,bottom-20*u)
+    put(root,W.panel(size.width,sheetTop-bottom+20*u,C.paper,0),origin.x,bottom-20*u)
     -- Group summaries are inserted alongside their real inventory rows.
     view.crewLabel=label('',20,C.ink,0,0,true);view.crewLabel:setVisible(false)
     view.cargoLabel=label('',20,C.ink,0,0,true);view.cargoLabel:setVisible(false)
@@ -111,7 +110,7 @@ function D.create(view)
     -- One dominant action, with the unmet requirement directly above it.
     view.readyLabel=label('',21,C.ink,320,bottom+156*u,true,.5)
     view.readinessRequirement=label('航行收获带回港口后，才会存入仓库',17,C.muted,320,bottom+129*u,false,.5)
-    view.departureButton=button('准备好，出航',320,bottom+74*u,548,82,view.departureAction,{primary=true,icon='sail',size=31})
+    view.departureButton=button('驶向大海',320,bottom+74*u,548,82,view.departureAction,{primary=true,icon='sail',size=31})
     view.warmSheetTop=sheetTop;view.warmFooterTop=footer
 end
 
@@ -135,14 +134,16 @@ function D.update(view)
     M.fit(view.cargoRemainingLabel,450*u);M.fit(view.cargoHintLabel,450*u)
     view.cargoCapacityBar:setScaleX(math.min(1,remaining/math.max(1,view.boatNum)))
     local ready=food>0 and view.useSoldierNum>0
-    if ready and view.useBoatNum>=view.boatNum then
+    local lowFood=ready and food<10
+    if lowFood then view.readyLabel:setString('食物偏少，建议补足后再出航')
+    elseif ready and view.useBoatNum>=view.boatNum then
         view.readyLabel:setString('货舱已满 · 可减去物品腾出空位')
     elseif ready then view.readyLabel:setString('伙伴与补给已登船，可以出发了')
     elseif food<=0 and view.useSoldierNum>0 then view.readyLabel:setString('伙伴已就位，请装入航行食物')
     elseif food<=0 then view.readyLabel:setString('先带上食物，再安排一位伙伴')
     else view.readyLabel:setString('补给已就位，请安排至少一位伙伴') end
-    view.readyLabel:setColor(ready and C.sea or C.ink);M.fit(view.readyLabel,574*u)
-    view.departureButton.label:setString(ready and '准备好，出航' or '出航')
+    view.readyLabel:setColor(lowFood and C.coral or (ready and C.sea or C.ink));M.fit(view.readyLabel,574*u)
+    view.departureButton.label:setString(ready and '驶向大海' or '出航')
 end
 
 function D.failure(view,reason)
@@ -156,27 +157,31 @@ function D.failure(view,reason)
     ToastUtil:toastString(text)
 end
 
--- A compact preview for long lists; a more visual cargo card uses the room
--- beneath a small starter party. Every number comes from the current loadout.
+-- Cargo is a plain manifest footer, not a reward card. Its figures are the
+-- current loadout; the original selection callbacks update them in place.
 function D.cargoPreview(view,height)
     if view.warmCargoCard then view.warmCargoCard:removeFromParent(true) end
     local u=view.warmScale;local C=W.colors;local expanded=height>140*u
-    local card=W.panel(570*u,height,C.white,20*u)
+    local card=cc.Node:create();card:setContentSize(cc.size(570*u,height))
     put(view.adventureRoot,card,view.warmOriginX+35*u,view.warmBottom+184*u)
     view.warmCargoCard=card
-    local iconSize=(expanded and 84 or 58)*u
-    put(card,W.icon('chest',iconSize),14*u,(height-iconSize)/2)
-    local left=(expanded and 112 or 86)*u
-    view.cargoRemainingLabel=put(card,W.label('',25*u,C.ink,0,0,true),left,height-30*u)
-    view.cargoHintLabel=put(card,W.label('',18*u,C.muted,0,0,false),left,height-63*u)
+    local function rule(width,color)
+        return cc.LayerColor:create(cc.c4b(color.r,color.g,color.b,255),width,1*u)
+    end
+    put(card,rule(570*u,C.line),0,height)
+    local left=8*u
+    view.cargoRemainingLabel=put(card,W.label('',23*u,C.ink,0,0,true),left,height-27*u)
+    view.cargoHintLabel=put(card,W.label('',17*u,C.muted,0,0,false),left,height-57*u)
     view.cargoCompositionLabel=nil
-    if expanded then view.cargoCompositionLabel=put(card,W.label('',19*u,C.muted,0,0,false),left,64*u) end
+    if expanded then
+        view.cargoCompositionLabel=put(card,W.label('',18*u,C.muted,0,0,false),left,61*u)
+    end
     local function bar(color)
-        local n=cc.LayerColor:create(cc.c4b(color.r,color.g,color.b,255),(expanded and 426 or 450)*u,7*u)
+        local n=cc.LayerColor:create(cc.c4b(color.r,color.g,color.b,255),554*u,5*u)
         n:setAnchorPoint(cc.p(0,0));return n
     end
-    put(card,bar(C.line),left,(expanded and 27 or 18)*u)
-    view.cargoCapacityBar=put(card,bar(C.sea),left,(expanded and 27 or 18)*u)
+    put(card,bar(C.line),left,(expanded and 27 or 16)*u)
+    view.cargoCapacityBar=put(card,bar(C.sea),left,(expanded and 27 or 16)*u)
 end
 
 -- Inventory types only alter presentation order and grouping, never selection.
@@ -231,8 +236,9 @@ function D.styleRow(view,row)
     local layout=view.warmRowLayout[row.itemId];local food=row.itemId=='1005'
     row:setPosition(cc.p(view.adventureWidth/2,view.warmRowsHeight-layout.top-layout.height/2))
     row.divider:setVisible(false)
-    local card=W.panel(view.adventureWidth-12*u,layout.height,C.white,20*u)
-    card:setPosition(cc.p(-view.adventureWidth/2+6*u,-layout.height/2));row:addChild(card,-1)
+    local line=cc.LayerColor:create(cc.c4b(C.line.r,C.line.g,C.line.b,255),view.adventureWidth-24*u,1*u)
+    line:setPosition(cc.p(-view.adventureWidth/2+12*u,-layout.height/2));row:addChild(line,-1)
+    row.manifestDivider=line
     controls.full:setVisible(food);controls.full:setEnabled(food)
     controls.details:setPosition(cc.p((food and -168 or -128)*u,0))
     controls.minus:setPosition(cc.p((food and 10 or 94)*u,0))

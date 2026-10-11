@@ -2221,7 +2221,8 @@ function Explore:moveEnd()
 				--执行中转动画
 				transformLayer:transform()
 				-- self:returnToBase("NoBread")
-			end, "确认死亡", "安全回城")
+			end, "确认死亡", rawget(_G,'WARM_PIRATE_V1')==false and "安全回城" or
+                (PurchaseAvailability.isAvailable() and "查看返航购买" or "购买不可用"))
 			-- Keep retry/decline available while awaiting the native result.
 			-- Lua treats 0 as true, so this must be a boolean.
 			_alert:setOkRemove(false)
@@ -2230,11 +2231,18 @@ function Explore:moveEnd()
 			alertIcon:setPosition(cc.p(_alert.s_position.x - 180.0, _alert.s_position.y + 30.0))
 			_alert:addChild(alertIcon, 1)
 
-	        local showLabel1 = cc.LabelTTF:create("您的食物耗尽即将死亡，使\n使用1元直接回城，否则将\n会失去当前英雄及战利品", BoldFont, 30)
-	        showLabel1:setColor(WriteColor)
-	        showLabel1:setHorizontalAlignment(cc.TEXT_ALIGNMENT_LEFT)
-	        -- showLabel1:enableStroke(cc.c4b(16, 16, 16, 255), 1)
-	        showLabel1:setPosition(cc.p(_alert.s_position.x + showLabel1:getContentSize().width * 0.15, alertIcon:getPositionY()))
+            local clean=rawget(_G,'WARM_PIRATE_V1')~=false
+            local body="您的食物耗尽即将死亡，使\n使用1元直接回城，否则将\n会失去当前英雄及战利品"
+            if clean then body=PurchaseAvailability.isAvailable()
+                and '食物已经耗尽。\n确认结束将失去本航伙伴和物资。\n购买返航价格以商店确认为准。'
+                or '食物已经耗尽。\n本平台不支持购买返航。\n确认结束将按原规则结算损失。' end
+            local showLabel1=cc.LabelTTF:create(body,clean and 'fonts/CleanVoyageSans-Regular.ttf' or BoldFont,clean and 23 or 30)
+            showLabel1:setColor(WriteColor)
+            showLabel1:setHorizontalAlignment(cc.TEXT_ALIGNMENT_LEFT)
+            if clean then
+                showLabel1:setDimensions(cc.size(328,0))
+                showLabel1:setPosition(cc.p(_alert.s_position.x+52,alertIcon:getPositionY()))
+            else showLabel1:setPosition(cc.p(_alert.s_position.x+showLabel1:getContentSize().width*.15,alertIcon:getPositionY())) end
 	        _alert:addChild(showLabel1, 1)
 		-- else
 			-- print("离开购买提示界面")
@@ -3177,6 +3185,7 @@ function Explore:returnToBase( statue, returnRequest )
     local adventure=AdventureProgress.getState(DataManager:getInstance())
     local adventureReturned=false
     local resultModule,resultBefore,returnReceipt
+    local failureModule,failureBefore,failureResult
     if adventure.enabled then
         if statue~='Killed' and statue~='NoBread' then
             if rawget(_G,'WARM_PIRATE_V1')~=false then
@@ -3196,6 +3205,11 @@ function Explore:returnToBase( statue, returnRequest )
             self.bagController.battlePackData={};self.bagController.mapCoin=0
             DataManager:getInstance():sendSystemInfo('本航带回：'..cargoText)
             if awarded then DataManager:getInstance():sendSystemInfo('首返补助：25金币、15石、5木、5布。铁匠铺已待建，带回2铁后可按真实配方扩舱20→30。') end
+        elseif rawget(_G,'WARM_PIRATE_V1')~=false then
+            local loaded,module=pcall(require,'LuaClass/WarmFailureResult')
+            if loaded and type(module)=='table' and type(module.before)=='function' then
+                failureModule=module;failureBefore=module.before(DataManager:getInstance(),adventure,statue)
+            end
         end
     end
 	--安全删除默认的自带数据
@@ -3245,6 +3259,7 @@ function Explore:returnToBase( statue, returnRequest )
 
     if adventure.enabled and (statue=='Killed' or statue=='NoBread') then
         AdventureProgress.finishVoyage(DataManager:getInstance(),false)
+        if failureModule then failureResult=failureModule.complete(DataManager:getInstance(),failureBefore,true) end
     end
 
 	--清楚之前战斗的数据
@@ -3262,6 +3277,9 @@ function Explore:returnToBase( statue, returnRequest )
 	gotoMainUI(true)
     if returnReceipt and zqDispatch and zqDispatch.rightNode then
         resultModule.show(DataManager:getInstance(),returnReceipt,zqDispatch.rightNode)
+    end
+    if failureResult and zqDispatch and zqDispatch.rightNode then
+        failureModule.show(DataManager:getInstance(),failureResult,zqDispatch.rightNode)
     end
 end
 

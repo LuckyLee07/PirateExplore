@@ -58,7 +58,7 @@ function P.open(owner,resumeNotice,onContinue)
  if not scene or owner:getScene()~=scene then return nil end
  local size,origin=director:getVisibleSize(),director:getVisibleOrigin()
  local k=math.min(size.width/640,size.height/860)
- local layer=cc.LayerColor:create(cc.c4b(45,32,25,160),size.width,size.height)
+ local layer=cc.LayerColor:create(cc.c4b(25,49,52,160),size.width,size.height)
  layer:setPosition(origin);layer.isAdventureModal=true;owner.warmPause=layer
  scene:addChild(layer,100000)
  local actions=director:getActionManager();local frozen={}
@@ -86,7 +86,15 @@ function P.open(owner,resumeNotice,onContinue)
  end
  observer=cc.Node:create();owner:addChild(observer)
  observer:registerScriptHandler(function(event)
-  if event=='exit' or event=='cleanup'then observer=nil;layer:close(false)end
+  if event=='exit' or event=='cleanup'then
+   observer=nil
+   -- Scene::onExit marks the scene non-running before walking its children.
+   -- Its still-running pause sibling must remain in that walk: removing it
+   -- here skips native onExit and can destroy a running subtree (desktop X).
+   -- Dispose ownership/retains now; the scene exits and removes the UI itself.
+   if not scene:isRunning() and layer:isRunning() then dispose(false)
+   else layer:close(false)end
+  end
  end)
  layer:registerScriptHandler(function(event)if event=='exit' or event=='cleanup'then dispose(false)end end)
  local pw,ph=574*k,650*k
@@ -104,7 +112,7 @@ function P.open(owner,resumeNotice,onContinue)
  local function button(text,y,callback,primary)
   local b=W.button(text,pw-64*k,62*k,callback,{primary=primary,size=25*k});b:setPosition(cc.p(pw/2,y*k));panel:addChild(b);return b.item
  end
- layer.continueButton=button('继续航程',346,function()layer:close(true)end,true)
+ layer.continueButton=button('继续航程',346,function()if not closed then layer:close(true)end end,true)
  layer.saveButton=button('保存当前航程',268,function()
   if closed then return end
   require 'LuaClass/SaveDataManager'

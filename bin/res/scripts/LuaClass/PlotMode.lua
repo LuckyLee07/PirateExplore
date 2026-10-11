@@ -1,4 +1,6 @@
 require 'LuaClass/DialogTheme'
+local Warm=require 'LuaClass/WarmTheme'
+local function cleanStory()return type(Warm)=='table' and Warm.enabled and Warm.enabled()end
 --
 -- Created by IntelliJ IDEA.
 -- User: sunxy
@@ -69,7 +71,15 @@ function PlotScene:init(plotId, callback)
 
     local baseNode = cc.Node:create()
     self:addChild(baseNode)
-    local colorLayer = cc.LayerColor:create(cc.c4f(0, 0, 0, 255))
+    if cleanStory() then
+        local sceneArt=Warm.harborWorld(winSize.width,winSize.height,{boat=false})
+        self:addChild(sceneArt,-2)
+        local veil=cc.LayerColor:create(cc.c4b(255,247,229,226),winSize.width,winSize.height)
+        self:addChild(veil,-1)
+        local heading=Warm.label('航海往事',30,Warm.colors.ink,winSize.width*.5,winSize.height-62,true,.5)
+        self:addChild(heading,500)
+    end
+    local colorLayer = cc.LayerColor:create(cleanStory() and cc.c4b(255,247,229,255) or cc.c4b(0,0,0,255),winSize.width,winSize.height)
     self:addChild(colorLayer)
 
 --    local listener = cc.EventListenerTouchOneByOne:create()
@@ -99,7 +109,14 @@ function PlotScene:init(plotId, callback)
                 cc.p(size.width*x, size.height*0.72), color)
         end
         jumpBtn:addChild(marks)
-        jumpBtn:setPosition(winSize.width-100.0, 100.0)
+        if cleanStory() then
+            jumpBtn:removeAllChildren()
+            jumpBtn:setContentSize(cc.size(154,58))
+            jumpBtn:setNormalImage(Warm.panel(154,58,Warm.colors.paper,8))
+            jumpBtn:setSelectedImage(Warm.panel(154,58,Warm.colors.line,8))
+            jumpBtn:addChild(Warm.label('下一幕  ›',24,Warm.colors.ink,77,29,false,.5))
+        end
+        jumpBtn:setPosition(winSize.width-(cleanStory() and 101 or 100), cleanStory() and 57 or 100)
         jumpBtn:registerScriptTapHandler(function()
             self:next()
         end)
@@ -161,6 +178,10 @@ function PlotScene:init(plotId, callback)
                 local water = cc.Sprite:create("Images/Plot/juqing_8.png")
                 water:setPosition(bottle:getPositionX()+67.0, bottle:getPositionY()-55.0)
                 bottleNode:addChild(water)
+                if cleanStory() then
+                    local z=bottle:getContentSize();local fit=math.min((winSize.width-64)/z.width,(winSize.height*.36)/z.height)
+                    bottleNode:setScale(fit);bottleNode:setPosition(winSize.width*.5,winSize.height*.70+100*fit)
+                end
 
                 local t = 1.0
                 local delay = cc.DelayTime:create(stayTime+1.0)
@@ -189,6 +210,11 @@ function PlotScene:init(plotId, callback)
                     local plotImg = cc.Sprite:create("Images/Plot/"..iconId..".png")
                     plotImg:setPosition(0.0, 0.0)
                     nodeGrid:addChild(plotImg)
+                    if cleanStory() then
+                        local z=plotImg:getContentSize()
+                        plotImg:setScale(math.min((winSize.width-48)/z.width,(winSize.height*.43)/z.height))
+                        nodeGrid:setPosition(winSize.width*.5,winSize.height*.70)
+                    end
 
 --                    local twirl = cc.Twirl:create(3.0, cc.size(100.0, 100.0), cc.p(0.5*plotImg:getContentSize().width, 0.5*plotImg:getContentSize().height),
 --                        10.0, 1.0)
@@ -207,11 +233,18 @@ function PlotScene:init(plotId, callback)
         for i=1,#story do
             -- 弹文字
             local wordFunc = function()
-                local label = cc.LabelTTF:create(story[i][1], MasterTheme.headingFont(false), 30.0)
+                local label = cc.LabelTTF:create(story[i][1], cleanStory() and Warm.font or MasterTheme.headingFont(false), cleanStory() and 25 or 30.0)
                 label:setPosition(0.5*winSize.width, 0.5*winSize.height+100.0-170.0-20.0-40*i-100.0)
+                if cleanStory() then
+                    label:setColor(Warm.colors.ink)
+                    label:setDimensions(cc.size(winSize.width-64,80))
+                    label:setHorizontalAlignment(cc.TEXT_ALIGNMENT_CENTER)
+                    local spacing=math.min(62,(winSize.height*.49-128)/math.max(1,#story-1))
+                    label:setPosition(winSize.width*.5,winSize.height*.49-spacing*(i-1))
+                end
                 baseNode:addChild(label)
 
-                local move = cc.MoveBy:create(time, cc.p(0.0, 100.0))
+                local move = cc.MoveBy:create(time, cc.p(0.0, cleanStory() and 0 or 100.0))
 --                local fade1 = cc.FadeIn:create(0.5*time)
 --                local delay = cc.DelayTime:create(time)
 --                local fade2 = cc.FadeOut:create(0.0)

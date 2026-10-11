@@ -61,6 +61,9 @@ THE SOFTWARE.
 #include "renderer/CCRenderer.h"
 #include "renderer/CCFrustum.h"
 #include "CCConsole.h"
+#if CC_TARGET_PLATFORM == CC_PLATFORM_LINUX
+#include "network/HttpClient.h"
+#endif
 
 #include "kazmath/kazmath.h"
 #include "kazmath/GL/matrix.h"
@@ -759,6 +762,12 @@ void Director::end()
 
 void Director::purgeDirector()
 {
+#if CC_TARGET_PLATFORM == CC_PLATFORM_LINUX
+    // Join/cancel network work while its callback scheduler is still alive.
+    // Otherwise the idle worker survives until static condition destruction,
+    // leaving the desktop process stuck after its window has closed.
+    network::HttpClient::destroyInstance();
+#endif
     // cleanup scheduler
     getScheduler()->unscheduleAll();
     

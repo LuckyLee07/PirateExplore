@@ -36,7 +36,7 @@ function S.open(owner)
     local size, origin = director:getVisibleSize(), director:getVisibleOrigin()
     local scale = math.min(1, size.width / 640, size.height / 860)
     local width, height = 570 * scale, 770 * scale
-    local layer = cc.LayerColor:create(cc.c4b(45, 32, 25, 150), size.width, size.height)
+    local layer = cc.LayerColor:create(cc.c4b(25,49,52,150), size.width, size.height)
     layer:setPosition(origin)
     layer.isAdventureModal = true
     layer.isWarmSettings = true
@@ -47,7 +47,7 @@ function S.open(owner)
     local function clearOwnership()
         if owner.warmSettingsModal == layer then owner.warmSettingsModal = nil end
     end
-    local function close()
+    local function dispose()
         if state.closed then return end
         state.closed = true
         clearOwnership()
@@ -57,7 +57,12 @@ function S.open(owner)
         end
         local observer = state.observer
         state.observer = nil
-        if observer then observer:removeFromParent(true) end
+        -- A scene-owned observer is a sibling; leave it in a native exit walk.
+        if observer and (owner ~= scene or scene:isRunning()) then observer:removeFromParent(true) end
+    end
+    local function close()
+        if state.closed then return end
+        dispose()
         layer:removeFromParent(true)
     end
     layer.close = close
@@ -66,21 +71,16 @@ function S.open(owner)
     observer:registerScriptHandler(function(event)
         if event == 'exit' or event == 'cleanup' then
             state.observer = nil
-            close()
+            -- The scene marks itself non-running before exiting its children.
+            -- Disposing without detaching lets that walk exit the sheet safely.
+            if not scene:isRunning() and layer:isRunning() then dispose()
+            else close() end
         end
     end)
     owner:addChild(observer)
     layer:registerScriptHandler(function(event)
         if event == 'exit' or event == 'cleanup' then
-            state.closed = true
-            clearOwnership()
-            if state.listener then
-                layer:getEventDispatcher():removeEventListener(state.listener)
-                state.listener = nil
-            end
-            local bound = state.observer
-            state.observer = nil
-            if bound then bound:removeFromParent(true) end
+            dispose()
         end
     end)
 
@@ -111,6 +111,7 @@ function S.open(owner)
             toggle.label:setColor(enabled and T.colors.sea or T.colors.muted)
         end
         toggle = T.button('', 120 * scale, 58 * scale, function()
+            if state.closed then return end
             spec.set(spec.get() == 1 and 0 or 1)
             refresh()
         end, {size=25 * scale})

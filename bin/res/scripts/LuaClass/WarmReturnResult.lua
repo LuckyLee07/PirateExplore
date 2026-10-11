@@ -65,7 +65,7 @@ function R.show(dm,result,owner)
     local W=require 'LuaClass/WarmTheme'
     local size=cc.Director:getInstance():getVisibleSize();local origin=cc.Director:getInstance():getVisibleOrigin()
     local scale=math.min(size.width/480,size.height/800)
-    local layer=cc.LayerColor:create(cc.c4b(45,37,29,174),size.width,size.height)
+    local layer=cc.LayerColor:create(cc.c4b(25,49,52,180),size.width,size.height)
     layer.isAdventureModal=true;layer.closed=false;layer.result=copy(result);layer.page=1;layer.generation=0
     owner.warmReturnResult=layer;owner:addChild(layer,21000)
     local canvas=cc.Node:create();canvas:setScale(scale)
@@ -100,28 +100,45 @@ function R.show(dm,result,owner)
         if self.closed then return end
         self.generation=self.generation+1
         canvas:removeAllChildren(true);self.buttons={}
-        add(W.panel(440,680,W.colors.paper,26),20,60)
-        add(W.icon('sail',67),207,639)
-        label('平安回到船上',29,64,615,368,W.colors.ink,true)
-        label('第 '..result.voyage..' 次航程 · 已保存',17,64,578,368,W.colors.muted)
-        label('金币 '..signed(result.moneyDelta)..'  ·  钻石 '..signed(result.diamondDelta),22,52,536,380,W.colors.ink,true)
-        label('同行伙伴归来 '..result.crewReturned..' 人',18,52,497,380,W.colors.muted)
-        label('仓库物资净变化',22,52,461,380,W.colors.ink,true)
-        label('含带回物资（包括原有补给）、补助及返航消耗',14,52,434,380,W.colors.muted)
-        local text=label(pages[self.page],18,52,413,372,W.colors.muted)
+        local C=W.colors
+        add(W.panel(440,700,C.paper,10),20,50)
+        add(W.panel(440,87,C.ink,10),20,663)
+        label('航程结算  /  已保存',15,52,718,376,C.white)
+        label('平安返回港口',29,52,682,376,C.white,true)
+        label('第 '..result.voyage..' 次航程 · 已保存',17,52,631,376,C.muted)
+        label('金币 '..signed(result.moneyDelta)..'  ·  钻石 '..signed(result.diamondDelta),22,52,589,376,C.ink,true)
+        label('同行伙伴归来 '..result.crewReturned..' 人',18,52,551,376,C.muted)
+        add(cc.LayerColor:create(cc.c4b(C.line.r,C.line.g,C.line.b,255),376,1),52,530)
+        label('仓库物资净变化',22,52,503,376,C.ink,true)
+        label('含带回物资（包括原有补给）、补助及返航消耗',14,52,474,376,C.muted)
+        local text=label(pages[self.page],18,52,451,372,C.muted)
         text:setAnchorPoint(cc.p(0,1));text:setDimensions(cc.size(372,125));text:setVerticalAlignment(cc.VERTICAL_TEXT_ALIGNMENT_TOP)
         if #pages>1 then
-            button('previous','上一页',123,265,133,35,function()self.page=math.max(1,self.page-1);self:refresh()end)
-            label(self.page..' / '..#pages,15,218,265,64,W.colors.muted)
-            button('next','下一页',357,265,133,35,function()self.page=math.min(#pages,self.page+1);self:refresh()end)
+            button('previous','上一页',123,302,133,36,function()self.page=math.max(1,self.page-1);self:refresh()end)
+            label(self.page..' / '..#pages,15,218,302,64,C.muted)
+            button('next','下一页',357,302,133,36,function()self.page=math.min(#pages,self.page+1);self:refresh()end)
         end
         local newMemory=#result.memoryIds>0
-        label(newMemory and '新增珍藏：沉船航图残页' or '收获与费用已按原规则结算。',19,52,219,380,W.colors.ink,true)
-        label(result.historyRecorded and '这次归航已记在航海日志里。' or '这次仅显示结算，不补写旧航程。',15,52,184,380,W.colors.muted)
-        if newMemory and type(owner.openActivity)=='function' then
-            button('collection','看看珍藏',240,143,376,49,function()self:close();if not owner.homeDisposed then owner:openActivity('collection')end end,true)
-            button('close','回到船上',240,91,376,40,function()self:close()end)
-        else button('close','回到船上',240,113,376,60,function()self:close()end,true)end
+        label(newMemory and '新增珍藏：沉船航图残页' or '收获与费用已按原规则结算。',19,52,259,376,C.ink,true)
+        label(result.historyRecorded and '这次归航已记在航海日志里。' or '这次仅显示结算，不补写旧航程。',15,52,231,376,C.muted)
+        -- Closing the receipt is always first. The Home route retains its own
+        -- unlock/recovery guards; this button never starts or settles a voyage.
+        if type(owner.openPrimary)=='function' then
+            button('prepare','准备下次出航',240,179,376,54,function()
+                self:close();if not owner.homeDisposed then owner:openPrimary()end
+            end,true)
+            if newMemory and type(owner.openActivity)=='function' then
+                button('collection','看看珍藏',145,112,181,46,function()
+                    self:close();if not owner.homeDisposed then owner:openActivity('collection')end
+                end)
+                button('close','留在港口',338,112,180,46,function()self:close()end)
+            else button('close','留在港口',240,112,376,46,function()self:close()end)end
+        elseif newMemory and type(owner.openActivity)=='function' then
+            button('collection','看看珍藏',240,174,376,54,function()
+                self:close();if not owner.homeDisposed then owner:openActivity('collection')end
+            end,true)
+            button('close','留在港口',240,112,376,46,function()self:close()end)
+        else button('close','回到港口',240,145,376,60,function()self:close()end,true)end
     end
     layer:refresh();return layer
 end

@@ -29,9 +29,12 @@
 
 #include "network/HttpRequest.h"
 #include "network/HttpResponse.h"
-#include "network/HttpClient.h"
+#include <memory>
+#include <thread>
 
 NS_CC_BEGIN
+
+class Scheduler;
 
 namespace network {
 
@@ -100,11 +103,13 @@ private:
      * @return bool
      */
     bool lazyInitThreadSemphore();
-    void networkThread();
+    void networkThread(Scheduler* scheduler);
     /** Poll function called from main thread to dispatch callbacks when http requests finished **/
     void dispatchResponseCallbacks();
     
 private:
+    std::thread _thread;
+    std::shared_ptr<bool> _callbackAlive;
     int _timeoutForConnect;
     int _timeoutForRead;
 };

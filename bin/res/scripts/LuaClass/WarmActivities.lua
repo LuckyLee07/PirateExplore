@@ -1,4 +1,4 @@
--- Warm Q v1: native, read-only crew, ship, inventory and voyage pages.
+-- Coherent native crew, ship, inventory and current-progress pages.
 -- Every quantity comes from the live save. Actions enter existing game pages;
 -- this module does not recruit, assign, craft, grant, purchase or save anything.
 require 'LuaClass/Header'
@@ -196,6 +196,11 @@ function A.open(kind,owner)
     end
     function layer:route(route,id)
         if self.disposed or owner.warmActivity~=self then return false end
+        if route=='keepsakes' or route=='voyages' then
+            self:close()
+            require('LuaClass/WarmCollection').open(owner,route=='voyages' and 'log' or 'collection')
+            return true
+        end
         local state=A.snapshot(dm,guide);local method,argument,argument2,routeIndex
         if route=='recovery' and state.recovery then
             local recovery=state.recovery
@@ -247,7 +252,7 @@ function A.open(kind,owner)
         (parent or canvas):addChild(n);return n
     end
     local function card(x,y,w,h,color)
-        return add(T.panel(w,h,color or c.white,22),x,y)
+        return add(T.panel(w,h,color or c.white,8),x,y)
     end
     local function image(path,x,y,w,h)
         if not cc.FileUtils:getInstance():isFileExist(path) then return nil end
@@ -276,9 +281,9 @@ function A.open(kind,owner)
         if enabled==false then b:setOpacity(140);b:setCascadeOpacityEnabled(true) end
         layer.buttons[key]=b;return b
     end
-    local function footer(leftText,leftRoute,leftEnabled,rightText,rightRoute,rightEnabled)
+    local function footer(leftText,leftRoute,leftEnabled,rightText,rightRoute,rightEnabled,rightPrimary)
         button('secondary',leftText,128,48,208,55,function() layer:route(leftRoute) end,false,leftEnabled)
-        button('primary',rightText,352,48,208,55,function() layer:route(rightRoute) end,true,rightEnabled)
+        button('primary',rightText,352,48,208,55,function() layer:route(rightRoute) end,rightPrimary~=false,rightEnabled)
     end
     local function pager(total,perPage,y)
         local pages=math.max(1,math.ceil(total/perPage));layer.page=math.min(layer.page,pages)
@@ -295,7 +300,7 @@ function A.open(kind,owner)
         local stage=card(22,389,436,277,c.paper);stage:setOpacity(238)
     end
     local function header(title,subtitle)
-        card(14,678,452,104,c.paper)
+        card(14,678,452,104,c.white)
         button('back','‹',42,750,46,46,function() layer:back() end,false,true,32)
         local titleLabel=label(title,27,82,752,370,c.ink,true)
         label(subtitle,16,26,701,428,c.muted)
@@ -305,7 +310,7 @@ function A.open(kind,owner)
         local entry=layer.detailId and find(state.crew,layer.detailId)
         if layer.detailId and not entry then layer.detailId=nil end
         if entry then
-            header(entry.name,'伙伴详情 · 原有职业与技能')
+            header(entry.name,'船员详情 · 职业与技能')
             deck();portrait(entry,130,407,220,253)
             card(20,123,440,275)
             label(entry.name,29,42,367,392,c.ink,true)
@@ -316,9 +321,9 @@ function A.open(kind,owner)
             label('技能 · '..name,21,42,245,390,c.ink,true)
             local body=label(description,17,42,213,390,c.muted)
             body:setAnchorPoint(cc.p(0,1));body:setDimensions(cc.size(390,67));body:setVerticalAlignment(cc.VERTICAL_TEXT_ALIGNMENT_TOP)
-            label('基础属性来自职业资料',14,42,143,390,c.muted)
+            label('同一职业的伙伴拥有相同的基础属性',14,42,143,390,c.muted)
         else
-            header('一起出海的伙伴','船员名册 · 已有船员 '..state.crewCount..' 人')
+            header('船员名册','已有船员 '..state.crewCount..' 人 · 点选查看详情')
             deck()
             local pages=math.max(1,math.ceil(#state.crew/3));layer.page=math.min(layer.page,pages)
             local start=(layer.page-1)*3+1
@@ -346,7 +351,7 @@ function A.open(kind,owner)
                 local progress=state.progress
                 local note=progress.npcRescued and '航图员林恩已在港口安顿。' or '每一种职业，都有自己的本领。'
                 label(note,18,42,226,390,c.ink)
-                label(state.canTrain and '招募与转职沿用训练营的规则和消耗。' or '建好训练营后，可以招募和训练伙伴。',16,42,184,390,c.muted)
+                label(state.canTrain and '前往训练营，招募伙伴或学习新职业。' or '建好训练营后，可以招募和训练伙伴。',16,42,184,390,c.muted)
             end
             pager(#state.crew,3,106)
         end
@@ -361,7 +366,7 @@ function A.open(kind,owner)
     local function sources(state)
         local goal=find(state.goals,layer.sourceGoalId)
         if not goal or not goal.route then layer.sourceGoalId=nil;layer.page=1;return false end
-        header('改造材料从哪里来',goal.title)
+        header('材料来源',goal.title)
         card(20,585,440,78)
         local full=label(goal.detail,18,40,647,396,c.ink)
         full:setAnchorPoint(cc.p(0,1));full:setDimensions(cc.size(396,61));full:setVerticalAlignment(cc.VERTICAL_TEXT_ALIGNMENT_TOP)
@@ -371,25 +376,28 @@ function A.open(kind,owner)
         if #items==0 then
             card(20,281,440,253)
             label('材料已经备齐',25,113,460,296,c.ink,true)
-            label('可以返回改造，打开原有建设或制造页。',18,61,397,360,c.muted)
+            label('返回船只，预览这次改造。',18,61,397,360,c.muted)
         end
         local start=(layer.page-1)*3+1
+        local primaryShown=false
         for i=start,math.min(start+2,#items) do
             local item=items[i];local y=440-(i-start)*143
             card(20,y,440,131)
             label(item.title,21,38,y+106,390,c.ink,true)
             local detail=label(item.detail,16,38,y+80,270,c.muted)
             detail:setAnchorPoint(cc.p(0,1));detail:setDimensions(cc.size(270,73));detail:setVerticalAlignment(cc.VERTICAL_TEXT_ALIGNMENT_TOP)
-            button('source:'..item.id,item.action,382,y+39,118,48,function() layer:route('source',item.id) end,true,item.route~=nil,16)
+            local primary=item.route~=nil and not primaryShown
+            button('source:'..item.id,item.action,382,y+39,118,48,function() layer:route('source',item.id) end,primary,item.route~=nil,16)
+            primaryShown=primaryShown or primary
         end
         pager(#items,3,112)
-        button('sourceBack','返回改造',240,48,436,55,function() layer:back() end,true,true)
+        button('sourceBack','返回船只',240,48,436,55,function() layer:back() end,false,true)
         return true
     end
     local function ship(state)
         if layer.sourceGoalId and sources(state) then return end
-        header('让小船走得更远','船只成长 · 查看现有能力与改造条件')
-        image(T.path..'ship-home.png',0,334,330,345)
+        header('船只成长','当前能力 · 选择一项改造查看条件')
+        image(T.worldPath..'boat-clean-ne.png',0,346,330,280)
         card(20,632,300,42,c.paper)
         label(state.ship.name or '当前战船',23,38,653,270,c.ink,true)
         for i,stat in ipairs({{'货舱',state.capacity},{'船舱',state.cabin},{'船体生命',state.hp}}) do
@@ -398,11 +406,11 @@ function A.open(kind,owner)
             label(tostring(stat[2]),25,x+14,y+22,104,c.ink,true)
         end
         card(20,306,440,39,c.paper)
-        label('回港后的小改造',22,37,325,401,c.ink,true)
+        label('下一步改造',22,37,325,401,c.ink,true)
         if #state.goals==0 then
             card(20,126,440,172)
             label(state.capacity<30 and ('货舱改造：'..tostring(state.capacity)..' → 30') or '货舱扩容已完成',23,40,262,394,c.ink,true)
-            label('查看船上变化、原配方材料和真实解锁条件。确认前不会消耗物品。',18,40,210,390,c.muted)
+            label('查看改造效果与所需材料，准备好后再确认。',18,40,210,390,c.muted)
             button('upgrade:1148','预览改装',240,157,388,47,function()require('LuaClass/WarmUpgrade').open(layer,'1148')end,true,true,21)
         else
             for i,goal in ipairs(state.goals) do
@@ -412,11 +420,11 @@ function A.open(kind,owner)
                 local short=not goal.route and '继续探索，解锁改造配方' or (goal.route=='build' and '先建设铁匠铺' or (goal.detail=='材料已备齐' and goal.detail or '仍需补齐材料'))
                 label(short,15,37,y+52,282,c.muted)
                 button('sources:'..goal.id,'材料来源',108,y+18,142,29,function() layer:showSources(goal.id) end,false,goal.route~=nil,14)
-                button('goal:'..goal.id,'预览改装',384,y+43,118,47,function() require('LuaClass/WarmUpgrade').open(layer,goal.id) end,true,true,16)
+                button('goal:'..goal.id,'预览改装',384,y+43,118,47,function() require('LuaClass/WarmUpgrade').open(layer,goal.id) end,i==1,true,16)
             end
         end
         footer(state.canBuild and '港口建设' or '先完成炼金','build',state.canBuild,
-            state.canMake and '船具制造' or '制造未开放','make',state.canMake)
+            state.canMake and '船具制造' or '制造未开放','make',state.canMake,false)
     end
     local function inventory(state)
         local entry=layer.detailId and find(state.inventory,layer.detailId)
@@ -433,14 +441,14 @@ function A.open(kind,owner)
             body:setAnchorPoint(cc.p(0,1));body:setDimensions(cc.size(390,95));body:setVerticalAlignment(cc.VERTICAL_TEXT_ALIGNMENT_TOP)
             label('库存会随使用、获得和航行结算变化。',16,42,156,390,c.muted)
         else
-            header('船舱收纳','当前库存 · '..#state.inventory..' 种物品 · 随使用而变化')
+            header('物品库存','当前库存 · '..#state.inventory..' 种物品')
             local pages=math.max(1,math.ceil(#state.inventory/6));layer.page=math.min(layer.page,pages)
             if #state.inventory==0 then
                 card(28,284,424,271)
                 add(T.icon('chest',60),210,440)
                 label('这里还没有物品',25,120,408,270,c.ink,true)
-                label('独特宝物收藏尚未开放。',18,98,356,304,c.muted)
-                label('这里先查看当前持有的库存。',17,95,316,308,c.muted)
+                label('采集、交易和归航会带回物品。',18,72,356,350,c.muted)
+                label('航程纪念物可在「收藏」中查看。',17,72,316,350,c.muted)
             end
             local start=(layer.page-1)*6+1
             for i=start,math.min(start+5,#state.inventory) do
@@ -458,38 +466,39 @@ function A.open(kind,owner)
                 local motif=add(T.icon('chest',tall and 82 or 62),tall and 199 or 47,tall and 341 or 203)
                 if tall then
                     label('给未来的发现留个位置',22,94,307,314,c.ink,true)
-                    label('独特宝物收藏尚未开放',19,112,262,308,c.muted)
-                    label('这里先查看当前持有的库存',18,101,225,328,c.muted)
+                    label('库存物品用于补给、建设与制造',18,79,262,348,c.muted)
+                    label('航程纪念物另存于「收藏」',17,105,225,328,c.muted)
                 else
-                    label('独特宝物收藏尚未开放',20,133,270,299,c.ink,true)
-                    label('这里先查看当前持有的库存。',17,133,223,299,c.muted)
+                    label('每一份补给，都为下一程',20,133,270,299,c.ink,true)
+                    label('航程纪念物可前往「收藏」查看。',16,133,223,299,c.muted)
                 end
             end
             pager(#state.inventory,6,116)
         end
-        button('log','航海日志',128,48,208,55,function() layer:showKind('log') end,false,true)
-        button('primary',state.canStore and '打开仓库' or '仓库未开放',352,48,208,55,function() layer:route('repository') end,true,state.canStore)
+        button('keepsakes','查看收藏',92,48,136,55,function() layer:route('keepsakes') end,false,true,17)
+        button('log','航线线索',240,48,136,55,function() layer:showKind('log') end,false,true,17)
+        button('primary',state.canStore and '打开仓库' or '仓库未开放',388,48,136,55,function() layer:route('repository') end,true,state.canStore,17)
     end
     local function harborBrief(state)
         local status=Progress.getHarborStatus(dm)
-        header('航线与港务线索','查看完整的返港安排与下一程提示')
+        header('港务提示','返港安排与下一程线索')
         card(22,169,436,491)
         label(status.npcName or '港务员',25,43,619,394,c.ink,true)
         local pages=A.textPages(status.npcText or '',19,394,365)
         layer.page=math.min(layer.page,#pages);layer.briefPages=pages
         local text=label(pages[layer.page],19,43,579,394,c.ink)
         text:setAnchorPoint(cc.p(0,1));text:setDimensions(cc.size(394,365));text:setVerticalAlignment(cc.VERTICAL_TEXT_ALIGNMENT_TOP)
-        label('依据当前存档与实际材料更新',15,43,194,394,c.muted)
+        label('准备好伙伴和补给，再开始下一程。',15,43,194,394,c.muted)
         pager(#pages,1,116)
-        button('briefBack','返回航海日志',240,48,436,55,function() layer:back() end,true,true)
+        button('briefBack','返回航线线索',240,48,436,55,function() layer:back() end,false,true)
     end
     local function log(state)
         if layer.harborBrief then harborBrief(state);return end
-        header('我们的航程','航海日志 · 已保存的进展')
-        button('brief','航线与港务线索',240,659,436,34,function() layer:showHarborBrief() end,false,true,18)
+        header('航线线索','当前进展 · 下一程从这里开始')
+        button('brief','查看港务提示',240,659,436,34,function() layer:showHarborBrief() end,false,true,18)
         local p=state.progress;local entries={}
         if not p.enabled then
-            entries={{'原有航海记录','当前存档没有逐次航程记录。可继续查看已有成就与当前库存。'}}
+            entries={{'当前进展','当前存档没有逐次航程记录。可继续查看已有成就与当前库存。'}}
         else
             if count(p.voyage)<1 then
                 entries[#entries+1]={'第一段旅程','还未启航，先准备伙伴与补给。'}
@@ -508,22 +517,21 @@ function A.open(kind,owner)
         local start=(layer.page-1)*4+1
         for i=start,math.min(start+3,#entries) do
             local y=526-(i-start)*127;card(22,y,436,114)
-            label(string.format('%02d',i),19,39,y+83,44,c.coral,true)
+            label(string.format('%02d',i),19,39,y+83,44,c.sea,true)
             label(entries[i][1],22,84,y+84,349,c.ink,true)
             local body=label(entries[i][2],17,84,y+52,344,c.muted)
             body:setAnchorPoint(cc.p(0,1));body:setDimensions(cc.size(344,61));body:setVerticalAlignment(cc.VERTICAL_TEXT_ALIGNMENT_TOP)
         end
         pager(#entries,4,112)
-        button('collection','看看库存',128,48,208,55,function() layer:showKind('collection') end,false,true)
-        button('primary',state.canRecords and '已有成就' or '成就未开放',352,48,208,55,function() layer:route('records') end,true,state.canRecords)
+        button('voyages','航海日志',92,48,136,55,function() layer:route('voyages') end,false,true,17)
+        button('collection','查看库存',240,48,136,55,function() layer:showKind('collection') end,false,true,17)
+        button('primary',state.canRecords and '已有成就' or '成就未开放',388,48,136,55,function() layer:route('records') end,true,state.canRecords,17)
     end
     function layer:refresh()
         if self.disposed then return end
         self.generation=self.generation+1;self.buttons={};self.cards={};self.sourceEntries=nil;self.briefPages=nil
         canvas:removeAllChildren(true)
         local sky=T.panel(480,800,c.paper,0);add(sky,0,0)
-        local sea=T.cover(T.path..'sea-home.png',480,800)
-        if sea then add(sea,0,0) else add(T.panel(480,386,cc.c3b(202,235,232),0),0,382) end
         self.snapshot=A.snapshot(dm,guide)
         if self.kind=='crew' then crew(self.snapshot)
         elseif self.kind=='ship' then ship(self.snapshot)

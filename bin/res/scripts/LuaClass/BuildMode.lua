@@ -16,6 +16,9 @@ BuildLayer.csvData = nil
 BuildLayer.ResoucecsvData = nil
 BuildLayer.dataIndex = nil
 
+local focusedSerial = 0
+local focusedEvents = {rolePack, roleMoney, roleBuilding, roleGuideStep}
+
 
 function BuildLayer:create(focusBuildId)
     local view = BuildLayer.new()
@@ -27,6 +30,7 @@ function BuildLayer:create(focusBuildId)
 end
 
 function BuildLayer:destory()
+    self:disposeFocusedBuild()
     -- 去掉注册的通知
     DataManager:getInstance():unregisterEvent(roleMapInfo, "BuildLayer")
     -- 调用父类的析构
@@ -40,6 +44,11 @@ end
 
 function BuildLayer:init()
     self:applyManagementTheme()
+    -- Goal/recovery links are a single construction decision. Ordinary harbor
+    -- construction keeps its complete original list and all utility controls.
+    if self.focusTargetId and type(WarmTheme) == "table" and WarmTheme.enabled() then
+        return self:initFocusedBuild()
+    end
     DataManager:getInstance():registerEvent(roleMapInfo, "BuildLayer", function()
         -- body
         local flag = DataManager:getInstance():checkDiamondStoreNewGoods()
@@ -485,4 +494,168 @@ function BuildLayer:focusEntry(id)
         end
     end
     return false
+end
+
+
+-- Keep the complete live building list. Focusing is only a presentation lookup;
+-- it never sorts, filters, replaces or saves the player's unlocked buildings.
+function BuildLayer:focusedEntry()
+    for _, entry in ipairs(self.roleBuildingData or {}) do
+        if tostring(entry[dataKeyID]) == tostring(self.focusTargetId) then return entry end
+    end
+end
+
+function BuildLayer:disposeFocusedBuild()
+    if not self.focusedBuildPresentation or self.focusedBuildDisposed then return end
+    self.focusedBuildDisposed = true
+    local dm = DataManager:getInstance()
+    for _, key in ipairs(focusedEvents) do
+        dm:unregisterEvent(key, self.focusedEventKey)
+        -- Legacy unregisterEvent leaves its short-key callback behind.
+        local bucket = dm.__eventListener and dm.__eventListener[key]
+        if bucket then bucket[self.focusedEventKey] = nil end
+    end
+end
+
+function BuildLayer:initFocusedBuild()
+    local dm = DataManager:getInstance()
+    self.csvData = dm:getCSVByID(csvOfBuild)
+    self.ResoucecsvData = dm:getCSVByID(csvOfResourceInfo)
+    if not self.csvData or not self.ResoucecsvData then return false end
+    self.focusedBuildPresentation = true
+    self.approvedPage = true
+    self.keepNavigation = false
+    self.isHaveInfo = false
+    self.focusedGeneration = 0
+    self.mainBg:setVisible(false)
+    self.titleBg:setVisible(false)
+    self.storeMenu:setVisible(false)
+
+    local W = WarmTheme
+    local size = cc.Director:getInstance():getVisibleSize()
+    local origin = cc.Director:getInstance():getVisibleOrigin()
+    local scale = math.min(size.width / 480, size.height / 800)
+    local paper = cc.LayerColor:create(cc.c4b(W.colors.paper.r, W.colors.paper.g, W.colors.paper.b, 255), size.width, size.height)
+    paper:setPosition(origin);self:addChild(paper)
+    local canvas = cc.Node:create()
+    canvas:setContentSize(cc.size(480,800));canvas:setScale(scale)
+    canvas:setPosition(cc.p((size.width-480*scale)/2, (size.height-800*scale)/2))
+    paper:addChild(canvas);self.focusedCanvas = canvas
+    focusedSerial = focusedSerial + 1
+    self.focusedEventKey = "focusedBuild" .. focusedSerial
+    for _, key in ipairs(focusedEvents) do
+        dm:registerEvent(key, self.focusedEventKey, function()
+            if not self.focusedBuildDisposed and not self.focusedBuildBusy then self:refreshFocusedBuild() end
+        end)
+    end
+    self:registerScriptHandler(function(event)
+        if event == "exit" or event == "cleanup" then self:disposeFocusedBuild() end
+    end)
+    self:refreshFocusedBuild()
+    return true
+end
+
+function BuildLayer:leaveFocusedBuild()
+    if self.focusedBuildDisposed or self.focusedBuildLeaving then return end
+    self.focusedBuildLeaving = true
+    local dispatch = zqDispatch
+    if dispatch and dispatch.mainMenu and type(dispatch.mainMenu.openRoute) == "function" then
+        dispatch.mainMenu:openRoute(0)
+    elseif dispatch and type(dispatch.moveToHome) == "function" then
+        dispatch:moveToHome()
+    else
+        self.focusedBuildLeaving = false
+    end
+end
+
+function BuildLayer:refreshFocusedBuild()
+    if self.focusedBuildDisposed or self.focusedBuildBusy then return end
+    self:initdata()
+    local W, c = WarmTheme, WarmTheme.colors
+    local canvas = self.focusedCanvas
+    canvas:removeAllChildren(true)
+    self.focusedGeneration = self.focusedGeneration + 1
+    local generation = self.focusedGeneration
+    self.focusedButtons = {}
+    local function label(text, size, color, x, y, width, anchor)
+        local n = W.label(text,size,color,x,y,false,anchor or 0)
+        if width then W.fit(n,width) end
+        canvas:addChild(n);return n
+    end
+    local function button(key,text,y,action,primary)
+        local n = W.button(text,388,54,function()
+            if not self.focusedBuildDisposed and not self.focusedBuildLeaving and generation == self.focusedGeneration then action() end
+        end,{size=23,primary=primary})
+        n:setPosition(cc.p(240,y));canvas:addChild(n);self.focusedButtons[key]=n
+        return n
+    end
+    label("港口建设",23,c.muted,40,752,400)
+    local entry = self:focusedEntry()
+    local recipe = self.csvData[tostring(self.focusTargetId)]
+    local built = entry and tonumber(entry[dataKeyNum]) ~= 0
+    local unlocked = entry and recipe and GuideController:getInstance():getIsHaveStep(1)
+    self.focusedCostRows = {}
+    if recipe then
+        local art = W.sprite("Images/Icon/" .. (recipe.iconName or ""),94,94)
+        if art then art:setPosition(cc.p(240,655));canvas:addChild(art) end
+        label(recipe.name or "建设",30,c.ink,240,574,400,.5)
+    end
+    if not unlocked then
+        label("该建筑尚未开放",23,c.muted,240,464,388,.5)
+    elseif built then
+        label("已建设",26,c.sea,240,455,388,.5)
+        label("回到船上，继续准备下一段航程。",21,c.muted,240,405,388,.5)
+    else
+        label("建造所需",23,c.ink,46,508,200)
+        label("现有 / 所需",19,c.muted,434,508,164,1)
+        local costs = recipe.resume or {}
+        local spacing = math.min(57,240/math.max(1,#costs))
+        local enough = true
+        for index, cost in ipairs(costs) do
+            local id, need = tostring(cost[1]),tonumber(cost[2]) or 0
+            local have = tonumber(DataManager:getInstance():getPackNumWithId(id)) or 0
+            local resource = self.ResoucecsvData[id] or {}
+            local y = 459-(index-1)*spacing
+            local line = W.panel(388,1,c.line,0);line:setPosition(cc.p(46,y-25));canvas:addChild(line)
+            label(resource.name or id,23,c.ink,46,y,185)
+            local value = label(tostring(have).." / "..tostring(need),23,have>=need and c.ink or ManagementTheme.colors.danger,434,y,188,1)
+            self.focusedCostRows[#self.focusedCostRows+1] = {id=id,have=have,need=need,label=value}
+            if have<need then enough=false end
+        end
+        label(enough and "材料已备齐" or "材料不足，可查看获取方式",21,enough and c.sea or c.muted,240,244,388,.5)
+        button("build","建设",165,function() self:attemptFocusedBuild() end,true)
+    end
+    button("back","返回船上",74,function() self:leaveFocusedBuild() end,false)
+end
+
+function BuildLayer:attemptFocusedBuild()
+    if self.focusedBuildDisposed or self.focusedBuildLeaving or self.focusedBuildBusy then return false end
+    if DialogueViewManager and not DialogueViewManager:sharedInstance():empty() then return false end
+    -- Recheck the original unlocked row, guide and inventory at the click. A
+    -- stale native button can never build twice or create an unavailable item.
+    self:initdata()
+    local entry = self:focusedEntry()
+    local id = tostring(self.focusTargetId)
+    if not entry or tonumber(entry[dataKeyNum]) ~= 0 or not self.csvData[id]
+        or not GuideController:getInstance():getIsHaveStep(1) then
+        self:refreshFocusedBuild();return false
+    end
+    local dm = DataManager:getInstance()
+    if dm:getSound_off() == 0 then AudioEngine.playEffect(EFFECT_Button,false) end
+    local enough, missing = self:cheackResoucesOK(id)
+    if enough ~= 1 then
+        Lackmaterial:create(missing,function()
+            if not self.focusedBuildDisposed then self:refreshFocusedBuild() end
+        end):show()
+        return false
+    end
+    -- Same transaction and guide/unlock owner as the full construction list.
+    -- Inventory events during the deductions must not replace the tapped node.
+    self.focusedBuildBusy = true
+    self:useResouces(id)
+    dm:createSuccessCheck(kUnlockBuild,id)
+    ToastUtil:downString("建造成功")
+    self.focusedBuildBusy = false
+    self:refreshFocusedBuild()
+    return true
 end
