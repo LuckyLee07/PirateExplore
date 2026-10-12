@@ -328,9 +328,9 @@ function Mission:getDescription(  )
 end
 
 --一键完成
-function Mission:completedMissionByCosted(  )
+function Mission:completedMissionByCosted( presentation )
     
-    if DataManager:getInstance():addDiamond(-self.price) == 0 then
+    if DataManager:getInstance():addDiamond(-self.price, nil, nil, presentation) == 0 then
         return false
     end
 

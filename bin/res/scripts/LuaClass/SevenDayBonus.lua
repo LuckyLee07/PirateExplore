@@ -49,34 +49,7 @@ end
 function SevenDayBonusLayer:init()
     self.isClosed = false
     self.claimStarted = false
-    -- 钻石商店物品
-    -- local scrollViewSize = cc.size(self.s_size.width, self.s_size.height - 140)
-    -- self.scrollViewContainer = cc.Layer:create()
-
-    -- self.scrollView = cc.ScrollView:create(scrollViewSize)
-
-    -- self.scrollView:setPosition(cc.p(self.s_position.x - self.s_size.width * 0.5, self.s_position.y - self.s_size.height * 0.5 + 40))
-    -- self.scrollView:setContainer(self.scrollViewContainer) -- 設置容器
-    -- self.scrollViewContainer:setPosition(cc.p(0.0, 0.0))
-    -- self.scrollView:setClippingToBounds(true) -- 設置剪切
-    -- self.scrollView:setBounceable(true)  -- 設置彈性效果
-    -- self.scrollView:setDirection(cc.SCROLLVIEW_DIRECTION_VERTICAL) -- 設置滾動方向
-    -- self.scrollView:setDelegate()
-    -- -- self.scrollView:registerScriptHandler(scrollViewDidScroll, cc.SCROLLVIEW_SCRIPT_SCROLL)
-    -- self:addChild(self.scrollView)
-
-    -- 移除自己的关闭按钮
-    self.closeBtn:removeFromParent()
-
-    -- 添加title文字
-    local titleSpr = DialogTheme.label("七日航海礼", 34)
-    titleSpr:setPosition(cc.p(self.s_position.x, self.s_position.y + self.s_size.height * 0.5 - 36))
-    self:addChild(titleSpr)
-
-    -- 添加底部的确定按钮
-    local okBtn = DialogTheme.menuItem("Images/btn/ann05_a.png", "Images/btn/ann05_b.png")
-    okBtn:setPosition(cc.p(self.s_position.x, self.s_position.y - self.s_size.height * 0.5 + okBtn:getContentSize().height))
-    okBtn:registerScriptTapHandler(function()
+    local claim = function()
         -- Reject queued/reentrant taps before any reward or save mutation.
         if self.isClosed or self.claimStarted then return end
         self.claimStarted = true
@@ -126,7 +99,36 @@ function SevenDayBonusLayer:init()
         DataManager:getInstance():setRoleData(roleSevenDayBonus, sevenData)
         self:destory()
         self:removeFromParent()
-    end)
+    end
+    if rawget(_G,'WARM_PIRATE_V1')~=false then return self:initCoherentBonus(claim) end
+    -- 钻石商店物品
+    -- local scrollViewSize = cc.size(self.s_size.width, self.s_size.height - 140)
+    -- self.scrollViewContainer = cc.Layer:create()
+
+    -- self.scrollView = cc.ScrollView:create(scrollViewSize)
+
+    -- self.scrollView:setPosition(cc.p(self.s_position.x - self.s_size.width * 0.5, self.s_position.y - self.s_size.height * 0.5 + 40))
+    -- self.scrollView:setContainer(self.scrollViewContainer) -- 設置容器
+    -- self.scrollViewContainer:setPosition(cc.p(0.0, 0.0))
+    -- self.scrollView:setClippingToBounds(true) -- 設置剪切
+    -- self.scrollView:setBounceable(true)  -- 設置彈性效果
+    -- self.scrollView:setDirection(cc.SCROLLVIEW_DIRECTION_VERTICAL) -- 設置滾動方向
+    -- self.scrollView:setDelegate()
+    -- -- self.scrollView:registerScriptHandler(scrollViewDidScroll, cc.SCROLLVIEW_SCRIPT_SCROLL)
+    -- self:addChild(self.scrollView)
+
+    -- 移除自己的关闭按钮
+    self.closeBtn:removeFromParent()
+
+    -- 添加title文字
+    local titleSpr = DialogTheme.label("七日航海礼", 34)
+    titleSpr:setPosition(cc.p(self.s_position.x, self.s_position.y + self.s_size.height * 0.5 - 36))
+    self:addChild(titleSpr)
+
+    -- 添加底部的确定按钮
+    local okBtn = DialogTheme.menuItem("Images/btn/ann05_a.png", "Images/btn/ann05_b.png")
+    okBtn:setPosition(cc.p(self.s_position.x, self.s_position.y - self.s_size.height * 0.5 + okBtn:getContentSize().height))
+    okBtn:registerScriptTapHandler(claim)
 
     local okLabel = cc.LabelTTF:create("领  取", MasterTheme.headingFont(false), 28.0)
     okLabel:setColor(MasterTheme.colors.white)
@@ -152,6 +154,7 @@ function SevenDayBonusLayer:init()
 end
 
 function SevenDayBonusLayer:loadData()
+    if self.serviceWarm then return self:loadCoherentBonus() end
     cclog("开始加载7日登陆奖励界面的数据")
     local csv = DataManager:getInstance():getCSVByID(csvOfLogingReward)
     local gap = 20
@@ -213,4 +216,50 @@ function SevenDayBonusLayer:loadData()
         end
     end
 
+end
+
+function SevenDayBonusLayer:initCoherentBonus(claim)
+    local S=require 'LuaClass/ServiceSupportPresentation';local W=require 'LuaClass/WarmTheme'
+    self.s_bg:setVisible(false)
+    local root=S.canvas(self)
+    local paper=W.panel(464,784,W.colors.paper,8);paper:setPosition(cc.p(8,8));root:addChild(paper,-2)
+    local header=W.panel(464,104,W.colors.ink,0);header:setPosition(cc.p(8,688));root:addChild(header,-1)
+    S.label(root,'七日航海礼',30,32,751,400,W.colors.paper)
+    S.label(root,'每个可领取日期，收下一份航海补给',18,32,710,416,W.colors.paper)
+    S.art(root,'chest',109,608,132)
+    self.bonusToday=S.label(root,'',27,197,635,244)
+    S.label(root,'今日奖励领取后立即入库',18,197,592,242,W.colors.muted)
+    self.bonusContent=cc.Node:create();root:addChild(self.bonusContent)
+    self.claimButton=W.button('领取今日奖励',416,54,claim,{size=23,primary=true})
+    self.claimButton:setPosition(cc.p(240,48));root:addChild(self.claimButton)
+    self:loadData()
+    self:setCancelCallback(function()self:destory()end)
+    self:registerScriptHandler(function(event)if event=='exit'or event=='cleanup'then self:destory()end end)
+    return true
+end
+function SevenDayBonusLayer:loadCoherentBonus()
+    local S=require 'LuaClass/ServiceSupportPresentation';local W=require 'LuaClass/WarmTheme'
+    local csv=DataManager:getInstance():getCSVByID(csvOfLogingReward)
+    local data=DataManager:getInstance():getRoleData(roleSevenDayBonus);local today=math.floor(data/1000000)+1
+    local available=canClaimBonus(data)
+    self.bonusToday:setString(today<=7 and ('第 '..today..' 天的礼物')or'七日礼已领完')
+    self.claimButton.item:setEnabled(available and not self.claimStarted and not self.isClosed)
+    self.claimButton.label:setString(available and '领取今日奖励'or'今日已领取')
+    self.bonusContent:removeAllChildren();self.bonusDays={}
+    for i=1,7 do
+        local record=csv[tostring(i)];local row=cc.Node:create();local wide=i==7;local width=wide and 416 or 202
+        local x=wide and 32 or(32+((i-1)%2)*214);local y=wide and 96 or(426-math.floor((i-1)/2)*110)
+        row:setPosition(cc.p(x,y));row:setContentSize(cc.size(width,100));self.bonusContent:addChild(row)
+        local state=i<today and '已领取'or(i==today and available and '待领取'or'未到领取日')
+        local active=i==today and available
+        if active then local face=W.panel(width,100,cc.c3b(241,225,174),6);row:addChild(face,-1)end
+        S.art(row,'chest',wide and 47 or 30,47,wide and 76 or 46)
+        S.label(row,record.day,19,wide and 105 or 10,81,70)
+        S.label(row,state,16,width-8,81,width-66,active and W.colors.sea or W.colors.muted,1)
+        local parts={};for _,tip in ipairs(record.Tips)do parts[#parts+1]=tip[1]end
+        local tips=S.label(row,table.concat(parts,wide and '  ·  'or'\n'),16,wide and 105 or 62,39,nil,W.colors.ink)
+        tips:setDimensions(cc.size(width-(wide and 117 or 66),wide and 54 or 60));tips:setVerticalAlignment(cc.VERTICAL_TEXT_ALIGNMENT_CENTER)
+        tips:setHorizontalAlignment(cc.TEXT_ALIGNMENT_LEFT)
+        S.rule(row,0,width);self.bonusDays[i]={row=row,state=state}
+    end
 end

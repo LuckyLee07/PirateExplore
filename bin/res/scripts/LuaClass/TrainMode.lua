@@ -27,6 +27,17 @@ function TrainLayer:create()
 end
 
 function TrainLayer:destory()
+    if self.coherentTrain then
+        if self.coherentTrainDisposed then return end
+        self.coherentTrainDisposed = true
+        for _, key in ipairs({roleSoildierQueue, roleSelectUnit, roleMoney}) do
+            local dm=DataManager:getInstance()
+            dm:unregisterEvent(key, "coherentTrain")
+            local bucket=dm.__eventListener and dm.__eventListener[key]
+            if bucket then bucket.coherentTrain=nil end
+        end
+        if TrainLayer.instance == self then TrainLayer.instance = nil end
+    end
     cclog("TrainLayer：我自由了")
     DataManager:getInstance():unregisterEvent(roleGuideStep, "train")
     DataManager:getInstance():unregisterEvent(roleMapInfo, "TrainLayer")
@@ -122,6 +133,9 @@ function TrainLayer:init()
             DataManager:getInstance():setAchievementInfo(achievement_Training, tostring(soilderID))
         end
         --print("====size===",self.data[soilderID][dataKeyNum])
+    end
+    if rawget(_G, 'WARM_PIRATE_V1') ~= false then
+        return self:initCoherentTrain(SkillData, Recruit)
     end
     -- 设置下方信息界面
 
@@ -582,6 +596,9 @@ end
 
 -- init
 function ChangeJobView:init(Soilder,Index)
+    if rawget(_G, 'WARM_PIRATE_V1') ~= false then
+        return self:initCoherentJob(Soilder, Index)
+    end
 
     ChangeJobView.instance = self
 
@@ -1008,6 +1025,7 @@ function ChangeJobView:init(Soilder,Index)
 end
 
 function ChangeJobView:makeCallback(GoodsID,ShowNum,MaxNum,Index,Cell,CellIndex)
+    if self.coherentJob then return self:refreshCoherentJob() end
     local _success = false
     if ShowNum >= MaxNum then
         _success = true
@@ -1073,6 +1091,9 @@ function MaterialView:create(Type,Material,CurrNum,MaxNum,StoreUnlockData,Index,
 end
 
 function MaterialView:init(Type,Material,CurrNum,MaxNum,StoreUnlockData,Index,GoodsID,CellIndex)
+    if rawget(_G, 'WARM_PIRATE_V1') ~= false then
+        return self:initCoherentMaterial(Type,Material,CurrNum,MaxNum,StoreUnlockData,Index,GoodsID,CellIndex)
+    end
     local size = cc.Director:getInstance():getVisibleSize()
 
     -- background
@@ -1557,6 +1578,7 @@ function MaterialView:init(Type,Material,CurrNum,MaxNum,StoreUnlockData,Index,Go
 end
 
 function MaterialView:buyCallback(GoodsID,ShowNum,Index)
+    if self.coherentMaterial then return self:refreshCoherentMaterial() end
     if self.conditional ~= nil and self.conditional[Index] ~= nil then
         self.conditional[Index] = true
     end
@@ -1575,3 +1597,399 @@ function MaterialView:buyCallback(GoodsID,ShowNum,Index)
     end
 end
 
+
+-- Warm crew pages own their composition only. CSV recipes, original recruit
+-- closure, changeJobCallBack and DataManager remain the transaction owners.
+local function crewLabel(parent, text, size, x, y, width, color)
+    local W = require 'LuaClass/WarmTheme'
+    local label = W.label(text, size, color or W.colors.ink, x, y, false, 0)
+    if width then W.fit(label, width) end
+    parent:addChild(label)
+    return label
+end
+local function crewButton(parent, text, width, x, y, callback, primary)
+    local W = require 'LuaClass/WarmTheme'
+    local button = W.button(text, width, 46, callback, {primary=primary, size=19})
+    button:setPosition(cc.p(x,y)); parent:addChild(button)
+    return button
+end
+local function crewIcon(parent, icon, x, y, size)
+    local W = require 'LuaClass/WarmTheme'
+    local sprite = W.sprite('Images/Icon/'..tostring(icon or ''), size, size)
+    if sprite then sprite:setPosition(cc.p(x,y)); parent:addChild(sprite) end
+    return sprite
+end
+local function crewParagraph(parent, text, x, y, width, height, size)
+    local label = crewLabel(parent,text,size or 18,x,y,nil)
+    label:setDimensions(cc.size(width,height)); label:setHorizontalAlignment(cc.TEXT_ALIGNMENT_LEFT)
+    return label
+end
+local function crewSheet(view, title, height)
+    local W = require 'LuaClass/WarmTheme'
+    local size = cc.Director:getInstance():getVisibleSize()
+    local origin = cc.Director:getInstance():getVisibleOrigin()
+    local scale = math.min(size.width/480,size.height/800)
+    local canvas = cc.Node:create(); canvas:setContentSize(cc.size(480,800)); canvas:setScale(scale)
+    canvas:setPosition(cc.p(origin.x+(size.width-480*scale)/2,origin.y+(size.height-800*scale)/2))
+    view:addChild(canvas); view.coherentCanvas=canvas
+    local lifetime=cc.Node:create(); view:addChild(lifetime)
+    lifetime:registerScriptHandler(function(event)if event=='cleanup' then view.coherentDisposed=true end end)
+    local bottom=(800-height)/2
+    local paper=W.panel(416,height,W.colors.paper); paper:setPosition(cc.p(32,bottom)); canvas:addChild(paper)
+    crewLabel(canvas,title,28,52,bottom+height-38,308)
+    view.coherentClose=crewButton(canvas,'关闭',66,395,bottom+height-38,function()
+        if view.coherentDisposed or view._dialogueClosing then return end
+        view:close()
+    end)
+    local content=cc.Node:create(); canvas:addChild(content); view.coherentContent=content
+    return content,bottom,bottom+height
+end
+local crewObserverId=0
+local function crewObserve(view, keys, callback)
+    crewObserverId=crewObserverId+1
+    local name='coherentCrewSheet'..crewObserverId
+    local dm=DataManager:getInstance()
+    for _,key in ipairs(keys) do
+        dm:registerEvent(key,name,function()
+            if not view.coherentDisposed and not view.coherentBusy and not view._dialogueClosing then callback() end
+        end)
+    end
+    local owner=cc.Node:create(); view:addChild(owner)
+    owner:registerScriptHandler(function(event)
+        if event=='cleanup' then
+            view.coherentDisposed=true
+            for _,key in ipairs(keys) do
+                dm:unregisterEvent(key,name)
+                local bucket=dm.__eventListener and dm.__eventListener[key]
+                if bucket then bucket[name]=nil end
+            end
+            if ChangeJobView.instance==view then ChangeJobView.instance=nil end
+            if MaterialView.instance==view then MaterialView.instance=nil end
+        end
+    end)
+end
+local function crewTable(parent, x, y, width, height, count, rowHeight, build)
+    local list=cc.TableView:create(cc.size(width,height))
+    list:setDirection(cc.SCROLLVIEW_DIRECTION_VERTICAL);list:setVerticalFillOrder(cc.TABLEVIEW_FILL_TOPDOWN)
+    list:setPosition(cc.p(x,y));list:setDelegate()
+    list:registerScriptHandler(function()return count()end,cc.NUMBER_OF_CELLS_IN_TABLEVIEW)
+    list:registerScriptHandler(function()return rowHeight,width end,cc.TABLECELL_SIZE_FOR_INDEX)
+    list:registerScriptHandler(function(tableview,index)
+        local cell=tableview:dequeueCell() or cc.TableViewCell:create()
+        cell:removeAllChildren();cell:setTag(index+1);build(cell,index+1)
+        return cell
+    end,cc.TABLECELL_SIZE_AT_INDEX)
+    parent:addChild(list);list:reloadData();return list
+end
+local function crewAlive(view)
+    return not view.coherentDisposed and not view.coherentTrainDisposed and not view.coherentPageDisposed and not view._dialogueClosing
+end
+local function crewStock(dm,id,kind)
+    if kind==1 then return tonumber(((dm:getRoleData(roleSoildierQueue) or {})[tostring(id)] or {})[dataKeyNum]) or 0 end
+    if tostring(id)=='1001' then return tonumber(dm:getRoleData(roleMoney)) or 0 end
+    return tonumber((dm:getRoleData(rolePack) or {})[tostring(id)]) or 0
+end
+local function crewSourceRoute(view, route)
+    if not crewAlive(view) then return end
+    view.coherentDisposed=true
+    DialogueViewManager:sharedInstance():removeAllView()
+    if route=='store' then zqDispatch:gotoStore(true)
+    elseif route=='production' then zqDispatch:moveToResource()
+    elseif route=='alchemy' then zqDispatch:moveToRepository()
+    else zqDispatch:moveToExpedition() end
+end
+
+function TrainLayer:initCoherentTrain(skillData, recruit)
+    local W=require 'LuaClass/WarmTheme'
+    self.coherentTrain=true;self.coherentRecruit=recruit;self.coherentSkills=skillData
+    local shell=self:applyCoherentPageShell('船员与招募','招募伙伴，准备材料，选择进阶职业')
+    self.coherentTrainContent=cc.Node:create();shell.canvas:addChild(self.coherentTrainContent)
+    local observer=cc.Node:create();self:addChild(observer)
+    observer:registerScriptHandler(function(event)if event=='cleanup' then self:destory() end end)
+    for _,key in ipairs({roleSoildierQueue,roleSelectUnit,roleMoney}) do
+        DataManager:getInstance():registerEvent(key,'coherentTrain',function()
+            if crewAlive(self) then self:refreshCoherentTrain() end
+        end)
+    end
+    DataManager:getInstance():registerEvent(roleGuideStep,'train',function()
+        if crewAlive(self) and self.setBtn then
+            local guide=GuideController:getInstance()
+            if guide:getIsHaveStep(11) then guide:removeRedPoint(self.setBtn) else guide:addRedPoint(self.setBtn) end
+        end
+    end)
+    self:refreshCoherentTrain()
+    return true
+end
+
+function TrainLayer:refreshCoherentTrain()
+    if not crewAlive(self) then return end
+    local W=require 'LuaClass/WarmTheme';local dm=DataManager:getInstance()
+    self.data=dm:getRoleData(roleSoildierQueue) or {};self:setDataKey()
+    self.coherentTrainGeneration=(self.coherentTrainGeneration or 0)+1
+    local generation=self.coherentTrainGeneration
+    local offsetFromTop=0
+    if self.tableview then offsetFromTop=self.tableview:getContentOffset().y-(300-(self.coherentRosterCount or 0)*96) end
+    local parent=self.coherentTrainContent;parent:removeAllChildren()
+    local selected=dm:getRoleData(roleSelectUnit) or {};local total,assigned=0,0
+    for _,row in pairs(self.data) do total=total+(tonumber(row[dataKeyNum]) or 0) end
+    for id,num in pairs(selected) do if (tonumber(id) or 0)>=10000 then assigned=assigned+(tonumber(num) or 0) end end
+    self.coherentRosterSummary={owned=total,assigned=assigned}
+    crewLabel(parent,'我的船员',25,32,627,250)
+    crewLabel(parent,'拥有 '..total..' 人  ·  已编入 '..assigned..' 人',18,32,592,416,W.colors.muted)
+    local count=self:getDataNum()
+    self.tableview=crewTable(parent,32,262,416,300,function()return self:getDataNum()end,96,function(cell,index)
+        local id=self:getDataKeyByIndex(index);local row=self.data[id];local soldier=row and self.csvData[id]
+        if not soldier then return end
+        local panel=W.panel(416,88,W.colors.white);panel:setPosition(cc.p(0,4));cell:addChild(panel)
+        crewIcon(cell,soldier.icon,40,48,58)
+        crewLabel(cell,soldier.name,22,78,66,212)
+        crewLabel(cell,tostring(soldier.star)..' 星  ·  '..tostring((self.coherentSkills[tostring(soldier.skill)] or {}).name or '技能'),16,78,40,214,W.colors.muted)
+        crewLabel(cell,'拥有 '..row[dataKeyNum]..'  ·  已编入 '..tostring(selected[tostring(10000+tonumber(id))] or 0),16,78,19,214,W.colors.muted)
+        local button=crewButton(cell,tonumber(soldier.star)>=6 and '查看' or '进阶',86,362,48,function()
+            if not crewAlive(self) or generation~=self.coherentTrainGeneration or not DialogueViewManager:sharedInstance():empty() then return end
+            if tonumber(soldier.star)>=6 then
+                local name,detail=CrewSkillDetails.describe(soldier.skill,self.coherentSkills,self.bufData)
+                local modal=DialogueView:create();local content=crewSheet(modal,soldier.name,330)
+                crewParagraph(content,'已达到最高星级\n技能：'..name..'\n'..detail..'\n生命 '..soldier.hp..'  威力 '..soldier.attack..'  速度 '..soldier.speed,52,397,376,166,19)
+                modal:show()
+            else
+                local view=ChangeJobView:create(soldier,index);if view then view:show() end
+            end
+        end)
+        if index==1 then self.coherentFirstJobButton=button end
+    end)
+    self.coherentRosterCount=count
+    local topOffset=300-count*96
+    local offset=topOffset>=0 and topOffset or math.max(topOffset,math.min(0,topOffset+offsetFromTop))
+    self.tableview:setContentOffset(cc.p(0,offset))
+    self.tableview:registerScriptHandler(function(_,cell)
+        if not crewAlive(self) or not DialogueViewManager:sharedInstance():empty() then return end
+        local index=cell:getTag();local id=self.dataIndex[index] and self:getDataKeyByIndex(index)
+        local soldier=id and self.csvData[id]
+        if not soldier then return end
+        local name,detail=CrewSkillDetails.describe(soldier.skill,self.coherentSkills,self.bufData)
+        local modal=DialogueView:create();local content=crewSheet(modal,soldier.name,330)
+        crewParagraph(content,'技能：'..name..'\n技能效果：'..detail..'\n生命 '..soldier.hp..'  威力 '..soldier.attack..'  速度 '..soldier.speed,52,400,376,150,19)
+        modal:show()
+    end,cc.TABLECELL_TOUCHED)
+    if count==0 then
+        local card=W.panel(416,294,W.colors.white);card:setPosition(cc.p(32,264));parent:addChild(card)
+        local harbor=W.harborWorld(168,100,{boat=true});harbor:setPosition(cc.p(156,430));parent:addChild(harbor)
+        crewLabel(parent,'还没有船员',25,58,412,364)
+        crewParagraph(parent,'从招募一名水手开始。\n招募后，在出航整备中编入船员与食物。',58,354,364,72,20)
+        crewLabel(parent,'备齐材料后，水手可以进阶为不同职业。',17,58,290,364,W.colors.muted)
+    else
+        crewLabel(parent,'选择进阶，查看职业与所需材料',17,32,239,416,W.colors.muted)
+    end
+    local soldier=self.csvData['100'];local price=tonumber(soldier.produceResume[1][3])
+    local card=W.panel(416,114,W.colors.white);card:setPosition(cc.p(32,108));parent:addChild(card)
+    crewIcon(parent,soldier.icon,72,167,58)
+    crewLabel(parent,'招募'..soldier.name,23,112,189,300)
+    crewLabel(parent,'每人 '..price..' 金币  ·  现有 '..tostring(dm:getRoleData(roleMoney) or 0),18,112,159,300,W.colors.muted)
+    crewLabel(parent,'确认招募后才会花费金币',16,112,130,300,W.colors.muted)
+    self.coherentRecruitButton=crewButton(self.coherentShell.canvas,'招募',148,374,48,function()
+        if not crewAlive(self) or generation~=self.coherentTrainGeneration or not DialogueViewManager:sharedInstance():empty() then return end
+        self:showCoherentRecruit()
+    end,true)
+    if self.coherentPreviousRecruitButton then self.coherentPreviousRecruitButton:removeFromParent() end
+    self.coherentPreviousRecruitButton=self.coherentRecruitButton
+    self.setBtn=self.coherentRecruitButton.item
+    local guide=GuideController:getInstance()
+    if guide:getIsHaveStep(11) then guide:removeRedPoint(self.setBtn) else guide:addRedPoint(self.setBtn) end
+end
+
+function TrainLayer:showCoherentRecruit()
+    local W=require 'LuaClass/WarmTheme';local dm=DataManager:getInstance();local soldier=self.csvData['100']
+    local price=tonumber(soldier.produceResume[1][3])
+    local view=DialogueView:create();local content=crewSheet(view,'招募'..soldier.name,380)
+    crewIcon(content,soldier.icon,92,449,72)
+    crewLabel(content,soldier.name,25,150,466,260)
+    crewLabel(content,'技能：'..tostring((self.coherentSkills[tostring(soldier.skill)] or {}).name or ''),19,150,430,260)
+    crewLabel(content,'生命 '..soldier.hp..'   威力 '..soldier.attack..'   速度 '..soldier.speed,18,52,381,376)
+    local costLabel=crewLabel(content,'花费 '..price..' 金币 · 招募 1 人',22,52,339,376)
+    local spent=false
+    view.coherentConfirm=crewButton(content,'确认招募',192,240,267,function()
+        if spent or not crewAlive(view) or not crewAlive(self) then return end
+        if (tonumber(dm:getRoleData(roleMoney)) or 0)<price then
+            costLabel:setString('金币不足，还缺 '..(price-(tonumber(dm:getRoleData(roleMoney)) or 0)))
+            costLabel:setColor(W.colors.coral)
+            if not view.coherentAlchemy then
+                view.coherentConfirm:setPositionX(322)
+                view.coherentAlchemy=crewButton(content,'去炼金',136,126,267,function()crewSourceRoute(view,'alchemy')end)
+            end
+            return
+        end
+        spent=true
+        -- Calling the original closure is the sole recruitment transaction.
+        self.coherentRecruit();view:close();self:refreshCoherentTrain()
+    end,true)
+    self.coherentRecruitDialog=view;view:show()
+end
+
+function ChangeJobView:initCoherentJob(soldier,index)
+    if not soldier then return false end
+    self.coherentJob=true;self.soilder=soldier;self.coherentSourceId=tostring(soldier[dataKeyID]);self.coherentSourceIndex=index
+    self.csvData=DataManager:getInstance():getCSVByID(csvOfSoilderAttribute)
+    self.packageCSV=DataManager:getInstance():getCSVByID(csvOfResourceInfo)
+    self.data=soldier.changeJob or {};self.coherentChoice=1
+    if #self.data==0 then return false end
+    ChangeJobView.instance=self
+    crewSheet(self,'选择进阶职业',604)
+    crewObserve(self,{rolePack,roleMoney,roleSoildierQueue,roleMake,roleStore},function()self:refreshCoherentJob()end)
+    self:refreshCoherentJob();return true
+end
+
+function ChangeJobView:refreshCoherentJob()
+    if not crewAlive(self) then return end
+    local W=require 'LuaClass/WarmTheme';local dm=DataManager:getInstance();local parent=self.coherentContent
+    parent:removeAllChildren();self.coherentGeneration=(self.coherentGeneration or 0)+1;local generation=self.coherentGeneration
+    local width=376/#self.data
+    self.coherentChoices={}
+    for index,option in ipairs(self.data) do
+        local soldier=self.csvData[tostring(option[1])]
+        local choiceButton=crewButton(parent,soldier.name,width-8,52+(index-.5)*width,601,function()
+            if not crewAlive(self) or generation~=self.coherentGeneration then return end
+            self.coherentChoice=index;self:refreshCoherentJob()
+        end,false)
+        self.coherentChoices[index]=choiceButton
+        if index==self.coherentChoice then choiceButton.label:setColor(W.colors.sea) end
+    end
+    local soldier=self.csvData[tostring(self.data[self.coherentChoice][1])];self.coherentTarget=soldier
+    crewIcon(parent,soldier.icon,86,534,66)
+    crewLabel(parent,soldier.name..' · '..soldier.star..' 星',25,138,548,282)
+    crewLabel(parent,'生命 '..soldier.hp..'  威力 '..soldier.attack..'  速度 '..soldier.speed,17,138,518,282)
+    local name,description=CrewSkillDetails.describe(soldier.skill,dm:getCSVByID(csvOfSkillAttribute),dm:getCSVByID(csvOfBuff))
+    crewParagraph(parent,'技能：'..name..' · '..description,52,465,376,62,17)
+    crewLabel(parent,'进阶所需 · 拥有 / 需要',19,52,417,376)
+    local requirements=soldier.produceResume or {};self.coherentRequirementRows={};self.conditional={}
+    self.coherentRequirementTable=crewTable(parent,52,191,376,210,function()return #requirements end,70,function(cell,index)
+        local req=requirements[index];local kind,id,need=tonumber(req[1]),tostring(req[2]),tonumber(req[3])
+        local record=(kind==1 and self.csvData or self.packageCSV)[id] or {};local have=crewStock(dm,id,kind)
+        self.coherentRequirementRows[index]={id=id,have=have,need=need,kind=kind}
+        crewIcon(cell,record.iconName or record.icon,27,35,42)
+        crewLabel(cell,record.name or id,19,58,47,200)
+        crewLabel(cell,have..' / '..need,18,58,22,200,have>=need and W.colors.muted or W.colors.coral)
+        if have<need then
+            self.coherentRequirementRows[index].button=crewButton(cell,'获取',84,332,35,function()
+                if not crewAlive(self) or generation~=self.coherentGeneration then return end
+                self:openCoherentRequirement(id,kind,need)
+            end)
+        else crewLabel(cell,'已备齐',17,292,35,84,W.colors.sea) end
+    end)
+    crewLabel(parent,'消耗 1 名'..self.soilder.name..'，获得所选职业',16,52,175,376,W.colors.muted)
+    self.coherentPromote=crewButton(parent,'确认进阶',212,240,134,function()
+        if not crewAlive(self) or generation~=self.coherentGeneration or self.coherentBusy then return end
+        local train=TrainLayer.instance
+        if not train or not crewAlive(train) or crewStock(dm,self.coherentSourceId,1)<1 then return end
+        for _,req in ipairs(requirements) do
+            if crewStock(dm,req[2],tonumber(req[1]))<tonumber(req[3]) then
+                ToastUtil:toastString('材料还未备齐，点击获取查看来源');self:refreshCoherentJob();return
+            end
+        end
+        self.coherentBusy=true;self:close()
+        -- Preserve the original material-consumption loop and promotion owner.
+        for _,req in ipairs(requirements) do dm:addPackItemWithId(tostring(tonumber(req[2])),-tonumber(req[3])) end
+        train:setDataKey()
+        local sourceIndex
+        for i=1,train:getDataNum() do if train:getDataKeyByIndex(i)==self.coherentSourceId then sourceIndex=i;break end end
+        if sourceIndex then train:changeJobCallBack(soldier,sourceIndex) end
+        train:refreshCoherentTrain()
+    end,true)
+end
+
+function ChangeJobView:openCoherentRequirement(id,kind,need)
+    local dm=DataManager:getInstance();local record=(kind==1 and self.csvData or self.packageCSV)[id] or {}
+    local unlocked=dm:getStoreUnlockTable() or {};local mode=3
+    if kind==2 then
+        local recipe=record.resume or {};local hasRecipe=false
+        for _,row in ipairs(recipe) do if (tonumber(row[1]) or 0)>0 and (tonumber(row[2]) or 0)>0 then hasRecipe=true end end
+        if hasRecipe then
+            if tonumber(record.store_connect or 0)>0 and unlocked[tostring(record.store_connect)] then mode=4
+            else for _,row in ipairs(dm:getRoleData(roleMake) or {}) do if tostring(row[dataKeyID])==id then mode=1;break end end end
+        end
+    end
+    local view=MaterialView:create(mode,mode==1 and id or record.name,crewStock(dm,id,kind),need,unlocked,0,id,self.coherentChoice)
+    if view then view:show() end
+end
+
+function MaterialView:initCoherentMaterial(mode,material,current,required,store,index,goodsId,cellIndex)
+    self.coherentMaterial=true;self.type=mode;self.material=tostring(material)
+    self.coherentArgs={current=current,required=required,store=store,index=index,goodsId=goodsId,cellIndex=cellIndex}
+    self.packageCSV=DataManager:getInstance():getCSVByID(csvOfResourceInfo)
+    if mode==1 then self.data=self.packageCSV[self.material];MaterialView.instance=self end
+    crewSheet(self,mode==1 and '材料合成' or '材料来源',mode==1 and 604 or 418)
+    crewObserve(self,{rolePack,roleMoney,roleMake,roleProducerQueue,roleGuideStep,roleStore},function()self:refreshCoherentMaterial()end)
+    self:refreshCoherentMaterial();return true
+end
+
+function MaterialView:refreshCoherentMaterial()
+    if not crewAlive(self) then return end
+    local W=require 'LuaClass/WarmTheme';local dm=DataManager:getInstance();local parent=self.coherentContent;parent:removeAllChildren()
+    self.coherentGeneration=(self.coherentGeneration or 0)+1;local generation=self.coherentGeneration;local args=self.coherentArgs
+    local function valid()return crewAlive(self) and generation==self.coherentGeneration and not self.coherentBusy end
+    if self.type==1 then
+        local have=crewStock(dm,self.material);local requirements=self.data.resume or {}
+        crewIcon(parent,self.data.iconName,86,574,66)
+        crewLabel(parent,self.data.name,25,138,590,280)
+        crewLabel(parent,'拥有 '..have..' / 需要 '..args.required,19,138,558,280)
+        crewLabel(parent,'合成 1 个所需 · 拥有 / 需要',19,52,506,376)
+        self.coherentRequirementRows={}
+        self.coherentRequirementTable=crewTable(parent,52,254,376,228,function()return #requirements end,72,function(cell,index)
+            local req=requirements[index];local id,need=tostring(req[1]),tonumber(req[2]);local count=crewStock(dm,id)
+            local record=self.packageCSV[id] or {};self.coherentRequirementRows[index]={id=id,have=count,need=need}
+            crewIcon(cell,record.iconName,26,36,42)
+            crewLabel(cell,record.name or id,19,58,49,200)
+            crewLabel(cell,count..' / '..need,18,58,23,200,count>=need and W.colors.muted or W.colors.coral)
+            if count<need then self.coherentRequirementRows[index].button=crewButton(cell,'获取',84,332,36,function()
+                if not valid() then return end
+                local unlock=dm:getStoreUnlockTable() or {};local price=unlock[id]
+                local view=MaterialView:create(price and 2 or 3,record.name,price and (need-count) or count,price and (need-count)*tonumber(price) or need,need,index,id,0)
+                if view then view:show() end
+            end) else crewLabel(cell,'已备齐',17,292,36,84,W.colors.sea) end
+        end)
+        crewParagraph(parent,'材料齐备后合成 1 个，再返回职业页面确认进阶。',52,215,376,56,17)
+        self.coherentCommit=crewButton(parent,'合成 1 个',212,240,145,function()
+            if not valid() then return end
+            for _,req in ipairs(requirements) do if crewStock(dm,req[1])<tonumber(req[2]) then
+                ToastUtil:toastString('材料还未备齐，点击获取查看来源');self:refreshCoherentMaterial();return
+            end end
+            self.coherentBusy=true;self:close()
+            -- Same grant-then-deduct order as the original synthesis action.
+            dm:addPackItemWithId(self.material,1)
+            for _,req in ipairs(requirements) do dm:addPackItemWithId(tostring(tonumber(req[1])),-tonumber(req[2])) end
+            ToastUtil:toastString('制造成功！'..self.data.name..'+1')
+            if ChangeJobView.instance then ChangeJobView.instance:makeCallback(self.material,crewStock(dm,self.material),args.required,args.index,args.goodsId,args.cellIndex) end
+        end,true)
+    elseif self.type==2 then
+        local id=tostring(args.goodsId);local missing=math.max(0,tonumber(args.store)-crewStock(dm,id))
+        local prices=dm:getStoreUnlockTable() or {};local price=tonumber(prices[id]);local cost=price and missing*price or tonumber(args.required)
+        crewLabel(parent,self.material,26,52,507,376)
+        crewLabel(parent,'还缺 '..missing..' 个 · 花费 '..cost..' 金币',21,52,463,376)
+        local source=ProductionSources.find(dm,GuideController:getInstance(),id)
+        crewParagraph(parent,ProductionSources.caption(source),52,389,376,66,18)
+        if source then self.coherentProduction=crewButton(parent,'查看生产',156,134,265,function()
+            if valid() and ProductionSources.find(dm,GuideController:getInstance(),id) then crewSourceRoute(self,'production') end
+        end) end
+        self.coherentCommit=crewButton(parent,missing==0 and '已备齐' or '购买材料',184,source and 330 or 240,265,function()
+            if not valid() or missing==0 then return end
+            if not (dm:getStoreUnlockTable() or {})[id] then self:refreshCoherentMaterial();return end
+            self.coherentBusy=true;self:close()
+            local result,deficit=dm:addCoin(-cost)
+            if result==0 then ToastUtil:toastString('缺少金币X'..tostring(deficit))
+            else dm:addPackItemWithId(id,missing);ToastUtil:toastString('购买成功！'..self.material..'+'..missing)
+                if MaterialView.instance then MaterialView.instance:buyCallback(id,args.store,args.index) end
+            end
+        end,missing>0)
+    else
+        crewLabel(parent,self.material,26,52,508,376)
+        if tonumber(args.required)>0 then
+            crewLabel(parent,'拥有 '..crewStock(dm,args.goodsId)..' / 需要 '..tostring(args.required),18,52,473,376,W.colors.coral)
+        end
+        local record=self.packageCSV[tostring(args.goodsId)] or {}
+        local description=self.type==4 and '可以在市场中购买图纸解锁' or tostring(record.obtain or '通过出征探索获得')
+        crewParagraph(parent,description,52,424,376,96,21)
+        self.coherentSource=crewButton(parent,self.type==4 and '前往市场' or '出征探索',212,240,265,function()
+            if valid() then crewSourceRoute(self,self.type==4 and 'store' or 'explore') end
+        end,true)
+    end
+end

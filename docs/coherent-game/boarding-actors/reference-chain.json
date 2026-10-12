@@ -1,0 +1,42 @@
+[
+  {
+    "id": "100",
+    "original_identity_portrait": "bin/res/assets/Images/Icon/B/crew-100.png",
+    "intermediate_exact_id_v1_study": "/workspace/shared/pirate-audit/battle-actors-next/assets/body-100-v1.png",
+    "intermediate_sha256": "87072d4431cbe92dbc74384639633f6f42d9850024b696cfc195efff0af817a0",
+    "v1_status": "rejected for minified grit; not shipped",
+    "v2_file": "bin/res/assets/Images/UI/CleanVoyage/Combat/Actors/body-100-v2.png",
+    "style_reference": "bin/res/assets/Images/UI/CleanVoyage/Combat/boarding-deck-clean-v1.png",
+    "v2_body_style_reference": null
+  },
+  {
+    "id": "101",
+    "original_identity_portrait": "bin/res/assets/Images/Icon/B/crew-101.png",
+    "intermediate_exact_id_v1_study": "/workspace/shared/pirate-audit/battle-actors-next/assets/body-101-v1.png",
+    "intermediate_sha256": "13cb42161bd9e107e88c78c978bd91694b73a4785fdef5c1baa1515344aea1f9",
+    "v1_status": "rejected for minified grit; not shipped",
+    "v2_file": "bin/res/assets/Images/UI/CleanVoyage/Combat/Actors/body-101-v2.png",
+    "style_reference": "bin/res/assets/Images/UI/CleanVoyage/Combat/boarding-deck-clean-v1.png",
+    "v2_body_style_reference": null
+  },
+  {
+    "id": "10001",
+    "original_identity_portrait": "bin/res/assets/Images/Boss/g_317.png",
+    "intermediate_exact_id_v1_study": "/workspace/shared/pirate-audit/battle-actors-next/assets/body-10001-v1.png",
+    "intermediate_sha256": "d52fc14854b0a6beba1862f26f8264d70e1f98c97350dd35cea885980bee341f",
+    "v1_status": "rejected for minified grit; not shipped",
+    "v2_file": "bin/res/assets/Images/UI/CleanVoyage/Combat/Actors/body-10001-v2.png",
+    "style_reference": "bin/res/assets/Images/UI/CleanVoyage/Combat/boarding-deck-clean-v1.png",
+    "v2_body_style_reference": "body-100-v2.png"
+  },
+  {
+    "id": "10083",
+    "original_identity_portrait": "bin/res/assets/Images/Boss/g_303.png",
+    "intermediate_exact_id_v1_study": "/workspace/shared/pirate-audit/battle-actors-next/assets/body-10083-v1.png",
+    "intermediate_sha256": "0da97e4453818fa9cd1171e90a1cba4eaef9b91d7ce3c2a454a2af5332997df1",
+    "v1_status": "rejected for minified grit; not shipped",
+    "v2_file": "bin/res/assets/Images/UI/CleanVoyage/Combat/Actors/body-10083-v2.png",
+    "style_reference": "bin/res/assets/Images/UI/CleanVoyage/Combat/boarding-deck-clean-v1.png",
+    "v2_body_style_reference": "body-100-v2.png"
+  }
+]

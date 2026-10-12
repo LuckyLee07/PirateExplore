@@ -170,7 +170,9 @@ viewport=cc.size(640,960);scene=cc.Scene:create();scene:retain()
 local owner=cc.Node:create();owner:retain();scene:addChild(owner)
 local modal=D.show('普通页面','关闭页面后不应留下提示。',{{label='知道了'}},owner);modal:retain()
 owner:removeFromParent(true)
-check(modal:getParent()==nil,'generic owner removal closes its scene-owned WarmDialog')
+check(not modal:isVisible(),'generic owner removal immediately hides its scene-owned WarmDialog')
+local actionManager=realGet(cc.Director):getActionManager();actionManager:resumeTarget(modal);actionManager:update(0);actionManager:update(.01)
+check(modal:getParent()==nil,'safe later tick removes the generic owner dialog')
 check(owner.adventureDialog==nil,'generic owner removal clears contextual dialog ownership')
 modal:close();modal:release();owner:release();scene:cleanup();scene:release();scene=nil
 local assetNames={'sea-home.png','ship-home.png','crew.png','icons.png'}

@@ -1,6 +1,7 @@
 local AdventureProgress = require "LuaClass/AdventureProgress"
 local AdventureSea = require "LuaClass/AdventureSea"
 local CleanVoyageView = require "LuaClass/CleanVoyageView"
+local RaisedSeaMap2Live = require "LuaClass/RaisedSeaMap2Live"
 local CleanFirstMap = require "LuaClass/CleanFirstMap"
 require "LuaClass/Header"
 require "LuaClass/ExploreDataManager"
@@ -621,7 +622,7 @@ local function onTouchesEnd( target, touch, event )
     -- local t1 = os.clock()
 
  	--计算出来的角度是逆时针为正方向角度
- 	local  radian = getRadianBetweenTwoPoints(judgePos,ownerWdP)
+    local radian = (target.raisedMap2Live and RaisedSeaMap2Live.inputAngle(target,judgePos,ownerWdP)) or getRadianBetweenTwoPoints(judgePos,ownerWdP)
  	-- print("radian",radian)
 
  	if radian < 45 then
@@ -752,6 +753,29 @@ function Explore:create(index)
 end
 
 
+-- Shared by normal construction and isolated native input fixtures.
+function Explore:installChartTouchListener()
+    --添加touch事件
+    local listener = cc.EventListenerTouchOneByOne:create()
+    listener:registerScriptHandler(function ( touch,event )
+        return onTouchesBegan(self,touch,event)
+    end,cc.Handler.EVENT_TOUCH_BEGAN)
+    listener:registerScriptHandler(function ( touch,event )
+        onTouchesMoved(self,touch,event)
+    end,cc.Handler.EVENT_TOUCH_MOVED )
+    listener:registerScriptHandler(function ( touch,event )
+        onTouchesEnd(self,touch,event)
+    end,cc.Handler.EVENT_TOUCH_ENDED )
+    listener:registerScriptHandler(function ( touch,event )
+        -- print("onTouchCancelledL")
+        onTouchCancelled(self,touchcount,event)
+    end,cc.Handler.EVENT_TOUCH_CANCELLED)
+    -- listener:setFixedPriority(-127)
+    local eventDispatcher = self:getEventDispatcher()
+    eventDispatcher:addEventListenerWithSceneGraphPriority(listener, self)
+    eventDispatcher:setPriority(listener,-130)
+end
+
 function Explore:init(index)
 
 	-- local ids = getCustomTable()
@@ -864,25 +888,7 @@ function Explore:init(index)
    	-- print("dic")
 
    	-- print("initTipLayered")
-   	--添加touch事件
-   	local listener = cc.EventListenerTouchOneByOne:create()
-    listener:registerScriptHandler(function ( touch,event )
-    	return onTouchesBegan(self,touch,event)
-    end,cc.Handler.EVENT_TOUCH_BEGAN)
-    listener:registerScriptHandler(function ( touch,event )
-    	onTouchesMoved(self,touch,event)
-    end,cc.Handler.EVENT_TOUCH_MOVED )
-    listener:registerScriptHandler(function ( touch,event )
-    	onTouchesEnd(self,touch,event)
-    end,cc.Handler.EVENT_TOUCH_ENDED )
-    listener:registerScriptHandler(function ( touch,event )
-    	-- print("onTouchCancelledL")
-    	onTouchCancelled(self,touchcount,event)
-    end,cc.Handler.EVENT_TOUCH_CANCELLED)
-    -- listener:setFixedPriority(-127)
-    local eventDispatcher = self:getEventDispatcher()
-    eventDispatcher:addEventListenerWithSceneGraphPriority(listener, self)
-    eventDispatcher:setPriority(listener,-130)
+    self:installChartTouchListener()
 	
     --添加迷雾管理者
     self.fogManager = FogManager:create()
@@ -1260,9 +1266,13 @@ function Explore:initTipLayer()
 
         	tipstring = string.format("回城卷轴不足，您可以花费钻石返回基地。\n(需消耗%d个钻石)",price)
 
+            local presentation
+            if rawget(_G,'WARM_PIRATE_V1')~=false then
+                presentation=require('LuaClass/WarmShortageOwnership').forOwner(self,'mapIndex')
+            end
         	comfirmFunc = function ( ... )
-        		
-        		if DataManager:getInstance():addDiamond(-price) == 1 then
+                if presentation and not presentation.isActive() then return end
+                if DataManager:getInstance():addDiamond(-price,nil,nil,presentation) == 1 then
         			self:returnToBase()
         		else
         			--TD记录地图
@@ -1315,6 +1325,8 @@ function Explore:initTipLayer()
         arrow:setPosition(cc.p(29 * u, 27 * u))
         arrow:setRotation(angle)
         node.item:addChild(arrow, 3)
+        self.raisedMap2Arrows=self.raisedMap2Arrows or {}
+        table.insert(self.raisedMap2Arrows,{node=arrow,angle=angle,button=node.item,direction=direction})
     end
     directionButton(UpDiriction, 410, 178, 0)
     directionButton(LeftDirction, 352, 125, -90)
@@ -1455,6 +1467,8 @@ function Explore:initEventManger( )
 end
 
 function Explore:initMapByMapIndex( mapIndex,isclear )
+    if self.warmShortageContext then self.warmShortageContext.retire() end
+    if self.raisedMap2Live then RaisedSeaMap2Live.unmount(self)end
     CleanVoyageView.unmount(self)
 	--在加载的时候，不允许任何操作
 	self.statue = "loading"
@@ -1730,6 +1744,7 @@ function Explore:initMapByMapIndex( mapIndex,isclear )
     self.adventureBreadCoefficient=breadCoefficient
     AdventureSea.refresh(self,breadCoefficient)
     CleanVoyageView.mount(self)
+    RaisedSeaMap2Live.mount(self)
 end
 
 function Explore:initPlayer( )
@@ -1985,6 +2000,7 @@ function Explore:stopChartCameraMotion()
 end
 
 function Explore:clampChartPosition(position)
+    local raised=self.raisedMap2Live and RaisedSeaMap2Live.clamp(self,position);if raised then return raised end
     local size = self.map:getContentSize()
     local scale = self.moveLayer:getScale()
     -- A Layer defaults to a centered anchor. Even with ignored positioning,
@@ -2004,6 +2020,7 @@ function Explore:clampChartPosition(position)
 end
 
 function Explore:getCenterViewPositionByActualPosition( actualPosition )
+    if self.raisedMap2Live then actualPosition=RaisedSeaMap2Live.projectPoint(self,actualPosition)end
 
 
 	--获取当前屏幕中心的位置相对于movelayer上的哪个位置
@@ -2793,6 +2810,7 @@ function Explore:clearFogs( isUpdateTotalExtent )
 
 	self.fogManager:clearClearFogs()
 	self:updataExtent(isUpdateTotalExtent)
+    if self.raisedMap2Live then RaisedSeaMap2Live.dirty(self)end
 end
 
 --改变坐标的迷雾
@@ -2856,6 +2874,7 @@ function Explore:changeTitleByTitlePosition( titlePosition ,gid)
 		gid = 42
 	end
 	self.meta:setTileGID(gid,titlePosition)
+    if self.raisedMap2Live then RaisedSeaMap2Live.dirty(self)end
 
 end
 

@@ -7,6 +7,148 @@ require "LuaClass/NotificationNode"
 require "LuaClass/ToastUtil"
 
 
+-- Warm-only presentation adapters. The original SDButton, ProgressTimer,
+-- scheduled cooldown actions, guide handles and transaction closures stay live.
+local function supplyMove(node, parent)
+    node:retain();node:removeFromParent(false);parent:addChild(node);node:release()
+end
+local function supplyLabel(parent,text,size,color,x,y,width,anchor)
+    local W=require 'LuaClass/WarmTheme'
+    local label=W.label(text,size,color,x,y,false,anchor or 0)
+    if width then W.fit(label,width) end
+    parent:addChild(label);return label
+end
+local function supplyOpen(view)
+    return not view.coherentPageDisposed and not view.coherentPageLeaving and not view.adventureDialog
+end
+local function supplyMount(view,title,subtitle,action,x,y)
+    local W=require 'LuaClass/WarmTheme'
+    local children=view:getChildren()
+    local legacy=cc.Node:create();view:addChild(legacy);legacy:setVisible(false)
+    for _,child in ipairs(children)do supplyMove(child,legacy) end
+    view.supplyLegacy=legacy
+    local shell=view:applyCoherentPageShell(title,subtitle)
+    view.alchemyReceiptHost=shell.canvas
+    local button=view.setBtn
+    supplyMove(button,shell.canvas)
+    -- Replace only the visual faces before interaction. SDButton still owns
+    -- its listener, repeated-press scheduling, real hitbox and click state.
+    local selected=button.selectSpr:isVisible()
+    button.normalSpr:removeFromParent();button.selectSpr:removeFromParent()
+    button.normalSpr=W.panel(156,56,W.colors.sea,8)
+    button.selectSpr=W.panel(156,56,W.colors.ink,8)
+    button.normalSpr:setVisible(not selected);button.selectSpr:setVisible(selected)
+    button:addChild(button.normalSpr);button:addChild(button.selectSpr)
+    button:setContentSize(cc.size(156,56));button:addClickArea(cc.rect(0,0,0,0))
+    button:setPosition(cc.p(x,y));button:setSwallowTouches(false)
+    view.supplyActionLabel=supplyLabel(button,action,24,W.colors.white,78,30,132,.5)
+    local timer=view.setButtonProgrees
+    timer:setScaleX(132/177);timer:setScaleY(3);timer:setPosition(cc.p(78,7))
+    local click,hold=button.onSingleCLick,button.onLongPressed
+    button:registerSingleCLick(function()if supplyOpen(view) and button.bIsEnable then click()end end)
+    if hold then button:registerLongPressed(function()if supplyOpen(view) and button.bIsEnable then hold()end end)end
+    return shell
+end
+local function supplyResizeScroll(scroll,container,parent,x,y,w,h)
+    supplyMove(scroll,parent);scroll:setPosition(cc.p(x,y));scroll:setViewSize(cc.size(w,h))
+    container:setContentSize(cc.size(w,h));scroll:setContentSize(cc.size(w,h))
+    -- SDButton's legacy clip test uses parent coordinates; this canvas is scaled.
+    scroll.bIsScrollView=false
+end
+local function supplyClip(button,scroll)
+    local began,moved,ended=button.onTouchBegan,button.onTouchMoved,button.onTouchEnded
+    local longProgress=button.updatelongprogress
+    local active,cancelled,startPoint,startOffset,lastPoint=false,false,nil,nil,nil
+    local function inside(point)
+        local size=scroll:getViewSize()
+        return cc.rectContainsPoint(cc.rect(0,0,size.width,size.height),point)
+    end
+    local function dragged(point)
+        if cancelled then return true end
+        if not active then return false end
+        point=point or lastPoint
+        local offset=scroll:getContentOffset()
+        local dx,dy=point.x-startPoint.x,point.y-startPoint.y
+        -- Measure in the fixed viewport, never in a row that moves with the
+        -- finger. Any real scroll displacement cancels the pending button.
+        return not inside(point) or dx*dx+dy*dy>64 or
+            math.abs(offset.x-startOffset.x)>1 or math.abs(offset.y-startOffset.y)>1
+    end
+    local function cancel(self)
+        active=false;cancelled=true
+        self.isTouch=false;self.isMoved=true;self.m_longProgress=false
+        self.pressTimes=0;self.touchCounts=0
+        self.normalSpr:stopAllActions();self:setActive(false)
+    end
+    button.onTouchBegan=function(self,touch,event)
+        local point=scroll:convertToNodeSpace(touch:getLocation())
+        if not inside(point)then return false end
+        local accepted=began(self,touch,event)
+        if accepted then
+            active=true;cancelled=false;startPoint=point;lastPoint=point
+            local offset=scroll:getContentOffset();startOffset=cc.p(offset.x,offset.y)
+            self.isMoved=false
+        end
+        return accepted
+    end
+    button.onTouchMoved=function(self,touch,event)
+        if not active then return end
+        lastPoint=scroll:convertToNodeSpace(touch:getLocation())
+        if dragged(lastPoint)then cancel(self);return end
+        return moved(self,touch,event)
+    end
+    button.onTouchEnded=function(self,touch,event)
+        if not active then return end
+        local point=scroll:convertToNodeSpace(touch:getLocation())
+        if dragged(point)then cancel(self);return end
+        active=false
+        return ended(self,touch,event)
+    end
+    button.updatelongprogress=function(self,...)
+        if dragged()then cancel(self);return end
+        return longProgress(self,...)
+    end
+    -- SDButton's repeat timer invokes onLongPressed directly after its first
+    -- hold tick. Guard both hold routes as well as the initial hold scheduler.
+    for _,key in ipairs({'onLongPressed','onLongPressedActiveOnce'})do
+        local callback=button[key]
+        if callback then button[key]=function(...)
+            if dragged()then cancel(button);return end
+            return callback(...)
+        end end
+    end
+    button.onTouchCancelled=function(self)cancel(self)end
+    button.listener:registerScriptHandler(function()cancel(button)end,cc.Handler.EVENT_TOUCH_CANCELLED)
+end
+local function supplyInformation(view,title,text)
+    if not supplyOpen(view)then return end
+    local dialog=require 'LuaClass/WarmDialog'
+    local modal=dialog.show(title,text,{{label='知道了'}},view)
+    -- Preserve every real description, including long late-game records.
+    -- Only the description scrolls; the dismissal stays outside its clip.
+    local panel=modal:getChildren()[1]
+    if not panel then return modal end
+    local body
+    for _,child in ipairs(panel:getChildren())do
+        if child.getString and child:getString()==text then body=child;break end
+    end
+    if body then
+        local size=cc.Director:getInstance():getVisibleSize();local k=size.width/640
+        local width=panel:getContentSize().width-48*k;local height=132*k
+        local container=cc.Layer:create();supplyMove(body,container)
+        body:setFontSize(22*k);body:setDimensions(cc.size(width,0))
+        local full=math.max(height,body:getContentSize().height)
+        body:setPosition(cc.p(0,full));container:setContentSize(cc.size(width,full))
+        local scroll=cc.ScrollView:create(cc.size(width,height));scroll:setContainer(container)
+        scroll:setContentSize(cc.size(width,full));scroll:setViewSize(cc.size(width,height))
+        scroll:setPosition(cc.p(24*k,panel:getContentSize().height-217*k))
+        scroll:setClippingToBounds(true);scroll:setDirection(cc.SCROLLVIEW_DIRECTION_VERTICAL)
+        scroll:setContentOffset(cc.p(0,height-full));scroll:setBounceable(false)
+        panel:addChild(scroll);modal.supplyDescription=scroll
+    end
+    return modal
+end
+
 ResourceLayer = class("ResourceLayer", function ()
     return BaseView:create()
 end)
@@ -46,6 +188,17 @@ function ResourceLayer:destory()
 end
 
 function ResourceLayer:init()
+    local ok=self:initLegacy()
+    if ok and rawget(_G,'WARM_PIRATE_V1')~=false then self:installCoherentSupplyPage() end
+    return ok
+end
+
+function ResourceLayer:showInfoBox(text)
+    if self.coherentShell then return supplyInformation(self,'物品说明',text) end
+    return BaseView.showInfoBox(self,text)
+end
+
+function ResourceLayer:initLegacy()
     self:applyManagementTheme()
     -- local a, b = DataManager:getInstance():unlockUnitWithType(kUnlockResource, "2")
     DataManager:getInstance():registerEvent(roleMapInfo, "ResourceLayer", function()
@@ -266,6 +419,10 @@ function ResourceLayer:init()
         end
 
         nowTime = NotificationNode:getInstance():GetGameTime()
+        if self.coherentShell then
+            local remaining=math.max(0,math.min(CDTime,nextProduceTime-nowTime))
+            self.bottomMaskLabel:setString(string.format('下次净收获 · %02d:%02d',math.floor(remaining/60),remaining%60))
+        end
 
         -- 只有选择了工人之后才显示倒计时
         if self.workerUseNum <= 0 then
@@ -399,17 +556,22 @@ end
 function ResourceLayer:resetWorkData(bIsSave)
     self.workerNum = DataManager:getInstance():getRoleData(roleLivingUnitNum)
     self.topMaskLabel:setString("游民：" .. (self.workerNum - self.workerUseNum) .. "/" .. self.workerNum)
+    if self.coherentShell then
+        self.topMaskLabel:setString("空闲 " .. (self.workerNum-self.workerUseNum) .. " / " .. self.workerNum)
+        require("LuaClass/WarmTheme").fit(self.topMaskLabel,230)
+    end
     -- 调用存档方法
     if bIsSave then
         DataManager:getInstance():setRoleData(roleProducerQueue, self.workerData, nil)
     end
-    if not self.bIsNeedRedraw then
+    if self.coherentShell or not self.bIsNeedRedraw then
         -- 刷新下边的数据
         self:setResourceUIWithData()
     end
 end
 
 function ResourceLayer:setWorkerUIWithData()
+    if self.coherentShell then return self:renderCoherentWorkers() end
     cclog("开始加载资源上方UI的数据")
     self.workerData = DataManager:getInstance():getRoleData(roleProducerQueue)
     self.workerUseNum = 0
@@ -581,6 +743,7 @@ function ResourceLayer:setResourceUIWithData()
             end
         end
     end
+    if self.coherentShell then return self:renderCoherentProduction() end
     -- 循环取得的数据创建label
     local lineNum,lineHeight = 4,36
     local visibleCount=0
@@ -646,4 +809,137 @@ function ResourceLayer:checkIsHaveNewUnlock()
             end
         end
     end
+end
+
+-- A collection card, a short worker list and a separate net-production ledger.
+-- No rewards or allocation persistence are owned by this presentation layer.
+function ResourceLayer:installCoherentSupplyPage()
+    local W=require 'LuaClass/WarmTheme'
+    local shell=supplyMount(self,'资源采集','分配游民，营地会持续生产补给。','采集',354,590)
+    local canvas=shell.canvas
+    local card=W.panel(416,128,W.colors.white,8);card:setPosition(cc.p(32,522));canvas:addChild(card,-1)
+    supplyLabel(canvas,'手动采集',22,W.colors.ink,48,626,180)
+    supplyLabel(canvas,'石头与木头 · 数量浮动',17,W.colors.muted,48,592,214)
+    self.gatherYieldLabel=supplyLabel(canvas,'',18,W.colors.muted,48,559,214)
+    self.gatherStatus=supplyLabel(canvas,'可以采集',17,W.colors.muted,354,546,156,.5)
+    supplyLabel(canvas,'工人分配',22,W.colors.ink,32,491,156)
+    supplyMove(self.topMaskLabel,canvas);self.topMaskLabel:setFontSize(19)
+    self.topMaskLabel:setAnchorPoint(cc.p(1,.5));self.topMaskLabel:setPosition(cc.p(448,491))
+    supplyResizeScroll(self.scrollView,self.scrollViewContainer,canvas,32,276,416,192)
+    supplyMove(self.bottomMaskLabel,canvas);self.bottomMaskLabel:setFontSize(20)
+    self.bottomMaskLabel:setAnchorPoint(cc.p(0,.5));self.bottomMaskLabel:setPosition(cc.p(32,246))
+    supplyResizeScroll(self.resourceScrollView,self.resourceScrollViewContainer,canvas,32,104,416,124)
+    self.supplyWorkyard=W.sprite('Images/UI/CleanWorkyard/workyard-v1.png',238,119)
+    if self.supplyWorkyard then self.supplyWorkyard:setPosition(cc.p(329,165));canvas:addChild(self.supplyWorkyard,-1) end
+    self.supplyScrollHint=supplyLabel(canvas,'',14,W.colors.muted,240,265,416,.5)
+    local warehouse=W.button('查看仓库',128,48,function()
+        if supplyOpen(self)then zqDispatch:moveToRepository()end
+    end,{size=18});warehouse:setPosition(cc.p(384,48));canvas:addChild(warehouse);self.supplyWarehouse=warehouse
+    self:setWorkerUIWithData();self:resetWorkData(false);self:setResourceUIWithData()
+    local function status()
+        local base=DataManager:getInstance():getRoleData(roleGatherUnit)
+        self.gatherYieldLabel:setString('采集基数 '..tostring(base));W.fit(self.gatherYieldLabel,214)
+        local remain=math.max(0,30-(os.time()-BaseViewLastClickCDTime))
+        self.gatherStatus:setString(self.bIsCenterBtnCanClick and '可以采集' or ('休息 '..math.ceil(remain)..' 秒'))
+        W.fit(self.gatherStatus,156)
+    end
+    status();schedule(self.gatherStatus,status,.25)
+    GuideController:getInstance():removeRedPoint(self.setBtn)
+    if not GuideController:getInstance():getIsHaveStep(3)then GuideController:getInstance():addRedPoint(self.setBtn)end
+    local cleanup=cc.Node:create();canvas:addChild(cleanup)
+    cleanup:registerScriptHandler(function(event)
+        if event=='exit' or event=='cleanup'then
+            self.coherentPageDisposed=true
+            self.setButtonProgrees:stopAllActions();self.setBtn:stopAllActions();self.setBtn.normalSpr:stopAllActions()
+            self:destory()
+        end
+    end)
+end
+
+function ResourceLayer:renderCoherentWorkers()
+    local W=require 'LuaClass/WarmTheme'
+    self.workerData=DataManager:getInstance():getRoleData(roleProducerQueue)
+    self.workerUseNum=0;self.supplyWorkerButtons={}
+    local oldHeight=self.scrollViewContainer:getContentSize().height
+    local oldOffset=self.scrollView:getContentOffset().y
+    self.scrollViewContainer:removeAllChildren()
+    local height=math.max(192,#self.workerData*92)
+    for index,worker in ipairs(self.workerData)do
+        local record=self.workerCsv[worker[dataKeyID]]
+        local row=cc.Node:create();row:setContentSize(cc.size(416,86));row:setPosition(cc.p(0,height-index*92+6));row:setTag(index)
+        self.scrollViewContainer:addChild(row)
+        local paper=W.panel(416,86,W.colors.white,8);row:addChild(paper,-1)
+        local art=require('LuaClass/CleanResourceArt').sprite(record.produce[1] and record.produce[1][1],48)
+        if art then art:setPosition(cc.p(35,44));row:addChild(art) end
+        local name=supplyLabel(row,record.name,21,W.colors.ink,68,60,164);name:setTag(9527)
+        local outputs={}
+        for _,product in ipairs(record.produce)do
+            local csv=self.produceCsv[product[1]]
+            if csv then outputs[#outputs+1]=csv.name..' +'..product[2]end
+        end
+        local note=supplyLabel(row,table.concat(outputs,' · '),17,W.colors.muted,68,28,164)
+        local number=supplyLabel(row,worker[dataKeyNum],18,W.colors.ink,324,43,88,.5)
+        local function change(delta)
+            if not supplyOpen(self) or row:getParent()~=self.scrollViewContainer then return end
+            local value=tonumber(number:getString())
+            if delta<0 and value<=0 then return end
+            if delta>0 and self.workerNum-self.workerUseNum<=0 then
+                ToastUtil:downString('游民数量不足，请建造民宅',true);return
+            end
+            number:setString(tostring(value+delta));W.fit(number,88)
+            self.workerUseNum=self.workerUseNum+delta;worker[dataKeyNum]=value+delta
+            self.bIsNeedRedraw=false;self:resetWorkData(true);self.bIsNeedRedraw=true
+        end
+        local function stepButton(text,x,delta)
+            local button=SDButton:create('Images/UI/SubCircleBtn.png','Images/UI/SubCircleBtn1.png',function()change(delta)end)
+            ManagementTheme.skinSDButton(button,'section')
+            local size=button:getContentSize();button:setScale(44/size.width)
+            button:setPosition(cc.p(x,43));button:setSwallowTouches(false)
+            button:addChild(W.label(text,30,W.colors.ink,size.width/2,size.height/2,false,.5))
+            button:registerLongPressed(function()change(delta)end);supplyClip(button,self.scrollView);row:addChild(button)
+            return button
+        end
+        local sub=stepButton('−',258,-1);local add=stepButton('+',390,1)
+        local light=cc.Node:create();light:setPosition(add:getPosition());light:setTag(9528);light:setVisible(false);row:addChild(light)
+        local mark=W.panel(44,3,W.colors.gold,0);mark:setPosition(cc.p(-22,-25));light:addChild(mark)
+        -- The name/production area is a real non-swallowing information target.
+        local info=SDButton:create('Images/UI/Info.png','Images/UI/Info.png',function()
+            if supplyOpen(self)then supplyInformation(self,record.name,record.produceDesc..' '..record.resumeDesc)end
+        end)
+        info.normalSpr:setOpacity(0);info.selectSpr:setOpacity(0)
+        info.normalSpr:setContentSize(cc.size(228,76));info.selectSpr:setContentSize(cc.size(228,76))
+        info:setContentSize(cc.size(228,76));info:setPosition(cc.p(116,43));info:setSwallowTouches(false)
+        supplyClip(info,self.scrollView);row:addChild(info);self.supplyWorkerButtons[index]={add=add,sub=sub,info=info,number=number,name=name,note=note,art=art}
+        self.workerUseNum=self.workerUseNum+tonumber(worker[dataKeyNum])
+    end
+    if #self.workerData==0 then
+        supplyLabel(self.scrollViewContainer,'还没有可分配的工作',21,W.colors.ink,16,154,384)
+        supplyLabel(self.scrollViewContainer,'先采集石头和木头，再建造生产设施。',18,W.colors.muted,16,116,384)
+    end
+    self.scrollViewContainer:setContentSize(cc.size(416,height));self.scrollView:setContentSize(cc.size(416,height))
+    local offset=self.supplyWorkersRendered and math.max(192-height,math.min(0,oldOffset+oldHeight-height))or 192-height
+    self.scrollView:setContentOffset(cc.p(0,offset));self.supplyWorkersRendered=true
+    if self.supplyScrollHint then self.supplyScrollHint:setString(#self.workerData>2 and ('上下滑动 · '..#self.workerData..' 项工作') or '') end
+end
+
+function ResourceLayer:renderCoherentProduction()
+    local W=require 'LuaClass/WarmTheme';local rows={}
+    for id,item in pairs(self.produceTable)do if item[1]~=0 then rows[#rows+1]={id=id,num=item[1],name=item[2]}end end
+    table.sort(rows,function(a,b)return tonumber(a.id)<tonumber(b.id)end)
+    local compact=#rows<=2
+    if self.supplyWorkyard then self.supplyWorkyard:setVisible(compact) end
+    local columns=compact and 1 or 2;local width=compact and 178 or 416
+    self.resourceScrollView:setViewSize(cc.size(width,124))
+    local height=math.max(124,math.ceil(#rows/columns)*48)
+    for index,item in ipairs(rows)do
+        local column=(index-1)%columns;local y=height-math.floor((index-1)/columns)*48-24
+        local x=column*212
+        supplyLabel(self.resourceScrollViewContainer,item.name,18,W.colors.ink,x+10,y,96)
+        supplyLabel(self.resourceScrollViewContainer,(item.num>0 and '+'or '')..item.num,19,item.num<0 and ManagementTheme.colors.danger or W.colors.sea,x+(compact and 174 or 200),y,compact and 72 or 92,1)
+    end
+    if #rows==0 then
+        supplyLabel(self.resourceScrollViewContainer,'分配工人后\n查看净收获',18,W.colors.muted,10,height-30,164)
+    end
+    self.resourceScrollViewContainer:setContentSize(cc.size(width,height));self.resourceScrollView:setContentSize(cc.size(width,height))
+    self.resourceScrollView:setContentOffset(cc.p(0,124-height))
 end

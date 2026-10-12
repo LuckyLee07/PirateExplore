@@ -70,14 +70,14 @@ local confirm=modal.warmOptions[1].item;confirm:retain()
 frames()
 confirm:activate()
 assert(completed==1 and attempts==2,'native quoted confirmation invokes return exactly once')
-assert(not owner.adventureDialog and modal:getParent()==nil and not owner:isRunning(),'running owner exit safely disposes its bound scene modal')
+assert(not owner.adventureDialog and not modal:isVisible() and not owner:isRunning(),'running owner exit immediately retires its bound scene modal')
 local function exited(node)
  assert(not node:isRunning(),'all surviving descendants must exit before owner destruction')
  for _,child in ipairs(node:getChildren())do exited(child)end
 end
 exited(owner)
 confirm:activate();modal:close();assert(completed==1 and attempts==2,'retained confirmation cannot repeat after owner destruction')
-frames();assert(director:getRunningScene():getChildrenCount()==0,'new scene has no orphan confirmation')
+frames();assert(modal:getParent()==nil,'retired modal removed after native exit unwinds');assert(director:getRunningScene():getChildrenCount()==0,'new scene has no orphan confirmation')
 confirm:release();modal:release();owner:release()
 print('PASS real running Pause -> original HUD quote -> WarmDialog: rejection, cancel, confirmation, original Explore destruction and stale activation')
 -- External owner teardown and complete scene teardown are separate exit orders.
@@ -85,7 +85,8 @@ for _,replaceWholeScene in ipairs({false,true})do
  owner=runningOwner();modal=D.show('离开页面','只检查生命周期。',{{label='关闭'}},owner);modal:retain()
  frames()
  if replaceWholeScene then director:replaceScene(cc.Scene:create());frames()else owner:destory()end
- assert(not owner.adventureDialog and modal:getParent()==nil,'running ancestor/scene exit clears modal ownership')
+ assert(not owner.adventureDialog and not modal:isVisible(),'running ancestor/scene exit immediately clears visible ownership')
+ frames();assert(modal:getParent()==nil,'safe later tick removes retired modal')
  modal:close();modal:release();owner:release()
 end
 cc.Director.getInstance=realGet

@@ -18,7 +18,7 @@ end
 local function contains(root,text)
  local found=false;H.visit(root,function(n)if n.getString and n:getString():find(text,1,true)then found=true end end);return found
 end
-for _,size in ipairs({{480,800},{640,960},{640,1136}})do
+for _,size in ipairs({{360,640},{480,800},{640,960},{640,1136}})do
  H.setViewport(size[1],size[2])
  for _,reason in ipairs({'Killed','NoBread'})do
   H.fixture();local home=H.fresh();local before=H.serialize(H.getData())
@@ -31,6 +31,23 @@ for _,size in ipairs({{480,800},{640,960},{640,1136}})do
   H.labelsWithin(layer,'Failure '..reason..' '..size[1]..'x'..size[2])
   local oldNext=assert(layer.buttons.next);oldNext:retain();oldNext.item:activate();assert(layer.page==2)
   oldNext.item:activate();assert(layer.page==2,'stale page action is inert');oldNext:release()
+  local pages=F.pages(H.dm,r)
+  local retained=false
+  for index,page in ipairs(pages)do
+   layer.page=index;layer:refresh()
+   assert(contains(layer,page.title),'each page displays its own category heading')
+   assert(not page.body:find('按原任务例外保留',1,true),'section heading cannot be orphaned inside paginated body')
+   if page.title=='按原任务例外保留：'then
+    retained=true
+    assert(not contains(layer,'未带回的货舱物资'),'retained cargo never appears under lost heading')
+    assert(page.body:find('1999',1,true),'mission item stays in retained section')
+   else
+    assert(not page.body:find('1999',1,true),'mission item never enters lost section')
+   end
+   H.labelsWithin(layer,'Failure category '..index)
+  end
+  assert(retained,'retained mission cargo has its own page')
+
   local calls=0;home.openPrimary=function(self)assert(self.warmReturnResult==nil);calls=calls+1 end
   local prepare=layer.buttons.prepare;prepare:retain();prepare.item:activate();prepare.item:activate()
   assert(calls==1 and layer.closed and home.warmReturnResult==nil,'onward route closes first and only runs once')

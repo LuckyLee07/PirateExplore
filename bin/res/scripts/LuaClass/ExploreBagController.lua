@@ -671,7 +671,7 @@ function ExploreBagController:costGoodsByGoodsIdAndNum( id,num,isTip,tipString )
 end
 
 
-function ExploreBagController:addCoin( addCoin )
+function ExploreBagController:addCoin( addCoin, isTip )
 
 	--记录数据
 	self.mapCoin = self.mapCoin + addCoin
@@ -681,8 +681,11 @@ function ExploreBagController:addCoin( addCoin )
 	money = DataManager:getInstance():getRoleData(roleMoney)
 	money = money + self.mapCoin
 
-	ToastUtil:downString("金币+" .. addCoin)
-	ToastUtil:downString("总共" .. money.."金币")
+	-- Coherent chests show their own persistent reward detail. Other callers keep both legacy tips.
+	if isTip ~= false then
+		ToastUtil:downString("金币+" .. addCoin)
+		ToastUtil:downString("总共" .. money.."金币")
+	end
 
 end
 

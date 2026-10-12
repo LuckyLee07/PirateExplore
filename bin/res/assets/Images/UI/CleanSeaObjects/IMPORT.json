@@ -1,0 +1,159 @@
+{
+  "operation": "alpha-preserving crop/resize/transparent padding only",
+  "sourceHashes": {
+    "bin/res/assets/Images/UI/CleanSea/source/event-three-kind-v1.png": "b057d0e60df5e958c999ae9bda10ba29b84bd525f53f263d346d17c8f6a1ff7c",
+    "bin/res/assets/Images/UI/CleanSeaObjects/source/sites-five-kind-v1.png": "fe4ffe794e44128ca77f4f33a02aa0ae5588b19d7ff00b9f0e0ab451ce13570e"
+  },
+  "objects": {
+    "port": {
+      "master": "bin/res/assets/Images/UI/CleanSea/source/event-three-kind-v1.png",
+      "cell": [
+        0,
+        0,
+        724,
+        724
+      ],
+      "alphaBounds": [
+        0,
+        65,
+        724,
+        685
+      ],
+      "packedOrigin": [
+        16,
+        40
+      ],
+      "packedSize": [
+        224,
+        192
+      ],
+      "footBaselineFromBottom": 24,
+      "sha256": "ef7bcb5f61f9a3d0f72bfe6631bfcd4e83052438ad386fa70234d49c81bcb9fa"
+    },
+    "world-chart": {
+      "master": "bin/res/assets/Images/UI/CleanSeaObjects/source/sites-five-kind-v1.png",
+      "cell": [
+        0,
+        0,
+        512,
+        512
+      ],
+      "alphaBounds": [
+        0,
+        70,
+        512,
+        512
+      ],
+      "packedOrigin": [
+        16,
+        39
+      ],
+      "packedSize": [
+        224,
+        193
+      ],
+      "footBaselineFromBottom": 24,
+      "sha256": "0938b5c8c51982a16cbf2052e18377b0de0a45fbe3648fc2ddbf7b91188b7fea"
+    },
+    "resurrection": {
+      "master": "bin/res/assets/Images/UI/CleanSeaObjects/source/sites-five-kind-v1.png",
+      "cell": [
+        512,
+        0,
+        1024,
+        512
+      ],
+      "alphaBounds": [
+        1,
+        19,
+        512,
+        512
+      ],
+      "packedOrigin": [
+        16,
+        16
+      ],
+      "packedSize": [
+        224,
+        216
+      ],
+      "footBaselineFromBottom": 24,
+      "sha256": "4e3e88fb6ea7ca5691cbfab8bfa66615ce4e8ce63461a16e4cf77b06cd659810"
+    },
+    "gateway": {
+      "master": "bin/res/assets/Images/UI/CleanSeaObjects/source/sites-five-kind-v1.png",
+      "cell": [
+        1024,
+        0,
+        1536,
+        512
+      ],
+      "alphaBounds": [
+        0,
+        19,
+        492,
+        512
+      ],
+      "packedOrigin": [
+        16,
+        8
+      ],
+      "packedSize": [
+        224,
+        224
+      ],
+      "footBaselineFromBottom": 24,
+      "sha256": "66f6066e8d8d4b0f610ce9391552818b8ae967aa53b203219cc4cec8dbe09965"
+    },
+    "tavern": {
+      "master": "bin/res/assets/Images/UI/CleanSeaObjects/source/sites-five-kind-v1.png",
+      "cell": [
+        0,
+        512,
+        512,
+        1024
+      ],
+      "alphaBounds": [
+        33,
+        0,
+        512,
+        488
+      ],
+      "packedOrigin": [
+        18,
+        8
+      ],
+      "packedSize": [
+        220,
+        224
+      ],
+      "footBaselineFromBottom": 24,
+      "sha256": "cc1dd4a32cfd0024eac3c7d8b48bb9f00d13f77b70fc4434be095751fb6c4465"
+    },
+    "arena": {
+      "master": "bin/res/assets/Images/UI/CleanSeaObjects/source/sites-five-kind-v1.png",
+      "cell": [
+        512,
+        512,
+        1024,
+        1024
+      ],
+      "alphaBounds": [
+        0,
+        3,
+        512,
+        478
+      ],
+      "packedOrigin": [
+        16,
+        24
+      ],
+      "packedSize": [
+        224,
+        208
+      ],
+      "footBaselineFromBottom": 24,
+      "sha256": "8caf9770df73eee06ea40bf0da03c2e5193543216763c9c1431a3dedcaef5034"
+    }
+  }
+}

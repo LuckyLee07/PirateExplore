@@ -1,0 +1,6 @@
+{
+  "generator": "built-in image_gen",
+  "prompt": "Use case: precise-object-edit. Edit this existing clean low-poly story illustration. It currently has seventeen rune stones around the bottle, but the exact story requires sixteen. REMOVE ONLY the large FOREGROUND-LEFT stone at approximately x=30%, y=70%, bearing a glowing cyan triangular wave glyph (the foreground stone just left of the front-center spiral stone). Fill the removed stone's entire location naturally with matching cream paving and a little existing low greenery. Keep ALL OTHER SIXTEEN rune stones exactly where they are with their current glyphs, size and materials. Keep the bottle, black ship, sea, buildings, palms, sunlight, perspective, image dimensions, color palette and every other part unchanged. Final exact total must be sixteen distinct rune stones. Do not add any stone, text, border or UI.",
+  "output": "/workspace/scratch/79976da795e7/generated_images/exec-ef357c95-124a-473d-88dd-9d21fb9cf103.png",
+  "reason": "Manual literal-count audit found seventeen stones. Remove exactly one to preserve shipped sixteen-rune narrative."
+}

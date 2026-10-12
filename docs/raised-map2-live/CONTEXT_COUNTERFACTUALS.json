@@ -1,0 +1,123 @@
+{
+  "textureCollisionsPerRestore": [
+    11,
+    11
+  ],
+  "originalPausedRouteBeforeListenerFix": {
+    "changedPixels": 388,
+    "maxChannelError": 238
+  },
+  "drawNodeCounterfactual": {
+    "live": {
+      "columns": [
+        "cycle",
+        "liveBufferNames",
+        "drawNodes",
+        "drawListeners",
+        "maxListenersPerDrawNode"
+      ],
+      "cycles": [
+        [
+          2,
+          58,
+          19,
+          54,
+          4
+        ],
+        [
+          3,
+          96,
+          19,
+          108,
+          8
+        ],
+        [
+          4,
+          106,
+          19,
+          172,
+          16
+        ],
+        [
+          5,
+          214,
+          19,
+          344,
+          32
+        ],
+        [
+          6,
+          298,
+          19,
+          600,
+          64
+        ]
+      ],
+      "samePhaseBufferCountStable": false,
+      "oneListenerPerDrawNode": false
+    },
+    "original": {
+      "columns": [
+        "cycle",
+        "liveBufferNames",
+        "drawNodes",
+        "drawListeners",
+        "maxListenersPerDrawNode"
+      ],
+      "cycles": [
+        [
+          2,
+          44,
+          12,
+          26,
+          4
+        ],
+        [
+          3,
+          68,
+          12,
+          52,
+          8
+        ],
+        [
+          4,
+          50,
+          12,
+          60,
+          16
+        ],
+        [
+          5,
+          102,
+          12,
+          120,
+          32
+        ],
+        [
+          6,
+          74,
+          12,
+          152,
+          64
+        ]
+      ],
+      "samePhaseBufferCountStable": false,
+      "oneListenerPerDrawNode": false
+    }
+  },
+  "nativeContextParity": true,
+  "resourceLifetimeReady": false,
+  "nativeBlockers": [
+    "live buffer/listener growth",
+    "original buffer/listener growth"
+  ],
+  "evidenceSHA256": {
+    "raised-map2-context-probe/native.log": "e8012b3da2d929660fcef16e1dbcc6fa30a2d49d50e9ebdfe211fc0f795252a2",
+    "raised-map2-context-route-baseline/native.log": "b47c4ca634ba91e90dc79f6061487597eb51090c4133e7a32a041faf8864851e",
+    "raised-map2-buffer-counterfactual/BINARY.sha256": "80c46c02cfb9cdff3978f8730871f9c1d34cfe867db577ced225dd1df0a9c84b",
+    "raised-map2-buffer-counterfactual/native.log": "1264f173399ef76c552976bba75662d73998b9b8d5b0e2ad6cd476eb10600e6a",
+    "raised-map2-buffer-counterfactual/buffer-counts.txt": "8b9953655d8619471dc1b8689602bc2d0ecc853c9aec86434ef62bd62f96a0d4",
+    "raised-map2-buffer-counterfactual-baseline/native.log": "d90acfa5613ad435db74e5ff95464d7ab2d94202619362ffa3aadcaf801a05be",
+    "raised-map2-buffer-counterfactual-baseline/buffer-counts.txt": "66b98eb707d5faa9f7049ac93483e1abc8cb6b7b7f0ee690f040ecb1a6019fce"
+  }
+}

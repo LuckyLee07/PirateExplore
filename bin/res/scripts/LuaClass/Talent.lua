@@ -30,6 +30,7 @@ local function fittedSprite(path,w,h,rect)
     return s
 end
 function TalentLayer:init()
+    if require('LuaClass/WarmTheme').enabled() then return self:initCoherentTalent() end
     self.approvedPage=true;self.keepNavigation=false;self.talentDisposed=false
     local size=cc.Director:getInstance():getVisibleSize();local origin=cc.Director:getInstance():getVisibleOrigin()
     local M=MasterTheme;local c=M.colors;local ux,uy=size.width/941,size.height/1672
@@ -108,14 +109,13 @@ function TalentLayer:init()
     local bottomBack=M.button('←  返回上一页',695*ux,108*uy,back,{fontSize=37,bold=true});bottomBack:setPosition(cc.p(470*ux,size.height-1564*uy));root:addChild(bottomBack)
     self.talentBackButton=bottomBack
     self:loadTalentData();self:refreshTalentHeader()
-    for _,key in ipairs(EVENTS) do
-        DataManager:getInstance():registerEvent(key,'talent',function()
-            if not self.talentDisposed then if key==roleTalent then self:loadTalentData() end;self:refreshTalentHeader() end
-        end)
-    end
+    require('LuaClass/ProgressSupportPresentation').listen(self,EVENTS,function(key)
+        if key==roleTalent then self:loadTalentData() end;self:refreshTalentHeader()
+    end)
     return true
 end
 function TalentLayer:refreshTalentHeader()
+    if self.supportWarm then return self:refreshCoherentTalentHeader() end
     if self.talentDisposed then return end
     local dm=DataManager:getInstance();self.talentCoin:setString(tostring(dm:getRoleData(roleMoney) or 0));self.talentDiamond:setString(tostring(dm:getRoleData(roleDiamond) or 0))
     MasterTheme.fit(self.talentCoin,106*self.talentUX);MasterTheme.fit(self.talentDiamond,90*self.talentUX)
@@ -126,6 +126,7 @@ function TalentLayer:refreshTalentHeader()
     self.talentIntelligence.item:setCascadeOpacityEnabled(true);self.talentIntelligence.item:setOpacity(available and 255 or 115)
 end
 function TalentLayer:loadTalentData()
+    if self.supportWarm then return self:loadCoherentTalentData() end
     if self.talentDisposed then return end
     local dm=DataManager:getInstance();local data=dm:getRoleData(roleTalent) or {};local csv=dm:getCSVByID(csvOfTalent) or {}
     local ordered={};for index,id in pairs(data) do if tonumber(index) then ordered[#ordered+1]={index=tonumber(index),id=tostring(id)} end end
@@ -157,6 +158,64 @@ end
 function TalentLayer:destory()
     if self.talentDisposed then return end
     self.talentDisposed=true
-    for _,key in ipairs(EVENTS) do DataManager:getInstance():unregisterEvent(key,'talent') end
+    require('LuaClass/ProgressSupportPresentation').dispose(self)
     if self.setBtn and self.setBtn.normalSpr then self.setBtn.normalSpr:stopAllActions() end
+    if self.superDestory then self:superDestory() end
+end
+
+-- The legacy illustrated layout above remains the explicit opt-out path.
+function TalentLayer:initCoherentTalent()
+    local P=require 'LuaClass/ProgressSupportPresentation';local W=require 'LuaClass/WarmTheme'
+    self.talentDisposed=false
+    local shell=P.mount(self,'冒险天赋','探索与剧情中获得的团队增益')
+    local canvas=shell.canvas
+    self.talentBackButton=shell.back;self.alchemyButton=self.setBtn
+    local compass=P.symbol('compass',104);compass:setPosition(cc.p(344,553));canvas:addChild(compass)
+    self.talentChapter=P.label(canvas,'',18,32,645,298,W.colors.muted)
+    self.talentCoin=P.label(canvas,'',18,32,562,148)
+    self.talentDiamond=P.label(canvas,'',18,190,562,148)
+    self.talentCount=P.label(canvas,'',29,32,606,298)
+    P.scroll(self,260,272)
+    self.alertLabel=P.label(canvas,'尚未获得天赋\n继续探索，新的团队增益会记录在这里。',19,240,399,390,W.colors.muted,.5)
+    self.alertLabel:setDimensions(cc.size(390,76));self.alertLabel:setHorizontalAlignment(cc.TEXT_ALIGNMENT_CENTER)
+    self.talentIntelligence=W.button('情报',100,48,function()
+        if not P.open(self) then return end
+        if DataManager:getInstance():getRoleData(roleMapInfo)~=nil and not isEnterMap then RandomEventView:create():show()
+        else ToastUtil:downString('您需要建造船坞并出征\n之后方可激活该功能')end
+    end,{size=18})
+    self.talentIntelligence:setPosition(cc.p(398,48));canvas:addChild(self.talentIntelligence)
+    self:loadTalentData();self:refreshTalentHeader()
+    P.listen(self,EVENTS,function(key)if key==roleTalent then self:loadTalentData()end;self:refreshTalentHeader()end)
+    return true
+end
+function TalentLayer:refreshCoherentTalentHeader()
+    if self.talentDisposed then return end
+    local dm=DataManager:getInstance();local W=require 'LuaClass/WarmTheme'
+    self.talentCoin:setString('金币 '..tostring(dm:getRoleData(roleMoney)or 0));W.fit(self.talentCoin,148)
+    self.talentDiamond:setString('钻石 '..tostring(dm:getRoleData(roleDiamond)or 0));W.fit(self.talentDiamond,148)
+    local map=dm:getRoleData(roleMapInfo);local chapter=map and tonumber(map.curIndex)
+    self.talentChapter:setString(chapter and ('第 '..chapter..' 章 · 团队天赋')or'团队天赋')
+    self.talentIntelligence:setOpacity(map~=nil and not isEnterMap and 255 or 115)
+end
+function TalentLayer:loadCoherentTalentData()
+    if self.talentDisposed then return end
+    local P=require 'LuaClass/ProgressSupportPresentation';local W=require 'LuaClass/WarmTheme'
+    local dm=DataManager:getInstance();local csv=dm:getCSVByID(csvOfTalent)or{};local entries={}
+    for index,id in pairs(dm:getRoleData(roleTalent)or{})do if tonumber(index)then entries[#entries+1]={index=tonumber(index),id=tostring(id)}end end
+    table.sort(entries,function(a,b)return a.index>b.index end);self.talentEntries=entries
+    self.talentCount:setString('已获得 '..#entries..' 项');self.alertLabel:setVisible(#entries==0)
+    local heights={};local descriptions={}
+    for i,entry in ipairs(entries)do
+        local record=csv[entry.id]or{};local desc=W.label(record[dataKeyComment]or'暂无效果说明',18,W.colors.muted,76,0)
+        desc:setAnchorPoint(cc.p(0,1));desc:setDimensions(cc.size(334,0));desc:setHorizontalAlignment(cc.TEXT_ALIGNMENT_LEFT)
+        descriptions[i]=desc;heights[i]=math.max(88,desc:getContentSize().height+52)
+    end
+    P.rows(self,heights,function(i,h)
+        local record=csv[entries[i].id]or{};local row=cc.Node:create();row:setContentSize(cc.size(416,h))
+        local kind=({['精准']='target',['闪避']='feather',['耐饿']='food',['侦查']='scout',['先发制人']='lightning'})[record[dataKeyName]]or'badge'
+        local mark=P.symbol(kind,60);mark:setPosition(cc.p(0,h-76));row:addChild(mark)
+        P.label(row,record[dataKeyName]or('天赋 '..entries[i].id),22,76,h-25,334)
+        local desc=descriptions[i];desc:setPositionY(h-47);row:addChild(desc);P.rule(row,1)
+        return row
+    end)
 end

@@ -1,0 +1,134 @@
+{
+  "generator": "built-in image_gen.imagegen",
+  "generated_utc_date": "2026-10-11",
+  "transparent_background": true,
+  "prompts": "docs/coherent-game/event-scene-prompts-v2.json",
+  "assets": [
+    {
+      "file": "blackmarket-pontoon-clean-v2.png",
+      "prompt_name": "blackmarket",
+      "generated_source": "exec-a227c24d-7685-4303-8342-a4dcbdcd1e2b.png",
+      "sha256": "41c27b383b8814284f3d95c64c280cf00c3d5501ecbad28358bdb8213d7e7eb4",
+      "size": [
+        1329,
+        1183
+      ],
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "visible_alpha_gt32_bounds": [
+        18,
+        8,
+        1314,
+        1165
+      ],
+      "source_bytes_identical": true
+    },
+    {
+      "file": "resurrection-memorial-clean-v2.png",
+      "prompt_name": "resurrection",
+      "generated_source": "exec-dd95c954-e6c7-4e53-b91c-079621a62ab4.png",
+      "sha256": "c092601c7620aedeb1ca21a799d34297ae5ae2ae74b262d5fa67eecdc9b42e9c",
+      "size": [
+        1536,
+        1024
+      ],
+      "alpha_extrema": [
+        0,
+        254
+      ],
+      "visible_alpha_gt32_bounds": [
+        213,
+        104,
+        1323,
+        928
+      ],
+      "source_bytes_identical": true
+    },
+    {
+      "file": "nextsea-gateway-clean-v2.png",
+      "prompt_name": "nextsea",
+      "generated_source": "exec-262d4365-9eaa-466d-a5b4-1668aa1857eb.png",
+      "sha256": "82cbef5ff7f8a0a4c45aa5ebcd3cdb5b39817c152c55330638df6665bd4ce4b4",
+      "size": [
+        1254,
+        1254
+      ],
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "visible_alpha_gt32_bounds": [
+        82,
+        76,
+        1172,
+        1200
+      ],
+      "source_bytes_identical": true
+    },
+    {
+      "file": "worldchart-table-clean-v2.png",
+      "prompt_name": "worldchart",
+      "generated_source": "exec-9810aa54-3fc4-4c70-b3a0-645360bd72d2.png",
+      "sha256": "951e865590f3ec8d3107d60c75ce54ab8b6d11adc3e51fb7c050a41d72008fe3",
+      "size": [
+        1364,
+        1153
+      ],
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "visible_alpha_gt32_bounds": [
+        45,
+        36,
+        1330,
+        1129
+      ],
+      "source_bytes_identical": true
+    },
+    {
+      "file": "arena-ring-clean-v2.png",
+      "prompt_name": "arena",
+      "generated_source": "exec-32aad9a9-aeab-4fee-ade6-51b6841be795.png",
+      "sha256": "677bcae9feb906542a2c3f6228410b69c86075c39466c04bdf5f50a125a669a9",
+      "size": [
+        1536,
+        1024
+      ],
+      "alpha_extrema": [
+        0,
+        254
+      ],
+      "visible_alpha_gt32_bounds": [
+        20,
+        54,
+        1511,
+        956
+      ],
+      "source_bytes_identical": true
+    },
+    {
+      "file": "eternal-arena-clean-v2.png",
+      "prompt_name": "eternalarena",
+      "generated_source": "exec-76b3f00d-cde7-4d4a-8f8e-7ac3d1a27deb.png",
+      "sha256": "d1e86d78769c7f030356f1ddc267437c4e7f85bc4271fa7208b838619eb41fdc",
+      "size": [
+        1429,
+        1100
+      ],
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "visible_alpha_gt32_bounds": [
+        30,
+        10,
+        1401,
+        1045
+      ],
+      "source_bytes_identical": true
+    }
+  ]
+}

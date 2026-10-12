@@ -1,0 +1,110 @@
+{
+  "schemaVersion": 1,
+  "status": "integrated-component-tested-desktop-pending",
+  "sourceCheckout": "PirateExplore-battle-v4",
+  "assets": [
+    {
+      "id": "boarding-deck-clean-v1",
+      "path": "bin/res/assets/Images/UI/CleanVoyage/Combat/boarding-deck-clean-v1.png",
+      "status": "integrated-native-component-tested",
+      "source": "/workspace/scratch/79976da795e7/generated_images/exec-09810571-e694-4a61-96c4-ef28ffff6600.png",
+      "sha256": "ba56a6abb959826d7ba80d83f9a1dc39658777db29c2f14fc6e5c459f21e64c9"
+    },
+    {
+      "id": "ship-deck-clean-v1",
+      "path": "bin/res/assets/Images/UI/CleanVoyage/Combat/ship-deck-clean-v1.png",
+      "status": "integrated-native-component-tested",
+      "source": "/workspace/scratch/79976da795e7/generated_images/exec-a7e46d1f-a9b2-4d2c-b8ac-f44fd6e6a492.png",
+      "sha256": "f4d2a9a5187a8cb4bfc389680347c677ff0814a74bd44c9ffbda22e02da47f05"
+    },
+    {
+      "id": "cannon-full-clean-v1",
+      "path": "bin/res/assets/Images/UI/CleanVoyage/Combat/cannon-full-clean-v1.png",
+      "status": "integrated-native-component-tested",
+      "source": "/workspace/scratch/79976da795e7/generated_images/exec-a53a9c0a-f46b-48f0-910c-0c80e86d2d88.png",
+      "sha256": "e43088fac3baada439c4ab42d1cae57f1f7a4a59af6decb068f5e4364a736ab3"
+    }
+  ],
+  "views": [
+    {
+      "id": "boardingDeck",
+      "asset": "boarding-deck-clean-v1",
+      "logicalWidth": 640,
+      "logicalHeight": 569,
+      "anchor": [
+        0.5,
+        0
+      ]
+    },
+    {
+      "id": "shipDeck",
+      "asset": "ship-deck-clean-v1",
+      "logicalWidth": 640,
+      "logicalHeight": 423,
+      "playerAnchor": [
+        0.5,
+        0
+      ],
+      "enemyAnchor": [
+        0.5,
+        1
+      ],
+      "enemyVisualFlipY": true
+    },
+    {
+      "id": "cannonFull",
+      "asset": "cannon-full-clean-v1",
+      "textureRect": [
+        0,
+        0,
+        927,
+        1697
+      ],
+      "logicalWidth": 101,
+      "logicalHeight": 185,
+      "indices": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ]
+    },
+    {
+      "id": "cannonRear",
+      "asset": "cannon-full-clean-v1",
+      "textureRect": [
+        0,
+        0,
+        927,
+        669.627027027027
+      ],
+      "logicalWidth": 101,
+      "logicalHeight": 73,
+      "indices": [
+        7,
+        8,
+        9,
+        10
+      ]
+    }
+  ],
+  "rejectedAssets": [
+    {
+      "id": "cannon-short-clean-v1",
+      "path": "Preparation-only candidate; intentionally not shipped",
+      "reason": "Excess lower transparent margin and widened muzzle; use top crop from full cannon instead."
+    }
+  ],
+  "requiredGates": [
+    "Logical wrapper sizes and anchors",
+    "Native texture crop sampling",
+    "Original muzzle/recoil/effect attachment and timing",
+    "Native pixel check at 5 viewports",
+    "Gameplay callback/cost preservation",
+    "Semantic actor identity coverage remains open"
+  ],
+  "baseCommit": "169a4242c641fd4e14c76c4e74867d60d774df2f",
+  "actorArtCoverage": "Exact legacy art preserved; new full-body actors not integrated"
+}

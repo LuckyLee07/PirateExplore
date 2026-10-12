@@ -23,16 +23,16 @@ function AchievementLayer:create()
 end
 
 function AchievementLayer:destory()
-    -- body
-    DataManager:getInstance():unregisterEvent(roleAchievement, "achievement")
-    DataManager:getInstance():unregisterEvent(roleTalent, "talent")
-    -- 出去的时候清理红点
+    if self.achievementDisposed then return end
+    self.achievementDisposed=true
+    require('LuaClass/ProgressSupportPresentation').dispose(self)
     GuideController:getInstance():addStep(402, true)
-    -- 调用父类的析构
     self:superDestory()
 end
 
 function AchievementLayer:init()
+    self.achievementDisposed=false
+    if require("LuaClass/WarmTheme").enabled() then return self:initCoherentAchievement() end
 	local visibleSize = cc.Director:getInstance():getVisibleSize()
     local origin = cc.Director:getInstance():getVisibleOrigin()
 
@@ -72,13 +72,7 @@ function AchievementLayer:init()
 
     self:loadAchievementData()
 
-    DataManager:getInstance():registerEvent(roleAchievement, "achievement", function()
-        -- body
-        self:loadAchievementData()
-    end)
-
-    DataManager:getInstance():registerEvent(roleTalent, "talent", function()
-        -- body
+    require('LuaClass/ProgressSupportPresentation').listen(self,{roleAchievement,roleTalent},function()
         self:loadAchievementData()
     end)
 
@@ -86,6 +80,8 @@ function AchievementLayer:init()
 end
 
 function AchievementLayer:loadAchievementData()
+    if self.achievementDisposed then return end
+    if self.supportWarm then return self:loadCoherentAchievementData() end
     -- body
     local achievementData = DataManager:getInstance():getRoleData(roleAchievement)
 
@@ -159,49 +155,7 @@ function AchievementLayer:loadAchievementData()
     self:addChild(self.scrollView)
 
     -- 设置天赋界面中间部分条目
-    local getShowInfoBoxData = function (itemData)
-        -- body
-        local desc = itemData[dataKeyDesc]
-        local rewardPoint = itemData[dataKeyPoint]
-        local showData = desc .. "\n" .. "奖励成就点x" .. rewardPoint
-        local diamond = tonumber(itemData[dataKeyDiamond])
-        if (diamond > 0) then
-            showData = showData .. "\n" .. "奖励钻石x" .. diamond
-        end
-
-        local achievementType = getNumber(itemData[dataKeyType])
-        local totalValue = itemData[dataKeyTotalValue]
-
-        local progress = nil
-        local store = DataManager:getInstance():getRoleData(roleStorageInfo)
-
-        if (achievementType == achievement_Alchemy) then
-            progress = store[achievement_Alchemy]
-        elseif (achievementType == achievement_Exploration) then
-            progress = store[achievement_Exploration]
-        elseif (achievementType == achievement_Gamble) then
-            progress = store[achievement_Gamble]
-        elseif (achievementType == achievement_Arena) then
-            progress = store[achievement_Arena]
-        elseif (achievementType == achievement_ConsumeBread) then
-            progress = store[achievement_ConsumeBread]
-        elseif (achievementType == achievement_Collect) then
-            progress = store[achievement_Collect]
-        -- elseif (achievementType == achievement_ShareToFriends) then
-        --     progress = store[achievement_ShareToFriends]
-        -- elseif (achievementType == achievement_ShareToWeibo) then
-        --     progress = store[achievement_ShareToWeibo]
-        elseif (achievementType == achievement_KillMonster) then
-            progress = store[achievement_KillMonster]
-        end
-        -- progress = "5"
-        if ((progress ~= nil) and (totalValue ~= nil)) then
-            if (totalValue ~= "-1") then
-                showData = showData .. "\n" .. "当前进度" .. progress .. "/" .. totalValue
-            end
-        end
-        return showData
-    end
+    local getShowInfoBoxData=function(itemData)return self:getAchievementInformation(itemData)end
 
     local createItem = function (tableData, index, flag)
         -- body
@@ -330,4 +284,139 @@ function AchievementLayer:loadAchievementData()
         trigerLabel:setPosition(cc.p(achievementPointLabel:getPositionX(), trigerLabel:getPositionY()))
     end
 
+end
+
+function AchievementLayer:getAchievementInformation(itemData)
+        -- body
+        local desc = itemData[dataKeyDesc]
+        local rewardPoint = itemData[dataKeyPoint]
+        local showData = desc .. "\n" .. "奖励成就点x" .. rewardPoint
+        local diamond = tonumber(itemData[dataKeyDiamond])
+        if (diamond > 0) then
+            showData = showData .. "\n" .. "奖励钻石x" .. diamond
+        end
+
+        local achievementType = getNumber(itemData[dataKeyType])
+        local totalValue = itemData[dataKeyTotalValue]
+
+        local progress = nil
+        local store = DataManager:getInstance():getRoleData(roleStorageInfo)
+
+        if (achievementType == achievement_Alchemy) then
+            progress = store[achievement_Alchemy]
+        elseif (achievementType == achievement_Exploration) then
+            progress = store[achievement_Exploration]
+        elseif (achievementType == achievement_Gamble) then
+            progress = store[achievement_Gamble]
+        elseif (achievementType == achievement_Arena) then
+            progress = store[achievement_Arena]
+        elseif (achievementType == achievement_ConsumeBread) then
+            progress = store[achievement_ConsumeBread]
+        elseif (achievementType == achievement_Collect) then
+            progress = store[achievement_Collect]
+        -- elseif (achievementType == achievement_ShareToFriends) then
+        --     progress = store[achievement_ShareToFriends]
+        -- elseif (achievementType == achievement_ShareToWeibo) then
+        --     progress = store[achievement_ShareToWeibo]
+        elseif (achievementType == achievement_KillMonster) then
+            progress = store[achievement_KillMonster]
+        end
+        -- progress = "5"
+        if ((progress ~= nil) and (totalValue ~= nil)) then
+            if (totalValue ~= "-1") then
+                showData = showData .. "\n" .. "当前进度" .. progress .. "/" .. totalValue
+            end
+        end
+        return showData
+end
+
+function AchievementLayer:initCoherentAchievement()
+    local P=require 'LuaClass/ProgressSupportPresentation';local W=require 'LuaClass/WarmTheme'
+    local shell=P.mount(self,'冒险成就','查看目标与奖励，记录每一步成长')
+    local canvas=shell.canvas
+    self.achievementPointsLabel=P.label(canvas,'',32,32,630,280)
+    self.achievementCountLabel=P.label(canvas,'',18,32,588,306,W.colors.muted)
+    local medal=P.symbol('medal',98);medal:setPosition(cc.p(350,574));canvas:addChild(medal)
+    self.achievementThresholdLabel=P.label(canvas,'',18,32,550,416)
+    self.achievementThresholdHint=P.label(canvas,'',16,32,520,416,W.colors.muted)
+    self.achievementThresholdBar=cc.DrawNode:create();self.achievementThresholdBar:setPosition(cc.p(32,498));canvas:addChild(self.achievementThresholdBar)
+    P.scroll(self,260,218)
+    self.achievementEmpty=P.label(canvas,'尚无成就记录\n探索、采集和炼金的成长会记录在这里。',19,240,366,390,W.colors.muted,.5)
+    self.achievementEmpty:setDimensions(cc.size(390,76));self.achievementEmpty:setHorizontalAlignment(cc.TEXT_ALIGNMENT_CENTER)
+    local talent=W.button('天赋',100,48,function()
+        if not P.open(self)then return end
+        if GuideController:getInstance():getIsHaveStep(8)then zqDispatch:moveToTalent()
+        else ToastUtil:downString('您需要建造船坞，可激活该功能')end
+    end,{size=18});talent:setPosition(cc.p(282,48));canvas:addChild(talent);self.achievementTalent=talent
+    local intelligence=W.button('情报',100,48,function()
+        if not P.open(self)then return end
+        if DataManager:getInstance():getRoleData(roleMapInfo)~=nil and not isEnterMap then RandomEventView:create():show()
+        else ToastUtil:downString('您需要建造船坞并出征\n之后方可激活该功能')end
+    end,{size=18});intelligence:setPosition(cc.p(398,48));canvas:addChild(intelligence);self.achievementIntelligence=intelligence
+    self:loadAchievementData()
+    P.listen(self,{roleAchievement,roleTalent,roleAchievementPoint,roleStorageInfo,roleMapInfo,roleGuideStep},function()self:loadAchievementData()end)
+    return true
+end
+function AchievementLayer:loadCoherentAchievementData()
+    if self.achievementDisposed then return end
+    local P=require 'LuaClass/ProgressSupportPresentation';local W=require 'LuaClass/WarmTheme'
+    local dm=DataManager:getInstance();local csv=dm:getCSVByID(csvOfAchievement)or{};local data=dm:getRoleData(roleAchievement)or{}
+    local points=tonumber(dm:getRoleData(roleAchievementPoint))or 0
+    self.achievementPointsLabel:setString('成就点数 '..points);W.fit(self.achievementPointsLabel,308)
+    -- Read the same locked auto-talents as the original page. Reaching the
+    -- point threshold never grants a talent here; DataManager owns all gates.
+    local locked=getRowDataFromMatrixBySpecifiedKeyAndValue(dm:getLockedTallent(),dataKeyAutoType,{[1]='1'})
+    local ordered=sortTableOrderByASC(locked,dataKeyAchievement)
+    local nextTalent=ordered and ordered[1];local threshold=nextTalent and tonumber(nextTalent[dataKeyAchievement])
+    self.achievementNextThreshold=threshold
+    self.achievementThresholdLabel:setString(threshold and ('下一项天赋 · 需要 '..threshold..' 成就点')or'已无待解锁的成就点数天赋')
+    W.fit(self.achievementThresholdLabel,416)
+    self.achievementThresholdHint:setString(threshold and (points>=threshold and '已达到点数条件，天赋按原有条件自动获得' or ('还需 '..(threshold-points)..' 点 · 天赋按原有条件自动获得'))or'继续探索，完成更多冒险目标')
+    W.fit(self.achievementThresholdHint,416)
+    local bar=self.achievementThresholdBar;bar:clear()
+    if threshold then
+        bar:drawSegment(cc.p(0,0),cc.p(416,0),2,HomeTheme.rgba(W.colors.line))
+        local ratio=threshold>0 and math.max(0,math.min(1,points/threshold))or 1
+        bar:drawSegment(cc.p(0,0),cc.p(416*ratio,0),2,HomeTheme.rgba(W.colors.gold))
+    end
+    local entries={};local attained=0
+    for id,flag in pairs(data)do if tonumber(id)then entries[#entries+1]={id=tostring(id),flag=tonumber(flag)or 0};if tonumber(flag)and tonumber(flag)>0 then attained=attained+1 end end end
+    table.sort(entries,function(a,b)return tonumber(a.id)<tonumber(b.id)end)
+    self.achievementEntries=entries;self.achievementRows={};self.achievementGeneration=(self.achievementGeneration or 0)+1;local generation=self.achievementGeneration
+    self.achievementCountLabel:setString('已达成 '..attained..' / '..#entries..' 项 · 点按查看详情')
+    self.achievementEmpty:setVisible(#entries==0)
+    local store=dm:getRoleData(roleStorageInfo)or{}
+    local tracked={[achievement_Alchemy]=true,[achievement_Exploration]=true,[achievement_Gamble]=true,[achievement_Arena]=true,[achievement_ConsumeBread]=true,[achievement_Collect]=true,[achievement_KillMonster]=true}
+    local heights={};for i in ipairs(entries)do heights[i]=100 end
+    P.rows(self,heights,function(i,h)
+        local entry=entries[i];local record=csv[entry.id];local row=cc.Node:create();row:setContentSize(cc.size(416,h))
+        local button=SDButton:create('Images/btn/ann03_a.png','Images/btn/ann03_b.png',function()
+            if not P.open(self)or generation~=self.achievementGeneration then return end
+            local latest=dm:getCSVByID(csvOfAchievement)[entry.id]
+            if latest then self:showInfoBox(self:getAchievementInformation(latest))end
+        end)
+        button.normalSpr:removeFromParent();button.selectSpr:removeFromParent()
+        button.normalSpr=cc.Node:create();button.normalSpr:setContentSize(cc.size(416,98))
+        button.selectSpr=W.panel(416,98,W.colors.line,0);button.selectSpr:setVisible(false)
+        button:addChild(button.normalSpr);button:addChild(button.selectSpr)
+        button:setContentSize(cc.size(416,98));button:setPosition(cc.p(208,50));button:setSwallowTouches(false);row:addChild(button);P.clip(button,self.scrollView)
+        local kinds={[achievement_Alchemy]='alchemy',[achievement_Exploration]='compass',[achievement_Arena]='target',[achievement_ConsumeBread]='food',[achievement_KillMonster]='lightning'}
+        local iconKind=record and kinds[tonumber(record[dataKeyType])] or (entry.flag>0 and 'medal' or 'badge')
+        local icon=P.symbol(iconKind,42);icon:setPosition(cc.p(0,38));button:addChild(icon)
+        P.label(button,record and record[dataKeyName]or('成就 '..entry.id),21,54,76,252)
+        P.label(button,entry.flag>0 and '已达成' or '进行中',17,410,76,86,entry.flag>0 and W.colors.sea or W.colors.muted,1)
+        local rewards=record and ('成就点 +'..tostring(record[dataKeyPoint]or 0))or'暂无奖励说明'
+        if record and (tonumber(record[dataKeyDiamond])or 0)>0 then rewards=rewards..' · 钻石 +'..record[dataKeyDiamond]end
+        P.label(button,rewards,17,54,45,356,W.colors.muted)
+        local kind=record and tonumber(record[dataKeyType]);local target=record and tonumber(record[dataKeyTotalValue]);local progress=kind and tracked[kind]and store[kind]
+        local text=progress~=nil and target and target>=0 and ('当前进度 '..tostring(progress)..' / '..target)or(entry.flag>0 and '目标已达成 · 查看说明' or '查看目标说明')
+        P.label(button,text,17,54,18,356,W.colors.muted);P.rule(row,1)
+        self.achievementRows[i]={id=entry.id,node=row,button=button};return row
+    end)
+    self.achievementTalent:setOpacity(GuideController:getInstance():getIsHaveStep(8)and 255 or 115)
+    self.achievementIntelligence:setOpacity(dm:getRoleData(roleMapInfo)~=nil and not isEnterMap and 255 or 115)
+end
+function AchievementLayer:showInfoBox(infoString)
+    if self.supportWarm then return require('LuaClass/ProgressSupportPresentation').information(self,'成就详情',infoString)end
+    return BaseView.showInfoBox(self,infoString)
 end

@@ -16,7 +16,16 @@ return {fixture=fixture, node=node, methods=Node, dm=dm, csv=csv,
 ]]
 local H=assert(loadstring(read('tools/tests/home_master_regression.lua')..exports,'@talent-readonly-harness'))()
 local originalRequire=require
-require=function(name)if name=='LuaClass/MasterTheme' then return MasterTheme end;return true end
+local supportPresentation
+require=function(name)
+    if name=='LuaClass/MasterTheme' then return MasterTheme end
+    if name=='LuaClass/WarmTheme' then return {enabled=function()return false end} end
+    if name=='LuaClass/ProgressSupportPresentation' then
+        supportPresentation=supportPresentation or dofile('bin/res/scripts/LuaClass/ProgressSupportPresentation.lua')
+        return supportPresentation
+    end
+    return true
+end
 local N=H.methods
 function N:getTexture()return {setAntiAliasTexParameters=function()end}end
 function N:setContainer(n)self.container=n;self:addChild(n)end

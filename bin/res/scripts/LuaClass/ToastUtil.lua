@@ -70,6 +70,12 @@ bIsLimit：限制是否同一时间允许入栈多条数据
 -- Only its floating presentation is quiet while the harbor or a static management page is active.
 -- Errors, unlocks and rewards retain the existing toast path.
 function ToastUtil:isProductionQuiet()
+    -- Coherent pages intentionally do not own the legacy system-feed label.
+    -- Resolve the live route directly, so passive production cannot obscure it.
+    local dispatch=rawget(_G,'zqDispatch')
+    local page=dispatch and not dispatch.dispatchDisposed and dispatch.rightNode
+    if cleanToast() and page and page.coherentShell and not page.coherentPageDisposed
+        and page.isVisible and page:isVisible() then return true end
     if pNeedUpdateLayer and (pNeedUpdateLayer.isAdventureHome or pNeedUpdateLayer.managementTheme or pNeedUpdateLayer.dialogTheme) then return true end
     local director=cc.Director:getInstance()
     local scene=director.getRunningScene and director:getRunningScene()
@@ -100,9 +106,10 @@ end
 function ToastUtil:alchemyCoins(amount)
     local director = cc.Director:getInstance()
     local page = pNeedUpdateLayer
-    local host = page and page.infoNode or director:getRunningScene()
+    local receiptHost = page and page.alchemyReceiptHost
+    local host = receiptHost or (page and page.infoNode) or director:getRunningScene()
     if not host then return end
-    local size = director:getVisibleSize()
+    local size = receiptHost and receiptHost:getContentSize() or director:getVisibleSize()
     local root
     -- Inspect native-owned children instead of retaining a global Lua wrapper
     -- that could outlive a replaced page or notification node.
@@ -144,7 +151,12 @@ function ToastUtil:alchemyCoins(amount)
     root.alchemyTitle:setScale(math.min(1, width / math.max(1, textSize.width)))
     root.alchemyBackdrop:setContentSize(cc.size(width + 32, textSize.height + 18))
     local x, y = size.width * 0.5, size.height * 0.5 + 120
-    if page and host == page.infoNode and page.setBtn then
+    if receiptHost and page.setBtn and page.setBtn:getParent() then
+        local button = page.setBtn
+        local point = host:convertToNodeSpace(button:getParent():convertToWorldSpace(cc.p(button:getPositionX(),button:getPositionY())))
+        x, y = point.x, point.y + 70
+        y = math.max(textSize.height*.5+16,math.min(size.height-textSize.height*.5-16,y))
+    elseif page and host == page.infoNode and page.setBtn then
         x, y = page.setBtn:getPositionX(), page.setBtn:getPositionY() + 70
     end
     x = math.max(width * 0.5 + 24, math.min(size.width - width * 0.5 - 24, x))

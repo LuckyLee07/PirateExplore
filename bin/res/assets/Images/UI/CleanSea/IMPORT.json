@@ -1,0 +1,88 @@
+{
+  "generatedMasters": [
+    "source/material-atlas-v1.png",
+    "source/scenery-three-family-v1.png",
+    "source/event-three-kind-v1.png",
+    "source/water-calm-v2.png"
+  ],
+  "operation": "crop/resize/pad and exact source alpha copy; no gameplay changes",
+  "outputs": {
+    "dt_huoshan.png": {
+      "size": [
+        384,
+        384
+      ],
+      "sha256": "f1be8a7c7e0151f67fd2729b3369efd70ddc09f7768ef9d4f7088982a8923e50"
+    },
+    "dt_ludi.png": {
+      "size": [
+        384,
+        384
+      ],
+      "sha256": "90bb0df32f1d0a1d84af33dca6ecf6dca1b4a76981538b8fd35a2747772254f6"
+    },
+    "land-forest-repeat.png": {
+      "size": [
+        512,
+        512
+      ],
+      "sha256": "b0f591a09ca1154e854a7c34f38a3ba7ca0373c544f2aad9b264e98b624b73d7"
+    },
+    "supply-not-activated.png": {
+      "size": [
+        64,
+        64
+      ],
+      "sha256": "72af81e859050ce284c5228fec0c9e97f2efc97820e01cfbb238299490cf61be"
+    },
+    "land-sand-repeat.png": {
+      "size": [
+        512,
+        512
+      ],
+      "sha256": "08a0deec4b435e69b0f7c2bfc662b862e301a94adc2532e8384d3abb9e194ded"
+    },
+    "water-repeat.png": {
+      "size": [
+        512,
+        512
+      ],
+      "sha256": "7ae6ea0fce78780dd8cef7efd58c4f3b5a7bdb7a23d0c4b9f220928136e6697c"
+    },
+    "ship-clean.png": {
+      "size": [
+        256,
+        256
+      ],
+      "sha256": "c640655d0936a9b58715b38a6df07b1ec8f13547e37cbb763483a97c464f42de"
+    },
+    "land-volcanic-repeat.png": {
+      "size": [
+        512,
+        512
+      ],
+      "sha256": "8419037f169b81645a923b8f730ca8286b59958a60a44e25540c2326a2bde5d8"
+    },
+    "events-gate.png": {
+      "size": [
+        512,
+        384
+      ],
+      "sha256": "c1517801aba00ec1e2d7400797f8ca66d295c2119750574688da69a88bfcc618"
+    },
+    "scenery-gate.png": {
+      "size": [
+        1536,
+        1024
+      ],
+      "sha256": "f057ec62f58169294e5d206ee56765e9a647e0561513ab5516b7845a6bf903e1"
+    },
+    "dt_senlin.png": {
+      "size": [
+        384,
+        384
+      ],
+      "sha256": "235a9ed52bcfdc601302d4ce02bd0212f876000cedff6298ecdb1fb849f2b01f"
+    }
+  }
+}

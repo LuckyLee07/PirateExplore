@@ -558,8 +558,17 @@ bool Texture2D::initWithMipmaps(MipmapInfo* mipmaps, int mipmapsNum, PixelFormat
     // For now, call deleteTexture if the texture already exists
     if(_name)
     {
-        GL::deleteTexture(_name);
-      _name = 0;
+#if CC_ENABLE_CACHE_TEXTURE_DATA
+        // Volatile reload runs after context loss. This numeric name belongs
+        // to the destroyed context and may already name another texture in
+        // the new one. Forget it; ordinary same-context replacement still
+        // deletes its own live texture below.
+        if (!VolatileTextureMgr::_isReloading)
+#endif
+        {
+            GL::deleteTexture(_name);
+        }
+        _name = 0;
     }
 
     //the pixelFormat must be a certain value 

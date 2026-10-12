@@ -222,6 +222,7 @@ end
 -- init
 function FightBoxViewAlert:init()
     FightBoxViewAlert.instance = self
+    if rawget(_G, 'WARM_PIRATE_V1') ~= false then return self:initCoherentChestAlert() end
     local size = cc.Director:getInstance():getVisibleSize()
 
     -- background
@@ -355,6 +356,9 @@ end
 -- init
 function FightBoxView:init()
     FightBoxView.instance = self
+    self.chestCompleted = false
+    self.chestDisposed = false
+    self.chestActivationInProgress = false
     self.boxStates = {}
     self.props = {}
     self.fakeIndexes = {}
@@ -374,6 +378,10 @@ function FightBoxView:init()
     self.isFail = false
     self.failTime = 0
     self.rewardRate = {80.0, 20.0, 5.0}
+    -- Warm item details are a scrollable reading surface. The legacy modal
+    -- tap handler fires on touch-began, so installing it here would hide the
+    -- description before its ScrollView can process a drag.
+    if rawget(_G, 'WARM_PIRATE_V1') ~= false then return self:initCoherentChest() end
     self:setTapEventListener(function()
         self:hideInfo()
     end)
@@ -456,6 +464,8 @@ function FightBoxView:init()
     -- closeBtn
     self.closeBtn = DialogTheme.menuItem("Images/btn/ann01_a.png", "Images/btn/ann01_b.png")
     self.closeBtn:registerScriptTapHandler(function()
+        if self.chestCompleted or self.chestDisposed then return end
+        self.chestCompleted = true
         self:close()
         cc.UserDefault:getInstance():setBoolForKey("isFirtFightBox", false)
         if FightScene.instance then FightScene.instance:gotoFightRewardScene(0.5) end
@@ -507,10 +517,16 @@ function FightBoxView:reloadBoxes()
     if self.boxesMenu then self:removeChild(self.boxesMenu); self.boxesMenu = nil end
     local propShowList = self.data.propShow
     local boxes = {}
+    if self.coherentChest then require('LuaClass/WarmShortageOwnership').retire(self)end
+    self.chestRenderGeneration = (self.chestRenderGeneration or 0)+1
+    local generation = self.chestRenderGeneration
     for i=1,6 do
         local state = self.boxStates[i]
         local prop = self.props[i]
-        if state ~= FightBoxView.BoxState.close or self.isUserGiveUp then
+        if self.coherentChest then
+            boxes[i] = self:createCoherentChestItem(state ~= FightBoxView.BoxState.close or self.isUserGiveUp)
+            if state ~= FightBoxView.BoxState.close or self.isUserGiveUp then boxes[i]:setEnabled(prop ~= nil) end
+        elseif state ~= FightBoxView.BoxState.close or self.isUserGiveUp then
             boxes[i] = cc.MenuItemImage:create(CombatTheme.chestPath(true), CombatTheme.chestPath(true))
             boxes[i]:setEnabled(prop ~= nil)
         else
@@ -525,6 +541,11 @@ function FightBoxView:reloadBoxes()
         local posy
         if row == 1 then posy = 0.5*(size.height-self.viewBg:getContentSize().height)+200.0
         else posy = 0.5*(size.height-self.viewBg:getContentSize().height)+400.0 end
+        if self.coherentChest then
+            local layout=self.coherentChestLayout
+            posx=layout.left+24+(column-.5)*layout.slotWidth
+            posy=layout.gridBottom+(row-.5)*layout.slotHeight
+        end
         boxes[i]:setPosition(posx, posy)
         boxes[i]:setTag(i)
 
@@ -533,7 +554,9 @@ function FightBoxView:reloadBoxes()
             if prop ~= nil then
                 local resource = DataManager:getInstance():getCSVByID(csvOfResourceInfo)
                 local data = resource[prop[1]]
-                if data.iconName and string.len(data.iconName) > 1 then
+                if self.coherentChest then
+                    self:decorateCoherentChestReward(boxes[i],prop,state==FightBoxView.BoxState.open)
+                elseif data.iconName and string.len(data.iconName) > 1 then
                     local bg = cc.Sprite:create("Images/Fight/k_2.png")
                     bg:setPosition(0.5*boxes[i]:getContentSize().width-10.0, 0.5*boxes[i]:getContentSize().height+30.0)
                     boxes[i]:addChild(bg)
@@ -562,7 +585,9 @@ function FightBoxView:reloadBoxes()
                         self.props[i] = prop
                         boxes[i]:setEnabled(prop ~= nil)
                         local data = resource[prop[1]]
-                        if data.iconName and string.len(data.iconName) > 1 then
+                        if self.coherentChest then
+                            self:decorateCoherentChestReward(boxes[i],prop,false)
+                        elseif data.iconName and string.len(data.iconName) > 1 then
                             local bg = cc.Sprite:create("Images/Fight/k_2.png")
                             bg:setPosition(0.5*boxes[i]:getContentSize().width-10.0, 0.5*boxes[i]:getContentSize().height+30.0)
                             boxes[i]:addChild(bg)
@@ -575,17 +600,17 @@ function FightBoxView:reloadBoxes()
                             boxes[i]:addChild(numLabel)
                         end
                     else
-                        local sp = cc.Sprite:create("Images/Fight/"..iconGost)
-                        sp:setPosition(0.5*boxes[i]:getContentSize().width, 0.5*boxes[i]:getContentSize().height)
+                        local sp = self.coherentChest and self:coherentEmptyChestMark() or cc.Sprite:create("Images/Fight/"..iconGost)
+                        sp:setPosition(0.5*boxes[i]:getContentSize().width, self.coherentChest and 14 or 0.5*boxes[i]:getContentSize().height)
                         boxes[i]:addChild(sp)
                     end
                 else
-                    local sp = cc.Sprite:create("Images/Fight/"..iconGost)
-                    sp:setPosition(0.5*boxes[i]:getContentSize().width, 0.5*boxes[i]:getContentSize().height)
+                    local sp = self.coherentChest and self:coherentEmptyChestMark() or cc.Sprite:create("Images/Fight/"..iconGost)
+                    sp:setPosition(0.5*boxes[i]:getContentSize().width, self.coherentChest and 14 or 0.5*boxes[i]:getContentSize().height)
                     boxes[i]:addChild(sp)
                 end
             end
-            if not isFake and state == FightBoxView.BoxState.open then
+            if not self.coherentChest and not isFake and state == FightBoxView.BoxState.open then
                 local spopen = cc.Sprite:create("Images/Fight/ykq_a.png")
                 spopen:setPosition(0.5*boxes[i]:getContentSize().width, 0.5*boxes[i]:getContentSize().height-60.0)
                 boxes[i]:addChild(spopen)
@@ -593,11 +618,14 @@ function FightBoxView:reloadBoxes()
         end
 
         boxes[i]:registerScriptTapHandler(function()
+            if self.chestCompleted or self.chestDisposed or self.chestActivationInProgress or generation~=self.chestRenderGeneration then return end
             local prop = self.props[i]
+            if prop==nil and (self.isUserGiveUp or self.boxStates[i]~=FightBoxView.BoxState.close) then return end
+            self.chestActivationInProgress=true
         --            if not self.isUserGiveUp then
             if prop == nil then
                 if self.isFail then
-                    if 1 == DataManager:getInstance():addDiamond(-FightBoxView.FailDiamond[self.failTime]) then
+                    if 1 == DataManager:getInstance():addDiamond(-FightBoxView.FailDiamond[self.failTime],nil,nil,self.coherentChest and require('LuaClass/WarmShortageOwnership').forOwner(self,'chestRenderGeneration',function()return not self.chestCompleted and not self.chestDisposed end)or nil) then
                         if FightBoxView.instance then FightBoxView.instance:useDiamondCallback() end
                         self:openBox(i)
                     end
@@ -607,26 +635,41 @@ function FightBoxView:reloadBoxes()
             else
                 local resourceCsv = DataManager:getInstance():getCSVByID(csvOfResourceInfo)
                 local data = resourceCsv[tostring(prop[1])]
-                self:showInfo(data.name, data.desc)
+                self:showInfo(data.name, data.desc, prop[2], state == FightBoxView.BoxState.open)
             end
+            self.chestActivationInProgress=false
         --            end
         end)
     end
+    self.chestButtons = boxes
     self.boxesMenu = cc.Menu:create(unpack(boxes))
     self.boxesMenu:setPosition(cc.p(0, 0))
     self:addChild(self.boxesMenu)
+    self:refreshCoherentChest()
 end
 
-function FightBoxView:showInfo(name, desc)
+function FightBoxView:showInfo(name, desc, quantity, earned)
     if self.showInfoNode then
         self.showInfoNode:setVisible(true)
         local propName = self.showInfoNode:getChildByTag(1)
-        local propDesc = self.showInfoNode:getChildByTag(2)
+        local propDesc = self.coherentChestDescription or self.showInfoNode:getChildByTag(2)
         if propName then
+            if self.coherentChest and quantity then
+                name = tostring(name).." × "..tostring(quantity)..(earned and " · 已收入" or " · 未获得")
+            end
             propName:setString(tostring(name))
         end
         if propDesc then
             propDesc:setString(tostring(desc))
+        end
+        if self.coherentChest then
+            local W=require 'LuaClass/WarmTheme'
+            W.fit(propName,self.coherentChestLayout.width-56)
+            propDesc:setDimensions(cc.size(self.coherentChestLayout.width-56,0))
+            local height=math.max(42,propDesc:getContentSize().height)
+            propDesc:setPosition(cc.p(0,height))
+            self.coherentChestDetailScroll:setContentSize(cc.size(self.coherentChestLayout.width-56,height))
+            self.coherentChestDetailScroll:setContentOffset(cc.p(0,42-height))
         end
     end
 end
@@ -638,6 +681,7 @@ function FightBoxView:hideInfo()
 end
 
 function FightBoxView:openBox(idx)
+    if self.chestCompleted or self.chestDisposed or self.isUserGiveUp or self.boxStates[idx]~=FightBoxView.BoxState.close then return end
     self.openTime = self.openTime+1
     self.openTimeTotal = self.openTimeTotal+1
     self.boxStates[idx] = FightBoxView.BoxState.open
@@ -720,24 +764,24 @@ function FightBoxView:openBox(idx)
         local isDiamond = "1002" == tostring(propId)
         if isGold then
 
-            ExploreBagController:getBagController():addCoin(propNum)
+            ExploreBagController:getBagController():addCoin(propNum, not self.coherentChest)
 
             -- DataManager:getInstance():addCoin(propNum, false)
             -- ToastUtil:downString("金币＋"..tostring(propNum))
         elseif isDiamond then
-            DataManager:getInstance():addDiamond(propNum, false)
+            DataManager:getInstance():addDiamond(propNum, false, not self.coherentChest)
             self.diamondLabel:setString(tostring(DataManager:getInstance():getRoleData(roleDiamond)))
         else
             local package = DataManager:getInstance():getRoleData(roleBattlePack)
             local list = clone(package)
             changeListItemNum1(list, propId, propNum)
             DataManager:getInstance():setRoleData(roleBattlePack, list, nil)
-            ToastUtil:downString("打开宝箱成功!")
+            if not self.coherentChest then ToastUtil:downString("打开宝箱成功!") end
         end
 
         local resourceCsv = DataManager:getInstance():getCSVByID(csvOfResourceInfo)
         local data = resourceCsv[tostring(propId)]
-        self:showInfo(data.name, data.desc)
+        self:showInfo(data.name, data.desc, propNum, true)
     else
 --        FightBoxViewAlert:create():show()
         self.isFail = true
@@ -755,6 +799,7 @@ function FightBoxView:openBox(idx)
 end
 
 function FightBoxView:giveUpCallback()
+    if self.chestCompleted or self.chestDisposed or self.isUserGiveUp then return end
     -- 放弃
     self.isUserGiveUp = true
     -- The reveal/close state no longer offers either free or paid opening.
@@ -778,11 +823,173 @@ function FightBoxView:giveUpCallback()
 end
 
 function FightBoxView:useDiamondCallback()
+    if self.chestCompleted or self.chestDisposed or self.isUserGiveUp then return end
     -- 每用一次钻石，获奖概率都提升20点
     for i=1,#self.rewardRate do
         self.rewardRate[i] = self.rewardRate[i] +20
     end
     self.diamondLabel:setString(tostring(DataManager:getInstance():getRoleData(roleDiamond)))
+end
+
+-- Warm chest presentation keeps all six original state/prop slots. Native
+-- facets provide a clean wooden chest silhouette, including the opened cavity.
+local function coherentChestArt(open,width,height,selected)
+    local W=require 'LuaClass/WarmTheme'
+    local n=cc.Node:create();n:setContentSize(cc.size(width,height))
+    local d=cc.DrawNode:create();n:addChild(d)
+    local sx,sy=width/140,height/156
+    local function poly(points,color)
+        local p={};for _,v in ipairs(points) do p[#p+1]=cc.p(v[1]*sx,v[2]*sy) end
+        local c=cc.c4f(color[1]/255,color[2]/255,color[3]/255,color[4] or 1)
+        d:drawPolygon(p,#p,c,0,c)
+    end
+    poly({{13,29},{99,21},{132,39},{43,49}},{47,139,140,selected and .28 or .13})
+    poly({{24,40},{99,34},{99,83},{24,89}},{185,118, 60})
+    poly({{99,34},{123,49},{123,97},{99,83}},{142,87,48})
+    poly({{24,40},{99,34},{99,43},{24,50}},{231,169,74})
+    poly({{99,34},{123,49},{123,58},{99,43}},{200,133, 50})
+    poly({{24,62},{99,56},{99,59},{24,65}},{169,103,53})
+    poly({{99,56},{123,71},{123,74},{99,59}},{128,79,44})
+    poly({{33,43},{41,42},{41,87},{33,88}},{239,188,86})
+    poly({{81,36},{89,35},{89,84},{81,85}},{239,188,86})
+    if open then
+        poly({{24,89},{99,83},{123,97},{48,105}},{86,66,43})
+        poly({{32,90},{98,85},{114,96},{49,101}},{48,61,55})
+        poly({{25,107},{99,100},{108,135},{35,142}},{201,143, 70})
+        poly({{25,107},{99,100},{99,108},{27,115}},{242,193,91})
+        poly({{99,100},{108,135},{117,137},{107,105}},{153,95,48})
+        poly({{34,116},{90,111},{96,131},{40,136}},{115,82,49})
+    else
+        poly({{24,89},{99,83},{123,97},{48,105}},{240,184, 90})
+        poly({{24,89},{24,106},{48,123},{123,115},{123,97},{99,83}},{210,146, 60})
+        poly({{24,106},{99,100},{123,115},{48,123}},{245,193,103})
+        poly({{99,83},{123,97},{123,115},{99,100}},{177,111,47})
+        poly({{33,88},{41,87},{41,104},{33,105}},{249,210,124})
+        poly({{81,85},{89,84},{89,101},{81,102}},{249,210,124})
+    end
+    poly({{57,65},{70,64},{70,84},{57,85}},{255,217,125})
+    poly({{62,70},{65,70},{65,78},{62,78}},{111,79,42})
+    return n
+end
+
+function FightBoxView:createCoherentChestItem(open)
+    local layout=self.coherentChestLayout
+    local item=cc.MenuItemSprite:create(coherentChestArt(open,layout.slotWidth,layout.slotHeight,false),
+        coherentChestArt(open,layout.slotWidth,layout.slotHeight,true))
+    item.coherentOpen=open
+    if not open then
+        local W=require 'LuaClass/WarmTheme'
+        item:addChild(W.label('待开启',17,W.colors.muted,layout.slotWidth/2,14,false,.5))
+    end
+    return item
+end
+
+function FightBoxView:decorateCoherentChestReward(item,prop,earned)
+    local W=require 'LuaClass/WarmTheme'
+    local data=DataManager:getInstance():getCSVByID(csvOfResourceInfo)[tostring(prop[1])]
+    local z=item:getContentSize()
+    local icon=ItemIcon.sprite(data and data.iconName);local iz=icon:getContentSize()
+    icon:setScale(math.min(1,40/math.max(1,iz.width),40/math.max(1,iz.height)))
+    icon:setPosition(cc.p(z.width/2,z.height*.67));item:addChild(icon)
+    local label=W.label((earned and '已收入 ' or '未获得 ')..tostring(prop[2]),16,
+        earned and W.colors.sea or W.colors.muted,z.width/2,14,false,.5)
+    W.fit(label,z.width-8);item:addChild(label)
+end
+
+function FightBoxView:coherentEmptyChestMark()
+    local W=require 'LuaClass/WarmTheme'
+    return W.label('空箱',16,W.colors.muted,0,0,false,.5)
+end
+
+function FightBoxView:initCoherentChest()
+    local W=require 'LuaClass/WarmTheme'
+    local size=cc.Director:getInstance():getVisibleSize()
+    local width,height=math.min(size.width-32,650),math.min(size.height-48,850)
+    local left,bottom=(size.width-width)/2,(size.height-height)/2
+    self.coherentChest=true
+    self.coherentChestLayout={width=width,height=height,left=left,bottom=bottom,
+        slotWidth=(width-48)/3,slotHeight=math.min(178,(height-320)/2)}
+    self.coherentChestLayout.gridBottom=bottom+180+(height-330-2*self.coherentChestLayout.slotHeight)/2
+    self.viewBg=W.panel(width,height,W.colors.paper,8)
+    self.viewBg:setPosition(cc.p(left,bottom));self:addChild(self.viewBg)
+    self:addChild(W.label('发现神秘宝箱',30,W.colors.ink,left+24,bottom+height-40))
+    self.diamondLabel=W.label(tostring(DataManager:getInstance():getRoleData(roleDiamond)),23,W.colors.sea,
+        left+width-24,bottom+height-40,false,1)
+    self:addChild(self.diamondLabel)
+    self:addChild(W.label('钻石',16,W.colors.muted,left+width-24,bottom+height-68,false,1))
+    self:addChild(W.label('六只宝箱里，藏着三份神秘奖励',20,W.colors.ink,left+24,bottom+height-94))
+    self:addChild(W.label('发现空箱后，可花费钻石继续寻找',18,W.colors.muted,left+24,bottom+height-124))
+    self.freeInfoNode=cc.Node:create();self:addChild(self.freeInfoNode)
+    self.freeInfoNode:addChild(W.label('选一只宝箱，免费开启',21,W.colors.sea,size.width/2,bottom+157,false,.5))
+    self.costInfoNode=cc.Node:create();self:addChild(self.costInfoNode)
+    self.infoCost=W.label('',20,W.colors.coral,size.width/2,bottom+157,false,.5)
+    self.costInfoNode:addChild(self.infoCost)
+    self.showInfoNode=cc.Node:create();self:addChild(self.showInfoNode)
+    local name=W.label('',20,W.colors.ink,left+28,bottom+126);name:setTag(1);self.showInfoNode:addChild(name)
+    local scroll=cc.ScrollView:create(cc.size(width-56,42))
+    scroll:setDirection(cc.SCROLLVIEW_DIRECTION_VERTICAL);scroll:setPosition(cc.p(left+28,bottom+74))
+    self.showInfoNode:addChild(scroll);self.coherentChestDetailScroll=scroll
+    local desc=W.label('',17,W.colors.muted,0,42)
+    desc:setAnchorPoint(cc.p(0,1));desc:setDimensions(cc.size(width-56,0));desc:setHorizontalAlignment(cc.TEXT_ALIGNMENT_LEFT)
+    scroll:addChild(desc);self.coherentChestDescription=desc;self:hideInfo()
+    local close=W.button('收好奖励，继续航行',width-48,52,function()
+        if self.chestCompleted or self.chestDisposed then return end
+        self.chestCompleted=true
+        require('LuaClass/WarmShortageOwnership').retire(self)
+        self:close()
+        cc.UserDefault:getInstance():setBoolForKey('isFirtFightBox',false)
+        if FightScene.instance then FightScene.instance:gotoFightRewardScene(0.5) end
+    end,{primary=true,size=22})
+    close:setPosition(cc.p(size.width/2,bottom+40));self:addChild(close)
+    -- Existing openBox/giveUpCallback own visibility. Keep these exact handles.
+    self.closeBtn=close;self.closeLabel=close.label;self.coherentClose=close
+    local giveup=W.button('结束寻宝',width-48,52,function()self:giveUpCallback()end,{size=22})
+    giveup:setPosition(close:getPosition());self:addChild(giveup)
+    self.giveupBtn=giveup;self.giveupLabel=giveup.label;self.coherentGiveup=giveup
+    self.costInfoNode:setVisible(false);close:setVisible(false);giveup:setVisible(false)
+    local life=cc.Node:create();life:registerScriptHandler(function(event)if event=='cleanup' then self.chestDisposed=true end end)
+    self:addChild(life)
+    self:reloadBoxes()
+    return true
+end
+
+function FightBoxView:refreshCoherentChest()
+    if not self.coherentChest then return end
+    local W=require 'LuaClass/WarmTheme'
+    if self.isFail then
+        self.infoCost:setString('再选宝箱需 '..tostring(FightBoxView.FailDiamond[self.failTime])..' 钻石')
+        W.fit(self.infoCost,self.coherentChestLayout.width-48)
+    end
+    W.fit(self.diamondLabel,90)
+end
+
+function FightBoxViewAlert:initCoherentChestAlert()
+    local W=require 'LuaClass/WarmTheme'
+    local size=cc.Director:getInstance():getVisibleSize()
+    local width=math.min(size.width-40,560);local left=(size.width-width)/2;local bottom=size.height/2-170
+    local owner=FightBoxView.instance
+    local bg=W.panel(width,340,W.colors.paper,8);bg:setPosition(cc.p(left,bottom));self:addChild(bg)
+    self:addChild(W.label('继续寻找宝藏？',30,W.colors.ink,left+24,bottom+292))
+    self:addChild(W.label('尚未发现全部神秘奖励',22,W.colors.muted,left+24,bottom+234))
+    self:addChild(W.label('继续寻宝需 7 钻石',23,W.colors.sea,left+24,bottom+194))
+    self.coherentAlertDone=false
+    local function current()return not self.coherentAlertDone and owner and FightBoxView.instance==owner and not owner.chestCompleted and not owner.chestDisposed end
+    local cancel=W.button('结束寻宝',width-48,52,function()
+        if not current() then return end
+        self.coherentAlertDone=true;owner:giveUpCallback();self:close()
+    end,{size=22})
+    cancel:setPosition(cc.p(size.width/2,bottom+40));self:addChild(cancel)
+    local paid=W.button('使用 7 钻石继续',width-48,52,function()
+        if not current() then return end
+        self.coherentAlertDone=true
+        local presentation=require('LuaClass/WarmShortageOwnership').forOwner(owner,'chestRenderGeneration',function()return FightBoxView.instance==owner and not owner.chestCompleted and not owner.chestDisposed end)
+        if DataManager:getInstance():addDiamond(-7,nil,nil,presentation)==1 then owner:useDiamondCallback();self:close()
+        else self.coherentAlertDone=false;ToastUtil:downString('您的钻石不足！',true) end
+    end,{primary=true,size=22})
+    paid:setPosition(cc.p(size.width/2,bottom+108));self:addChild(paid)
+    self.coherentAlertCancel=cancel;self.coherentAlertPaid=paid
+    local life=cc.Node:create();life:registerScriptHandler(function(event)if event=='cleanup' then self.coherentAlertDone=true end end);self:addChild(life)
+    return true
 end
 
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -1269,7 +1476,7 @@ end
 
 function FightScene:initShipWarUIScene()
 
-    local visibleSize = cc.Director:getInstance():getVisibleSize()
+    local visibleSize = CombatTheme.battleViewport(cc.Director:getInstance():getVisibleSize())
     local origin = cc.Director:getInstance():getVisibleOrigin()
 
     local pao_layer1 = 1
@@ -1293,12 +1500,11 @@ function FightScene:initShipWarUIScene()
     self:addChild(self.shipNodePlayer, boat_layer)
 
     -- boat
-    local boat_down = cc.Sprite:create(CombatTheme.deckPath(false))
+    local boat_down = CombatTheme.deckSprite(false, false)
     boat_down:setPosition(0.5*visibleSize.width, 0.0)
     boat_down:setAnchorPoint(cc.p(0.5, 0.0))
     self.shipNodePlayer:addChild(boat_down, boat_layer)
-    local boatr_up = cc.Sprite:create(CombatTheme.deckPath(false))
-    boatr_up:setFlippedY(true)
+    local boatr_up = CombatTheme.deckSprite(false, true)
     boatr_up:setAnchorPoint(cc.p(0.5, 1.0))
     boatr_up:setPosition(0.5*visibleSize.width, visibleSize.height)
     self.shipNodeEnemy:addChild(boatr_up, boat_layer)
@@ -1351,16 +1557,15 @@ function FightScene:initShipWarUIScene()
         local monster
         if i > 6 then
             t_layer = pao_layer1
-            monster = cc.Sprite:create("Images/Fight/chuan_03.png")
+            monster = CombatTheme.cannonActor(true, true)
         else
-            monster = cc.Sprite:create("Images/Fight/chuan_02.png")
+            monster = CombatTheme.cannonActor(false, true)
         end
 
         monster:setPosition(paoPosX[i], visibleSize.height-paoPosY[i]+0.5*self.paoScale[i]*monster:getContentSize().height)
         monster:setAnchorPoint(cc.p(0.5, 1.0))
         monster:setScale(self.paoScale[i])
         monster:setRotation(-self.paoRotate[i])
-        monster:setFlippedY(true)
         self.shipNodeEnemy:addChild(monster, t_layer)
         self.enemyActors[i] = monster
         self.enemyEffectActors[i] = monster
@@ -1447,9 +1652,9 @@ function FightScene:initShipWarUIScene()
         local head
         if i > 6 then
             t_layer = pao_layer1
-            head = cc.Sprite:create("Images/Fight/chuan_03.png")
+            head = CombatTheme.cannonActor(true, false)
         else
-            head = cc.Sprite:create("Images/Fight/chuan_02.png")
+            head = CombatTheme.cannonActor(false, false)
         end
 
         head:setPosition(paoPosX[i], paoPosY[i]-0.5*self.paoScale[i]*head:getContentSize().height)
@@ -1521,10 +1726,11 @@ function FightScene:initShipWarUIScene()
 --    resetAutoBtn()
 
 
+    CombatTheme.finishBattle(self, visibleSize, false)
 end
 
 function FightScene:initAboardWarUIScene()
-    local visibleSize = cc.Director:getInstance():getVisibleSize()
+    local visibleSize = CombatTheme.battleViewport(cc.Director:getInstance():getVisibleSize())
     local origin = cc.Director:getInstance():getVisibleOrigin()
 
     -- background
@@ -1540,7 +1746,7 @@ function FightScene:initAboardWarUIScene()
     -- boat
     self.shipNodePlayer = cc.Node:create()
     self:addChild(self.shipNodePlayer)
-    local boat = cc.Sprite:create(CombatTheme.deckPath(true))
+    local boat = CombatTheme.deckSprite(true, false)
     boat:setPosition(0.5*visibleSize.width, 0.0)
     boat:setAnchorPoint(cc.p(0.5, 0.0))
     self.shipNodePlayer:addChild(boat)
@@ -1612,8 +1818,8 @@ function FightScene:initAboardWarUIScene()
         self.enemyEffectActors[i] = node
 
         -- 怪物时隐时现效果
-        local fadeTo30 = cc.FadeTo:create(1.0, 0.3*255)
-        local fadeTo70 = cc.FadeTo:create(1.0, 0.7*255)
+        local fadeTo30 = cc.FadeTo:create(1.0, (CombatTheme.cleanBattleEnabled() and 0.82 or 0.3)*255)
+        local fadeTo70 = cc.FadeTo:create(1.0, (CombatTheme.cleanBattleEnabled() and 1.0 or 0.7)*255)
         local delay = cc.DelayTime:create(1.0)
         local seq = cc.Sequence:create(fadeTo30, fadeTo70, delay)
         local action = cc.RepeatForever:create(seq)
@@ -1910,6 +2116,8 @@ function FightScene:initAboardWarUIScene()
     self.breadNumLabel:setPosition(breadBg:getPosition())
     self:addChild(self.breadNumLabel)
 
+    CombatTheme.finishBattle(self, visibleSize, true, {monsterNode=monsterNode,food=jiyangBtn,instant=miaoshaBtn})
+
     -- 开场时boss必说话
     self:showMonasterDialogue(1)
 end
@@ -2013,6 +2221,9 @@ function FightScene:update(deltaTime)
     if self.playerTeam.hp == 0 or self.enemyTeam.hp == 0 then
         self.fightResult = self.playerTeam.hp > 0
         self.isPause = true
+        if not self.fightResult and rawget(_G,'WARM_PIRATE_V1') ~= false then
+            return require('LuaClass/WarmBattleRecovery').choice(self)
+        end
         if self.fightType ~= FightScene.FightType.shipWar then
             if not self.fightResult then
 
@@ -2191,6 +2402,9 @@ end
 
 -- showFailInfoAndReturn
 function FightScene:showFailInfoAndReturn()
+    if rawget(_G,'WARM_PIRATE_V1') ~= false then
+        return require('LuaClass/WarmBattleRecovery').result(self)
+    end
     local fightOverCallback = self.fightOverCallback
     local fightResult = self.fightResult
     local colorLayer = cc.LayerColor:create(cc.c4f(0, 0, 0, 0))
@@ -2372,7 +2586,7 @@ end
 -- runShipBombingEffect
 function FightScene:runShipBombingEffect(teamType, delay)
     if delay == nil then delay = 3.0 end
-    local visibleSize = cc.Director:getInstance():getVisibleSize()
+    local visibleSize = self.cleanBattleSize or cc.Director:getInstance():getVisibleSize()
 
     local actor
     local posx, posy
@@ -2857,8 +3071,12 @@ function FightScene:runAttackEffect(teamType, teamIndex)
     if actor then
         if self.fightType == FightScene.FightType.aboardWar then
             if self.isBossInjured then return end
+            if actor.battleBody then
+                require('LuaClass/BoardingActors').attack(actor)
+                return
+            end
             local tmp = actor:getScale()
-            local scale1 = cc.ScaleTo:create(0.2, 3.0*tmp)
+            local scale1 = cc.ScaleTo:create(0.2, (self.cleanBattleRoot and 1.12 or 3.0)*tmp)
             local fade1 = cc.FadeOut:create(0.2)
             local spawn = cc.Spawn:create(scale1, fade1)
             local scale2 = cc.ScaleTo:create(0.0, 1.0*tmp)
@@ -3199,6 +3417,10 @@ function FightRewardScene:init(haveDatas, dropDatas)
 
     self:initData(haveDatas, dropDatas)
 
+    if rawget(_G, 'WARM_PIRATE_V1') ~= false then
+        return self:initCoherentCargo()
+    end
+
     local visibleSize = cc.Director:getInstance():getVisibleSize()
     local origin = cc.Director:getInstance():getVisibleOrigin()
 
@@ -3276,7 +3498,7 @@ function FightRewardScene:init(haveDatas, dropDatas)
     self.tableview1:setPosition(50.0, 200.0)
     self.tableview1:setDelegate()
     self.tableview1:registerScriptHandler(function(view, cell)
-        if self.isClosed then return end
+        if self.isClosed or self.cargoCommitInProgress or self.cargoDisposed then return end
         local idx = cell:getTag()
         local item = self.package[idx]
         if not item or (tonumber(item.num) or 0)<=0 then return end
@@ -3349,7 +3571,7 @@ function FightRewardScene:init(haveDatas, dropDatas)
     self.tableview2:setPosition(visibleSize.width-50.0-250.0, 200.0)
     self.tableview2:setDelegate()
     self.tableview2:registerScriptHandler(function(view, cell)
-        if self.isClosed then return end
+        if self.isClosed or self.cargoCommitInProgress or self.cargoDisposed then return end
         local idx = cell:getTag()
         local item = self.rewardItems[idx]
         if not item or (tonumber(item.num) or 0)<=0 then return end
@@ -3437,44 +3659,7 @@ function FightRewardScene:init(haveDatas, dropDatas)
         if DataManager:getInstance():getSound_off() == 0 then
             AudioEngine.playEffect(EFFECT_Button, false)
         end
-        print("结算界面关闭按钮响应",self.isClosed)
-
-        if self.isClosed == true then
-            return
-        end
-        local hasMissionProp = false
-        for i=1,#self.rewardItems do
-            local item = self.rewardItems[i]
-            local resourceCsv = DataManager:getInstance():getCSVByID(csvOfResourceInfo)
-            local data = resourceCsv[tostring(item.id)]
-            if data.carryType == "2" then
-                hasMissionProp = true
-                break
-            end
-        end
-
-        if not hasMissionProp then
-            -- 放回保留物品
-            for i=1,#self.reservedItems do
-                local item = self.reservedItems[i]
-                changeListItemNum(self.package, item.id, item.num)
-            end
-
-            local package = self.package
-            self.package = {}
-            for i=1,#package do
-                local item = package[i]
-                self.package[item.id] = item
-            end
-
-            DataManager:getInstance():setRoleData(roleBattlePack, self.package, nil)
-            if self.fightOverCallback then
-                self.fightOverCallback(self.fightResult)
-            end
-            self.isClosed = true
-        else
-            ToastUtil:downString("您有重要道具未拾取，无法离开！", true)
-        end
+        self:settleCargo()
     end)
     closeBtn:setPosition(1/3*visibleSize.width-40.0, 60.0)
 
@@ -3535,6 +3720,8 @@ function FightRewardScene:initData(haveDatas, dropDatas)
 --    end
 
     self.isClosed = false
+    self.cargoCommitInProgress = false
+    self.cargoDisposed = false
     self.foodWasMoved = false
     self.package = {}
     self.rewardItems = {}
@@ -3617,7 +3804,7 @@ end
 
 -- pickUpAllRewards
 function FightRewardScene:pickUpAllRewards()
-    if self.isClosed then return end
+    if self.isClosed or self.cargoCommitInProgress or self.cargoDisposed then return end
     local resourceCsv = DataManager:getInstance():getCSVByID(csvOfResourceInfo)
     local pick = function()
         -- 有可拾取物品
@@ -3679,12 +3866,14 @@ function FightRewardScene:pickUpAllRewards()
         while(true)
         do
             if not pick() then
+                self:refreshCoherentCargo()
                 return
             end
         end
     else
         ToastUtil:downString("没有可拾取的物品", true)
     end
+    self:refreshCoherentCargo()
 end
 
 
@@ -3694,6 +3883,44 @@ end
 
 -- This screen stages left/right transfers; only closing abandons the right side.
 function FightRewardScene:getCargoHint()
+    if self.coherentCargo then
+        -- Chest grants can legitimately arrive before allocation with the hold
+        -- already over capacity. Capacity does not block zero-volume pickups.
+        local overflow=math.max(0,self.packageSize-self.packageCapicity)
+        if #self.rewardItems == 0 then
+            if overflow>0 then return '已全部装船，货舱超出 '..overflow..' 格',
+                '已有货物不会自动丢弃，可完成装载',false end
+            return '物品已装船，准备继续航行','',false
+        end
+        local hasFree,hasVolume=false,false
+        local resources=DataManager:getInstance():getCSVByID(csvOfResourceInfo)
+        for _,item in ipairs(self.rewardItems) do
+            if (tonumber(item.num) or 0)>0 then
+                if (tonumber(resources[tostring(item.id)].cubage) or 0)<=0 then hasFree=true
+                else hasVolume=true end
+            end
+        end
+        local first,second='点左侧移出，点右侧装船','完成后，右侧未装船物品将被丢弃'
+        if self.packageSize>=self.packageCapicity then
+            local state=overflow>0 and '货舱超出 '..overflow..' 格' or '货舱已满'
+            if hasFree and not hasVolume then first=state..'，待收物品不占空间'
+            elseif hasFree then
+                first=state..'，零占用物品仍可装船'
+                second='其他物品需先腾位；未装船物品会丢弃'
+            else first=state..'，先点左侧物品腾出空间' end
+        end
+        if self.foodWasMoved then
+            local food = 0
+            for _, item in ipairs(self.package) do
+                if tostring(item.id) == '1005' then food = food + (tonumber(item.num) or 0) end
+            end
+            if overflow>0 then
+                second='超出 '..overflow..' 格；'..(hasFree and '零占用仍可装船，' or '')..'未装船会丢弃'
+            end
+            return '船上食物剩 '..food..'，请留足返航补给',second,food==0
+        end
+        return first,second,false
+    end
     if #self.rewardItems==0 then return '战利品已收妥','',false end
     if self.foodWasMoved then
         local food=0
@@ -3721,4 +3948,161 @@ function FightRewardScene:refreshCargoHint()
         end
         label:setColor(i==1 and noFood and cc.c3b(156,58,43) or MasterTheme.colors.ink)
     end
+end
+
+
+-- A single open cargo sheet. These controls stage the same two lists as the
+-- original scene; only settleCargo owns the original pack commit and callback.
+function FightRewardScene:initCoherentCargo()
+    local W = require 'LuaClass/WarmTheme'
+    local size = cc.Director:getInstance():getVisibleSize()
+    local w, h = size.width, size.height
+    self.coherentCargo = true
+    self.coherentCargoLayout = {margin=28, gap=20, rowHeight=108, bottom=242, top=h-276}
+    local layout = self.coherentCargoLayout
+    layout.columnWidth = (w-layout.margin*2-layout.gap)/2
+    local sea = W.cover(W.worldPath..'sea-turquoise-caustics.png', w, h)
+    if sea then self:addChild(sea) end
+    local heading = W.label('整理战利品', 34, W.colors.ink, 28, h-56)
+    self:addChild(heading)
+    self:addChild(W.label('把这次发现，带往下一段航程', 20, W.colors.ink, 28, h-98))
+    local cargo = coherentChestArt(false,64, 70,false)
+    cargo:setPosition(cc.p(w-90,h-100));self:addChild(cargo)
+    local paper = W.panel(w-32,h-278,W.colors.paper,8)
+    paper:setPosition(cc.p(16,142));self:addChild(paper)
+    self.coherentCapacity = W.label('',23,W.colors.ink,32,h-176)
+    self:addChild(self.coherentCapacity)
+    self.coherentImportant = W.label('',18,W.colors.muted,w-32,h-176,false,1)
+    self:addChild(self.coherentImportant)
+    local track = W.panel(w-64,7,W.colors.line,0)
+    track:setPosition(cc.p(32,h-200));self:addChild(track)
+    self.coherentCapacityBar = W.panel(w-64,7,W.colors.sea,0)
+    self.coherentCapacityBar:setPosition(cc.p(32,h-200));self:addChild(self.coherentCapacityBar)
+    self.coherentEmpty = {}
+    self.coherentCargoTouch = {}
+    for side=1,2 do
+        local x = layout.margin+(side-1)*(layout.columnWidth+layout.gap)
+        self:addChild(W.label(side==1 and '船上货物' or '本次发现',24,W.colors.ink,x,h-232))
+        self:addChild(W.label(side==1 and '点选移出 →' or '← 点选装船',17,W.colors.muted,x,h-260))
+        local empty = W.label(side==1 and '货舱空空，等你装船' or '没有待装船物品',18,W.colors.muted,
+            x+layout.columnWidth/2,(layout.bottom+layout.top)/2,false,.5)
+        W.fit(empty,layout.columnWidth-12);self:addChild(empty);self.coherentEmpty[side]=empty
+        local view = cc.TableView:create(cc.size(layout.columnWidth,layout.top-layout.bottom))
+        view:setDirection(cc.SCROLLVIEW_DIRECTION_VERTICAL)
+        view:setVerticalFillOrder(cc.TABLEVIEW_FILL_TOPDOWN)
+        view:setPosition(cc.p(x,layout.bottom));view:setDelegate()
+        local function touch(_,cell)
+            if self.isClosed or self.cargoCommitInProgress or self.cargoDisposed then return end
+            local list = side==1 and self.package or self.rewardItems
+            local item = list[cell:getTag()]
+            if not item or (tonumber(item.num) or 0)<=0 then return end
+            if cell.coherentItemId and cell.coherentItemId~=tostring(item.id) then return end
+            local data = DataManager:getInstance():getCSVByID(csvOfResourceInfo)[tostring(item.id)]
+            local volume = tonumber(data.cubage)
+            if side==1 then
+                if tostring(item.id)=='1005' then self.foodWasMoved=true end
+                self.packageSize=self.packageSize-volume
+                changeListItemNum(self.package,item.id,-1)
+                changeListItemNum(self.rewardItems,item.id,1)
+            elseif volume<=0 or self.packageSize+volume<=self.packageCapicity then
+                local isGold=tostring(item.id)=='1001'
+                local quantity=isGold and item.num or 1
+                self.packageSize=self.packageSize+quantity*volume
+                if isGold then ExploreBagController:getBagController():addCoin(quantity)
+                else changeListItemNum(self.package,item.id,quantity) end
+                changeListItemNum(self.rewardItems,item.id,-quantity)
+            else
+                ToastUtil:downString('空间不足：点左侧物品腾位，再点右侧拾取',true)
+            end
+            self.tableview1:reloadData();self.tableview2:reloadData();self:refreshCoherentCargo()
+        end
+        self.coherentCargoTouch[side]=touch
+        view:registerScriptHandler(touch,cc.TABLECELL_TOUCHED)
+        view:registerScriptHandler(function(tableview,index)
+            local list=side==1 and self.package or self.rewardItems
+            local item=list[index+1]
+            local data=DataManager:getInstance():getCSVByID(csvOfResourceInfo)[tostring(item.id)]
+            local cell=tableview:dequeueCell() or cc.TableViewCell:create()
+            cell:removeAllChildren();cell:setTag(index+1);cell.coherentItemId=tostring(item.id)
+            local icon=ItemIcon.sprite(data and data.iconName)
+            local z=icon:getContentSize();icon:setScale(math.min(1,40/math.max(1,z.width),40/math.max(1,z.height)))
+            icon:setPosition(cc.p(22,layout.rowHeight-31));cell:addChild(icon)
+            local name=W.label(data and data.name or tostring(item.id),19,W.colors.ink,50,layout.rowHeight-22)
+            W.fit(name,layout.columnWidth-56);cell:addChild(name)
+            local number=W.label('× '..tostring(item.num),18,W.colors.muted,50,layout.rowHeight-49)
+            W.fit(number,layout.columnWidth-56);cell:addChild(number)
+            local volume=tonumber(data.cubage) or 0
+            local detail=data.carryType=='2' and '重要物品 · 必须带走' or
+                (volume==0 and '不占货舱' or '每件占 '..volume..' 格')
+            local info=W.label(detail,16,data.carryType=='2' and W.colors.coral or W.colors.muted,4,24)
+            W.fit(info,layout.columnWidth-8);cell:addChild(info)
+            local line=W.panel(layout.columnWidth,1,W.colors.line,0)
+            line:setPosition(cc.p(0,3));cell:addChild(line)
+            return cell
+        end,cc.TABLECELL_SIZE_AT_INDEX)
+        view:registerScriptHandler(function()return layout.rowHeight,layout.columnWidth end,cc.TABLECELL_SIZE_FOR_INDEX)
+        view:registerScriptHandler(function()return #(side==1 and self.package or self.rewardItems) end,cc.NUMBER_OF_CELLS_IN_TABLEVIEW)
+        if side==1 then self.tableview1=view else self.tableview2=view end
+        self:addChild(view)
+    end
+    self.cargoHintWidth=w-64;self.cargoHintLines={}
+    for index,y in ipairs({210,180}) do
+        local label=W.label('',19,W.colors.ink,w/2,y,false,.5)
+        self:addChild(label);self.cargoHintLines[index]=label
+    end
+    self.coherentCargoButtons={}
+    local all=W.button('尽量装船',(w-72)*.43,60,function()
+        if self.isClosed or self.cargoCommitInProgress or self.cargoDisposed then return end
+        self:pickUpAllRewards()
+    end,{size=23})
+    all:setPosition(cc.p(28+(w-72)*.43/2,72));self:addChild(all)
+    local done=W.button('完成装载',(w-72)*.57,60,function()self:settleCargo()end,{primary=true,size=23})
+    done:setPosition(cc.p(w-28-(w-72)*.57/2,72));self:addChild(done)
+    self.coherentCargoButtons.pick=all;self.coherentCargoButtons.settle=done
+    local lifetime=cc.Node:create()
+    lifetime:registerScriptHandler(function(event)if event=='cleanup' then self.cargoDisposed=true end end)
+    self:addChild(lifetime)
+    self:refreshCoherentCargo()
+    return true
+end
+
+function FightRewardScene:refreshCoherentCargo()
+    if not self.coherentCargo or self.cargoDisposed then return end
+    local W=require 'LuaClass/WarmTheme'
+    local important=0
+    local csv=DataManager:getInstance():getCSVByID(csvOfResourceInfo)
+    for _,item in ipairs(self.rewardItems) do
+        if csv[tostring(item.id)].carryType=='2' then important=important+(tonumber(item.num) or 0) end
+    end
+    self.coherentCapacity:setString('货舱 '..tostring(self.packageSize)..' / '..tostring(self.packageCapicity))
+    W.fit(self.coherentCapacity,(self.coherentCargoLayout.columnWidth+10))
+    self.coherentImportant:setString(important>0 and '重要物品待收 '..important or
+        (#self.reservedItems>0 and '随身物品已保留' or #self.rewardItems..' 类待装船'))
+    self.coherentImportant:setColor(important>0 and W.colors.coral or W.colors.muted)
+    W.fit(self.coherentImportant,self.coherentCargoLayout.columnWidth-10)
+    self.coherentCapacityBar:setScaleX(math.min(1,math.max(0,self.packageSize/math.max(1,self.packageCapicity))))
+    self.coherentEmpty[1]:setVisible(#self.package==0);self.coherentEmpty[2]:setVisible(#self.rewardItems==0)
+    self.coherentCargoButtons.pick.item:setEnabled(#self.rewardItems>0 and not self.isClosed)
+    self.coherentCargoButtons.pick:setOpacity(#self.rewardItems>0 and 255 or 140)
+    self:refreshCargoHint()
+end
+
+function FightRewardScene:settleCargo()
+    if self.isClosed or self.cargoCommitInProgress or self.cargoDisposed then return end
+    local csv=DataManager:getInstance():getCSVByID(csvOfResourceInfo)
+    for _,item in ipairs(self.rewardItems) do
+        if csv[tostring(item.id)].carryType=='2' then
+            ToastUtil:downString('您有重要道具未拾取，无法离开！',true)
+            return
+        end
+    end
+    -- Claim the transaction before invoking any state listeners or completion
+    -- callback. The original write -> completion -> isClosed ordering survives.
+    self.cargoCommitInProgress=true
+    for _,item in ipairs(self.reservedItems) do changeListItemNum(self.package,item.id,item.num) end
+    local package=self.package;self.package={}
+    for _,item in ipairs(package) do self.package[item.id]=item end
+    DataManager:getInstance():setRoleData(roleBattlePack,self.package,nil)
+    if self.fightOverCallback then self.fightOverCallback(self.fightResult) end
+    self.isClosed=true
 end

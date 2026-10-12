@@ -1,0 +1,207 @@
+{
+  "generator": "built-in image_gen",
+  "styleReference": "bin/res/assets/Images/UI/CleanVoyage/harbor-clean-ne.png",
+  "baseCommit": "73db071d051afccdcc358b52887999ffefa80be1",
+  "assets": [
+    {
+      "id": 1,
+      "path": "/workspace/scratch/79976da795e7/generated_images/exec-9fa333e6-e983-46d4-8095-3326fd80a8b5.png",
+      "prompt": "Use case: illustration-story. Production game opening story illustration, clean stylized low-poly 2.5D, matching the supplied approved harbor reference: crisp gently faceted geometry, cream limestone, saturated turquoise ocean, azure blue roofs where buildings occur, lime palms, warm sun, natural-scale people, believable small game-world props. This is a narrative painting made with the same low-poly materials as that game environment, not a screenshot or UI. Landscape 1536 by 816, edge-to-edge full artwork. Compose the complete scene with main story content kept inside the middle 85% so it fits a wide in-game image. NO baked words, letters, captions, UI, borders, parchment, sepia, engraving, scratchy outlines, photograph, chibi proportions or oversized heads. Story drama may change lighting but retain clean readable colors. Reference image1 is STYLE ONLY; reference image2 is the OLD STORY COMPOSITION/BEAT only. Redraw it completely with the new clean low-poly materials. Scene1: in ancient times a feared pirate king rules the sea. His large black-hulled three-mast pirate sailing ship looms near a coastal settlement; a smaller merchant boat flees, distant smoke and small burning dock show plunder without gore or casualties. A few naturally sized fearful villagers retreat along a cream quay toward blue-roof houses and lime palms. The pirate ship is the focal subject, dramatic dark sails against clear turquoise water, warm sunlight through restrained smoke. Keep ship sail construction clear and believable.",
+      "output": "bin/res/assets/Images/Plot/CleanOpening/juqing_1.png",
+      "sha256": "a87a26dec80dd857cc059ef43d1ef8c7ad181f16e0e44934d98666f185ef49e3",
+      "size": [
+        1720,
+        914
+      ],
+      "mode": "RGB",
+      "alphaBounds": null
+    },
+    {
+      "id": 2,
+      "path": "/workspace/scratch/79976da795e7/generated_images/exec-d659c360-6ec6-449d-81d1-ff39365dcc00.png",
+      "prompt": "Use case: illustration-story. Production game opening story illustration, clean stylized low-poly 2.5D, matching the supplied approved harbor reference: crisp gently faceted geometry, cream limestone, saturated turquoise ocean, azure blue roofs where buildings occur, lime palms, warm sun, natural-scale people, believable small game-world props. This is a narrative painting made with the same low-poly materials as that game environment, not a screenshot or UI. Landscape 1536 by 816, edge-to-edge full artwork. Compose the complete scene with main story content kept inside the middle 85% so it fits a wide in-game image. NO baked words, letters, captions, UI, borders, parchment, sepia, engraving, scratchy outlines, photograph, chibi proportions or oversized heads. Story drama may change lighting but retain clean readable colors. Reference image1 is STYLE ONLY; reference image2 is the OLD STORY COMPOSITION/BEAT only. Redraw it completely with the new clean low-poly materials. Scene2: the sea god punishes the pirate king. A dignified, powerful adult bearded sea god with natural human proportions, teal cloth and a golden trident rises on a sculpted turquoise wave at left, pointing the trident toward a transparent crystal bottle at upper center. Magical clean cyan currents draw the black pirate ship into the bottle at right. Three prongs on trident, clear story of the ship being sealed, dramatic divine scale allowed but not a toy/chibi god. Bright readable aqua water, cloud-lit sky, warm golden glints. No unrelated characters.",
+      "output": "bin/res/assets/Images/Plot/CleanOpening/juqing_2.png",
+      "sha256": "b05cc6c0e5a04695839ce1507065fffb72b42783b11fdd725d25fa224361ed01",
+      "size": [
+        1721,
+        914
+      ],
+      "mode": "RGB",
+      "alphaBounds": null
+    },
+    {
+      "id": 3,
+      "path": "/workspace/scratch/79976da795e7/generated_images/exec-ef357c95-124a-473d-88dd-9d21fb9cf103.png",
+      "prompt": "Use case: illustration-story. Production game opening story illustration, clean stylized low-poly 2.5D, matching the supplied approved harbor reference: crisp gently faceted geometry, cream limestone, saturated turquoise ocean, azure blue roofs where buildings occur, lime palms, warm sun, natural-scale people, believable small game-world props. This is a narrative painting made with the same low-poly materials as that game environment, not a screenshot or UI. Landscape 1536 by 816, edge-to-edge full artwork. Compose the complete scene with main story content kept inside the middle 85% so it fits a wide in-game image. NO baked words, letters, captions, UI, borders, parchment, sepia, engraving, scratchy outlines, photograph, chibi proportions or oversized heads. Story drama may change lighting but retain clean readable colors. Reference image1 is STYLE ONLY; reference image2 is the OLD STORY COMPOSITION/BEAT only. Redraw it completely with the new clean low-poly materials. Scene3: the pirate king's black sailing ship is sealed for a century in a crystal bottle, guarded by SIXTEEN rune stones symbolizing the ocean's power. Show one clear horizontal crystal bottle resting at center on pale sandstone, its tiny dark ship clearly visible inside over a little turquoise water. Exactly sixteen separate small faceted stone tablets surround it in a spacious oval ring, each bearing a simple glowing abstract carved symbol, no readable writing. Ancient quiet sacred mood, clean warm illumination and turquoise magical shimmer, distant sea and lime foliage subtly supporting scene. Not a display card or infographic.",
+      "output": "bin/res/assets/Images/Plot/CleanOpening/juqing_3.png",
+      "sha256": "9732deebf4da9007c6294aad30cdf1e3e9a0acc51992d29299d2fb365f5122d0",
+      "size": [
+        1720,
+        914
+      ],
+      "mode": "RGB",
+      "alphaBounds": null,
+      "initialOutputSha256": "8f3270f2ca9df5e817a54fb18a1aab6980d382db49a142b382edf571e0c7a51f",
+      "initialGenerationPath": "/workspace/scratch/79976da795e7/generated_images/exec-0e25931a-c202-4a94-8a2e-d633686cd5d7.png",
+      "refinement": "scene3-refinement.json"
+    },
+    {
+      "id": 4,
+      "path": "/workspace/scratch/79976da795e7/generated_images/exec-bf4078c7-7a0f-4150-b5dd-6b68c9195f46.png",
+      "prompt": "Use case: illustration-story. Production game opening story illustration, clean stylized low-poly 2.5D, matching the supplied approved harbor reference: crisp gently faceted geometry, cream limestone, saturated turquoise ocean, azure blue roofs where buildings occur, lime palms, warm sun, natural-scale people, believable small game-world props. This is a narrative painting made with the same low-poly materials as that game environment, not a screenshot or UI. Landscape 1536 by 816, edge-to-edge full artwork. Compose the complete scene with main story content kept inside the middle 85% so it fits a wide in-game image. NO baked words, letters, captions, UI, borders, parchment, sepia, engraving, scratchy outlines, photograph, chibi proportions or oversized heads. Story drama may change lighting but retain clean readable colors. Reference image1 is STYLE ONLY; reference image2 is the OLD STORY COMPOSITION/BEAT only. Redraw it completely with the new clean low-poly materials. Scene4: a volcanic eruption shatters the sixteen protective rune stones and scatters their fragments across the world; the crystal bottle containing the black sailing ship tumbles away on the sea. Show a distant erupting volcanic island to left with angular dark stone, small orange lava and cream ash clouds; broken rune stones thrown outward in a readable arc; to right foreground the intact transparent horizontal crystal bottle with tiny dark ship is swept across clear turquoise surf. Dramatic natural event but clean low-poly material language, warm light through smoke, no dead people, no text.",
+      "output": "bin/res/assets/Images/Plot/CleanOpening/juqing_4.png",
+      "sha256": "49e71ca1d2604b311e6ef523a8f420d02d08259469cc2a055b1ef731cf0a856f",
+      "size": [
+        1720,
+        914
+      ],
+      "mode": "RGB",
+      "alphaBounds": null
+    },
+    {
+      "id": 5,
+      "path": "/workspace/scratch/79976da795e7/generated_images/exec-1a55210f-3e44-4384-92f4-da6284aa0cbb.png",
+      "prompt": "Use case: illustration-story. Production game opening story illustration, clean stylized low-poly 2.5D, matching the supplied approved harbor reference: crisp gently faceted geometry, cream limestone, saturated turquoise ocean, azure blue roofs where buildings occur, lime palms, warm sun, natural-scale people, believable small game-world props. This is a narrative painting made with the same low-poly materials as that game environment, not a screenshot or UI. Landscape 1536 by 816, edge-to-edge full artwork. Compose the complete scene with main story content kept inside the middle 85% so it fits a wide in-game image. NO baked words, letters, captions, UI, borders, parchment, sepia, engraving, scratchy outlines, photograph, chibi proportions or oversized heads. Story drama may change lighting but retain clean readable colors. Reference image1 is STYLE ONLY; reference image2 is the OLD STORY COMPOSITION/BEAT only. Redraw it completely with the new clean low-poly materials. Scene5: peaceful afternoon beach, a distant white sail, calm turquoise ocean. The crystal bottle with a tiny black sailing ship inside lies intact in soft warm yellow sand near the tide line, waiting to be opened. Horizontal bottle with cork at left, softly faceted transparent glass catching sun; natural perspective, not giant bottle relative to beach. A few lime palms and cream rocks at side, blue sky, distant white-sailed vessel on horizon. Tranquil warm light and airy clean low-poly game scene. No people.",
+      "output": "bin/res/assets/Images/Plot/CleanOpening/juqing_5.png",
+      "sha256": "55c4cd19b5001b64a403aa7b6e1143071da2c3d60448bfc835035b3714bedf3e",
+      "size": [
+        1720,
+        914
+      ],
+      "mode": "RGB",
+      "alphaBounds": null
+    },
+    {
+      "id": 6,
+      "path": "/workspace/scratch/79976da795e7/generated_images/exec-3776804a-a61f-455d-add4-35e8fcbb5faa.png",
+      "prompt": "Use case: illustration-story. Production game opening story illustration, clean stylized low-poly 2.5D, matching the supplied approved harbor reference: crisp gently faceted geometry, cream limestone, saturated turquoise ocean, azure blue roofs where buildings occur, lime palms, warm sun, natural-scale people, believable small game-world props. This is a narrative painting made with the same low-poly materials as that game environment, not a screenshot or UI. Landscape 1536 by 816, edge-to-edge full artwork. Compose the complete scene with main story content kept inside the middle 85% so it fits a wide in-game image. NO baked words, letters, captions, UI, borders, parchment, sepia, engraving, scratchy outlines, photograph, chibi proportions or oversized heads. Story drama may change lighting but retain clean readable colors. Reference image1 is STYLE ONLY; reference image2 is the OLD STORY COMPOSITION/BEAT only. Redraw it completely with the new clean low-poly materials. Scene6: first-person on that peaceful beach, the player has just pulled the cork from the crystal bottle. In foreground, one naturally proportioned adult hand holds the horizontal crystal bottle, its uncorked mouth aimed to upper right; the other hand holds the removed cork nearby. Strong spiraling turquoise magical suction from the bottle mouth pulls sand, little shells, leaves, beach fragments and the viewpoint toward it, with the distant shoreline visibly tilting into the vortex. The tiny black sailing ship remains visible inside the bottle. Clearly the bottle is sucking the beach inward, not spewing smoke. Clean crisp low-poly hands and materials, warm sunny colors, no gore, no giant human character, no text.",
+      "output": "bin/res/assets/Images/Plot/CleanOpening/juqing_6.png",
+      "sha256": "abc30d33197f6d36bca98f34d3df8689b5a19ecbc44e184652fbaf1ef5741045",
+      "size": [
+        1721,
+        914
+      ],
+      "mode": "RGB",
+      "alphaBounds": null
+    },
+    {
+      "id": 7,
+      "prompt": "Use case: illustration-story. Single game sprite, stylized clean low-poly 2.5D, crisp faceted geometry, warm sunlight, turquoise and cream palette, matching reference image1 approved harbor materials. Reference image2 is the old sprite's silhouette/geometry only; replace all its dark grim realistic surfaces. Actual TRANSPARENT background, no ground, no scene, no shadow outside the object, no backdrop, no UI, no writing, no border. Landscape canvas with generous transparent padding. A single EMPTY transparent faceted crystal bottle lying horizontally, narrow open neck pointing left, rounded rectangular broad body to right. No cork, no ship, no water, no liquid, no people. Match the old bottle's wide 2.50:1 outer silhouette, completely shown. Pale turquoise glass edging and sparse warm white highlights, very clear transparent interior because a separate black ship sprite must appear inside later. Bottle side view with a slight elevated angle. Broad body occupies right two thirds; its usable inner cavity is large, at center-right, clear from the top to the lower edge.",
+      "original": "juqing_7.png",
+      "path": "/workspace/scratch/79976da795e7/generated_images/exec-2dd3eed0-0fb8-4cd4-9bdd-fb7178a90f2f.png",
+      "output": "bin/res/assets/Images/Plot/CleanOpening/juqing_7.png",
+      "sha256": "43df7ada684d07b25c43b7ddd08e9609664dd72ee15335c5e4ae4b35c64ad7c3",
+      "size": [
+        1983,
+        793
+      ],
+      "mode": "RGBA",
+      "alphaBounds": [
+        0,
+        0,
+        1971,
+        793
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "Use case: illustration-story. Single game sprite, stylized clean low-poly 2.5D, crisp faceted geometry, warm sunlight, turquoise and cream palette, matching reference image1 approved harbor materials. Reference image2 is the old sprite's silhouette/geometry only; replace all its dark grim realistic surfaces. Actual TRANSPARENT background, no ground, no scene, no shadow outside the object, no backdrop, no UI, no writing, no border. Landscape canvas with generous transparent padding. One single very shallow horizontal turquoise water surface sprite, width seven times its height, a calm softly faceted translucent pool with tiny clean wavelets and bright cream glints. The upper edge is nearly flat with low wavelets, the lower edge is a gently curved long shallow crescent, both ends rounded and tapering. This is water INSIDE a horizontal crystal bottle, bottle itself NOT shown. No ship, no shore, no foam piles, no ocean horizon. Everything except the shallow water strip must have genuine alpha transparency.",
+      "original": "juqing_8.png",
+      "path": "/workspace/scratch/79976da795e7/generated_images/exec-ac1982ce-e98b-494a-b178-e46f39bc10fe.png",
+      "output": "bin/res/assets/Images/Plot/CleanOpening/juqing_8.png",
+      "sha256": "906db9bbe8acd1b69ff7804c6ad6e01e2aeca7dc983e9c867494569c1f26c570",
+      "size": [
+        2171,
+        724
+      ],
+      "mode": "RGBA",
+      "alphaBounds": [
+        35,
+        85,
+        2139,
+        724
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "Use case: illustration-story. Single game sprite, stylized clean low-poly 2.5D, crisp faceted geometry, warm sunlight, turquoise and cream palette, matching reference image1 approved harbor materials. Reference image2 is the old sprite's silhouette/geometry only; replace all its dark grim realistic surfaces. Actual TRANSPARENT background, no ground, no scene, no shadow outside the object, no backdrop, no UI, no writing, no border. Landscape canvas with generous transparent padding. One single small BLACK pirate sailing ship, three masts, dark charcoal-black sails, dark warm wooden hull with clean gold-brown rails, a small plain dark pennant, bow pointing left. Full side-on silhouette with slight elevated view, width about1.7times height. All masts and bowsprit visible, balanced believable ship construction with simplified natural-scale detail. No people, no giant skull emblems, no water, no background. Will rock gently inside a crystal bottle in the game's seventh opening scene. Keep a crisp readable complete outline, natural proportions and warm edge-light.",
+      "original": "juqing_9.png",
+      "path": "/workspace/scratch/79976da795e7/generated_images/exec-44c1adc4-7bdc-4249-b53b-ac10787d6c27.png",
+      "output": "bin/res/assets/Images/Plot/CleanOpening/juqing_9.png",
+      "sha256": "3389eaefd1f01ac857b585a569ef08357194293ea9f1ba1ad8a8b677ed9d93b4",
+      "size": [
+        1635,
+        962
+      ],
+      "mode": "RGBA",
+      "alphaBounds": [
+        48,
+        31,
+        1619,
+        944
+      ]
+    }
+  ],
+  "story": [
+    {
+      "id": 1,
+      "iconID": "juqing_1",
+      "story": "远古时期，;海洋是勇士的禁地，;海盗王统治了那里，;烧杀抢掠，;民怨四起……",
+      "stayTime": 4
+    },
+    {
+      "id": 2,
+      "iconID": "juqing_2",
+      "story": "猖獗的掠夺者终于触怒了神灵，;海神手持三叉戟，;将海盗王和“掠夺者”号，;永镇在水晶瓶里。",
+      "stayTime": 4
+    },
+    {
+      "id": 3,
+      "iconID": "juqing_3",
+      "story": "十六块符文，;象征着海洋的力量，;守护着“瓶中船”的秘密，;百年沉寂……",
+      "stayTime": 4
+    },
+    {
+      "id": 4,
+      "iconID": "juqing_4",
+      "story": "直到某天，火山爆发，;地动天摇中，符文碎裂……;散往世界各地，;而装载了厄运的水晶瓶，;也兜兜转转，浮浮沉沉……",
+      "stayTime": 5
+    },
+    {
+      "id": 5,
+      "iconID": "juqing_5",
+      "story": "午后海滩，;白帆远影，;一片祥和，;水晶瓶躺在细软的黄沙里，;静待开启……",
+      "stayTime": 4
+    },
+    {
+      "id": 6,
+      "iconID": "juqing_6",
+      "story": "你拔出了瓶塞，;巨大的吸力扑面而来，;你连同整个沙滩，;身不由己地向瓶中倾斜……",
+      "stayTime": 4
+    },
+    {
+      "id": 7,
+      "iconID": "0",
+      "story": "海滩又恢复了宁静，;只有黑色的小船，;在水晶瓶里，;浮浮沉沉……",
+      "stayTime": 4
+    }
+  ],
+  "unchangedFiles": {
+    "bin/res/scripts/LuaClass/main.lua": "a20c125972cae7b0e5f193f34eec8806291077295a145abed80194e00255a9bd",
+    "bin/res/scripts/LuaClass/Update.lua": "bea91074b3b382e4e1a38eae37f3bf1e7163ed369328e6504191ab87913a7100",
+    "bin/res/scripts/LuaClass/controller.lua": "9ad619ecb9ad9cb68fe6015d654345992baed58dbcdbdbfcce771de13047f439",
+    "bin/res/scripts/LuaClass/PlotLayer.lua": "edea6ea1cdefd9ed5156a3a4b82bfec0f8c51ce053fb8bb157c7eef0fa65d5ad",
+    "bin/res/assets/data/plot.csv": "055a9831bcb9ae84000eb8baaf2544f6f085836193c7e9f3b178268d798b2597",
+    "bin/res/assets/Images/Plot/juqing_1.png": "258ac8fca4c45cff8c3f19cb90162a1c600edfba8634bebb924a52ce93d04af5",
+    "bin/res/assets/Images/Plot/juqing_2.png": "046aefd011f60c9e5cf72384bfac4c91f3c78b6b137fdd71635e67ea7e735fb6",
+    "bin/res/assets/Images/Plot/juqing_3.png": "077fb384a0354a6b1302bd5b206b7197a11939b0db002c1e69def904ae85f5c0",
+    "bin/res/assets/Images/Plot/juqing_4.png": "c0b1099af9ad260520c8aeee8c4a09f83859370f57a78e05153fdd6458c0eb81",
+    "bin/res/assets/Images/Plot/juqing_5.png": "235ce956431a2a88fa5b1592f6ce078cfcc6e15f88dd169989eb8fc06036e6ae",
+    "bin/res/assets/Images/Plot/juqing_6.png": "14e83c833b94acb42d29fb57755ce52a34adbb69330d91fe87620db57ad22baf",
+    "bin/res/assets/Images/Plot/juqing_7.png": "27a9b08208a8f6c3d6cb01351f3e6abc5a53e26ba06b10956e9d889e8d7c8e1a",
+    "bin/res/assets/Images/Plot/juqing_8.png": "39b7330bb533d27459c93c1566488e62b75a0fea765dcc376a117060bb606dda",
+    "bin/res/assets/Images/Plot/juqing_9.png": "7c22c4512507c3361cbd650e59c67f13006dc3dfd7ae0edbbb51c1882f4c07b6"
+  },
+  "plotModeBeforeSha256": "a0a98365cdc4fdae9701cd85f4d296bfdb2a13fade8d4a70eaf71913d5356365",
+  "styleReferenceSha256": "080bae391b040b4b380e7950dba182f234805f367e35878dd25485f61c0d97e9"
+}

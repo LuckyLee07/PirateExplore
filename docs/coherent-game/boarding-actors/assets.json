@@ -1,0 +1,186 @@
+[
+  {
+    "id": "100",
+    "source": "/workspace/scratch/79976da795e7/generated_images/exec-c6d14f61-cbdc-4206-b5f6-90554badf973.png",
+    "file": "bin/res/assets/Images/UI/CleanVoyage/Combat/Actors/body-100-v2.png",
+    "sha256": "96ed4600300832b1c47a6f4572b41eae8cf2ecc242145530ad54a82114ed822d",
+    "size": [
+      1024,
+      1536
+    ],
+    "alpha": [
+      0,
+      254
+    ],
+    "bounds32": [
+      92,
+      13,
+      975,
+      1523
+    ],
+    "outside_samples": [
+      [
+        1,
+        1,
+        1,
+        0
+      ],
+      [
+        1,
+        0,
+        0,
+        0
+      ],
+      [
+        36,
+        21,
+        14,
+        0
+      ],
+      [
+        97,
+        56,
+        31,
+        0
+      ]
+    ]
+  },
+  {
+    "id": "101",
+    "source": "/workspace/scratch/79976da795e7/generated_images/exec-a3f5c338-9bf1-48e0-ba9c-be3967c16215.png",
+    "file": "bin/res/assets/Images/UI/CleanVoyage/Combat/Actors/body-101-v2.png",
+    "sha256": "de54e93e577fa9bdf17b4e1f62a60f696a93571226f6c1b95c1a6841bf5480c3",
+    "size": [
+      1024,
+      1536
+    ],
+    "alpha": [
+      0,
+      254
+    ],
+    "bounds32": [
+      109,
+      31,
+      981,
+      1521
+    ],
+    "outside_samples": [
+      [
+        1,
+        1,
+        1,
+        0
+      ],
+      [
+        1,
+        0,
+        0,
+        0
+      ],
+      [
+        43,
+        24,
+        16,
+        0
+      ],
+      [
+        112,
+        70,
+        42,
+        0
+      ]
+    ]
+  },
+  {
+    "id": "10001",
+    "source": "/workspace/scratch/79976da795e7/generated_images/exec-e52bef66-e8ab-4c8e-b981-47574addffd0.png",
+    "file": "bin/res/assets/Images/UI/CleanVoyage/Combat/Actors/body-10001-v2.png",
+    "sha256": "5c3850267a81893d19b420cbf903f061039bc501f40057f6e539f5fceb296990",
+    "size": [
+      1024,
+      1536
+    ],
+    "alpha": [
+      0,
+      254
+    ],
+    "bounds32": [
+      46,
+      21,
+      1004,
+      1523
+    ],
+    "outside_samples": [
+      [
+        1,
+        1,
+        1,
+        0
+      ],
+      [
+        1,
+        0,
+        0,
+        0
+      ],
+      [
+        62,
+        37,
+        29,
+        0
+      ],
+      [
+        152,
+        91,
+        56,
+        0
+      ]
+    ]
+  },
+  {
+    "id": "10083",
+    "source": "/workspace/scratch/79976da795e7/generated_images/exec-8aa9c59b-084b-4fad-8e9a-34d18f2efb37.png",
+    "file": "bin/res/assets/Images/UI/CleanVoyage/Combat/Actors/body-10083-v2.png",
+    "sha256": "350d8d90b545976509c4ccaaa147da0b0bef7d9d4718c96eece46598a376487b",
+    "size": [
+      1024,
+      1536
+    ],
+    "alpha": [
+      0,
+      254
+    ],
+    "bounds32": [
+      65,
+      21,
+      976,
+      1527
+    ],
+    "outside_samples": [
+      [
+        1,
+        0,
+        1,
+        0
+      ],
+      [
+        1,
+        0,
+        0,
+        0
+      ],
+      [
+        37,
+        25,
+        20,
+        0
+      ],
+      [
+        91,
+        58,
+        32,
+        0
+      ]
+    ]
+  }
+]

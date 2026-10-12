@@ -1,6 +1,7 @@
 require 'LuaClass/DialogTheme'
 require "AudioEngine"
 require "LuaClass/Header"
+local WorldChartSelector=require "LuaClass/WorldChartSelector"
 
 
 --根据地图索引获取资料片信息
@@ -58,6 +59,7 @@ function WorldMapLayer:create()
 end
 
 function WorldMapLayer:init()
+    if WorldChartSelector.enabled()then return WorldChartSelector.build(self)end
     print("WorldMapLayer:init!");
 
     local winSize = cc.Director:getInstance():getVisibleSize()
@@ -225,6 +227,7 @@ function WorldMapLayer:init()
 end
 
 function WorldMapLayer:tipMap( index )
+    if self.coherentWorldSelector then return WorldChartSelector.tip(self,index) end
     -- local tempData = DataManager:getInstance():getRoleData(roleMapInfo)
 
     -- local tipMapIndex = tempData.tipMapIndex
@@ -285,6 +288,7 @@ function WorldMapLayer:tipMap( index )
 end
 
 function WorldMapLayer:showChargeView( ... )
+    if self.coherentWorldSelector then return WorldChartSelector.charge(self)end
     self.statue = "charging"
 
     local charge = ChargeLayer:create()
@@ -297,6 +301,7 @@ end
 
 --资料片购买界面
 function WorldMapLayer:showBuyView(  )
+    if self.coherentWorldSelector then return WorldChartSelector.buy(self) end
     self.statue = "Buy"
     local price = tonumber(self.lockMapInfo["price"])
 
@@ -396,6 +401,7 @@ end
 
 --解锁动画
 function WorldMapLayer:unlockAction(  )
+    if self.coherentWorldSelector then return WorldChartSelector.unlock(self) end
 
 
     self.lock:stopAllActions()
@@ -444,6 +450,7 @@ function WorldMapLayer:unlockAction(  )
 end
 
 function WorldMapLayer:moveToCurMapCenter(  )
+    if self.coherentWorldSelector then return WorldChartSelector.center(self) end
 
     local centerSpr = self.buttons[self.curMapIndex]
     local posY = centerSpr:getPositionY()
@@ -462,6 +469,10 @@ end
 
 --移动到某一个地图上，并执行动画
 function WorldMapLayer:moveToMapByIndex( index )
+    if self.coherentWorldSelector then
+        if not WorldChartSelector.ready(self)then return end
+        self.lockMapInfo=WorldChartSelector.purchaseInfo(self,index)
+    end
 
     --检查是否是已经开启的地图，不是则返回
     if index > self.mapMaxIndex  or self.statue ~= "ready" then
@@ -482,6 +493,8 @@ function WorldMapLayer:moveToMapByIndex( index )
         self:enterMapByIndex(index)
         return
     end
+
+    if self.coherentWorldSelector then return WorldChartSelector.travel(self,index)end
 
     --若进入的地图为提示的地图，关闭提示动画
     if self.tipMapIndex == index then
@@ -618,10 +631,12 @@ end
 
 function WorldMapLayer:setOwner( owner )
 	self.owner = owner
+    if self.coherentWorldSelector then WorldChartSelector.refresh(self)end
 end
 
 --清除占领过地图的世界迷雾和检查是否有需要提示进入的地图，并执行对应的提示动画
 function WorldMapLayer:clearWorldFogs( )
+    if self.coherentWorldSelector then return WorldChartSelector.clear(self) end
 
     local tempData = DataManager:getInstance():getRoleData(roleMapInfo)
 
@@ -661,23 +676,29 @@ end
 
 --返回当前地图
 function WorldMapLayer:backToCurMap( )
+    if self.coherentWorldSelector and not WorldChartSelector.ready(self)then return end
     if self.statue ~= "ready" then
         return
     end
 
+    if self.coherentWorldSelector then self.statue="leaving"end
     self.owner:enterNextLayer(false)
     self:removeFromParent(true)
 end
 
 --进入某个地图
 function WorldMapLayer:enterMapByIndex( index )
+    if self.coherentWorldSelector and not WorldChartSelector.alive(self)then return end
 	
 	
 	print("enterMapByIndex",index)
 
     --成功进入地图后再删除本层
+    local worldTipBefore=self.coherentWorldSelector and DataManager:getInstance():getRoleData(roleMapInfo).tipMapIndex
 	if self.owner:enterNextMapEnter(true,index) then
         self:removeFromParent(true)
+    elseif self.coherentWorldSelector then
+        WorldChartSelector.afterBlockedEntry(self,index,worldTipBefore)
     end
 end
 

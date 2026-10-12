@@ -1,0 +1,9 @@
+{
+  "threshold": 128,
+  "sample": "exact original per-pixel alpha, bottom-left coordinates",
+  "wallComponentLOD": "Only cosmetic sidewalls omit source-tile disconnected components smaller than 16 pixels; elevated top alpha and collision remain unchanged",
+  "atlases": {
+    "dt_ludi.png": "f37182827ab435830efc5412257b75d35414bef246edea102b20ce06f2ce34fe",
+    "dt_senlin.png": "487e8ab1b39309d003588f03126499ba4a51b6da6c39f09ba0506893bc800d44"
+  }
+}

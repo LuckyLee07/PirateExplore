@@ -1,0 +1,37 @@
+[
+  {
+    "name": "boarding-deck-clean-v1",
+    "refs": [
+      "/workspace/scratch/79976da795e7/PirateExplore-pages-v3/bin/res/assets/Images/UI/Adventure/Combat/boarding-deck-b.png",
+      "/workspace/scratch/79976da795e7/PirateExplore-pages-v3/bin/res/assets/Images/UI/CleanVoyage/boat-clean-ne.png",
+      "/workspace/scratch/79976da795e7/PirateExplore-pages-v3/bin/res/assets/Images/UI/CleanVoyage/harbor-clean-ne.png"
+    ],
+    "prompt": "Use case: style-transfer. Asset type: production transparent pirate-game boarding deck, replacing a legacy raster foreground without redesigning its layout. Image 1 is the exact composition/footprint target. Image 2 and 3 are material, palette and rendering style references ONLY. Restyle image 1 into the same polished clean dimensional low-poly 2.5D world as the reference boat and harbor: broad warm honey-wood planes, restrained soft bevels, subtle broad facet transitions, cream sail cloth, very small royal-blue metal trim accents, clear warm top-left daylight, soft internal shadows. Preserve the exact front-facing elevated camera toward the bow, long plank direction, central short mast and furled yardarm, rail positions, ropes, uninterrupted left/right cut-off deck edges and fully opaque bottom edge. Preserve empty broad walkable deck and all transparent openings around the mast and outside the rails. Preserve composition and target 640 wide by 569 high aspect ratio; do not add margins or draw the entire boat. This is a foreground texture to attach at bottom-center of a 640-wide portrait game. Clean away distressed photographic grain, scratches, metallic stud micro-detail, grime and painterly brush texture. Keep plank seams simple and softly shaded. No people, actors, enemies, UI, text, labels, badges, cannon, treasure, extra props, skulls, sea, sky, ground, floating platform base or background. True transparent RGBA outside the original ship silhouette. The result should look like a beautifully modeled sunlit toy-scale wooden ship deck, not flat vector clip art or realistic oil painting."
+  },
+  {
+    "name": "ship-deck-clean-v1",
+    "refs": [
+      "/workspace/scratch/79976da795e7/PirateExplore-pages-v3/bin/res/assets/Images/UI/Adventure/Combat/ship-deck-b.png",
+      "/workspace/scratch/79976da795e7/PirateExplore-pages-v3/bin/res/assets/Images/UI/CleanVoyage/boat-clean-ne.png",
+      "/workspace/scratch/79976da795e7/PirateExplore-pages-v3/bin/res/assets/Images/UI/CleanVoyage/harbor-clean-ne.png"
+    ],
+    "prompt": "Use case: style-transfer. Asset type: production transparent pirate-game broadside cannon deck, replacing a legacy raster foreground without redesigning its geometry. Image 1 is the exact camera, composition, footprint, framing and alpha target. Images 2 and 3 are the accepted clean dimensional low-poly 2.5D material/style references ONLY. Restyle image 1 as polished low-poly modeled game art, broad honey-gold wood planes, subtle soft bevels, large clean facets, restrained grain-free materials, warm top-left sunshine and quiet cool shaded sides. Preserve the elevated near-top-down broadside camera, battlement rail profile along the top, uninterrupted left/right crop edges, fully opaque bottom edge, plank orientation, open cannon placement strip, small barrels and cannonball piles in their current positions, compact rope bundle lower left and rectangular hatch lower right. Preserve top rail height and the transparent cutout above it. Maintain original landscape aspect ratio 640 wide by 423 high; fill the same footprint with no extra margin and no whole-boat framing. Friendly clean blue-painted narrow iron rail fittings may echo the reference blue sail/roof but remain subtle. Eliminate photographic wear, scratch noise, dark oily wood, stippling and painterly texture. This background will be mirrored vertically for an enemy ship, so keep it even and broadly readable. No people, characters, new cannon, UI, text, badges, giant skulls, sea, sky, ground or background. True transparent RGBA only outside original deck silhouette. One production texture, not a scene illustration or sheet."
+  },
+  {
+    "name": "cannon-full-clean-v1",
+    "refs": [
+      "/workspace/scratch/79976da795e7/PirateExplore-pages-v3/bin/res/assets/Images/Fight/chuan_02.png",
+      "/workspace/scratch/79976da795e7/PirateExplore-pages-v3/bin/res/assets/Images/UI/CleanVoyage/boat-clean-ne.png"
+    ],
+    "prompt": "Use case: style-transfer. Asset type: isolated production pirate-game cannon sprite. Image 1 is exact silhouette, camera and orientation target; image 2 is clean dimensional low-poly material/light reference ONLY. Restyle exactly the cannon from image 1 in a polished clean 2.5D low-poly modeled style with broad planes, restrained bevels, low visual noise and warm top-left daylight. Preserve strict center symmetry, straight barrel pointing vertically toward the TOP of the image, almost top-down elevated camera, original narrow 101 by 185 vertical aspect ratio, muzzle at top center, barrel width, four discrete side-wheel forms and wooden carriage at bottom. Barrel is softened graphite-blue iron with a few broad clean pale highlights and simple brass band accents, carriage honey-gold wood with subtle cream light faces. No realistic wear, rust, tiny rivet noise, labels, character, flag, skull, cannonballs, fire, smoke, ground or backdrop. Maintain the original full silhouette/attachment geometry and genuine RGBA transparent background, close framing with no extra transparent margin. Exactly one cannon, not a sheet; no rotation or perspective change. It must fit the original bottom-center anchored cannon location and retain an unobstructed top-center muzzle for a separate animation."
+  },
+  {
+    "name": "cannon-short-clean-v1",
+    "prompt": "Use case: style-transfer. Asset type: transparent production rear-row cannon barrel sprite in a clean low-poly 2.5D pirate game. Image 1 is the exact target geometry: the original cannon upper barrel section cropped by the bottom boundary. It is 101 pixels wide by 73 high, a landscape rectangular canvas. Image 2 is the newly approved full cannon and defines the exact graphite-blue iron material, clean broad facets, brass band material and warm upper-left daylight. Restyle only Image 1 into the same art family as Image 2. Preserve Image 1's exact landscape aspect, elevated almost top-down straight-on camera, top-center muzzle position, barrel pointing straight UP, relative barrel width, transparent left and right gaps and flat lower crop through the barrel. Do not make a whole cannon; do not show the carriage or wheels. This is the upper 73-pixel attachment view of the same 101-by-185 cannon. Keep the top rim nearly horizontal with restrained perspective as target. No smoke, flame, cannonballs, ground, sky, sea, shadow plane, text, UI or backdrop. Genuine RGBA transparent background outside the barrel. Close framing and original composition, no extra padding. Polished chunky low-poly modeled surface, very low visual noise, no photographic scratches or gritty realism.",
+    "refs": [
+      "bin/res/assets/Images/Fight/chuan_03.png",
+      "battle-next/assets/cannon-full-clean-v1.png"
+    ],
+    "status": "rejected-direct-use"
+  }
+]

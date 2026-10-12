@@ -125,13 +125,15 @@ function EventDetailsLayer:create()
 end
 
 function EventDetailsLayer:init()
+    if self.coherentEventPage then self.type=EventDetailsLayer.type;self.data=EventDetailsLayer.data or {} end
     self:resetTitle()
     self:resetTableView()
-    self.tableview:reloadData()
+    self:reloadDetails()
     return true;
 end
 
 function EventDetailsLayer:resetTitle()
+    if self.coherentEventPage then return self:coherentDetailTitle() end
 
     self.buttonClicked = false
 
@@ -177,6 +179,7 @@ function EventDetailsLayer:resetTitle()
 end
 
 function EventDetailsLayer:resetTableView()
+    if self.coherentEventPage then return self:initCoherentDetailTable() end
     local cellSize = cc.size(0, 0)
     if self.type == 1 then
         cellSize = cc.size(visibleSize.width, 150)
@@ -242,7 +245,7 @@ function EventDetailsLayer:resetTableView()
             if disTime < 1 then
                 ExploreDataManager:getInstance():checkBlackMarketDatas()
                 EventDetailsLayer.data = ExploreDataManager:getInstance():getBlackMarketDatas()
-                self.tableview:reloadData()
+                self:reloadDetails()
                 curTime = NotificationNode:getInstance():GetGameTime()
                 disTime = ExploreDataManager:getInstance():getLastBlackMarketRefreshTime() + timeInterval - curTime
             end 
@@ -272,6 +275,7 @@ end
 
 -- 初始化墓地CellItem
 function EventDetailsLayer:initCemeteryCell(cell, ccSize, data, index)
+    if self.coherentEventPage then return self:coherentRow(cell,ccSize,data,index) end
     if data == nil then return end
     
     local fontSize = 22
@@ -383,6 +387,7 @@ end
 
 -- 初始化酒馆CellItem
 function EventDetailsLayer:initPubBarCell(cell, ccSize, data, index)
+    if self.coherentEventPage then return self:coherentRow(cell,ccSize,data,index) end
     local fontSize = 25
     -- 添加Cell背景图片
     local temp = cc.Sprite:create("Images/UI/dibantiao_02.png")
@@ -492,6 +497,7 @@ end
 
 -- 初始化黑市CellItem
 function EventDetailsLayer:initBMarketCell(cell, ccSize, data, index)
+    if self.coherentEventPage then return self:coherentRow(cell,ccSize,data,index) end
     local fontSize = 22
     -- 添加Cell背景图片
     local temp = cc.Sprite:create("Images/UI/dibantiao_02.png")
@@ -573,6 +579,7 @@ end
 
 -- 初始化背包CellItem
 function EventDetailsLayer:initPackageCell(cell, ccSize, data, index)
+    if self.coherentEventPage then return self:coherentRow(cell,ccSize,data,index) end
     local fontSize = 22
     -- 添加Cell背景图片
     local temp = cc.Sprite:create("Images/UI/dibantiao_02.png")
@@ -621,8 +628,9 @@ end
 
 --- 墓地复活接口 ---
 function EventDetailsLayer:reliveCallBack(data, index)
+    if self.coherentEventPage and not self:isCurrentEventData(data,index)then return end
     printn(data)
-    local _layer = AlertView:create(2,0, "复 活", function()
+    local commit = function()
                                     printn(data)
         local result =  ExploreBagController:getBagController():costGoodsByGoodsIdAndNum(data.cost.id,data.cost.costNum,false)   --DataManager:getInstance():addCoin(cost)
         if result then
@@ -638,11 +646,15 @@ function EventDetailsLayer:reliveCallBack(data, index)
 
             DataManager:getInstance():setRoleData(roleDeathInformation, self.data)
 
-            self.tableview:reloadData()
+            self:reloadDetails()
         else -- 
             showPopTips("缺少材料，复活失败！")
         end
-    end,nil)
+    end
+    if self.coherentEventPage then
+        return self:confirmCoherentEventAction(data,index,"复活","花费 "..tostring((data.cost or {}).name or "未知材料").." × "..tostring((data.cost or {}).costNum or 0).."，复活一位"..tostring(data.name or "船员").."？",commit)
+    end
+    local _layer = AlertView:create(2,0, "复 活", commit,nil)
     local cellItem = getStandardCellItem(data)
     local itemSize = cellItem:getContentSize()
     cellItem:setPosition(_layer.s_position)
@@ -661,8 +673,9 @@ end
 
 --- 墓地埋葬接口 ---
 function EventDetailsLayer:buryCallBack(data, index)
+    if self.coherentEventPage and not self:isCurrentEventData(data,index)then return end
     printn(data)
-    local _layer = AlertView:create(2,0, "埋 葬", function()
+    local commit = function()
         showPopTips("埋葬成功，获得尸尘x1！")
 
         --添加尸尘
@@ -706,8 +719,12 @@ function EventDetailsLayer:buryCallBack(data, index)
             DataManager:getInstance():setAchievementInfo(achievement_Star5, (achievementValue + 1))
         end
 
-        self.tableview:reloadData()
-    end,nil)
+        self:reloadDetails()
+    end
+    if self.coherentEventPage then
+        return self:confirmCoherentEventAction(data,index,"埋葬","埋葬一位"..tostring(data.name or "船员").."，获得尸尘 × 1？",commit)
+    end
+    local _layer = AlertView:create(2,0, "埋 葬", commit,nil)
     
     local cellItem = getStandardCellItem(data)
     local itemSize = cellItem:getContentSize()
@@ -733,26 +750,33 @@ end
 
 --- 酒馆购买接口 ---
 function EventDetailsLayer:buyHeroCallBack(data, index)
+    if self.coherentEventPage and not self:isCurrentEventData(data,index)then return end
     printn(data)
     self.buttonClicked = true
-    local _layer = AlertView:create(2, 0, "购 买", function()
+    local commit = function()
         local cost = data.costs or 0
         local result = nil
         if data.costType == "1" then
             result = DataManager:getInstance():addCoin(-cost,true)
         else
-            result = DataManager:getInstance():addDiamond(-cost,true)
+            result = DataManager:getInstance():addDiamond(-cost,true,nil,self.coherentEventPage and require('LuaClass/WarmShortageOwnership').forOwner(self,'eventGeneration',function()return self:isCurrentEventData(data,index)end)or nil)
         end
     
         if result == 1 then  -- 购买成功
-            showPopTips("购买成功！")
+            -- The original crew grant already reports the exact new quantity.
+            -- Keep that receipt instead of stacking a second generic success.
+            if not self.coherentEventPage then showPopTips("购买成功！")end
             DataManager:getInstance():addSoilderWithId(data.id, 1)
             -- self.data[index] = nil --暂时屏蔽所有酒馆购买消失的事件
-            self.tableview:reloadData()
+            self:reloadDetails()
         else -- 购买失败
             showPopTips("金币不足！")
         end
-    end,nil)
+    end
+    if self.coherentEventPage then
+        return self:confirmCoherentEventAction(data,index,"招募","花费 "..(data.costType=="1" and "金币 "or"钻石 ")..tostring(data.costs or 0).."，招募一位"..tostring(data.name or "船员").."？",commit)
+    end
+    local _layer = AlertView:create(2, 0, "购 买", commit,nil)
     
     local cellItem = getStandardCellItem(data)
     local itemSize = cellItem:getContentSize()
@@ -896,6 +920,7 @@ end
 
 --- 黑市购买接口 ---
 function EventDetailsLayer:buyItemCallBack(data, index)
+    if self.coherentEventPage and not self:isCurrentEventData(data,index)then return end
 
     
     -- if ExploreBagController:getBagController().costSpace == ExploreBagController:getBagController().limited then
@@ -910,15 +935,17 @@ function EventDetailsLayer:buyItemCallBack(data, index)
     if data.costType == "1" then
         result = DataManager:getInstance():addCoin(-cost,true)
     else
-        result = DataManager:getInstance():addDiamond(-cost,true)
+        result = DataManager:getInstance():addDiamond(-cost,true,nil,self.coherentEventPage and require('LuaClass/WarmShortageOwnership').forOwner(self,'eventGeneration',function()return self:isCurrentEventData(data,index)end)or nil)
     end
 
     if result == 1 then  -- 购买成功
-        showPopTips("购买成功！")
         ExploreBagController:getBagController():addItemToBattlePack(data.id, data.num,true)
         --self.data[index] = nil
         self:trySaveLimitedData(data.id,index)
-        self.tableview:reloadData()
+        if self.coherentEventPage then
+            showPopTips(tostring(data.name or '物品')..' × '..tostring(data.num or 1)..' · '..(data.costType=='1' and '金币 −'or'钻石 −')..tostring(cost))
+        else showPopTips("购买成功！")end
+        self:reloadDetails()
     else -- 购买失败
         showPopTips("金币不足！")
     end
@@ -935,6 +962,12 @@ end
 
 
 function EventDetailsLayer:showCellInfo( idx )
+    if self.coherentEventPage then
+        if not self.data[idx] then return end
+        require('LuaClass/WarmShortageOwnership').retire(self)
+        self.eventSelectedIndex=idx;self.eventSelectedData=self.data[idx];self.eventGeneration=self.eventGeneration+1
+        local offset=self.tableview:getContentOffset();self.tableview:reloadData();self.tableview:setContentOffset(offset);self:refreshCoherentSelection();return
+    end
     print("点击到index为",idx)
 
     --若点击过按钮，则直接返回，把按钮点击状态置为没有点击
@@ -1014,6 +1047,14 @@ function EventDetailsLayer:showCellInfo( idx )
 end
 
 function EventDetailsLayer:close(  )
+    if self.coherentEventPage then
+        if self.eventClosed then return end
+        require('LuaClass/WarmShortageOwnership').retire(self)
+        self.eventClosed=true;self.eventGeneration=self.eventGeneration+1
+        if self.ownerEvent and self.ownerEvent.eventDetails==self then self.ownerEvent.eventDetails=nil end
+        self.ownerEvent=nil
+        if self.adventureDialog and self.adventureDialog.close then self.adventureDialog.close()end
+    end
     
     print("EventDetailsLayer:close")
 
@@ -1025,3 +1066,170 @@ function EventDetailsLayer:close(  )
 end
 
 -------------------------------EventDetailsLayer-----------------------------------
+
+function EventDetailsLayer:coherentDetailTitle()
+    local titles={'墓地','酒馆','黑市','货舱'}
+    self.titleLabel:setString(titles[self.type]or'海上见闻')
+    local subtitles={'选择一位船员，查看复活条件','选择船员，查看能力与招募价格','选择货物，查看价格与购买限制','查看航行中的货物与详情'}
+    self.eventSubtitle:setString(subtitles[self.type]or'');EventPageUI.theme().fit(self.eventSubtitle,self.eventSize.width-48)
+    self.eventSubtitle:setPositionY(self.eventSize.height-94)
+    self.buttonClicked=false
+    if self.type==3 then
+        self:checkDatas()
+        self.timeTip=EventPageUI.text(self,'',19,EventPageUI.theme().colors.muted,24,self.eventSize.height-135,self.eventSize.width-48)
+        self:refreshCoherentMarketClock()
+        schedule(self,function()if not self.eventDisposed then self:refreshCoherentMarketClock()end end,1)
+    end
+end
+function EventDetailsLayer:refreshCoherentMarketClock()
+    local dm=ExploreDataManager:getInstance();local now=NotificationNode:getInstance():GetGameTime()
+    local left=dm:getLastBlackMarketRefreshTime()+dm:getBlackMarketRefreshTimeInterval()-now
+    if left<1 then
+        dm:checkBlackMarketDatas();self.data=dm:getBlackMarketDatas();EventDetailsLayer.data=self.data
+        left=dm:getLastBlackMarketRefreshTime()+dm:getBlackMarketRefreshTimeInterval()-NotificationNode:getInstance():GetGameTime()
+        if self.eventDetailScroll then self:reloadDetails()end
+    end
+    left=math.max(0,left);self.timeTip:setString(string.format('刷新倒计时 %02d:%02d:%02d',math.floor(left/3600),math.floor(left/60)%60,left%60))
+end
+function EventDetailsLayer:initCoherentDetailTable()
+    local E=EventPageUI;local W=E.theme();local w,h=self.eventSize.width,self.eventSize.height
+    self.eventListMaxHeight=math.min(240,math.floor((h-130)*.34));self.eventListHeight=self.eventListMaxHeight;self.eventListTop=h-158
+    self.tableview:setViewSize(cc.size(w-48,self.eventListHeight));self.tableview:setPosition(cc.p(24,self.eventListTop-self.eventListHeight))
+    self.tableview:setBounceable(false)
+    if self.type~=3 then self.listCaption=E.text(self,'',19,W.colors.muted,24,h-135,w-48)end
+    self.eventListDivider=E.rule(self,24,self.eventListTop-self.eventListHeight-12,w-48)
+    local detailTop=self.eventListTop-self.eventListHeight-30
+    self.eventDetailScroll=E.scroll(self,24,118,w-48,detailTop-118)
+    self.eventActionDock=cc.Node:create();self:addChild(self.eventActionDock,4);E.rule(self,24,103,w-48)
+    self.eventSelectedIndex=1
+    self.tableview:registerScriptHandler(function()return self:getDataSize()end,cc.NUMBER_OF_CELLS_IN_TABLEVIEW)
+    self.tableview:registerScriptHandler(function()return 80,w-48 end,cc.TABLECELL_SIZE_FOR_INDEX)
+    self.tableview:registerScriptHandler(function(view,index)
+        local cell=view:dequeueCell()or cc.TableViewCell:create();cell:removeAllChildren();cell:setTag(index+1)
+        local data=self.data[index+1];local size=cc.size(w-48,80)
+        if self.type==1 then self:initCemeteryCell(cell,size,data,index+1)
+        elseif self.type==2 then self:initPubBarCell(cell,size,data,index+1)
+        elseif self.type==3 then self:initBMarketCell(cell,size,data,index+1)
+        else self:initPackageCell(cell,size,data,index+1)end
+        return cell
+    end,cc.TABLECELL_SIZE_AT_INDEX)
+    self.tableview:registerScriptHandler(function(_,cell)
+        if E.alive(self) and not E.blocked(self)then self:showCellInfo(cell:getTag())end
+    end,cc.TABLECELL_TOUCHED)
+end
+function EventDetailsLayer:coherentRow(cell,size,data,index)
+    if not data then return end
+    local E=EventPageUI;local W=E.theme();local selected=self.eventSelectedIndex==index
+    if selected then cell:addChild(W.panel(size.width,size.height,cc.c3b(232,239,221),0))end
+    local icon=ItemIcon.sprite(data.icon);local z=icon:getContentSize();icon:setScale(math.min(52/z.width,58/z.height));icon:setPosition(cc.p(34,40));cell:addChild(icon)
+    local name=tostring(data.name or '未知')
+    if self.type==1 or self.type==3 or self.type==4 then name=name..' × '..tostring(data.num or 1)end
+    local label=E.text(cell,name,24,W.colors.ink,74,53,size.width-86)
+    label:setDimensions(cc.size(0,0));W.fit(label,size.width-86)
+    local detail
+    if self.type==1 then detail='星级 '..tostring(data.star or 0)..' · '..tostring(data.skillName or '无技能')
+    elseif self.type==4 then detail='数量 '..tostring(data.num or 0)..' · 点击查看详情'
+    else detail=(data.costType=='1' and '金币 'or'钻石 ')..tostring(data.costs or 0)..' · '..(self.type==2 and '招募一位'or'每次购买')end
+    local sub=E.text(cell,detail,19,W.colors.muted,74,24);W.fit(sub,size.width-86)
+    E.rule(cell,0,1,size.width)
+end
+function EventDetailsLayer:reloadDetails()
+    if not self.coherentEventPage then self.tableview:reloadData();return end
+    local selected=self.eventSelectedData;local index=self.eventSelectedIndex or 1
+    if selected then for i,data in ipairs(self.data or {})do if data==selected then index=i;break end end end
+    self.eventSelectedIndex=math.max(1,math.min(index,#(self.data or {})))
+    self.eventSelectedData=self.data and self.data[self.eventSelectedIndex]
+    require('LuaClass/WarmShortageOwnership').retire(self)
+    self.eventGeneration=self.eventGeneration+1
+    -- Native TableView packs a short container from y=0. Its view must shrink
+    -- with the rows, otherwise the first row sits below a large blank band.
+    -- Keep a long list's distance from its top across stock/record changes.
+    local old=self.eventListLoaded and self.tableview:getContentOffset()
+    local fromTop=old and math.max(0,old.y-(self.eventListMinimum or 0))or 0
+    local count=#(self.data or {});local width=self.eventSize.width-48
+    self.eventListHeight=math.min(self.eventListMaxHeight,count*80)
+    local bottom=self.eventListTop-self.eventListHeight
+    self.tableview:setViewSize(cc.size(width,self.eventListHeight))
+    self.tableview:setPosition(cc.p(24,bottom));self.tableview:setVisible(count>0)
+    self.eventListDivider:setPositionY(bottom-12)
+    self.eventDetailScroll:setViewSize(cc.size(width,bottom-30-118))
+    self.tableview:reloadData();self.eventListLoaded=true
+    local minimum=math.min(0,self.eventListHeight-count*80)
+    self.eventListMinimum=minimum
+    self.tableview:setContentOffset(cc.p(0,math.min(0,minimum+fromTop)))
+    self:refreshCoherentSelection()
+    if self.listCaption then self.listCaption:setString('共 '..tostring(#(self.data or {}))..' 项 · 选择查看')end
+end
+function EventDetailsLayer:isCurrentEventData(data,index)
+    return EventPageUI.alive(self) and self.data and self.data[index]==data
+end
+function EventDetailsLayer:coherentDetailText(data)
+    if self.type==4 or self.type==3 then
+        local resource=dataController.getResourceInfoById(data.id)
+        if resource then return tostring(dataController.getResourceValueByIdAndKey(data.id,'desc')or'')end
+    end
+    local soldier=dataController.getSoilderInfoById(data.id)
+    if self.type==1 then soldier=soldier or data end
+    if not soldier then return '船员详情暂不可用'end
+    local skillName,skillInfo=CrewSkillDetails.describe(soldier.skill,DataManager:getInstance():getCSVByID(csvOfSkillAttribute),DataManager:getInstance():getCSVByID(csvOfBuff))
+    return string.format('生命 %s · 威力 %s · 速度 %s\n星级 %s\n技能：%s\n技能效果：%s',tostring(data.hp or soldier.hp or 0),tostring(data.power or data.attack or soldier.attack or 0),tostring(data.speed or soldier.speed or 0),tostring(data.star or soldier.star or 0),skillName,skillInfo)
+end
+function EventDetailsLayer:coherentLimitText(data)
+    local limit=tonumber(dataController.getResourceValueByIdAndKey(data.id,'limits'))or 0
+    if limit==0 or limit==-1 then return nil end
+    local restrictions=DataManager:getInstance():getRoleData(roleBlackMarketRestrictions)or{}
+    local id=tostring(data.id);local remaining
+    if limit>0 then remaining=restrictions[id]or limit
+    else remaining=(restrictions.tempRestrictions or {})[id]or (limit==-2 and 1 or -limit)end
+    return '剩余可购 '..tostring(remaining)..' 次'
+end
+function EventDetailsLayer:refreshCoherentSelection()
+    local E=EventPageUI;local W=E.theme();local w=self.eventSize.width;local content=self.eventDetailScroll:getContainer()
+    content:removeAllChildren();self.eventActionDock:removeAllChildren();self.eventPrimary=nil;self.eventSecondary=nil
+    local data=self.eventSelectedData;local index=self.eventSelectedIndex;local nodes={}
+    local function text(value,size,color)
+        local n=E.text(content,value,size,color or W.colors.ink,0,0,w-48);nodes[#nodes+1]=n;return n
+    end
+    if not data then
+        local empty={'没有等待复活的船员','这里暂时没有可招募的船员','本轮货物已售完','货舱里还没有货物'}
+        text(empty[self.type]or'暂无内容',25);text('可以返回继续探索。',22,W.colors.muted)
+        E.flow(self.eventDetailScroll,nodes,18);return
+    end
+    text(data.name or '未知',29)
+    if self.type==1 then
+        local cost=data.cost or {};text('复活一位需要 '..tostring(cost.name or '未知材料')..' × '..tostring(cost.costNum or 0),22,W.colors.sea)
+        text('记录数量 '..tostring(data.num or 1)..' · 埋葬一位可获得尸尘 × 1',20,W.colors.muted)
+    elseif self.type==2 or self.type==3 then
+        text((data.costType=='1' and '金币 'or'钻石 ')..tostring(data.costs or 0)..(self.type==3 and (' / '..tostring(data.num or 1)..' 件')or' / 一位船员'),24,W.colors.sea)
+        if self.type==3 then local limit=self:coherentLimitText(data);if limit then text(limit,20,W.colors.muted)end end
+    else text('数量 '..tostring(data.num or 0),23,W.colors.sea)end
+    text(self:coherentDetailText(data),22,W.colors.muted)
+    E.flow(self.eventDetailScroll,nodes,16)
+    if self.type==4 then return end
+    local generation=self.eventGeneration
+    local function action(fn)
+        return function()
+            if generation~=self.eventGeneration or not self:isCurrentEventData(data,index) or E.blocked(self)then return end
+            fn(self,data,index)
+        end
+    end
+    local label=self.type==1 and '复活一位'or(self.type==2 and '招募一位'or'购买')
+    local callback=self.type==1 and self.reliveCallBack or(self.type==2 and self.buyHeroCallBack or self.buyItemCallBack)
+    local width=self.type==1 and w-174 or w-48
+    self.eventPrimary=W.button(label,width,60,action(callback),{primary=true,size=24})
+    self.eventPrimary:setPosition(cc.p(24+width/2,57));self.eventActionDock:addChild(self.eventPrimary)
+    if self.type==1 then
+        self.eventSecondary=W.button('埋葬',110,60,action(self.buryCallBack),{size=23})
+        self.eventSecondary:setPosition(cc.p(w-79,57));self.eventActionDock:addChild(self.eventSecondary)
+    end
+end
+function EventDetailsLayer:confirmCoherentEventAction(data,index,title,description,commit)
+    local generation=self.eventGeneration
+    return require('LuaClass/WarmDialog').show(title,description,{
+        {label='确定',action=function()
+            if generation~=self.eventGeneration or not self:isCurrentEventData(data,index)then return end
+            commit()
+        end},
+        {label='取消'}
+    },self)
+end

@@ -117,7 +117,7 @@ function RandomEventLayer:terminateEventLoop()
     self:unscheduleUpdate()
 end
 
-function RandomEventLayer:handleEvent(event, costType)
+function RandomEventLayer:handleEvent(event, costType, presentation)
     local csv = DataManager:getInstance():getCSVByID(csvOfRandomEvent)
     local data = csv[tostring(event.type)]
     local type = tonumber(data.type)
@@ -186,7 +186,7 @@ function RandomEventLayer:handleEvent(event, costType)
         end
     elseif type == 3 then
         if talent then
-            local isSuccessed = DataManager:getInstance():checkTallentPass(talent, costType)
+            local isSuccessed = DataManager:getInstance():checkTallentPass(talent, costType, presentation)
             if isSuccessed then
                 DataManager:getInstance():unlockTallentByKey(talent.ID, costType)
                 local str = string.format(data.info[2][1], talent.name)
@@ -490,9 +490,43 @@ function RandomEventView:create()
     return nil
 end
 
+-- A list refresh keeps the same failed offer usable. A different event/mission,
+-- an expired target, a rebound view or a closed view retires only its own offer.
+function RandomEventView:isIntelligenceTargetActive(event, mission)
+    if self._dialogueClosing or not self:isVisible() or not self:getParent() then return false end
+    if mission then
+        return MissionManagers:getInstance().waitingMissions[mission.id]==mission
+            and mission:getMissionStatue()=="wait" and mission:checkTime()
+    end
+    if event.lifeTime-(os.time()-event.startTime)<=0 then return false end
+    for _,current in ipairs(RandomEventManager:getInstance().eventList) do
+        if current==event then return true end
+    end
+    return false
+end
+
+function RandomEventView:intelligencePresentation(event, mission)
+    if rawget(_G,'WARM_PIRATE_V1')==false then return nil end
+    local ownership=require('LuaClass/WarmShortageOwnership')
+    ownership.retire(self)
+    return ownership.forOwner(self,'warmIntelligenceGeneration',function()
+        return self:isIntelligenceTargetActive(event,mission)
+    end)
+end
+
+function RandomEventView:closeEffect()
+    if self.warmShortageContext then self.warmShortageContext.retire() end
+    return DialogueView.closeEffect(self)
+end
+
 -- init
 function RandomEventView:init()
+    if self.warmShortageContext then self.warmShortageContext.retire() end
+    self.warmIntelligenceGeneration=(self.warmIntelligenceGeneration or 0)+1
     RandomEventView.instance = self
+    if require('LuaClass/WarmTheme').enabled() then
+        return require('LuaClass/IntelligencePresentation').mount(self, formatSecondToTimeCn)
+    end
 
 --    DataManager:getInstance():addDiamond(100000)
 
@@ -571,6 +605,21 @@ function RandomEventView:init()
         end
         cell:setTag(idx)
         cell:removeAllChildren()
+        local binding={}
+        cell.warmIntelligenceBinding=binding
+        local generation=self.warmIntelligenceGeneration
+        local missionState=mission and mission:getMissionStatue()
+        local scene=cc.Director:getInstance():getRunningScene()
+        local function activeRow()
+            if rawget(_G,'WARM_PIRATE_V1')==false then return true end
+            return self:getParent()~=nil and not self._dialogueClosing and self:isVisible()
+                and cc.Director:getInstance():getRunningScene()==scene
+                and self.warmIntelligenceGeneration==generation
+                and cell.warmIntelligenceBinding==binding and cell:getParent()~=nil
+                and (mission and MissionManagers:getInstance().missions[mission.id]==mission
+                    and mission:getMissionStatue()==missionState
+                    or not mission and self:isIntelligenceTargetActive(event))
+        end
 
         -- background
         local bg = DialogTheme.card(530, 300)
@@ -657,6 +706,7 @@ function RandomEventView:init()
         jinbiButton:setScale(0.8)
         jinbiButton:setPosition(cc.p(150.0, 40.0))
         jinbiButton:registerScriptTapHandler(function()
+            if not activeRow() then return end
             if RandomEventLayer.instance then
                 if tonumber(event.type) == RandomEvent.EventType.RandomEventTalent then
                     if not RandomEventLayer.instance:handleEvent(event, 1) then
@@ -682,15 +732,16 @@ function RandomEventView:init()
         diamondButton:setScale(0.8)
         diamondButton:setPosition(cc.p(530.0-150.0, 40.0))
         diamondButton:registerScriptTapHandler(function()
+            if not activeRow() then return end
             if RandomEventLayer.instance then
                 if tonumber(event.type) == RandomEvent.EventType.RandomEventTalent then
-                    if not RandomEventLayer.instance:handleEvent(event, 2) then
+                    if not RandomEventLayer.instance:handleEvent(event, 2, self:intelligencePresentation(event)) then
                         RandomEventManager:getInstance():removeEvent(event)
                         self.tableview1:reloadData()
                     end
                 elseif tonumber(event.type) == RandomEvent.EventType.RandomEventMission then
                     if mission:getMissionStatue() == "wait" then
-                        mission:completedMissionByCosted()
+                        mission:completedMissionByCosted(self:intelligencePresentation(event,mission))
                     elseif mission:getMissionStatue() == "complete" then
                         mission:receive()
                     end

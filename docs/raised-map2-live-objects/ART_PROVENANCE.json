@@ -1,0 +1,15 @@
+{
+  "date": "2026-10-11",
+  "tool": "built-in image_gen.imagegen",
+  "intent": "new transparent semantic map-object atlas; supplied prior master is style reference only",
+  "transparent_background": true,
+  "prompt": "Use case: stylized-concept. Asset type: transparent production game map-object sprite atlas, 3 columns and 2 rows of equal square cells, six isolated objects, generous transparent separation. Input image is STYLE reference only: match its sunny clean simplified low-poly 2.5D pirate world, cream limestone, cobalt-blue roofs, turquoise accents and warm wood. Broad elegant facets, clean silhouettes, sun from upper-left, same oblique overhead camera as reference. All objects must be modest compact structures built on low wooden moored pontoons with short thick supports touching the bottom contact baseline; no floating abstract icons. TOP LEFT: world-chart access station, a tiny cream navigation pedestal holding an open blue nautical chart with simple gold compass rose, one small cobalt awning and one mooring post. TOP CENTER: resurrection point, a simple upright cream limestone memorial cross on a low stepped cream plinth mounted on a low wood pontoon; small lime leaves at its foot; no skulls, no gravestones or surrounding landscape. TOP RIGHT: next-sea gateway, a small solid cream stone arch on a low wood pontoon; restrained turquoise luminous opening and a small gold compass medallion at top, no runes or pentagrams. BOTTOM LEFT: tavern, one compact cream tavern building with cobalt-blue roof, brown door, small unlettered hanging wooden tankard-shaped sign, mounted on low wood pontoon. BOTTOM CENTER: arena, a compact cream oval sparring enclosure, low faceted walls and two small blue pennants, empty sand-colored interior, mounted on low wood pontoon. BOTTOM RIGHT: leave fully transparent, no object. Common ground baseline at 85 percent of each cell height, footprint spans at most 75 percent of each cell width. All completely contained in own cells. Real transparent background. No background, sea, coastline, islands, rocks outside the platforms, horizon, captions, lettering, numbers, UI, borders, grid lines, weapons or characters. No photoreal grain, heavy black outlines, glow spill or white haze. Match the supplied reference's attractive toy-like material language, while keeping individual structures readable at 64-100 pixels. Ideally 1536x1024 pixels.",
+  "reference": "bin/res/assets/Images/UI/CleanSea/source/event-three-kind-v1.png",
+  "retainedMaster": "bin/res/assets/Images/UI/CleanSeaObjects/source/sites-five-kind-v1.png",
+  "retainedMasterSHA256": "fe4ffe794e44128ca77f4f33a02aa0ae5588b19d7ff00b9f0e0ab451ce13570e",
+  "generatedLocalPath": "/workspace/scratch/79976da795e7/generated_images/exec-14cdd249-65ee-4edd-9fef-63e68a2c3ec9.png",
+  "reusedPortMaster": "bin/res/assets/Images/UI/CleanSea/source/event-three-kind-v1.png",
+  "importer": "tools/import_clean_sea_objects.py",
+  "mechanicalOperations": "crop/resize/transparent pad only; no alpha erasure, recoloring or generated geography",
+  "activation": "separate raised-map2 component prototype only"
+}

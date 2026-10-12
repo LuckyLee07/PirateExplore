@@ -110,6 +110,18 @@ DrawNode::DrawNode()
 , _dirty(false)
 {
     _blendFunc = BlendFunc::ALPHA_PREMULTIPLIED;
+#if CC_ENABLE_CACHE_TEXTURE_DATA
+    // Register once for this Node's lifetime. init() also rebuilds GL resources
+    // after context loss, so registering there multiplies listeners and VBOs.
+    auto listener = EventListenerCustom::create(EVENT_COME_TO_FOREGROUND, [this](EventCustom* event){
+        // These names belong to the destroyed context. They must not be deleted
+        // in the replacement context, where their numeric values can be reused.
+        _vbo = 0;
+        _vao = 0;
+        this->init();
+    });
+    _eventDispatcher->addEventListenerWithSceneGraphPriority(listener, this);
+#endif
 }
 
 DrawNode::~DrawNode()
@@ -192,15 +204,6 @@ bool DrawNode::init()
     
     _dirty = true;
     
-#if CC_ENABLE_CACHE_TEXTURE_DATA
-    // Need to listen the event only when not use batchnode, because it will use VBO
-    auto listener = EventListenerCustom::create(EVENT_COME_TO_FOREGROUND, [this](EventCustom* event){
-    /** listen the event that coming to foreground on Android */
-        this->init();
-    });
-
-    _eventDispatcher->addEventListenerWithSceneGraphPriority(listener, this);
-#endif
     
     return true;
 }

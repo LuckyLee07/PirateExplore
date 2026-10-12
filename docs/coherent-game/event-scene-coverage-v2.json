@@ -1,0 +1,1893 @@
+{
+  "scope": "EventLayer entry scene presentation only; downstream surfaces are not accepted by this ledger",
+  "packaged_stronghold_sha256": "919c0c9cdf2e01e4bfc8c350cdcf17e1f3b54bde14b70cf20bfd3d268ff1369b",
+  "dispatched_records": 344,
+  "families": {
+    "changeToTeleportLayer": {
+      "total": 1,
+      "entry_scene_ids": [
+        "3002"
+      ],
+      "fallback_ids": [],
+      "fallback_sites": [],
+      "entry_scene_count": 1,
+      "fallback_count": 0
+    },
+    "changeToResurrectionLayer": {
+      "total": 1,
+      "entry_scene_ids": [
+        "3003"
+      ],
+      "fallback_ids": [],
+      "fallback_sites": [],
+      "entry_scene_count": 1,
+      "fallback_count": 0
+    },
+    "changeToPubLayer": {
+      "total": 16,
+      "entry_scene_ids": [
+        "3004",
+        "3005",
+        "3006",
+        "3007",
+        "3008",
+        "3009",
+        "3010",
+        "3011",
+        "3012",
+        "3013",
+        "3014",
+        "3015",
+        "3016",
+        "3017",
+        "3018",
+        "3019"
+      ],
+      "fallback_ids": [],
+      "fallback_sites": [],
+      "entry_scene_count": 16,
+      "fallback_count": 0
+    },
+    "changeToBlackMarket": {
+      "total": 16,
+      "entry_scene_ids": [
+        "3020",
+        "3021",
+        "3022",
+        "3023",
+        "3024",
+        "3025",
+        "3026",
+        "3027",
+        "3028",
+        "3029",
+        "3030",
+        "3031",
+        "3032",
+        "3033",
+        "3034",
+        "3035"
+      ],
+      "fallback_ids": [],
+      "fallback_sites": [],
+      "entry_scene_count": 16,
+      "fallback_count": 0
+    },
+    "changeToArenaLayer": {
+      "total": 16,
+      "entry_scene_ids": [
+        "3036",
+        "3037",
+        "3038",
+        "3039",
+        "3040",
+        "3041",
+        "3042",
+        "3043",
+        "3044",
+        "3045",
+        "3046",
+        "3047",
+        "3048",
+        "3049",
+        "3050",
+        "3051"
+      ],
+      "fallback_ids": [],
+      "fallback_sites": [],
+      "entry_scene_count": 16,
+      "fallback_count": 0
+    },
+    "changeToNextMapEnter": {
+      "total": 1,
+      "entry_scene_ids": [
+        "3052"
+      ],
+      "fallback_ids": [],
+      "fallback_sites": [],
+      "entry_scene_count": 1,
+      "fallback_count": 0
+    },
+    "changeToSupplyPoint": {
+      "total": 1,
+      "entry_scene_ids": [
+        "3053"
+      ],
+      "fallback_ids": [],
+      "fallback_sites": [],
+      "entry_scene_count": 1,
+      "fallback_count": 0
+    },
+    "changeToMaterialsLayer": {
+      "total": 9,
+      "entry_scene_ids": [
+        "3067",
+        "3068",
+        "3070"
+      ],
+      "fallback_ids": [
+        "3069",
+        "3071",
+        "3072",
+        "3073",
+        "3075",
+        "3076"
+      ],
+      "fallback_sites": [
+        {
+          "id": "3069",
+          "name": "金矿",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3071",
+          "name": "魔法泉",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3072",
+          "name": "神像",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3073",
+          "name": "教堂",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3075",
+          "name": "熔炉",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3076",
+          "name": "神秘熔炉",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        }
+      ],
+      "entry_scene_count": 3,
+      "fallback_count": 6
+    },
+    "changeToEternalArena": {
+      "total": 1,
+      "entry_scene_ids": [
+        "3074"
+      ],
+      "fallback_ids": [],
+      "fallback_sites": [],
+      "entry_scene_count": 1,
+      "fallback_count": 0
+    },
+    "changeToEnemyLayer": {
+      "total": 282,
+      "entry_scene_ids": [
+        "3108"
+      ],
+      "fallback_ids": [
+        "3101",
+        "3102",
+        "3103",
+        "3104",
+        "3105",
+        "3106",
+        "3107",
+        "3109",
+        "3110",
+        "3111",
+        "3112",
+        "3113",
+        "3114",
+        "3115",
+        "3116",
+        "3117",
+        "3118",
+        "3119",
+        "3120",
+        "3121",
+        "3122",
+        "3123",
+        "3124",
+        "3125",
+        "3126",
+        "3127",
+        "3128",
+        "3129",
+        "3130",
+        "3131",
+        "3132",
+        "3133",
+        "3134",
+        "3135",
+        "3136",
+        "3137",
+        "3138",
+        "3139",
+        "3140",
+        "3141",
+        "3142",
+        "3143",
+        "3144",
+        "3145",
+        "3146",
+        "3147",
+        "3148",
+        "3149",
+        "3150",
+        "3151",
+        "3152",
+        "3153",
+        "3154",
+        "3155",
+        "3156",
+        "3157",
+        "3158",
+        "3159",
+        "3160",
+        "3161",
+        "3162",
+        "3163",
+        "3164",
+        "3165",
+        "3166",
+        "3167",
+        "3168",
+        "3169",
+        "3170",
+        "3171",
+        "3172",
+        "3173",
+        "3174",
+        "3175",
+        "3176",
+        "3177",
+        "3178",
+        "3179",
+        "3180",
+        "3181",
+        "3182",
+        "3183",
+        "3184",
+        "3185",
+        "3186",
+        "3187",
+        "3188",
+        "3189",
+        "3190",
+        "3191",
+        "3192",
+        "3193",
+        "3194",
+        "3195",
+        "3196",
+        "3197",
+        "3198",
+        "3199",
+        "3200",
+        "3201",
+        "3202",
+        "3203",
+        "3204",
+        "3205",
+        "3206",
+        "3207",
+        "3208",
+        "3209",
+        "3210",
+        "3211",
+        "3212",
+        "3213",
+        "3214",
+        "3215",
+        "3216",
+        "3217",
+        "3218",
+        "3219",
+        "3220",
+        "3221",
+        "3222",
+        "3223",
+        "3224",
+        "3225",
+        "3226",
+        "3227",
+        "3228",
+        "3229",
+        "3230",
+        "3231",
+        "3232",
+        "3233",
+        "3234",
+        "3235",
+        "3236",
+        "3237",
+        "3238",
+        "3239",
+        "3240",
+        "3241",
+        "3242",
+        "3243",
+        "3244",
+        "3245",
+        "3246",
+        "3247",
+        "3248",
+        "3249",
+        "3250",
+        "3251",
+        "3252",
+        "3253",
+        "3254",
+        "3255",
+        "3256",
+        "3257",
+        "3258",
+        "3259",
+        "3260",
+        "3261",
+        "3262",
+        "3263",
+        "3264",
+        "3265",
+        "3266",
+        "3267",
+        "3268",
+        "3269",
+        "3270",
+        "3271",
+        "3272",
+        "3273",
+        "3274",
+        "3275",
+        "3276",
+        "3277",
+        "3278",
+        "3279",
+        "3280",
+        "3281",
+        "3282",
+        "3283",
+        "3284",
+        "3285",
+        "3286",
+        "3287",
+        "3288",
+        "3289",
+        "3290",
+        "3291",
+        "3292",
+        "3293",
+        "3294",
+        "3295",
+        "3296",
+        "3297",
+        "3298",
+        "3299",
+        "3300",
+        "3301",
+        "3302",
+        "3303",
+        "3304",
+        "3305",
+        "3306",
+        "3307",
+        "3308",
+        "3309",
+        "3310",
+        "3311",
+        "3312",
+        "3313",
+        "3314",
+        "3315",
+        "3316",
+        "3317",
+        "3318",
+        "3319",
+        "3320",
+        "3321",
+        "3322",
+        "3323",
+        "3324",
+        "3325",
+        "3326",
+        "3327",
+        "3328",
+        "3329",
+        "3330",
+        "3331",
+        "3332",
+        "3333",
+        "3334",
+        "3335",
+        "3336",
+        "3337",
+        "3338",
+        "3339",
+        "3340",
+        "3341",
+        "3342",
+        "3343",
+        "3344",
+        "3345",
+        "3346",
+        "3347",
+        "3348",
+        "3349",
+        "3350",
+        "3351",
+        "3352",
+        "3353",
+        "3354",
+        "3355",
+        "3356",
+        "3357",
+        "3358",
+        "3359",
+        "3360",
+        "3361",
+        "3362",
+        "3363",
+        "3364",
+        "3365",
+        "3366",
+        "3367",
+        "3368",
+        "3369",
+        "3370",
+        "3371",
+        "3372",
+        "3373",
+        "3374",
+        "3375",
+        "3376",
+        "3377",
+        "3378",
+        "3379",
+        "3380",
+        "3381",
+        "3382"
+      ],
+      "fallback_sites": [
+        {
+          "id": "3101",
+          "name": "血池祭台",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3102",
+          "name": "岩洞",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3103",
+          "name": "沉船湾",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3104",
+          "name": "亡灵主舰",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3105",
+          "name": "荒滩",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3106",
+          "name": "礁石",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3107",
+          "name": "破船",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3109",
+          "name": "大堡礁",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3110",
+          "name": "青环蛇王",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3111",
+          "name": "疯狂的鱼群",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3112",
+          "name": "漩涡突围",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3113",
+          "name": "静谧的入海口",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3114",
+          "name": "巨浪",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3115",
+          "name": "鱼潮",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3116",
+          "name": "浅滩",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3117",
+          "name": "巨大山洞",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3118",
+          "name": "洋流",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3119",
+          "name": "珊瑚礁",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3120",
+          "name": "落单的船只",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3121",
+          "name": "叛变的大副",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3122",
+          "name": "水蛇魔窟",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3123",
+          "name": "深海海怪",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3124",
+          "name": "奇袭敌军",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3125",
+          "name": "逆风",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3126",
+          "name": "叛乱的海盗",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3127",
+          "name": "海啸",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3128",
+          "name": "蛇洞",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3129",
+          "name": "荒岛",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3130",
+          "name": "暗礁",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3131",
+          "name": "大浪",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3132",
+          "name": "小屿",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3133",
+          "name": "洞穴",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3134",
+          "name": "海滩",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3135",
+          "name": "破船",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3136",
+          "name": "黑石林",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3137",
+          "name": "涨潮",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3138",
+          "name": "漩涡",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3139",
+          "name": "浅滩",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3140",
+          "name": "燃烧的战船",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3141",
+          "name": "浓雾",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3142",
+          "name": "台风",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3143",
+          "name": "废弃的海港",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3144",
+          "name": "沉船",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3145",
+          "name": "塞壬王",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3146",
+          "name": "塞壬的礁石",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3147",
+          "name": "巨蟒漩涡",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3148",
+          "name": "风暴角",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3149",
+          "name": "荒滩",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3150",
+          "name": "鱼群",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3151",
+          "name": "暗礁",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3152",
+          "name": "海啸",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3153",
+          "name": "风暴潮",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3154",
+          "name": "黑夜",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3155",
+          "name": "海蚀穴",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3156",
+          "name": "椰树林",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3157",
+          "name": "大浪",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3158",
+          "name": "环礁",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3159",
+          "name": "黑色海滩",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3160",
+          "name": "台风",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3161",
+          "name": "破旧的行船",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3162",
+          "name": "饥饿的海蛇",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3163",
+          "name": "闪电",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3164",
+          "name": "死亡海峡",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3165",
+          "name": "潮湿的洞穴",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3166",
+          "name": "废弃的港口",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3167",
+          "name": "大堡礁",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3168",
+          "name": "蛇岛",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3169",
+          "name": "礁石",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3170",
+          "name": "海底热泉",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3171",
+          "name": "荒岛",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3172",
+          "name": "小屿",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3173",
+          "name": "塞壬的监狱",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3174",
+          "name": "塞壬的厨房",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3175",
+          "name": "幽灵战舰",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3176",
+          "name": "火山溶洞",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3177",
+          "name": "迷雾沼泽",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3178",
+          "name": "礁石伏击",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3179",
+          "name": "海底热泉",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3180",
+          "name": "火山小岛",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3181",
+          "name": "血池温泉",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3182",
+          "name": "熔岩隧道",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3183",
+          "name": "奇异岛",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3184",
+          "name": " 海蚀柱  ",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3185",
+          "name": "藏宝洞",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3186",
+          "name": "残损的海盗船",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3187",
+          "name": "蟒蛇洞",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3188",
+          "name": "海上迷雾",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3189",
+          "name": "海洋暖流",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3190",
+          "name": "海洋女神神殿",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3191",
+          "name": "海洋女神的岛屿",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3192",
+          "name": "海藻迷宫",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3193",
+          "name": "银沙群岛",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3194",
+          "name": "盐沼",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3195",
+          "name": "一大片海藻",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3196",
+          "name": "海底塌陷",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3197",
+          "name": "海蚀穴",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3198",
+          "name": "波浪岩",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3199",
+          "name": "海上风暴",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3200",
+          "name": "蟹潮",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3201",
+          "name": "浮冰",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3202",
+          "name": "飞雪",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3203",
+          "name": "雷霆",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3204",
+          "name": "沉船",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3205",
+          "name": "冰棱海",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3206",
+          "name": "冰雪丘陵",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3207",
+          "name": "冤魂海",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3208",
+          "name": "冰洞",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3209",
+          "name": "冰原",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3210",
+          "name": "冰山",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3211",
+          "name": "浮动的碎冰",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3212",
+          "name": "饥饿的白熊",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3213",
+          "name": "苔原",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3214",
+          "name": "沼泽",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3215",
+          "name": "冰雪岛",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3216",
+          "name": "废弃的雪妖巢穴",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3217",
+          "name": "避风洞穴",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3218",
+          "name": "古老的港口",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3219",
+          "name": "暴风雪",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3220",
+          "name": "精灵的禁地",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3221",
+          "name": "暗黑监狱",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3222",
+          "name": "暗黑深渊",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3223",
+          "name": "暗黑禁林",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3224",
+          "name": "冻雨",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3225",
+          "name": "幽灵船",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3226",
+          "name": "墓穴",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3227",
+          "name": "因纽特遗址",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3228",
+          "name": "一片针叶林",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3229",
+          "name": "废弃的冰屋",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3230",
+          "name": "冰河谷",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3231",
+          "name": "冰岛热泉",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3232",
+          "name": "海底暖流",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3233",
+          "name": "船骸",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3234",
+          "name": "页岩石壁",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3235",
+          "name": "海底墓穴",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3236",
+          "name": "海妖的海域",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3237",
+          "name": "乱葬岗",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3238",
+          "name": "黄金岛",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3239",
+          "name": "沉船宝藏",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3240",
+          "name": "探险者尸骸",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3241",
+          "name": "探险者小屋",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3242",
+          "name": "兽穴",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3243",
+          "name": "食人蚁丘",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3244",
+          "name": "石林峡谷",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3245",
+          "name": "悬崖",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3246",
+          "name": "亡灵据点",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3247",
+          "name": "溶洞",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3248",
+          "name": "地穴",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3249",
+          "name": "山洪",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3250",
+          "name": "海中孤屿",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3251",
+          "name": "密林",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3252",
+          "name": "树人巢穴",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3253",
+          "name": "峡谷狙击",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3254",
+          "name": "森林迷宫",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3255",
+          "name": "寻宝人的马车",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3256",
+          "name": "兽人瞭望塔",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3257",
+          "name": "兽人部落",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3258",
+          "name": "树洞",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3259",
+          "name": "巨树",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3260",
+          "name": "迷幻蘑菇",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3261",
+          "name": "瀑布",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3262",
+          "name": "树人苗圃",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3263",
+          "name": "荆棘林",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3264",
+          "name": "打人柳",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3265",
+          "name": "地下密室",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3266",
+          "name": "矮人的地穴",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3267",
+          "name": "荆棘城堡",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3268",
+          "name": "迷失沼泽",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3269",
+          "name": "矿洞",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3270",
+          "name": "废弃的熔炼炉",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3271",
+          "name": "干涸的月亮井",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3272",
+          "name": "树屋",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3273",
+          "name": "护城河",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3274",
+          "name": "城堡入口",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3275",
+          "name": "大厅",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3276",
+          "name": "壁橱",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3277",
+          "name": "藏宝室",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3278",
+          "name": "阁楼",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3279",
+          "name": "魔鬼草",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3280",
+          "name": "幽魂法阵",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3281",
+          "name": "幽魂堡垒",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3282",
+          "name": "瞭望塔",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3283",
+          "name": "幽魂海港",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3284",
+          "name": "蝙蝠洞",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3285",
+          "name": "骨海",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3286",
+          "name": "骷髅港口",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3287",
+          "name": "骷髅船",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3288",
+          "name": "箭塔",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3289",
+          "name": "迷阵",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3290",
+          "name": "倒塌的城墙",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3291",
+          "name": "鬼市",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3292",
+          "name": "鬼涧愁",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3293",
+          "name": "骨林",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3294",
+          "name": "鬼吹灯",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3295",
+          "name": "地牢",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3296",
+          "name": "荒芜的海滩",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3297",
+          "name": "雷电峡谷",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3298",
+          "name": "海盗船",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3299",
+          "name": "藏宝洞",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3300",
+          "name": "海盗营地",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3301",
+          "name": "岛礁",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3302",
+          "name": "地下隧道",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3303",
+          "name": "泥石流",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3304",
+          "name": "地雷阵",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3305",
+          "name": "火焰陷阱",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3306",
+          "name": "地牢入口",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3307",
+          "name": "荒漠",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3308",
+          "name": "红树林",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3309",
+          "name": "奇袭营地",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3310",
+          "name": "卡律布狄斯漩涡",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3311",
+          "name": "月亮井",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3312",
+          "name": "玄冰岛",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3313",
+          "name": "黑藻海",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3314",
+          "name": "封印石",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3315",
+          "name": "精灵地堡",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3316",
+          "name": "精灵营地",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3317",
+          "name": "环形树道",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3318",
+          "name": "飓风",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3319",
+          "name": "暗礁",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3320",
+          "name": "海湾",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3321",
+          "name": "火流星",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3322",
+          "name": "钢铁岛",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3323",
+          "name": "泥地",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3324",
+          "name": "暴雪",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3325",
+          "name": "灭世洪水",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3326",
+          "name": "死亡海沟",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3327",
+          "name": "死亡舰队",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3328",
+          "name": "死亡港口",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3329",
+          "name": "墓地",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3330",
+          "name": "废弃的教堂",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3331",
+          "name": "亡灵船",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3332",
+          "name": "魔鬼礁",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3333",
+          "name": "破开的坟堆",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3334",
+          "name": "鬼哭岩",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3335",
+          "name": "离魂峡",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3336",
+          "name": "亡灵群岛",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3337",
+          "name": "诅咒海域",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3338",
+          "name": "落单的水手",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3339",
+          "name": "死灵之林",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3340",
+          "name": "世界尽头",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3341",
+          "name": "沉船海域",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3342",
+          "name": "地心岩浆",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3343",
+          "name": "吸盘岛",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3344",
+          "name": "噬魂沼泽",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3345",
+          "name": "黑森林",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3346",
+          "name": "海中孤岛",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3347",
+          "name": "死亡火山",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3348",
+          "name": "破败的灯塔",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3349",
+          "name": "地洞",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3350",
+          "name": "隘口",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3351",
+          "name": "破损的长堤",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3352",
+          "name": "巨大的骸骨",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3353",
+          "name": "美人鱼尸首",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3354",
+          "name": "腐肉山洞",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3355",
+          "name": "水塔古城",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3356",
+          "name": "水塔古城（伪）",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3357",
+          "name": "古怪的建筑",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3358",
+          "name": "古怪的建筑（伪）",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3359",
+          "name": "海岸部落",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3360",
+          "name": "海岸部落（伪）",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3361",
+          "name": "失落的谷地",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3362",
+          "name": "失落的谷地（伪）",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3363",
+          "name": "沙漠追踪",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3364",
+          "name": "沙漠追踪（伪）",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3365",
+          "name": "内华达沙漠",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3366",
+          "name": "内华达沙漠（伪）",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3367",
+          "name": "那塔拉矿洞",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3368",
+          "name": "那塔拉矿洞（伪）",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3369",
+          "name": "古墓洞穴",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3370",
+          "name": "古墓洞穴（伪）",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3371",
+          "name": "海上基地",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3372",
+          "name": "海上基地（伪）",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3373",
+          "name": "诅咒之塔",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3374",
+          "name": "诅咒之塔（伪）",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3375",
+          "name": "潜水区",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3376",
+          "name": "潜水区（伪）",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3377",
+          "name": "恒河流域",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3378",
+          "name": "恒河流域（伪）",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3379",
+          "name": "克哈姆遗址",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3380",
+          "name": "克哈姆遗址（伪）",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3381",
+          "name": "荷鲁斯神殿",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        },
+        {
+          "id": "3382",
+          "name": "荷鲁斯神殿（伪）",
+          "reason": "distinct semantic artwork not reviewed; legacy entry presentation remains"
+        }
+      ],
+      "entry_scene_count": 1,
+      "fallback_count": 281
+    }
+  },
+  "entry_scene_total": 57,
+  "fallback_total": 287,
+  "remaining_reachable_surfaces": [
+    {
+      "surface": "WorldMapLayer.lua chapter/map selector",
+      "status": "legacy layout; not changed or accepted by entry-scene art",
+      "proposed_followup": "Separate presentation-only pass preserving original chapter IDs, unlocked state, teleport/next-map ownership, payment gates and callbacks; native compact/large pixels plus locked/unlocked/select/cancel/input/cleanup checks before acceptance."
+    },
+    {
+      "surface": "EventDetailsLayer recruitment, resurrection, black-market and cargo child pages",
+      "status": "existing coherent implementation retained; no new scene-art acceptance in this change"
+    }
+  ]
+}

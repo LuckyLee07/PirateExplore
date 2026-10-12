@@ -1,0 +1,23 @@
+{
+  "binary": "/workspace/shared/pirate-audit/map2-integrated-native-build/raised-map2-live-native",
+  "binarySHA256": "c3411f8254c315b01e2af307bf4419792a5ed3231689b764f42af5155b6563ea",
+  "reusedBuildReceiptSHA256": "a36fff13a24d27b5bc0beff72e48ea4bf97660007de5905e66fc1f85c9754bb4",
+  "base": "e1e7fd8bddc960afe5a650092cb16bb7d7a98ebc",
+  "productionEngineModified": false,
+  "noGUI": true,
+  "nativeFixtureSourceSHA256": {
+    "tools/tests/raised_map2_live_native.cpp": "11c72902286c76f29343df44678cf689c589588443c5eba6f4d50746941294a4",
+    "tools/tests/raised_map2_live_native.lua": "1c5bdc4369ddfd0d5b2ffa7ed9afe345b789b8263c36897e9dccd9c61410f5ae",
+    "tools/tests/raised_map2_live_objects_native.lua": "9566945679f8565b45cbe832d62ab39b25915fc7fd84712d22ba29cd9411eb76"
+  },
+  "counterfactualSourceSHA256": {
+    "equal-z-base-counterfactual.lua": "4ef14917a4ae85eb8b9b63d85b5df3e5f769b767eb649fd14c52db1ed059fcdc",
+    "mixed-original-counterfactual.lua": "e28f76181c7278a1d29c516b820d84043c982c1dc230f6324399eacea118a140",
+    "mixed-geometry-counterfactual.lua": "791533413ed812492ffecc549655365f2015cb9d466391270fc21da941a679cb"
+  },
+  "inheritedAdapterSHA256": "770dd8260ac0b82d3e7c8312204b0dd4ff4e10e674806e5bf423b7de682755cd",
+  "aggregateExitCode": 0,
+  "aggregateLogSHA256": "32e0f555cb00d53e0625a2ad44efc2fe5c039197f56a03c6693592c655785ad3",
+  "semanticLogSHA256": "37a526e1f9fab8ab3424dbad5d1c213b41fffa8aba97f5b8e0ca0f390cfdbc13",
+  "assetsLogSHA256": "840f8d4117b1dbf83eb6f8d6c23f1fe5d3f2018530a7fdef01adb80348ed8305"
+}

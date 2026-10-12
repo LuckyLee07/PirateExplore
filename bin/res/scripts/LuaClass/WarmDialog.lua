@@ -12,17 +12,31 @@ function D.show(title,body,options,owner)
  local p=W.panel(w,h,W.colors.paper,28*k);p:setPosition(cc.p(origin.x+22*k,origin.y+(size.height-h)/2));layer:addChild(p)
  local heading=W.label(title,30*k,W.colors.ink,w/2,h-39*k,true,.5);W.fit(heading,w-48*k);p:addChild(heading)
  local text=W.label(body,20*k,W.colors.muted,24*k,h-85*k,false);text:setAnchorPoint(cc.p(0,1));text:setDimensions(cc.size(w-48*k,132*k));text:setHorizontalAlignment(cc.TEXT_ALIGNMENT_LEFT);p:addChild(text)
- local closed=false;local listener
+ local closed,retired=false,false;local listener
  local ownerToken=cc.Node:create();owner:addChild(ownerToken)
- local function dispose()
+ local function removeLater(node)
+  if node.warmRetirementQueued then return end
+  node.warmRetirementQueued=true
+  node:runAction(cc.Sequence:create(cc.DelayTime:create(0),cc.CallFunc:create(function()
+   if node:getParent()then node:removeFromParent(true)end
+  end)))
+ end
+ local function dispose(lifecycle)
   if closed then return end
-  closed=true
+  closed=true;layer:setVisible(false)
   if owner.adventureDialog==layer then owner.adventureDialog=nil end
   if listener then layer:getEventDispatcher():removeEventListener(listener);listener=nil end
   local token=ownerToken;ownerToken=nil
   -- With the default scene owner, this observer is a sibling. Never remove
   -- it from the child list while the native scene is traversing onExit.
-  if token and (owner~=scene or scene:isRunning())then token:removeFromParent(true)end
+  if token then
+   if lifecycle then removeLater(token)
+   elseif owner~=scene or scene:isRunning()then token:removeFromParent(true)end
+  end
+ end
+ local function retire()
+  if retired then return end;retired=true
+  dispose(true);removeLater(layer)
  end
  local function close()
   if closed or owner.adventureDialog~=layer then return end
@@ -31,11 +45,15 @@ function D.show(title,body,options,owner)
  ownerToken:registerScriptHandler(function(event)
   if event=='exit' or event=='cleanup'then
    ownerToken=nil
-   -- A non-running scene still has running children during its exit walk.
-   if not scene:isRunning() and layer:isRunning()then dispose()else close()end
+   -- Even a running parent caches its child index across this callback.
+   -- Hide/invalidate now; remove the exact scene sibling on a safe later tick.
+   retire()
   end
  end)
- layer.close=close;layer.warmOptions={}
+ layer.close=close
+ -- Retire during an owning scene traversal without erasing a scene sibling.
+ layer.retire=retire
+ layer.warmOptions={}
  for i,o in ipairs(options)do
   local caption=o.label..(o.detail and ('\n'..o.detail)or'')
   local b=W.button(caption,w-44*k,77*k,function()
@@ -49,7 +67,7 @@ function D.show(title,body,options,owner)
   if o.disabled then b:setOpacity(130)end
  end
  listener=cc.EventListenerTouchOneByOne:create();listener:setSwallowTouches(true);listener:registerScriptHandler(function()return true end,cc.Handler.EVENT_TOUCH_BEGAN);layer:getEventDispatcher():addEventListenerWithSceneGraphPriority(listener,layer)
- layer:registerScriptHandler(function(event)if event=='exit' or event=='cleanup'then dispose()end end)
+ layer:registerScriptHandler(function(event)if event=='exit' or event=='cleanup'then retire()end end)
  return layer
 end
 return D

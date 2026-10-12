@@ -31,6 +31,7 @@ end
 
 function BuildLayer:destory()
     self:disposeFocusedBuild()
+    if CoherentRecipePage then CoherentRecipePage.dispose(self) end
     -- 去掉注册的通知
     DataManager:getInstance():unregisterEvent(roleMapInfo, "BuildLayer")
     -- 调用父类的析构
@@ -48,6 +49,9 @@ function BuildLayer:init()
     -- construction keeps its complete original list and all utility controls.
     if self.focusTargetId and type(WarmTheme) == "table" and WarmTheme.enabled() then
         return self:initFocusedBuild()
+    end
+    if type(WarmTheme) == "table" and WarmTheme.enabled() and self.applyCoherentPageShell then
+        return CoherentRecipePage.init(self, "build")
     end
     DataManager:getInstance():registerEvent(roleMapInfo, "BuildLayer", function()
         -- body
@@ -657,5 +661,263 @@ function BuildLayer:attemptFocusedBuild()
     ToastUtil:downString("建造成功")
     self.focusedBuildBusy = false
     self:refreshFocusedBuild()
+    return true
+end
+
+-- Shared presentation for the two ordinary recipe lists. Kept beside their
+-- original transaction owners; MakeMode opts in without inheriting BuildLayer.
+-- No recipe, stock, unlock, or saved table is copied, sorted, or rewritten here.
+CoherentRecipePage = {}
+local Recipe = CoherentRecipePage
+local recipeSerial = 0
+
+local function recipeRows(view)
+    return view.recipeKind == "build" and view.roleBuildingData or view.workerData
+end
+
+local function recipeData(view, entry)
+    return (view.recipeKind == "build" and view.csvData or view.ResoucecsvData)[tostring(entry[dataKeyID])]
+end
+
+local function recipeIconPath(item)
+    local name = item.iconName
+    if not name or name == "" then return nil end
+    local path = "Images/Icon/" .. name
+    return cc.FileUtils:getInstance():isFileExist(path) and path or nil
+end
+
+local function recipeLabel(parent, text, size, color, x, y, width, anchor)
+    local label = WarmTheme.label(text, size, color, x, y, false, anchor or 0)
+    if width then WarmTheme.fit(label, width) end
+    parent:addChild(label)
+    return label
+end
+
+local function recipeLine(parent, y)
+    local line = cc.LayerColor:create(cc.c4b(WarmTheme.colors.line.r, WarmTheme.colors.line.g, WarmTheme.colors.line.b, 255), 416, 1)
+    line:setPosition(cc.p(0, y));parent:addChild(line)
+end
+
+function Recipe.selected(view)
+    for index, entry in ipairs(recipeRows(view) or {}) do
+        if tostring(entry[dataKeyID]) == view.recipeSelectedId
+            and (view.recipeKind == "build" or tostring(entry.sortId) == view.recipeSelectedSortId) then
+            return entry, index
+        end
+    end
+end
+
+function Recipe.dispose(view)
+    if not view.recipePresentation or view.recipeDisposed then return end
+    view.recipeDisposed = true
+    local dm = DataManager:getInstance()
+    for _, key in ipairs(view.recipeEvents) do
+        dm:unregisterEvent(key, view.recipeEventKey)
+        local bucket = dm.__eventListener and dm.__eventListener[key]
+        if bucket then bucket[view.recipeEventKey] = nil end
+    end
+end
+
+function Recipe.select(view, index)
+    if view.recipeDisposed or view.coherentPageDisposed or view.coherentPageLeaving or view.recipeBusy then return end
+    local entry = (recipeRows(view) or {})[index]
+    if not entry then return end
+    view.recipeSelectedId = tostring(entry[dataKeyID])
+    view.recipeSelectedSortId = tostring(entry.sortId)
+    view.recipeSelectedIndex = index
+    Recipe.refresh(view)
+end
+
+function Recipe.init(view, kind)
+    local dm = DataManager:getInstance()
+    view.recipeKind = kind
+    view.csvData = dm:getCSVByID(csvOfBuild)
+    view.ResoucecsvData = dm:getCSVByID(csvOfResourceInfo)
+    if not view.csvData or not view.ResoucecsvData then return false end
+    view:initdata()
+    view.recipePresentation = true
+    view.recipeGeneration = 0
+    view.recipeSelectedId = view.focusTargetId and tostring(view.focusTargetId) or nil
+    for index, entry in ipairs(recipeRows(view) or {}) do
+        if view.recipeSelectedId == tostring(entry[dataKeyID]) then
+            view.recipeSelectedSortId = tostring(entry.sortId);view.recipeSelectedIndex = index;break
+        end
+    end
+    local shell = view:applyCoherentPageShell(kind == "build" and "港口建设" or "船上制造", "选一项，查看所需材料")
+    view.recipeCanvas = shell.canvas
+    view.cellhight = 68
+    view.areaHeight = 204
+    view.showline = view.areaHeight / view.cellhight
+    local tableview = cc.TableView:create(cc.size(416, view.areaHeight))
+    view.tableview = tableview
+    tableview:setDirection(cc.SCROLLVIEW_DIRECTION_VERTICAL)
+    tableview:setVerticalFillOrder(cc.TABLEVIEW_FILL_TOPDOWN)
+    tableview:setPosition(cc.p(32, 446));tableview.bIsScrollView = true;tableview:setDelegate()
+    tableview:registerScriptHandler(function(_, cell) Recipe.select(view, cell:getTag()) end, cc.TABLECELL_TOUCHED)
+    tableview:registerScriptHandler(function(list, idx)
+        local cell = list:dequeueCell() or cc.TableViewCell:create()
+        cell:removeAllChildren();cell:setTag(idx + 1)
+        local entry = recipeRows(view)[idx + 1]
+        local item = recipeData(view, entry) or {}
+        local id = tostring(entry[dataKeyID])
+        local selected = id == view.recipeSelectedId and (kind == "build" or tostring(entry.sortId) == view.recipeSelectedSortId)
+        if selected then
+            local c = cc.LayerColor:create(cc.c4b(234, 242, 222, 255),416,67);cell:addChild(c)
+            local bar = cc.LayerColor:create(cc.c4b(25,126,140,255),3,49);bar:setPosition(cc.p(0,9));cell:addChild(bar)
+        end
+        local path = recipeIconPath(item)
+        local art = path and WarmTheme.sprite(path,42,42) or nil
+        if art then art:setPosition(cc.p(30,34));cell:addChild(art)
+        else
+            art = WarmTheme.icon(kind == "build" and "hammer" or "chest",32,WarmTheme.colors.muted)
+            art:setPosition(cc.p(14,18));cell:addChild(art)
+        end
+        recipeLabel(cell,item.name or id,23,WarmTheme.colors.ink,64,44,256)
+        local built = kind == "build" and tonumber(entry[dataKeyNum]) ~= 0
+        local enough = view:cheackResoucesOK(id)
+        local status = built and "已建设" or (enough == 1 and "材料齐全" or "缺少材料")
+        recipeLabel(cell,status,18,built and WarmTheme.colors.muted or (enough == 1 and WarmTheme.colors.sea or ManagementTheme.colors.danger),64,19,254)
+        if entry.S ~= nil then recipeLabel(cell,"新",18,WarmTheme.colors.sea,386,35,28,1) end
+        if selected then recipeLabel(cell,"‹",28,WarmTheme.colors.sea,402,35,18,1) end
+        recipeLine(cell,0)
+        return cell
+    end, cc.TABLECELL_SIZE_AT_INDEX)
+    tableview:registerScriptHandler(function() return view.cellhight,416 end, cc.TABLECELL_SIZE_FOR_INDEX)
+    tableview:registerScriptHandler(function() return view:getDataNum() end, cc.NUMBER_OF_CELLS_IN_TABLEVIEW)
+    shell.canvas:addChild(tableview)
+    view.recipeCountLabel = recipeLabel(shell.canvas,"",18,WarmTheme.colors.muted,32,426,416)
+    view.recipeDetail = cc.Node:create();view.recipeDetail:setPosition(cc.p(32,0));shell.canvas:addChild(view.recipeDetail)
+    recipeSerial = recipeSerial + 1
+    view.recipeEventKey = "coherentRecipe" .. recipeSerial
+    view.recipeEvents = {rolePack,roleMoney,kind == "build" and roleBuilding or roleMake,roleGuideStep}
+    for _, key in ipairs(view.recipeEvents) do
+        dm:registerEvent(key,view.recipeEventKey,function()
+            if not view.recipeDisposed and not view.recipeBusy then Recipe.refresh(view) end
+        end)
+    end
+    view:registerScriptHandler(function(event)
+        if event == "exit" or event == "cleanup" then Recipe.dispose(view) end
+    end)
+    Recipe.refresh(view)
+    view:focusEntry(view.focusTargetId)
+    return true
+end
+
+function Recipe.refresh(view)
+    if view.recipeDisposed or view.coherentPageDisposed or view.coherentPageLeaving or view.recipeBusy then return end
+    local firstRefresh = view.recipeCount == nil
+    local oldCount = view.recipeCount or view:getDataNum()
+    local oldOffset = view.tableview:getContentOffset()
+    view:initdata()
+    local rows = recipeRows(view) or {}
+    local entry, index = Recipe.selected(view)
+    if not entry then
+        index = #rows > 0 and math.max(1,math.min(view.recipeSelectedIndex or 1,#rows)) or nil
+        entry = rows[index]
+        if entry then
+            view.recipeSelectedId = tostring(entry[dataKeyID]);view.recipeSelectedSortId = tostring(entry.sortId)
+        end
+    end
+    view.recipeSelectedIndex = index
+    view.recipeGeneration = view.recipeGeneration + 1
+    local generation = view.recipeGeneration
+    view.recipeCount = #rows
+    view.tableview:reloadData()
+    local minY = math.min(0,view.areaHeight-#rows*view.cellhight)
+    -- Keep the original top-relative offset when an unlock inserts/removes rows.
+    local y = firstRefresh and minY or oldOffset.y-(#rows-oldCount)*view.cellhight
+    view.tableview:setContentOffset(cc.p(oldOffset.x,math.max(minY,math.min(0,y))),false)
+    view.recipeCountLabel:setString("共 " .. #rows .. " 项" .. (#rows>view.showline and " · 上下滑动选择" or " · 点选查看"))
+    local detail, W, c = view.recipeDetail, WarmTheme, WarmTheme.colors
+    detail:removeAllChildren(true)
+    view.recipeAction = nil;view.recipeInfo = nil;view.recipeCostRows = {}
+    recipeLine(detail,408)
+    if not entry then
+        recipeLabel(detail,view.recipeKind == "build" and "暂无可建设的项目" or "暂无可制造的配方",26,c.ink,208,320,400,.5)
+        recipeLabel(detail,"继续探索，发现更多可能。",21,c.muted,208,272,400,.5)
+        return
+    end
+    local item = recipeData(view, entry)
+    if not item then return end
+    local id = tostring(entry[dataKeyID])
+    local function current() return not view.recipeDisposed and not view.coherentPageDisposed and not view.coherentPageLeaving and generation == view.recipeGeneration end
+    local function showInfo()
+        if not current() or view.adventureDialog then return end
+        local body = (view.recipeKind == "build" and item.info or item.desc) or ""
+        if item.comment and item.comment ~= "" then body = body .. "\n所需材料：" .. item.comment end
+        require("LuaClass/WarmDialog").show(item.name or id,body,{{label="知道了"}},view)
+    end
+    -- Keep the native SDButton single/long-press/touch implementation. Its
+    -- selected-item position is outside the scroll clip; no enlarged row hitbox.
+    local icon = recipeIconPath(item)
+    require "LuaClass/SDButton"
+    local button = SDButton:create(icon,icon,showInfo)
+    if not icon then ManagementTheme.skinSDButton(button,"paper",view.recipeKind == "build" and "hammer" or "cargo") end
+    local z = button:getContentSize();button:setScale(math.min(56/z.width,56/z.height))
+    button:setPosition(cc.p(30,365));button:setSwallowTouches(false)
+    button:registerLongPressedActiveOnce(showInfo);detail:addChild(button);view.recipeInfo = button
+    recipeLabel(detail,item.name or id,27,c.ink,78,377,338)
+    local built = view.recipeKind == "build" and tonumber(entry[dataKeyNum]) ~= 0
+    local caption = view.recipeKind == "build" and (built and "已建设 · 点击图标查看说明" or "点击图标查看说明")
+        or ("每次制造 1 件 · 现有 " .. tostring(DataManager:getInstance():getPackNumWithId(id)))
+    recipeLabel(detail,caption,18,c.muted,78,346,338)
+    if built then
+        recipeLabel(detail,"这项建设已完成",25,c.sea,208,250,400,.5)
+        recipeLabel(detail,"在上方选择下一项建设。",21,c.muted,208,206,400,.5)
+        return
+    end
+    recipeLabel(detail,"所需材料",21,c.ink,0,304,200)
+    recipeLabel(detail,"现有 / 所需",18,c.muted,416,304,180,1)
+    local enough = true
+    local costs = item.resume or {}
+    local step = math.min(44,132/math.max(1,#costs))
+    for i,cost in ipairs(costs) do
+        local resourceId, need = tostring(cost[1]),tonumber(cost[2]) or 0
+        local have = tonumber(DataManager:getInstance():getPackNumWithId(resourceId)) or 0
+        local resource = view.ResoucecsvData[resourceId] or {}
+        local y = 262-(i-1)*step
+        recipeLabel(detail,resource.name or resourceId,23,c.ink,0,y,200)
+        local value = recipeLabel(detail,tostring(have).." / "..tostring(need),23,have>=need and c.ink or ManagementTheme.colors.danger,416,y,204,1)
+        recipeLine(detail,y-22)
+        view.recipeCostRows[#view.recipeCostRows+1] = {id=resourceId,have=have,need=need,label=value}
+        if have<need then enough=false end
+    end
+    local gate = GuideController:getInstance():getIsHaveStep(view.recipeKind == "build" and 1 or 10)
+    recipeLabel(detail,not gate and "该功能尚未开放" or (enough and "材料已备齐" or "材料不足，可查看获取方式"),20,enough and gate and c.sea or c.muted,208,118,400,.5)
+    if not gate then return end
+    local text = enough and (view.recipeKind == "build" and "建设" or "制造 1 件") or "查看缺少材料"
+    local action = W.button(text,284,52,function()
+        if current() then Recipe.attempt(view) end
+    end,{primary=true,size=23})
+    action:setPosition(cc.p(274,48));detail:addChild(action);view.recipeAction = action
+end
+
+function Recipe.attempt(view)
+    if view.recipeDisposed or view.coherentPageDisposed or view.coherentPageLeaving or view.recipeBusy or view.adventureDialog then return false end
+    if DialogueViewManager and not DialogueViewManager:sharedInstance():empty() then return false end
+    view:initdata()
+    local entry = Recipe.selected(view)
+    if not entry or not recipeData(view,entry)
+        or (view.recipeKind == "build" and tonumber(entry[dataKeyNum]) ~= 0)
+        or not GuideController:getInstance():getIsHaveStep(view.recipeKind == "build" and 1 or 10) then
+        Recipe.refresh(view);return false
+    end
+    local id, dm = tostring(entry[dataKeyID]), DataManager:getInstance()
+    local enough, missing = view:cheackResoucesOK(id)
+    if enough ~= 1 then
+        Lackmaterial:create(missing,function()
+            if not view.recipeDisposed then Recipe.refresh(view) end
+        end):show()
+        return false
+    end
+    if view.recipeKind == "build" and dm:getSound_off() == 0 then AudioEngine.playEffect(EFFECT_Button,false) end
+    view.recipeBusy = true
+    view:useResouces(id)
+    -- Manufacturing uses the live row's produce sortId, never its resource ID.
+    dm:createSuccessCheck(view.recipeKind == "build" and kUnlockBuild or kUnlockMake,
+        view.recipeKind == "build" and id or entry.sortId)
+    ToastUtil:downString(view.recipeKind == "build" and "建造成功" or "制造成功")
+    view.recipeBusy = false
+    Recipe.refresh(view)
     return true
 end

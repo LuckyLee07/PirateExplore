@@ -1,0 +1,50 @@
+{
+  "generator": "built-in image_gen.imagegen",
+  "generated_utc_date": "2026-10-11",
+  "transparent_background": true,
+  "prompts": "docs/coherent-game/event-scene-prompts-v1.json",
+  "assets": [
+    {
+      "file": "tavern-pontoon-clean-v1.png",
+      "generated_source": "exec-4a6bf840-8c5a-4e86-ade7-c95e2f237e0e.png",
+      "identity": "3004/changeToPubLayer",
+      "sha256": "134dc5edb4148df767f78bf40cf8c1b9f5cba1e32836a43266216c5e826f07df",
+      "size": [
+        1322,
+        1190
+      ],
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "visible_alpha_gt32_bounds": [
+        46,
+        8,
+        1283,
+        1169
+      ],
+      "source_bytes_identical": true
+    },
+    {
+      "file": "bread-supply-raft-clean-v1.png",
+      "generated_source": "exec-984c2b84-32d4-4eff-b7fa-280f9ddf7ec6.png",
+      "identity": "3053/changeToSupplyPoint",
+      "sha256": "18942866e78637cfffbac2075aa2970a8fc3e3901820c84d3d5e68b614b59958",
+      "size": [
+        1586,
+        992
+      ],
+      "alpha_extrema": [
+        0,
+        255
+      ],
+      "visible_alpha_gt32_bounds": [
+        43,
+        97,
+        1545,
+        928
+      ],
+      "source_bytes_identical": true
+    }
+  ]
+}

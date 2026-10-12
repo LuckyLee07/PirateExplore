@@ -1,0 +1,429 @@
+{
+  "baseCommit": "73db071d051afccdcc358b52887999ffefa80be1",
+  "platform": "Linux surfaceless EGL",
+  "productionWindowUsed": false,
+  "sourceCommit": "recorded by containing git commit",
+  "fullAggregate": {
+    "status": "passed",
+    "exitCode": 0,
+    "log": "/workspace/shared/pirate-audit/opening-story-aggregate.log",
+    "logSha256": "8e0e9f0ab1e51ffbc465325e4f868152083a37abce1227250d46146eb0e39f2f"
+  },
+  "runs": [
+    {
+      "directory": "/workspace/shared/pirate-audit/opening-story-verified/480x800-79hbolu0",
+      "physical": [
+        480,
+        800
+      ],
+      "input": "automatic only",
+      "result": "PASS original startup all seven story frames -> Home; physical 480x800, logical 640x1067",
+      "exitCode": 0,
+      "originalStartup": true,
+      "sourceResourceHashesVerified": true,
+      "subtitleCounts": [
+        {
+          "scene": 1,
+          "visible": 5,
+          "expected": 5
+        },
+        {
+          "scene": 2,
+          "visible": 4,
+          "expected": 4
+        },
+        {
+          "scene": 3,
+          "visible": 4,
+          "expected": 4
+        },
+        {
+          "scene": 4,
+          "visible": 5,
+          "expected": 5
+        },
+        {
+          "scene": 5,
+          "visible": 5,
+          "expected": 5
+        },
+        {
+          "scene": 6,
+          "visible": 4,
+          "expected": 4
+        },
+        {
+          "scene": 7,
+          "visible": 4,
+          "expected": 4
+        }
+      ],
+      "scene1EarlyCaptureForSkip": false,
+      "screenshots": {
+        "home.png": "52896e81be7f9ac52e98e2c8943179ea21e33e37582d06d29b25e32bc920ccbb",
+        "scene-1.png": "5b3f05f54690c882a26f8a9d2076d3a4e23450433ae40afcacf79158155e126d",
+        "scene-2.png": "59c87c87111a258cb638eb5adde9c2494c68090dba7272a4864eb6ed4203d49c",
+        "scene-3.png": "1c01d2c87a777ee9fd9b108c4bb19b43e3ad8e0d6026195137a9f4123346a1bc",
+        "scene-4.png": "4cfd982c1164a288823e682ffa0d95d9c2d3b9a1413ad53baa66064ec0816800",
+        "scene-5.png": "d6f9bf958454d06426f893a03bca618e5f345c1aab255d58fd8ba176e6f60a53",
+        "scene-6.png": "335078884df4f12a5eefdb785dad5e41d52b5d7015945aa7a33b65079e546f39",
+        "scene-7.png": "1c41e1ad58127357705637a06379b292c6262724d62920cc027c112d2622261e"
+      }
+    },
+    {
+      "directory": "/workspace/shared/pirate-audit/opening-story-verified/540x900-j_x9za47",
+      "physical": [
+        540,
+        900
+      ],
+      "input": "automatic only",
+      "result": "PASS original startup all seven story frames -> Home; physical 540x900, logical 640x1067",
+      "exitCode": 0,
+      "originalStartup": true,
+      "sourceResourceHashesVerified": true,
+      "subtitleCounts": [
+        {
+          "scene": 1,
+          "visible": 5,
+          "expected": 5
+        },
+        {
+          "scene": 2,
+          "visible": 4,
+          "expected": 4
+        },
+        {
+          "scene": 3,
+          "visible": 4,
+          "expected": 4
+        },
+        {
+          "scene": 4,
+          "visible": 5,
+          "expected": 5
+        },
+        {
+          "scene": 5,
+          "visible": 5,
+          "expected": 5
+        },
+        {
+          "scene": 6,
+          "visible": 4,
+          "expected": 4
+        },
+        {
+          "scene": 7,
+          "visible": 4,
+          "expected": 4
+        }
+      ],
+      "scene1EarlyCaptureForSkip": false,
+      "screenshots": {
+        "home.png": "d584f9e03c1bfd98a322d332a408236ee34720197bfce58a8af2994becd49d7d",
+        "scene-1.png": "b25db32325fc5411e709ebaf8acaeddcbb6c45d76509bebe48c117662236a84c",
+        "scene-2.png": "30a8590c0daa0ab4767101ab4ac4360609ca9c8aebc8f1d8153ace269235f1a3",
+        "scene-3.png": "26c0cab3e4348a06eed61d4d05611c40fe3c77b28a4b481d077c3a82e33d334f",
+        "scene-4.png": "fba9f45f8d643bdff60ff1961c9d5d33f89020f1a3c08439ac34c488d12daf83",
+        "scene-5.png": "22cb8ae5cc80b63128efcab4b1fbf16e778e1a5c5e7d6adf803c4ed8fa2857d3",
+        "scene-6.png": "93fb801519a5dd6b5eb46b203e262b7c4c8bc9ed34589c83a5e5ee2f4f594ac6",
+        "scene-7.png": "6fde570d74a221b178d8ad4226470a4a1a02d979aea966b299fdd72fc913c2b8"
+      }
+    },
+    {
+      "directory": "/workspace/shared/pirate-audit/opening-story-verified/640x960-alzfb524",
+      "physical": [
+        640,
+        960
+      ],
+      "input": "automatic only",
+      "result": "PASS original startup all seven story frames -> Home; physical 640x960, logical 640x960",
+      "exitCode": 0,
+      "originalStartup": true,
+      "sourceResourceHashesVerified": true,
+      "subtitleCounts": [
+        {
+          "scene": 1,
+          "visible": 5,
+          "expected": 5
+        },
+        {
+          "scene": 2,
+          "visible": 4,
+          "expected": 4
+        },
+        {
+          "scene": 3,
+          "visible": 4,
+          "expected": 4
+        },
+        {
+          "scene": 4,
+          "visible": 5,
+          "expected": 5
+        },
+        {
+          "scene": 5,
+          "visible": 5,
+          "expected": 5
+        },
+        {
+          "scene": 6,
+          "visible": 4,
+          "expected": 4
+        },
+        {
+          "scene": 7,
+          "visible": 4,
+          "expected": 4
+        }
+      ],
+      "scene1EarlyCaptureForSkip": false,
+      "screenshots": {
+        "home.png": "8dd11ce46ff76d02e4d4744e8cc079fdfad3ad7987e24ef1dceb8465e70612af",
+        "scene-1.png": "5204c6ee07301dbbf9d8c5e7c6c60db792c9bb41bd16bdf8e3a5ccb6363218d6",
+        "scene-2.png": "a008fab43125993379dbf24dea0df322d0b7dabe857784535933ffd1411f7077",
+        "scene-3.png": "e6921126340cae79a3a8c657cfc18ed242e57b3ce369bc191a63ddd834bcea5e",
+        "scene-4.png": "76c1d3917372a5c437a94b842839f3c952bf9f6da3288a9900ac22a1921c9f78",
+        "scene-5.png": "f5b13a14b1d0a0e088ea158be267627c883d1f4b852700f0270064cc5770e86b",
+        "scene-6.png": "859a310c9a2abb5175f1fccc2bb8b9ac23f027a17dbdbbf75fc287064e7c874e",
+        "scene-7.png": "f69db731188ee003cf26585c75235fb4c08072d32c3085081f493eda06c9f09b"
+      }
+    },
+    {
+      "directory": "/workspace/shared/pirate-audit/opening-story-verified/640x1067-ge2xlscf",
+      "physical": [
+        640,
+        1067
+      ],
+      "input": "automatic only",
+      "result": "PASS original startup all seven story frames -> Home; physical 640x1067, logical 640x1067",
+      "exitCode": 0,
+      "originalStartup": true,
+      "sourceResourceHashesVerified": true,
+      "subtitleCounts": [
+        {
+          "scene": 1,
+          "visible": 5,
+          "expected": 5
+        },
+        {
+          "scene": 2,
+          "visible": 4,
+          "expected": 4
+        },
+        {
+          "scene": 3,
+          "visible": 4,
+          "expected": 4
+        },
+        {
+          "scene": 4,
+          "visible": 5,
+          "expected": 5
+        },
+        {
+          "scene": 5,
+          "visible": 5,
+          "expected": 5
+        },
+        {
+          "scene": 6,
+          "visible": 4,
+          "expected": 4
+        },
+        {
+          "scene": 7,
+          "visible": 4,
+          "expected": 4
+        }
+      ],
+      "scene1EarlyCaptureForSkip": false,
+      "screenshots": {
+        "home.png": "cbe7943f3f2c83bf5cd9aeaeaa2916254a2b84326b7dca71a0d6ff4003a99c97",
+        "scene-1.png": "48f3b9391314d6ac42f2ff18a4757c2c9c26e695faeb5c88eae267ad22926a07",
+        "scene-2.png": "79826815bad29ac38134b9486298e117cd217c24a6b2074a907d7363076cb8e3",
+        "scene-3.png": "35400f1e3576714286f22b54ff0f8646b963dcf52a392c43c39ec0bff7f7ada8",
+        "scene-4.png": "5da26a26ba749ba6bd3016a657bf5031f10f3dc4279c58855203388204d83375",
+        "scene-5.png": "4012f1b3cd8301e7d3a9c2c4955446864a9d5b8549fae3744cf4f63b3ee2052a",
+        "scene-6.png": "06e5f69d4492205be3fca0621567d30a2175ea8506f0729c10eefdd94b3eb5af",
+        "scene-7.png": "da36d5d01fe7e4327797d622e882678049a2d56fdcb09af465752e7bd227adc3"
+      }
+    },
+    {
+      "directory": "/workspace/shared/pirate-audit/opening-story-verified/720x1280-vk_wgm_f",
+      "physical": [
+        720,
+        1280
+      ],
+      "input": "automatic only",
+      "result": "PASS original startup all seven story frames -> Home; physical 720x1280, logical 640x1138",
+      "exitCode": 0,
+      "originalStartup": true,
+      "sourceResourceHashesVerified": true,
+      "subtitleCounts": [
+        {
+          "scene": 1,
+          "visible": 5,
+          "expected": 5
+        },
+        {
+          "scene": 2,
+          "visible": 4,
+          "expected": 4
+        },
+        {
+          "scene": 3,
+          "visible": 4,
+          "expected": 4
+        },
+        {
+          "scene": 4,
+          "visible": 5,
+          "expected": 5
+        },
+        {
+          "scene": 5,
+          "visible": 5,
+          "expected": 5
+        },
+        {
+          "scene": 6,
+          "visible": 4,
+          "expected": 4
+        },
+        {
+          "scene": 7,
+          "visible": 4,
+          "expected": 4
+        }
+      ],
+      "scene1EarlyCaptureForSkip": false,
+      "screenshots": {
+        "home.png": "ec8fb9265ddc9153e8e7e3ff2a44c39e399c7cc1e85c4aa6dfffe5e4bca719c4",
+        "scene-1.png": "fafaba1c055e2072924bfc6c28ca9301cff722da905907f1d7968f13aecde72d",
+        "scene-2.png": "d904b6cd23e0a8b4a0bb5a0f46200b1d7d3cbdca1eaf16dc586e545ee08875f5",
+        "scene-3.png": "41612949b77bf8d34a472600a7747a13999bc07197950c5c88905e1758320bd8",
+        "scene-4.png": "f3408cbc9176edce7f1a96d0c497ff43b638f20cf22b17e41846abafa73465ff",
+        "scene-5.png": "e64cc3687f1d66b078123a2fdd4c9e9fed48bccd0164110cbe435c51cad981a9",
+        "scene-6.png": "753384bfa95d448e3aa142207d09c82e0884cd9f3476ca8d73479a4d6bb70828",
+        "scene-7.png": "887cd28dff2846be4a4f2b1076bd693ead0839ea1ab69595d7e3160d15adc1e3"
+      }
+    },
+    {
+      "directory": "/workspace/shared/pirate-audit/opening-story-verified/480x900-_usl1n5r",
+      "physical": [
+        480,
+        900
+      ],
+      "input": "automatic only",
+      "result": "PASS original startup all seven story frames -> Home; physical 480x900, logical 640x1200",
+      "exitCode": 0,
+      "originalStartup": true,
+      "sourceResourceHashesVerified": true,
+      "subtitleCounts": [
+        {
+          "scene": 1,
+          "visible": 5,
+          "expected": 5
+        },
+        {
+          "scene": 2,
+          "visible": 4,
+          "expected": 4
+        },
+        {
+          "scene": 3,
+          "visible": 4,
+          "expected": 4
+        },
+        {
+          "scene": 4,
+          "visible": 5,
+          "expected": 5
+        },
+        {
+          "scene": 5,
+          "visible": 5,
+          "expected": 5
+        },
+        {
+          "scene": 6,
+          "visible": 4,
+          "expected": 4
+        },
+        {
+          "scene": 7,
+          "visible": 4,
+          "expected": 4
+        }
+      ],
+      "scene1EarlyCaptureForSkip": false,
+      "screenshots": {
+        "home.png": "6176e0d0ee33c1ffe30a39913e9be4732a6aa5444ff94738584f380a8edc0973",
+        "scene-1.png": "282fdd1605c3c34a1520d02129cc33d3fc22dc37cfd8f26ee9ae4ead6fa1439c",
+        "scene-2.png": "b43529563f8808a15c0666481de5d4e6e445829ee2dd1b1c079ba2579afc894d",
+        "scene-3.png": "b21edc7f173325fd4c3c57d98410284d3c0ebba40c86cc8dfd02b3f04116c5ff",
+        "scene-4.png": "5bf2fef0b2b99e7177bee6edb62935c1ce7f31ea65a61607933500525a492403",
+        "scene-5.png": "2b42088e8300ffa45ea8856b15507ffe1f1d13e73271b01b9acdba3e8e50ee9d",
+        "scene-6.png": "ccecbe69c84e23b641c9c72b8c0668af9aa7df3252af8c36ddf4af48b920bf1d",
+        "scene-7.png": "92707daccbc98815ee4defb1ca998fc4137f56c9e2dae014ab7a3f60b128a5a6"
+      }
+    },
+    {
+      "directory": "/workspace/shared/pirate-audit/opening-story-verified/480x800-skip-9bjd8gjm",
+      "physical": [
+        480,
+        800
+      ],
+      "input": "native Next twice, one advance",
+      "result": "PASS original startup all seven story frames -> Home; physical 480x800, logical 640x1067",
+      "exitCode": 0,
+      "originalStartup": true,
+      "sourceResourceHashesVerified": true,
+      "subtitleCounts": [
+        {
+          "scene": 2,
+          "visible": 4,
+          "expected": 4
+        },
+        {
+          "scene": 3,
+          "visible": 4,
+          "expected": 4
+        },
+        {
+          "scene": 4,
+          "visible": 5,
+          "expected": 5
+        },
+        {
+          "scene": 5,
+          "visible": 5,
+          "expected": 5
+        },
+        {
+          "scene": 6,
+          "visible": 4,
+          "expected": 4
+        },
+        {
+          "scene": 7,
+          "visible": 4,
+          "expected": 4
+        }
+      ],
+      "scene1EarlyCaptureForSkip": true,
+      "screenshots": {
+        "home.png": "3fedbd6c2645c0d4b430cb198cd10a42f50de3962e0107743a4fbdbf0222c8e2",
+        "scene-1.png": "8c53039b00ba628d7400df7913bb056a4651f9b06e886ae50e00a1444827ad2f",
+        "scene-2.png": "0525dff2a0347d2ca8d44ef5bb21c531bf573c8083c7dddfd13b958d7c8ccb2d",
+        "scene-3.png": "f7f6897f2e5dfb578054326e8b5acdbb6d528d7883a32d40cc11c9cac76fcd98",
+        "scene-4.png": "24dcec20924cffa6ac1481027ce95be6a4ff70fb6571a96a24bd1f16f2d08ac9",
+        "scene-5.png": "f3a1c47791d12d9f359ef5eab3eb3fc8e2c0db9360a33a9b27ffa07a44099330",
+        "scene-6.png": "06699b78727b3fa5f696da29c9d22693e6788036cd54ee76f48b47a851e17327",
+        "scene-7.png": "0345af846e62959f80c389890b686774d86807b07aaaed289c2f739db576b8b9"
+      }
+    }
+  ]
+}

@@ -1054,7 +1054,8 @@ function DataManager:addCoin( _Coinnum, isShowBox, showPopString )
 	return dealsuccess , defiCoin
 end
 
-function DataManager:addDiamond(_Diamondnum, bIsShowAlert)
+-- Optional presentation context scopes only the warm shortage UI to its caller.
+function DataManager:addDiamond(_Diamondnum, bIsShowAlert, isTip, presentation)
 	if bIsShowAlert == nil then
 		bIsShowAlert = true
 	end
@@ -1066,6 +1067,29 @@ function DataManager:addDiamond(_Diamondnum, bIsShowAlert)
 		if not bIsShowAlert then
 			return
 		end
+        if rawget(_G, 'WARM_PIRATE_V1') ~= false then
+            local available = require('LuaClass/PurchaseAvailability').isAvailable()
+            local body = available and '钻石不足，可查看充值选项。购买结果由平台确认。'
+                or '钻石不足，当前平台暂不支持充值购买。'
+            local options = {{label='知道了'}}
+            if available then
+                local offered = false
+                options = {{label='查看充值选项', action=function()
+                    if offered or (presentation and not presentation.isActive()) then return false end
+                    offered = true
+                    local gift = PushGiftView:create()
+                    if presentation then
+                        presentation.showGift(gift, isEnterMap and 999 or nil)
+                    elseif isEnterMap then
+                        gift:show(999)
+                    else
+                        gift:show()
+                    end
+                end}, {label='取消'}}
+            end
+            require('LuaClass/WarmDialog').show('钻石不足', body, options, presentation and presentation.owner)
+            return
+        end
 		local _newalert = AlertView:create(2, 0, "购买失败", function()
 			-- require "LuaClass/ChargeMode"
 			-- local charge = ChargeMiniLayer:create()
@@ -1101,7 +1125,7 @@ function DataManager:addDiamond(_Diamondnum, bIsShowAlert)
 		self:setRoleData(roleDiamond, money, nil)
 		dealsuccess = 1
     end
-    if (_Diamondnum > 0) then
+    if (_Diamondnum > 0) and isTip ~= false then
         ToastUtil:downString("钻石+" .. _Diamondnum)
     end
 	return dealsuccess
@@ -1318,7 +1342,7 @@ function DataManager:getUnAutoLearnedTallent()
 	return nil
 end
 
-function DataManager:checkTallentPass(tallent, costType)
+function DataManager:checkTallentPass(tallent, costType, presentation)
 	-- body
 	local flag = true
 	if (tallent ~= nil) then
@@ -1342,7 +1366,7 @@ function DataManager:checkTallentPass(tallent, costType)
                 local needDiamod = tonumber(tallentFromCSV[dataKeyResumeNum])
                 if (needDiamod > tonumber(self:getRoleData(roleDiamond))) then
                     flag = false
-                    self:addDiamond(-needDiamod)
+                    self:addDiamond(-needDiamod, nil, nil, presentation)
                     self:sendSystemInfo("钻石不足，无法学习")
                     ToastUtil:toastString("钻石不足，无法学习")
                 end
@@ -1368,7 +1392,7 @@ function DataManager:checkTallentPass(tallent, costType)
                 local needDiamod = tonumber(tallentFromCSV[dataKeyResumeNum])
                 if (needDiamod > tonumber(self:getRoleData(roleDiamond))) then
                     flag = false
-                    self:addDiamond(-needDiamod)
+                    self:addDiamond(-needDiamod, nil, nil, presentation)
                     self:sendSystemInfo("钻石不足，无法学习")
                     ToastUtil:toastString("钻石不足，无法学习")
                 end

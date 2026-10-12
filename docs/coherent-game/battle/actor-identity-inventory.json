@@ -1,0 +1,2616 @@
+{
+  "totalRecords": 323,
+  "distinctIcons": 42,
+  "actors": [
+    {
+      "originalIcon": "g_300.png",
+      "originalPath": "bin/res/assets/Images/Boss/g_300.png",
+      "records": [
+        {
+          "ID": "10009",
+          "name": "毒蛇",
+          "description": "一只毒蛇在盯着你",
+          "star": "2",
+          "skill": "0"
+        },
+        {
+          "ID": "10014",
+          "name": "水蛇",
+          "description": "普通的水蛇，性情暴躁。",
+          "star": "2",
+          "skill": "0"
+        },
+        {
+          "ID": "10020",
+          "name": "巨环海蛇",
+          "description": "一只海底巨蛇",
+          "star": "3",
+          "skill": "0"
+        },
+        {
+          "ID": "10025",
+          "name": "噬魂巨蟒",
+          "description": "双目之中魔焰吞吐，喜食过路的行人。",
+          "star": "3",
+          "skill": "0"
+        },
+        {
+          "ID": "10039",
+          "name": "冰霜雪蟒",
+          "description": "冰原之下潜藏的巨蟒。",
+          "star": "4",
+          "skill": "0"
+        },
+        {
+          "ID": "10106",
+          "name": "水蛇",
+          "description": "普通的水蛇，性情暴躁。",
+          "star": "2",
+          "skill": "0"
+        },
+        {
+          "ID": "10127",
+          "name": "冰霜雪蟒",
+          "description": "冰原之下潜藏的巨蟒。",
+          "star": "4",
+          "skill": "0"
+        }
+      ],
+      "uniqueNames": [
+        "冰霜雪蟒",
+        "噬魂巨蟒",
+        "巨环海蛇",
+        "毒蛇",
+        "水蛇"
+      ]
+    },
+    {
+      "originalIcon": "g_301.png",
+      "originalPath": "bin/res/assets/Images/Boss/g_301.png",
+      "records": [
+        {
+          "ID": "10023",
+          "name": "幽灵船员",
+          "description": "死去多时的船员，注入魔力后可以行动，但不过行尸走肉。",
+          "star": "3",
+          "skill": "0"
+        },
+        {
+          "ID": "10029",
+          "name": "残缺木头人",
+          "description": "木头雕就的人偶，不过已然破损。",
+          "star": "3",
+          "skill": "0"
+        },
+        {
+          "ID": "10096",
+          "name": "地龙",
+          "description": "有一定的龙族血脉",
+          "star": "1",
+          "skill": "0"
+        },
+        {
+          "ID": "10105",
+          "name": "海龙",
+          "description": "传说中水神的孩子",
+          "star": "2",
+          "skill": "0"
+        },
+        {
+          "ID": "10115",
+          "name": "噬魂巨蟒",
+          "description": "双目之中魔焰吞吐，喜食过路的行人。",
+          "star": "3",
+          "skill": "0"
+        },
+        {
+          "ID": "20032",
+          "name": "黑胡子分身",
+          "description": "一只隐藏的任务怪",
+          "star": "5",
+          "skill": "0"
+        }
+      ],
+      "uniqueNames": [
+        "噬魂巨蟒",
+        "地龙",
+        "幽灵船员",
+        "残缺木头人",
+        "海龙",
+        "黑胡子分身"
+      ]
+    },
+    {
+      "originalIcon": "g_302.png",
+      "originalPath": "bin/res/assets/Images/Boss/g_302.png",
+      "records": [
+        {
+          "ID": "10013",
+          "name": "海盗哨兵",
+          "description": "阴狠的海盗哨兵。",
+          "star": "2",
+          "skill": "0"
+        },
+        {
+          "ID": "10031",
+          "name": "石人守卫",
+          "description": "石头雕成的守卫，拥有不死之身，对周围一切的生命都怀有敌意。",
+          "star": "4",
+          "skill": "0"
+        },
+        {
+          "ID": "10060",
+          "name": "矮人",
+          "description": "穴居的矮人，精于兵刃的锻造。",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "10061",
+          "name": "狂暴的矮人",
+          "description": "愤怒的矮人，擅长隐身攻击和近战。",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "10089",
+          "name": "暗黑骑士",
+          "description": "死去多时的战骨，被暗黑魔法从泥土里唤醒。",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "10119",
+          "name": "残缺石人",
+          "description": "一堆碎石，隐约能看出人形轮廓。",
+          "star": "3",
+          "skill": "0"
+        },
+        {
+          "ID": "10144",
+          "name": "矮人",
+          "description": "穴居的矮人，精于兵刃的锻造。",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "10145",
+          "name": "狂暴的矮人",
+          "description": "愤怒的矮人，擅长隐身攻击和近战。",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "10168",
+          "name": "暗黑骑士",
+          "description": "死去多时的战骨，被暗黑魔法从泥土里唤醒。",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "20013",
+          "name": "一百只",
+          "description": "一只隐藏的任务怪",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "20020",
+          "name": "蓝色妖人",
+          "description": "一只隐藏的任务怪",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "20033",
+          "name": "黑胡子魂魄",
+          "description": "一只隐藏的任务怪",
+          "star": "5",
+          "skill": "0"
+        }
+      ],
+      "uniqueNames": [
+        "一百只",
+        "暗黑骑士",
+        "残缺石人",
+        "海盗哨兵",
+        "狂暴的矮人",
+        "矮人",
+        "石人守卫",
+        "蓝色妖人",
+        "黑胡子魂魄"
+      ]
+    },
+    {
+      "originalIcon": "g_303.png",
+      "originalPath": "bin/res/assets/Images/Boss/g_303.png",
+      "records": [
+        {
+          "ID": "10012",
+          "name": "海盗喽啰",
+          "description": "好勇斗狠的喽啰。",
+          "star": "2",
+          "skill": "0"
+        },
+        {
+          "ID": "10027",
+          "name": "幽灵船长",
+          "description": "诡秘的幽灵船长，贪婪嗜血，来历成谜。",
+          "star": "3",
+          "skill": "0"
+        },
+        {
+          "ID": "10047",
+          "name": "深渊恶灵",
+          "description": "溺死者不散的恶灵，久居深渊，兴风作浪。",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "10051",
+          "name": "探险者亡灵",
+          "description": "枉死探险者的英灵，偶尔袭击落单的行人。",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "10083",
+          "name": "亡灵士兵",
+          "description": "心中充满忌妒和贪念的士兵，绝不放过过往的船只。",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "10084",
+          "name": "亡灵护卫",
+          "description": "亡灵化身的护卫，冷血无情，杀生无数。",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "10085",
+          "name": "亡灵巫师",
+          "description": "被亡灵纠缠吞噬了的巫师，擅长亡灵魔法。",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "10086",
+          "name": "亡灵舵手",
+          "description": "亡灵控制的舵手，邪恶自私而充满欲念。",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "10087",
+          "name": "亡灵船长",
+          "description": "亡灵化身的船长，作恶多端。",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "10088",
+          "name": "亡灵骑兵",
+          "description": "铁骑无情，蹄下死伤无数。",
+          "star": "6",
+          "skill": "0"
+        },
+        {
+          "ID": "10101",
+          "name": "强盗哨兵",
+          "description": "阴险的强盗哨兵。",
+          "star": "1",
+          "skill": "0"
+        },
+        {
+          "ID": "10117",
+          "name": "幽灵船长",
+          "description": "诡秘的幽灵船长，贪婪嗜血，来历成谜。",
+          "star": "3",
+          "skill": "0"
+        },
+        {
+          "ID": "10133",
+          "name": "深渊恶灵",
+          "description": "溺死者不散的恶灵，久居深渊，兴风作浪。",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "10137",
+          "name": "探险者亡灵",
+          "description": "枉死探险者的英灵，偶尔袭击落单的行人。",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "10163",
+          "name": "亡灵士兵",
+          "description": "心中充满忌妒和贪念的士兵，绝不放过过往的船只。",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "10164",
+          "name": "亡灵护卫",
+          "description": "亡灵化身的护卫，冷血无情，杀生无数。",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "10165",
+          "name": "亡灵巫师",
+          "description": "被亡灵纠缠吞噬了的巫师，擅长亡灵魔法。",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "10166",
+          "name": "亡灵舵手",
+          "description": "亡灵控制的舵手，邪恶自私而充满欲念。",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "10167",
+          "name": "亡灵船长",
+          "description": "亡灵化身的船长，作恶多端。",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "20003",
+          "name": "杰克魂魄",
+          "description": "一只隐藏的任务怪",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "20031",
+          "name": "沉船冤魂",
+          "description": "一只隐藏的任务怪",
+          "star": "5",
+          "skill": "0"
+        }
+      ],
+      "uniqueNames": [
+        "亡灵士兵",
+        "亡灵巫师",
+        "亡灵护卫",
+        "亡灵舵手",
+        "亡灵船长",
+        "亡灵骑兵",
+        "幽灵船长",
+        "强盗哨兵",
+        "探险者亡灵",
+        "杰克魂魄",
+        "沉船冤魂",
+        "海盗喽啰",
+        "深渊恶灵"
+      ]
+    },
+    {
+      "originalIcon": "g_304.png",
+      "originalPath": "bin/res/assets/Images/Boss/g_304.png",
+      "records": [
+        {
+          "ID": "10003",
+          "name": "骷髅法师",
+          "description": "一具枯骨，只剩下战斗的本能。",
+          "star": "1",
+          "skill": "0"
+        },
+        {
+          "ID": "10028",
+          "name": "血魔",
+          "description": "暗夜中的独行者，行事诡秘，一身血腥经久不散。",
+          "star": "3",
+          "skill": "0"
+        },
+        {
+          "ID": "10043",
+          "name": "腐烂囚犯",
+          "description": "逐渐腐烂的囚犯，拥有强横的攻击力。",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "10046",
+          "name": "怨灵",
+          "description": "肉身已然腐朽，无知无觉，只余下不断攻击的本能。",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "10069",
+          "name": "骷髅船长",
+          "description": "血肉早已化作飞灰，只余下守卫战船、击杀入侵者的信念。",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "10130",
+          "name": "腐烂囚犯",
+          "description": "逐渐腐烂的囚犯，拥有强横的攻击力。",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "10152",
+          "name": "骷髅船长",
+          "description": "血肉早已化作飞灰，只余下守卫战船、击杀入侵者的信念。",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "20002",
+          "name": "假杰克船长",
+          "description": "一只隐藏的任务怪",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "20034",
+          "name": "黑胡子",
+          "description": "一只隐藏的任务怪",
+          "star": "5",
+          "skill": "0"
+        }
+      ],
+      "uniqueNames": [
+        "假杰克船长",
+        "怨灵",
+        "腐烂囚犯",
+        "血魔",
+        "骷髅法师",
+        "骷髅船长",
+        "黑胡子"
+      ]
+    },
+    {
+      "originalIcon": "g_305.png",
+      "originalPath": "bin/res/assets/Images/Boss/g_305.png",
+      "records": [
+        {
+          "ID": "10063",
+          "name": "迷失的精灵",
+          "description": "受到黑暗力量侵蚀的精灵。",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "10077",
+          "name": "土精灵",
+          "description": "掌控元素土的精灵。",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "10078",
+          "name": "风精灵",
+          "description": "掌握元素风的精灵。",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "10079",
+          "name": "火精灵",
+          "description": "掌控元素火的精灵。",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "10080",
+          "name": "冰精灵",
+          "description": "掌控特殊元素冰的精灵。",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "10081",
+          "name": "木精灵",
+          "description": "掌握元素木的精灵。",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "10082",
+          "name": "水精灵",
+          "description": "掌控元素水的精灵。",
+          "star": "6",
+          "skill": "0"
+        },
+        {
+          "ID": "10091",
+          "name": "暗黑美人鱼",
+          "description": "居于深渊之中的人鱼，被暗黑魔法浸染，智力超群。",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "10097",
+          "name": "精灵",
+          "description": "本性善良，但被邪恶的魔法控制",
+          "star": "1",
+          "skill": "0"
+        },
+        {
+          "ID": "10104",
+          "name": "美人鱼",
+          "description": "凶猛的人鱼",
+          "star": "2",
+          "skill": "0"
+        },
+        {
+          "ID": "10147",
+          "name": "迷失的精灵",
+          "description": "受到黑暗力量侵蚀的精灵。",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "10158",
+          "name": "土精灵",
+          "description": "掌控元素土的精灵。",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "10159",
+          "name": "风精灵",
+          "description": "掌握元素风的精灵。",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "10160",
+          "name": "火精灵",
+          "description": "掌控元素火的精灵。",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "10161",
+          "name": "冰精灵",
+          "description": "掌控特殊元素冰的精灵。",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "10162",
+          "name": "木精灵",
+          "description": "掌握元素木的精灵。",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "10170",
+          "name": "暗黑美人鱼",
+          "description": "居于深渊之中的人鱼，被暗黑魔法浸染，智力超群。",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "20014",
+          "name": "腐烂的美人鱼",
+          "description": "一只隐藏的任务怪",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "20021",
+          "name": "蓝色妖姬",
+          "description": "一只隐藏的任务怪",
+          "star": "5",
+          "skill": "0"
+        }
+      ],
+      "uniqueNames": [
+        "冰精灵",
+        "土精灵",
+        "暗黑美人鱼",
+        "木精灵",
+        "水精灵",
+        "火精灵",
+        "精灵",
+        "美人鱼",
+        "腐烂的美人鱼",
+        "蓝色妖姬",
+        "迷失的精灵",
+        "风精灵"
+      ]
+    },
+    {
+      "originalIcon": "g_306.png",
+      "originalPath": "bin/res/assets/Images/Boss/g_306.png",
+      "records": [
+        {
+          "ID": "10033",
+          "name": "木头人守卫",
+          "description": "木头雕成的守卫，防御力一般。",
+          "star": "4",
+          "skill": "0"
+        },
+        {
+          "ID": "10056",
+          "name": "树人",
+          "description": "森林中的精怪，摘叶飞花，皆可伤人。",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "10090",
+          "name": "暗黑弓箭手",
+          "description": "旧日百步穿杨的弓箭手，被暗黑魔法从黑暗中唤醒。",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "10118",
+          "name": "残缺木头人",
+          "description": "木头雕就的人偶，不过已然破损。",
+          "star": "3",
+          "skill": "0"
+        },
+        {
+          "ID": "10141",
+          "name": "树人",
+          "description": "森林中的精怪，摘叶飞花，皆可伤人。",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "10169",
+          "name": "暗黑弓箭手",
+          "description": "旧日百步穿杨的弓箭手，被暗黑魔法从黑暗中唤醒。",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "20007",
+          "name": "守护者",
+          "description": "一只隐藏的任务怪",
+          "star": "5",
+          "skill": "0"
+        }
+      ],
+      "uniqueNames": [
+        "守护者",
+        "暗黑弓箭手",
+        "木头人守卫",
+        "树人",
+        "残缺木头人"
+      ]
+    },
+    {
+      "originalIcon": "g_307.png",
+      "originalPath": "bin/res/assets/Images/Boss/g_307.png",
+      "records": [
+        {
+          "ID": "10004",
+          "name": "蛇发女妖",
+          "description": "蛇发妖女，狠戾无情，下手不留活口。",
+          "star": "1",
+          "skill": "0"
+        },
+        {
+          "ID": "10016",
+          "name": "海盗头目",
+          "description": "居于深渊之中的人鱼，智力超群。",
+          "star": "2",
+          "skill": "0"
+        },
+        {
+          "ID": "10034",
+          "name": "魔法师船长",
+          "description": "略通魔法的船长。",
+          "star": "4",
+          "skill": "0"
+        },
+        {
+          "ID": "10071",
+          "name": "娜迦喽啰",
+          "description": "人首蛇身的海怪，能操控简单的魔法进行治疗。",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "10072",
+          "name": "娜迦守卫",
+          "description": "深海精灵，姿秀仪丰，拥有海洋之力，能够治疗友军。",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "10073",
+          "name": "风暴美人鱼",
+          "description": "海洋的精灵，以歌声诱惑过往的船只。",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "10074",
+          "name": "雷霆娜迦",
+          "description": "人首蛇身的怪物，谙熟古代魔法。",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "10112",
+          "name": "海盗奴隶",
+          "description": "被驱使的奴隶向你冲来",
+          "star": "3",
+          "skill": "0"
+        },
+        {
+          "ID": "10153",
+          "name": "娜迦喽啰",
+          "description": "人首蛇身的海怪，能操控简单的魔法进行治疗。",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "10154",
+          "name": "娜迦守卫",
+          "description": "深海精灵，姿秀仪丰，拥有海洋之力，能够治疗友军。",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "10155",
+          "name": "风暴美人鱼",
+          "description": "海洋的精灵，以歌声诱惑过往的船只。",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "10156",
+          "name": "雷霆娜迦",
+          "description": "人首蛇身的怪物，谙熟古代魔法。",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "20004",
+          "name": "捣乱的鲛人",
+          "description": "一只隐藏的任务怪",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "20022",
+          "name": "狂暴妖人",
+          "description": "一只隐藏的任务怪",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "20036",
+          "name": "食尸鬼",
+          "description": "一只隐藏的任务怪",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "20037",
+          "name": "礼帽怪人",
+          "description": "一只隐藏的任务怪",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "20038",
+          "name": "礼帽劫匪",
+          "description": "一只隐藏的任务怪",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "20040",
+          "name": "盗窃犯",
+          "description": "一只隐藏的任务怪",
+          "star": "5",
+          "skill": "0"
+        }
+      ],
+      "uniqueNames": [
+        "娜迦喽啰",
+        "娜迦守卫",
+        "捣乱的鲛人",
+        "海盗头目",
+        "海盗奴隶",
+        "狂暴妖人",
+        "盗窃犯",
+        "礼帽劫匪",
+        "礼帽怪人",
+        "蛇发女妖",
+        "雷霆娜迦",
+        "风暴美人鱼",
+        "食尸鬼",
+        "魔法师船长"
+      ]
+    },
+    {
+      "originalIcon": "g_308.png",
+      "originalPath": "bin/res/assets/Images/Boss/g_308.png",
+      "records": [
+        {
+          "ID": "10002",
+          "name": "章鱼",
+          "description": "深海章鱼，善于用巨大的触手袭击过往船只。",
+          "star": "1",
+          "skill": "0"
+        },
+        {
+          "ID": "10005",
+          "name": "巨型章鱼",
+          "description": "巨型章鱼，或者说——挪威海怪。",
+          "star": "1",
+          "skill": "0"
+        },
+        {
+          "ID": "10018",
+          "name": "章鱼",
+          "description": "一只巨型章鱼",
+          "star": "2",
+          "skill": "0"
+        },
+        {
+          "ID": "10048",
+          "name": "深渊海鱼",
+          "description": "居于深海的怪鱼，以腐尸为食。",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "10070",
+          "name": "食人鱼",
+          "description": "凶恶的食人鱼。",
+          "star": "6",
+          "skill": "0"
+        },
+        {
+          "ID": "10093",
+          "name": "暗黑章鱼",
+          "description": "深渊的霸主，巨大的触手能够轻易掀翻一艘船只。",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "10134",
+          "name": "深渊海鱼",
+          "description": "居于深海的怪鱼，以腐尸为食。",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "10172",
+          "name": "暗黑章鱼",
+          "description": "深渊的霸主，巨大的触手能够轻易掀翻一艘船只。",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "20006",
+          "name": "打捞章人",
+          "description": "一只隐藏的任务怪",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "20015",
+          "name": "狂暴章鱼",
+          "description": "一只隐藏的任务怪",
+          "star": "5",
+          "skill": "0"
+        }
+      ],
+      "uniqueNames": [
+        "巨型章鱼",
+        "打捞章人",
+        "暗黑章鱼",
+        "深渊海鱼",
+        "狂暴章鱼",
+        "章鱼",
+        "食人鱼"
+      ]
+    },
+    {
+      "originalIcon": "g_309.png",
+      "originalPath": "bin/res/assets/Images/Boss/g_309.png",
+      "records": [
+        {
+          "ID": "10017",
+          "name": "美人鱼守卫",
+          "description": "美人鱼的卫士",
+          "star": "2",
+          "skill": "0"
+        },
+        {
+          "ID": "10022",
+          "name": "美人鱼首领",
+          "description": "有最高贵的美人鱼血统",
+          "star": "3",
+          "skill": "0"
+        },
+        {
+          "ID": "10095",
+          "name": "普通美人鱼",
+          "description": "海洋的精灵，以歌声诱惑过往的船只",
+          "star": "1",
+          "skill": "0"
+        }
+      ],
+      "uniqueNames": [
+        "普通美人鱼",
+        "美人鱼守卫",
+        "美人鱼首领"
+      ]
+    },
+    {
+      "originalIcon": "g_310.png",
+      "originalPath": "bin/res/assets/Images/Boss/g_310.png",
+      "records": [
+        {
+          "ID": "10008",
+          "name": "强盗哨兵",
+          "description": "阴险的强盗哨兵。",
+          "star": "1",
+          "skill": "0"
+        },
+        {
+          "ID": "10019",
+          "name": "海盗水手",
+          "description": "贪婪的海盗正盯着你的包裹。",
+          "star": "3",
+          "skill": "0"
+        },
+        {
+          "ID": "10054",
+          "name": "兽人",
+          "description": "灵智未开，浑噩无知。",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "10059",
+          "name": "恶魔护卫",
+          "description": "以秘法炼制的傀儡，只听命于恶魔领主。",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "10075",
+          "name": "精锐海盗船长",
+          "description": "横行海上的海盗船长，骁勇善战。",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "10100",
+          "name": "强盗喽啰",
+          "description": "好勇斗狠的喽啰。",
+          "star": "1",
+          "skill": "0"
+        },
+        {
+          "ID": "10107",
+          "name": "海怪",
+          "description": "丑陋的水怪",
+          "star": "2",
+          "skill": "0"
+        },
+        {
+          "ID": "10120",
+          "name": "石人守卫",
+          "description": "石头雕成的守卫，拥有不死之身，对周围一切的生命都怀有敌意。",
+          "star": "4",
+          "skill": "0"
+        },
+        {
+          "ID": "10139",
+          "name": "兽人",
+          "description": "灵智未开，浑噩无知。",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "10143",
+          "name": "恶魔护卫",
+          "description": "以秘法炼制的傀儡，只听命于恶魔领主。",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "10157",
+          "name": "精锐海盗船长",
+          "description": "横行海上的海盗船长，骁勇善战。",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "20009",
+          "name": "十步怪",
+          "description": "一只隐藏的任务怪",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "20025",
+          "name": "疯狂雪人",
+          "description": "一只隐藏的任务怪",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "20030",
+          "name": "游荡水鬼",
+          "description": "一只隐藏的任务怪",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "20035",
+          "name": "城堡守护者",
+          "description": "一只隐藏的任务怪",
+          "star": "5",
+          "skill": "0"
+        }
+      ],
+      "uniqueNames": [
+        "兽人",
+        "十步怪",
+        "城堡守护者",
+        "强盗哨兵",
+        "强盗喽啰",
+        "恶魔护卫",
+        "海怪",
+        "海盗水手",
+        "游荡水鬼",
+        "疯狂雪人",
+        "石人守卫",
+        "精锐海盗船长"
+      ]
+    },
+    {
+      "originalIcon": "g_311.png",
+      "originalPath": "bin/res/assets/Images/Boss/g_311.png",
+      "records": [
+        {
+          "ID": "10010",
+          "name": "食人鱼群",
+          "description": "凶恶的食人鱼群",
+          "star": "2",
+          "skill": "0"
+        },
+        {
+          "ID": "10015",
+          "name": "鮟鱇鱼",
+          "description": "一群鮟鱇鱼",
+          "star": "2",
+          "skill": "0"
+        },
+        {
+          "ID": "10049",
+          "name": "深渊海妖",
+          "description": "海中巨怪，防御强横，刀枪不侵。",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "10052",
+          "name": "深渊恶魔",
+          "description": "海妖的首领，统治一方的海中霸主。",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "10057",
+          "name": "兽人头领",
+          "description": "拥有强大的力量，悍不畏死。",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "10135",
+          "name": "深渊海妖",
+          "description": "海中巨怪，防御强横，刀枪不侵。",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "10142",
+          "name": "兽人头领",
+          "description": "拥有强大的力量，悍不畏死。",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "20005",
+          "name": "变色鲛人",
+          "description": "一只隐藏的任务怪",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "20018",
+          "name": "狂暴鱼人",
+          "description": "一只隐藏的任务怪",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "20019",
+          "name": "疯狂鱼人",
+          "description": "一只隐藏的任务怪",
+          "star": "5",
+          "skill": "0"
+        }
+      ],
+      "uniqueNames": [
+        "兽人头领",
+        "变色鲛人",
+        "深渊恶魔",
+        "深渊海妖",
+        "狂暴鱼人",
+        "疯狂鱼人",
+        "食人鱼群",
+        "鮟鱇鱼"
+      ]
+    },
+    {
+      "originalIcon": "g_312.png",
+      "originalPath": "bin/res/assets/Images/Boss/g_312.png",
+      "records": [
+        {
+          "ID": "10030",
+          "name": "残缺石人",
+          "description": "一堆碎石，隐约能看出人形轮廓。",
+          "star": "3",
+          "skill": "0"
+        },
+        {
+          "ID": "10041",
+          "name": "无头丧尸",
+          "description": "亡灵生物，不知疼痛。",
+          "star": "4",
+          "skill": "0"
+        },
+        {
+          "ID": "10111",
+          "name": "巨环海蛇",
+          "description": "一只海底巨蛇",
+          "star": "3",
+          "skill": "0"
+        },
+        {
+          "ID": "10122",
+          "name": "木头人守卫",
+          "description": "木头雕成的守卫，防御力一般。",
+          "star": "4",
+          "skill": "0"
+        },
+        {
+          "ID": "10128",
+          "name": "无头丧尸",
+          "description": "亡灵生物，不知疼痛。",
+          "star": "4",
+          "skill": "0"
+        },
+        {
+          "ID": "20008",
+          "name": "章鱼鲸",
+          "description": "一只隐藏的任务怪",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "20016",
+          "name": "疯狂章鱼",
+          "description": "一只隐藏的任务怪",
+          "star": "5",
+          "skill": "0"
+        }
+      ],
+      "uniqueNames": [
+        "巨环海蛇",
+        "无头丧尸",
+        "木头人守卫",
+        "残缺石人",
+        "疯狂章鱼",
+        "章鱼鲸"
+      ]
+    },
+    {
+      "originalIcon": "g_313.png",
+      "originalPath": "bin/res/assets/Images/Boss/g_313.png",
+      "records": [
+        {
+          "ID": "10035",
+          "name": "半兽人",
+          "description": "半人半兽的奇物，誓死捍卫自己的村庄。",
+          "star": "4",
+          "skill": "0"
+        },
+        {
+          "ID": "10040",
+          "name": "半兽人精英",
+          "description": "半兽人中的好手，矫健而敏捷。",
+          "star": "4",
+          "skill": "0"
+        },
+        {
+          "ID": "10064",
+          "name": "恶魔领主",
+          "description": "嗜血恶魔，仇视人类。",
+          "star": "6",
+          "skill": "0"
+        },
+        {
+          "ID": "10102",
+          "name": "强盗",
+          "description": "普通的强盗",
+          "star": "2",
+          "skill": "0"
+        },
+        {
+          "ID": "10109",
+          "name": "海盗",
+          "description": "狡诈的海盗哨兵，正谋划着如何聚敛钱财。",
+          "star": "2",
+          "skill": "0"
+        },
+        {
+          "ID": "10123",
+          "name": "半兽人",
+          "description": "半人半兽的奇物，誓死捍卫自己的村庄。",
+          "star": "4",
+          "skill": "0"
+        },
+        {
+          "ID": "20000",
+          "name": "着火的怪人",
+          "description": "一只隐藏的任务怪",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "20026",
+          "name": "雪橇怪人",
+          "description": "一只隐藏的任务怪",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "20039",
+          "name": "通缉犯",
+          "description": "一只隐藏的任务怪",
+          "star": "5",
+          "skill": "0"
+        }
+      ],
+      "uniqueNames": [
+        "半兽人",
+        "半兽人精英",
+        "强盗",
+        "恶魔领主",
+        "海盗",
+        "着火的怪人",
+        "通缉犯",
+        "雪橇怪人"
+      ]
+    },
+    {
+      "originalIcon": "g_314.png",
+      "originalPath": "bin/res/assets/Images/Boss/g_314.png",
+      "records": [
+        {
+          "ID": "10011",
+          "name": "强盗首领",
+          "description": "为霸一方的强盗首领。",
+          "star": "2",
+          "skill": "0"
+        },
+        {
+          "ID": "10062",
+          "name": "恶魔傀儡",
+          "description": "以秘法炼制的傀儡，只听命于恶魔领主。",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "10108",
+          "name": "海盗",
+          "description": "逼上梁山的海盗。",
+          "star": "2",
+          "skill": "0"
+        },
+        {
+          "ID": "10121",
+          "name": "石像鬼",
+          "description": "被雕刻出恶魔样貌的石像，因远古的咒语而获得新生。",
+          "star": "4",
+          "skill": "0"
+        },
+        {
+          "ID": "10146",
+          "name": "恶魔傀儡",
+          "description": "以秘法炼制的傀儡，只听命于恶魔领主。",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "20001",
+          "name": "沉睡的大副",
+          "description": "一只隐藏的任务怪",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "20027",
+          "name": "雪水手",
+          "description": "一只隐藏的任务怪",
+          "star": "5",
+          "skill": "0"
+        }
+      ],
+      "uniqueNames": [
+        "强盗首领",
+        "恶魔傀儡",
+        "沉睡的大副",
+        "海盗",
+        "石像鬼",
+        "雪水手"
+      ]
+    },
+    {
+      "originalIcon": "g_315.png",
+      "originalPath": "bin/res/assets/Images/Boss/g_315.png",
+      "records": [
+        {
+          "ID": "10021",
+          "name": "海盗奴隶",
+          "description": "被驱使的奴隶向你冲来",
+          "star": "3",
+          "skill": "0"
+        },
+        {
+          "ID": "10024",
+          "name": "幽灵水手",
+          "description": "死去多时的水手，一缕贪念使他尚能行走于世。",
+          "star": "3",
+          "skill": "0"
+        },
+        {
+          "ID": "10032",
+          "name": "石像鬼",
+          "description": "被雕刻出恶魔样貌的石像，因远古的咒语而获得新生。",
+          "star": "4",
+          "skill": "0"
+        },
+        {
+          "ID": "10103",
+          "name": "强盗",
+          "description": "普通的强盗",
+          "star": "2",
+          "skill": "0"
+        },
+        {
+          "ID": "10110",
+          "name": "海盗水手",
+          "description": "贪婪的海盗正盯着你的包裹。",
+          "star": "3",
+          "skill": "0"
+        },
+        {
+          "ID": "20010",
+          "name": "海神分身",
+          "description": "一只隐藏的任务怪",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "20024",
+          "name": "极地雪人",
+          "description": "一只隐藏的任务怪",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "20028",
+          "name": "采珠者",
+          "description": "一只隐藏的任务怪",
+          "star": "5",
+          "skill": "0"
+        }
+      ],
+      "uniqueNames": [
+        "幽灵水手",
+        "强盗",
+        "极地雪人",
+        "海盗奴隶",
+        "海盗水手",
+        "海神分身",
+        "石像鬼",
+        "采珠者"
+      ]
+    },
+    {
+      "originalIcon": "g_316.png",
+      "originalPath": "bin/res/assets/Images/Boss/g_316.png",
+      "records": [
+        {
+          "ID": "10036",
+          "name": "白熊",
+          "description": "饥饿的白熊，以血肉为食。",
+          "star": "4",
+          "skill": "0"
+        },
+        {
+          "ID": "10037",
+          "name": "嗜血白熊",
+          "description": "残暴的白熊，嗜血如命。",
+          "star": "4",
+          "skill": "0"
+        },
+        {
+          "ID": "10053",
+          "name": "魔熊",
+          "description": "拥有魔力的巨熊，能手撕生铁。",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "10058",
+          "name": "狂暴魔熊",
+          "description": "狠霸残戾的凶兽，睚眦必报。",
+          "star": "6",
+          "skill": "0"
+        },
+        {
+          "ID": "10099",
+          "name": "熊",
+          "description": "饥饿的熊，以血肉为食",
+          "star": "1",
+          "skill": "0"
+        },
+        {
+          "ID": "10124",
+          "name": "白熊",
+          "description": "饥饿的白熊，以血肉为食。",
+          "star": "4",
+          "skill": "0"
+        },
+        {
+          "ID": "10125",
+          "name": "嗜血白熊",
+          "description": "残暴的白熊，嗜血如命。",
+          "star": "4",
+          "skill": "0"
+        },
+        {
+          "ID": "10138",
+          "name": "魔熊",
+          "description": "拥有魔力的巨熊，能手撕生铁。",
+          "star": "5",
+          "skill": "0"
+        }
+      ],
+      "uniqueNames": [
+        "嗜血白熊",
+        "熊",
+        "狂暴魔熊",
+        "白熊",
+        "魔熊"
+      ]
+    },
+    {
+      "originalIcon": "g_317.png",
+      "originalPath": "bin/res/assets/Images/Boss/g_317.png",
+      "records": [
+        {
+          "ID": "10001",
+          "name": "骷髅兵",
+          "description": "邪恶的亡灵生物，一身血肉，皆为灰土。",
+          "star": "1",
+          "skill": "0"
+        },
+        {
+          "ID": "10006",
+          "name": "骷髅战士",
+          "description": "行动敏捷，智力低下，不惧死亡。",
+          "star": "1",
+          "skill": "0"
+        },
+        {
+          "ID": "10045",
+          "name": "冤魂",
+          "description": "没有什么意识，却异常难缠",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "10050",
+          "name": "恶灵",
+          "description": "怨气纠合而成的邪恶生物，无影无形。",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "10065",
+          "name": "骷髅护卫",
+          "description": "行尸走肉，只会不断攻击。",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "10066",
+          "name": "骷髅水手",
+          "description": "水手的骸骨，被恶魔复生。",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "10067",
+          "name": "骷髅领主",
+          "description": "收到邪恶力量支配的骷髅领主，拥有巨大的诅咒之力。",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "10068",
+          "name": "骷髅弓箭手",
+          "description": "交战的画面是他们最后的记忆。",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "10094",
+          "name": "暗黑巫师",
+          "description": "残暴的法师，在黑夜中作战会有极大的加成。",
+          "star": "6",
+          "skill": "0"
+        },
+        {
+          "ID": "10113",
+          "name": "幽灵船员",
+          "description": "死去多时的船员，注入魔力后可以行动，但不过行尸走肉。",
+          "star": "3",
+          "skill": "0"
+        },
+        {
+          "ID": "10132",
+          "name": "冤魂",
+          "description": "没有什么意识，却异常难缠",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "10136",
+          "name": "恶灵",
+          "description": "怨气纠合而成的邪恶生物，无影无形。",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "10148",
+          "name": "骷髅护卫",
+          "description": "行尸走肉，只会不断攻击。",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "10149",
+          "name": "骷髅水手",
+          "description": "水手的骸骨，被恶魔复生。",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "10150",
+          "name": "骷髅领主",
+          "description": "收到邪恶力量支配的骷髅领主，拥有巨大的诅咒之力。",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "10151",
+          "name": "骷髅弓箭手",
+          "description": "交战的画面是他们最后的记忆。",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "20029",
+          "name": "珍珠守护者",
+          "description": "一只隐藏的任务怪",
+          "star": "5",
+          "skill": "0"
+        }
+      ],
+      "uniqueNames": [
+        "冤魂",
+        "幽灵船员",
+        "恶灵",
+        "暗黑巫师",
+        "珍珠守护者",
+        "骷髅兵",
+        "骷髅弓箭手",
+        "骷髅战士",
+        "骷髅护卫",
+        "骷髅水手",
+        "骷髅领主"
+      ]
+    },
+    {
+      "originalIcon": "g_318.png",
+      "originalPath": "bin/res/assets/Images/Boss/g_318.png",
+      "records": [
+        {
+          "ID": "10026",
+          "name": "幽鬼",
+          "description": "怨灵的化身，聚散无形，飘忽不定，最爱纠缠生灵。",
+          "star": "3",
+          "skill": "0"
+        },
+        {
+          "ID": "10042",
+          "name": "断臂丧尸",
+          "description": "满身尸臭的怪物。",
+          "star": "4",
+          "skill": "0"
+        },
+        {
+          "ID": "10076",
+          "name": "宝藏守护者",
+          "description": "宝藏守护者凭借过人的听觉、视觉能迅速发现入侵者的踪迹。",
+          "star": "6",
+          "skill": "0"
+        },
+        {
+          "ID": "10114",
+          "name": "幽灵水手",
+          "description": "死去多时的水手，一缕贪念使他尚能行走于世。",
+          "star": "3",
+          "skill": "0"
+        },
+        {
+          "ID": "10116",
+          "name": "幽鬼",
+          "description": "怨灵的化身，聚散无形，飘忽不定，最爱纠缠生灵。",
+          "star": "3",
+          "skill": "0"
+        },
+        {
+          "ID": "10129",
+          "name": "断臂丧尸",
+          "description": "满身尸臭的怪物。",
+          "star": "4",
+          "skill": "0"
+        },
+        {
+          "ID": "20011",
+          "name": "掌控者",
+          "description": "一只隐藏的任务怪",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "20017",
+          "name": "荷兰号船长",
+          "description": "一只隐藏的任务怪",
+          "star": "5",
+          "skill": "0"
+        }
+      ],
+      "uniqueNames": [
+        "宝藏守护者",
+        "幽灵水手",
+        "幽鬼",
+        "掌控者",
+        "断臂丧尸",
+        "荷兰号船长"
+      ]
+    },
+    {
+      "originalIcon": "g_319.png",
+      "originalPath": "bin/res/assets/Images/Boss/g_319.png",
+      "records": [
+        {
+          "ID": "10007",
+          "name": "强盗喽啰",
+          "description": "好勇斗狠的喽啰。",
+          "star": "1",
+          "skill": "0"
+        },
+        {
+          "ID": "10038",
+          "name": "冰霜巨人",
+          "description": "冰雪凝成的巨大凶兽，一身蛮力，行动迟缓。",
+          "star": "4",
+          "skill": "0"
+        },
+        {
+          "ID": "10044",
+          "name": "持刀丧尸",
+          "description": "无知无识的丧失，手持大刀，浑身流脓。",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "10055",
+          "name": "迷失的寻宝人",
+          "description": "受到邪恶力量的侵蚀，迷失心智，不人不鬼。",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "10092",
+          "name": "暗黑僵尸",
+          "description": "浑身腐臭，贪婪嗜血的僵尸。",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "10098",
+          "name": "力士",
+          "description": "力大无穷，头脑简单",
+          "star": "1",
+          "skill": "0"
+        },
+        {
+          "ID": "10126",
+          "name": "冰霜巨人",
+          "description": "冰雪凝成的巨大凶兽，一身蛮力，行动迟缓。",
+          "star": "4",
+          "skill": "0"
+        },
+        {
+          "ID": "10131",
+          "name": "持刀丧尸",
+          "description": "无知无识的丧失，手持大刀，浑身流脓。",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "10140",
+          "name": "迷失的寻宝人",
+          "description": "受到邪恶力量的侵蚀，迷失心智，不人不鬼。",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "10171",
+          "name": "暗黑僵尸",
+          "description": "浑身腐臭，贪婪嗜血的僵尸。",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "20012",
+          "name": "苦苦",
+          "description": "一只隐藏的任务怪",
+          "star": "5",
+          "skill": "0"
+        },
+        {
+          "ID": "20023",
+          "name": "疯狂妖人",
+          "description": "一只隐藏的任务怪",
+          "star": "5",
+          "skill": "0"
+        }
+      ],
+      "uniqueNames": [
+        "冰霜巨人",
+        "力士",
+        "强盗喽啰",
+        "持刀丧尸",
+        "暗黑僵尸",
+        "疯狂妖人",
+        "苦苦",
+        "迷失的寻宝人"
+      ]
+    },
+    {
+      "originalIcon": "j_1.png",
+      "originalPath": "bin/res/assets/Images/Icon/j_1.png",
+      "records": [
+        {
+          "ID": "100",
+          "name": "低级船员",
+          "description": "普通船员。",
+          "star": "0",
+          "skill": "2"
+        }
+      ],
+      "uniqueNames": [
+        "低级船员"
+      ]
+    },
+    {
+      "originalIcon": "j_10.png",
+      "originalPath": "bin/res/assets/Images/Icon/j_10.png",
+      "records": [
+        {
+          "ID": "133",
+          "name": "火炮",
+          "description": "简陋的火炮，射程很近。",
+          "star": "1",
+          "skill": "33"
+        },
+        {
+          "ID": "134",
+          "name": "加农炮",
+          "description": "炮管较长的火炮，可直击瞄准，减弱敌手的战力。",
+          "star": "2",
+          "skill": "34"
+        },
+        {
+          "ID": "135",
+          "name": "双加农炮",
+          "description": "双管加农炮，拥有两个炮管威力更强。",
+          "star": "3",
+          "skill": "35"
+        },
+        {
+          "ID": "136",
+          "name": "多管加农炮",
+          "description": "多炮管的加农炮，能够有效削弱对手战力。",
+          "star": "4",
+          "skill": "36"
+        }
+      ],
+      "uniqueNames": [
+        "加农炮",
+        "双加农炮",
+        "多管加农炮",
+        "火炮"
+      ]
+    },
+    {
+      "originalIcon": "j_11.png",
+      "originalPath": "bin/res/assets/Images/Icon/j_11.png",
+      "records": [
+        {
+          "ID": "137",
+          "name": "高爆加农炮",
+          "description": "能够发射高爆弹的火炮，杀伤效果显著。",
+          "star": "5",
+          "skill": "37"
+        },
+        {
+          "ID": "138",
+          "name": "加农榴弹炮",
+          "description": "兼具加农炮和榴弹炮弹道特性的火炮。",
+          "star": "6",
+          "skill": "38"
+        }
+      ],
+      "uniqueNames": [
+        "加农榴弹炮",
+        "高爆加农炮"
+      ]
+    },
+    {
+      "originalIcon": "j_12.png",
+      "originalPath": "bin/res/assets/Images/Icon/j_12.png",
+      "records": [
+        {
+          "ID": "139",
+          "name": "火箭炮",
+          "description": "发射火箭弹的多发联装发射机制，火力猛烈，突袭性好。",
+          "star": "2",
+          "skill": "39"
+        },
+        {
+          "ID": "140",
+          "name": "双管火箭炮",
+          "description": "拥有火箭炮两倍的火力，是船战中克敌制胜的法宝。",
+          "star": "3",
+          "skill": "40"
+        },
+        {
+          "ID": "141",
+          "name": "多管火箭炮",
+          "description": "强化之后的火箭炮，多管齐发，威力巨大。",
+          "star": "4",
+          "skill": "41"
+        },
+        {
+          "ID": "142",
+          "name": "烈焰火箭炮",
+          "description": "火箭炮的终极形态。炮发时，炮火齐飞，死伤一片。",
+          "star": "5",
+          "skill": "42"
+        },
+        {
+          "ID": "143",
+          "name": "地狱火飞弹",
+          "description": "飞火流星，招招致命。",
+          "star": "6",
+          "skill": "43"
+        }
+      ],
+      "uniqueNames": [
+        "双管火箭炮",
+        "地狱火飞弹",
+        "多管火箭炮",
+        "火箭炮",
+        "烈焰火箭炮"
+      ]
+    },
+    {
+      "originalIcon": "j_13.png",
+      "originalPath": "bin/res/assets/Images/Icon/j_13.png",
+      "records": [
+        {
+          "ID": "144",
+          "name": "探险者",
+          "description": "初出茅庐的探险者，朝气勃发，身手灵活。",
+          "star": "1",
+          "skill": "44"
+        },
+        {
+          "ID": "145",
+          "name": "佣兵",
+          "description": "年轻的佣兵，出手迅疾如风。",
+          "star": "2",
+          "skill": "45"
+        },
+        {
+          "ID": "146",
+          "name": "铁甲佣兵",
+          "description": "熟练的佣兵，铁甲加身，身轻如燕。",
+          "star": "3",
+          "skill": "46"
+        }
+      ],
+      "uniqueNames": [
+        "佣兵",
+        "探险者",
+        "铁甲佣兵"
+      ]
+    },
+    {
+      "originalIcon": "j_14.png",
+      "originalPath": "bin/res/assets/Images/Icon/j_14.png",
+      "records": [
+        {
+          "ID": "147",
+          "name": "重装佣兵",
+          "description": "重装佣兵，身披重甲依然出手迅捷。",
+          "star": "5",
+          "skill": "47"
+        },
+        {
+          "ID": "148",
+          "name": "佣兵王",
+          "description": "佣兵之王，一声令下，莫敢不从。",
+          "star": "6",
+          "skill": "48"
+        }
+      ],
+      "uniqueNames": [
+        "佣兵王",
+        "重装佣兵"
+      ]
+    },
+    {
+      "originalIcon": "j_15.png",
+      "originalPath": "bin/res/assets/Images/Icon/j_15.png",
+      "records": [
+        {
+          "ID": "149",
+          "name": "骷髅兵",
+          "description": "邪恶的亡灵生物，一身血肉，皆为灰土。",
+          "star": "2",
+          "skill": "49"
+        },
+        {
+          "ID": "150",
+          "name": "装甲骷髅",
+          "description": "身披重甲的骷髅，移动中骨爪与装甲摩擦，咯吱作响。",
+          "star": "3",
+          "skill": "50"
+        },
+        {
+          "ID": "151",
+          "name": "邪恶骷髅",
+          "description": "拥有邪恶力量加持的骷髅，水火不避，刀枪不侵。",
+          "star": "5",
+          "skill": "51"
+        },
+        {
+          "ID": "152",
+          "name": "骷髅王",
+          "description": "宝甲加身的骷髅王者，其诅咒之力足以侵蚀敌手的灵魂。",
+          "star": "6",
+          "skill": "52"
+        }
+      ],
+      "uniqueNames": [
+        "装甲骷髅",
+        "邪恶骷髅",
+        "骷髅兵",
+        "骷髅王"
+      ]
+    },
+    {
+      "originalIcon": "j_16.png",
+      "originalPath": "bin/res/assets/Images/Icon/j_16.png",
+      "records": [
+        {
+          "ID": "153",
+          "name": "鱼人",
+          "description": "深海鱼人，姿容秀丽，下手狠辣。",
+          "star": "2",
+          "skill": "53"
+        },
+        {
+          "ID": "154",
+          "name": "鱼人战士",
+          "description": "深海的守卫，面对入侵者绝不容情。",
+          "star": "3",
+          "skill": "54"
+        },
+        {
+          "ID": "155",
+          "name": "重装鱼人",
+          "description": "身披重甲的鱼人承担了包围家园的重任。",
+          "star": "4",
+          "skill": "55"
+        },
+        {
+          "ID": "156",
+          "name": "鱼人首领",
+          "description": "鱼人族中的斗士，勇猛无双，罕有敌手。",
+          "star": "5",
+          "skill": "56"
+        },
+        {
+          "ID": "157",
+          "name": "鱼人王",
+          "description": "鱼人族中霸主，攻击含而不露，引而不发，如怒涛拍岸，后劲无穷。",
+          "star": "6",
+          "skill": "57"
+        }
+      ],
+      "uniqueNames": [
+        "重装鱼人",
+        "鱼人",
+        "鱼人战士",
+        "鱼人王",
+        "鱼人首领"
+      ]
+    },
+    {
+      "originalIcon": "j_17.png",
+      "originalPath": "bin/res/assets/Images/Icon/j_17.png",
+      "records": [
+        {
+          "ID": "158",
+          "name": "深渊之龙",
+          "description": "潜藏深渊的巨龙，冰冷的龙息让敌手胆寒。",
+          "star": "2",
+          "skill": "58"
+        },
+        {
+          "ID": "159",
+          "name": "狂暴之龙",
+          "description": "即将进化的深渊之龙，拥有极强的狂暴之力。",
+          "star": "3",
+          "skill": "59"
+        },
+        {
+          "ID": "160",
+          "name": "冰霜巨龙",
+          "description": "冰属性巨龙，极低的温度能够降低敌手的速度。",
+          "star": "4",
+          "skill": "60"
+        },
+        {
+          "ID": "161",
+          "name": "寒霜魔龙",
+          "description": "神秘魔龙，栖居之地寒霜一片，拥有冻结敌人的魔力。",
+          "star": "5",
+          "skill": "61"
+        },
+        {
+          "ID": "162",
+          "name": "极寒幽龙王",
+          "description": "幽居极寒之地的龙王，吐息之间，万物成冰。",
+          "star": "6",
+          "skill": "62"
+        }
+      ],
+      "uniqueNames": [
+        "冰霜巨龙",
+        "寒霜魔龙",
+        "极寒幽龙王",
+        "深渊之龙",
+        "狂暴之龙"
+      ]
+    },
+    {
+      "originalIcon": "j_18.png",
+      "originalPath": "bin/res/assets/Images/Icon/j_18.png",
+      "records": [
+        {
+          "ID": "163",
+          "name": "游魂",
+          "description": "亡魂一缕，漂泊无定，可操控暗元素迷惑敌人。",
+          "star": "3",
+          "skill": "63"
+        },
+        {
+          "ID": "164",
+          "name": "亡灵战士",
+          "description": "一身腐臭，身法诡异，出手刁钻，防不胜防。",
+          "star": "4",
+          "skill": "64"
+        },
+        {
+          "ID": "165",
+          "name": "亡灵使者",
+          "description": "来自九幽的使者，亡灵魔法能够侵蚀敌手心智。",
+          "star": "5",
+          "skill": "65"
+        },
+        {
+          "ID": "166",
+          "name": "恶灵王",
+          "description": "恶灵的皇者，罪恶的渊薮，出手无情，招招致命。",
+          "star": "6",
+          "skill": "66"
+        }
+      ],
+      "uniqueNames": [
+        "亡灵使者",
+        "亡灵战士",
+        "恶灵王",
+        "游魂"
+      ]
+    },
+    {
+      "originalIcon": "j_19.png",
+      "originalPath": "bin/res/assets/Images/Icon/j_19.png",
+      "records": [
+        {
+          "ID": "167",
+          "name": "小娜迦",
+          "description": "人首蛇身的海怪，能操控简单的魔法进行治疗。",
+          "star": "3",
+          "skill": "67"
+        },
+        {
+          "ID": "168",
+          "name": "娜迦首领",
+          "description": "深海精灵，姿秀仪丰，拥有海洋之力，能够治疗友军。",
+          "star": "5",
+          "skill": "68"
+        },
+        {
+          "ID": "169",
+          "name": "美杜莎",
+          "description": "戈耳工三女妖之一， 目力所及，皆化石土。",
+          "star": "6",
+          "skill": "69"
+        }
+      ],
+      "uniqueNames": [
+        "娜迦首领",
+        "小娜迦",
+        "美杜莎"
+      ]
+    },
+    {
+      "originalIcon": "j_2.png",
+      "originalPath": "bin/res/assets/Images/Icon/j_2.png",
+      "records": [
+        {
+          "ID": "101",
+          "name": "水手",
+          "description": "普通水手，一身蛮力。",
+          "star": "1",
+          "skill": "2"
+        }
+      ],
+      "uniqueNames": [
+        "水手"
+      ]
+    },
+    {
+      "originalIcon": "j_20.png",
+      "originalPath": "bin/res/assets/Images/Icon/j_20.png",
+      "records": [
+        {
+          "ID": "170",
+          "name": "水鬼",
+          "description": "海中枉死的怨灵，四处寻找替死的冤魂。",
+          "star": "4",
+          "skill": "70"
+        },
+        {
+          "ID": "171",
+          "name": "水鬼统帅",
+          "description": "水鬼中的强者，以怨气为引吸取敌手的生命。",
+          "star": "5",
+          "skill": "71"
+        },
+        {
+          "ID": "172",
+          "name": "水鬼领主",
+          "description": "统帅一方水鬼，下手狠辣无情。",
+          "star": "6",
+          "skill": "72"
+        }
+      ],
+      "uniqueNames": [
+        "水鬼",
+        "水鬼统帅",
+        "水鬼领主"
+      ]
+    },
+    {
+      "originalIcon": "j_21.png",
+      "originalPath": "bin/res/assets/Images/Icon/j_21.png",
+      "records": [
+        {
+          "ID": "173",
+          "name": "海妖",
+          "description": "人身鱼尾的美人，楚楚可怜，让人不忍加害。",
+          "star": "4",
+          "skill": "73"
+        },
+        {
+          "ID": "174",
+          "name": "魔化海妖",
+          "description": "腹藏刀剑，色貌如花，懂得利用美貌来减少损失。",
+          "star": "5",
+          "skill": "74"
+        },
+        {
+          "ID": "175",
+          "name": "魔王",
+          "description": "海渊深处的魔怪，能够召唤水幕免除大量伤害。",
+          "star": "6",
+          "skill": "75"
+        }
+      ],
+      "uniqueNames": [
+        "海妖",
+        "魔化海妖",
+        "魔王"
+      ]
+    },
+    {
+      "originalIcon": "j_22.png",
+      "originalPath": "bin/res/assets/Images/Icon/j_22.png",
+      "records": [
+        {
+          "ID": "176",
+          "name": "杰克船长",
+          "description": "亦正亦邪，从死亡之地回来的他有些嗜血。",
+          "star": "5",
+          "skill": "76"
+        },
+        {
+          "ID": "177",
+          "name": "海帝",
+          "description": "海洋的统帅，举手间能吸取敌手的生命。",
+          "star": "6",
+          "skill": "77"
+        }
+      ],
+      "uniqueNames": [
+        "杰克船长",
+        "海帝"
+      ]
+    },
+    {
+      "originalIcon": "j_3.png",
+      "originalPath": "bin/res/assets/Images/Icon/j_3.png",
+      "records": [
+        {
+          "ID": "102",
+          "name": "突击水手",
+          "description": "训练有素的水手，擅长突击。",
+          "star": "2",
+          "skill": "1"
+        },
+        {
+          "ID": "103",
+          "name": "嗜血水手",
+          "description": "残暴的水手，嗜血无情，杀人无数。",
+          "star": "3",
+          "skill": "3"
+        },
+        {
+          "ID": "104",
+          "name": "维京大副",
+          "description": "维京人的后裔，残暴狠戾，精于海战。",
+          "star": "4",
+          "skill": "4"
+        },
+        {
+          "ID": "105",
+          "name": "私掠船长",
+          "description": "勇武而精明的船长，横行海上，留下了无数传奇。",
+          "star": "5",
+          "skill": "5"
+        },
+        {
+          "ID": "106",
+          "name": "海神之子",
+          "description": "海神庇佑的幸运儿，纵横海上，莫有匹敌。",
+          "star": "6",
+          "skill": "6"
+        }
+      ],
+      "uniqueNames": [
+        "嗜血水手",
+        "海神之子",
+        "私掠船长",
+        "突击水手",
+        "维京大副"
+      ]
+    },
+    {
+      "originalIcon": "j_4.png",
+      "originalPath": "bin/res/assets/Images/Icon/j_4.png",
+      "records": [
+        {
+          "ID": "107",
+          "name": "木盾舵手",
+          "description": "初级舵手，木盾是他唯一的防护。",
+          "star": "2",
+          "skill": "7"
+        },
+        {
+          "ID": "108",
+          "name": "铁甲舵手",
+          "description": "海船的掌舵者，一身铁甲，威风凛凛。",
+          "star": "3",
+          "skill": "8"
+        },
+        {
+          "ID": "109",
+          "name": "黑暗舵手",
+          "description": "老到的掌舵者，有部分黑暗力量加持己身。",
+          "star": "4",
+          "skill": "9"
+        },
+        {
+          "ID": "110",
+          "name": "猎鲨海王",
+          "description": "海中一霸，徒手可搏群鲨。",
+          "star": "5",
+          "skill": "10"
+        },
+        {
+          "ID": "111",
+          "name": "海皇化身",
+          "description": "海皇波塞冬行走人间的使者，拥有永恒的生命和无尽的力量。",
+          "star": "6",
+          "skill": "11"
+        }
+      ],
+      "uniqueNames": [
+        "木盾舵手",
+        "海皇化身",
+        "猎鲨海王",
+        "铁甲舵手",
+        "黑暗舵手"
+      ]
+    },
+    {
+      "originalIcon": "j_5.png",
+      "originalPath": "bin/res/assets/Images/Icon/j_5.png",
+      "records": [
+        {
+          "ID": "112",
+          "name": "刀手",
+          "description": "年轻的勇士，大刀是他的武器。",
+          "star": "1",
+          "skill": "12"
+        },
+        {
+          "ID": "113",
+          "name": "暗杀者",
+          "description": "神秘的武者，杀人了无痕迹。",
+          "star": "2",
+          "skill": "13"
+        },
+        {
+          "ID": "114",
+          "name": "海贼",
+          "description": "海上飞贼，精通于敛藏行迹。",
+          "star": "3",
+          "skill": "14"
+        },
+        {
+          "ID": "115",
+          "name": "游龙潜航者",
+          "description": "翩若惊鸿，矫若游龙的海上刺客。",
+          "star": "4",
+          "skill": "15"
+        },
+        {
+          "ID": "116",
+          "name": "暗影公爵",
+          "description": "令人闻风丧胆的刺客，伤人如反手，杀人于无形。",
+          "star": "5",
+          "skill": "16"
+        },
+        {
+          "ID": "117",
+          "name": "暗影之神",
+          "description": "十步杀一人，千里不留行，残影过处，人头落地。",
+          "star": "6",
+          "skill": "17"
+        }
+      ],
+      "uniqueNames": [
+        "刀手",
+        "暗影之神",
+        "暗影公爵",
+        "暗杀者",
+        "海贼",
+        "游龙潜航者"
+      ]
+    },
+    {
+      "originalIcon": "j_6.png",
+      "originalPath": "bin/res/assets/Images/Icon/j_6.png",
+      "records": [
+        {
+          "ID": "118",
+          "name": "手枪手",
+          "description": "装备了手枪的少年。",
+          "star": "1",
+          "skill": "18"
+        },
+        {
+          "ID": "119",
+          "name": "左轮枪手",
+          "description": "英武的左轮枪手，一把左轮使得出神入化。",
+          "star": "2",
+          "skill": "19"
+        },
+        {
+          "ID": "120",
+          "name": "长枪手",
+          "description": "长枪手，射程较长。",
+          "star": "3",
+          "skill": "20"
+        },
+        {
+          "ID": "121",
+          "name": "狙击手",
+          "description": "擅长狙击，百步穿杨。",
+          "star": "4",
+          "skill": "21"
+        },
+        {
+          "ID": "122",
+          "name": "神杀射手",
+          "description": "神秘的射手，枪枪必中，弹无虚发。",
+          "star": "5",
+          "skill": "22"
+        },
+        {
+          "ID": "123",
+          "name": "枪王",
+          "description": "枪中圣手，出手如雪泥鸿爪，无踪可见，无迹可循。",
+          "star": "6",
+          "skill": "23"
+        }
+      ],
+      "uniqueNames": [
+        "左轮枪手",
+        "手枪手",
+        "枪王",
+        "狙击手",
+        "神杀射手",
+        "长枪手"
+      ]
+    },
+    {
+      "originalIcon": "j_7.png",
+      "originalPath": "bin/res/assets/Images/Icon/j_7.png",
+      "records": [
+        {
+          "ID": "124",
+          "name": "船医",
+          "description": "随行的船医，略通医术。",
+          "star": "1",
+          "skill": "24"
+        },
+        {
+          "ID": "125",
+          "name": "牧师",
+          "description": "年高德劭的牧师。",
+          "star": "2",
+          "skill": "25"
+        },
+        {
+          "ID": "126",
+          "name": "传教士",
+          "description": "虔诚的传教士，传播着上帝的意旨。",
+          "star": "3",
+          "skill": "26"
+        }
+      ],
+      "uniqueNames": [
+        "传教士",
+        "牧师",
+        "船医"
+      ]
+    },
+    {
+      "originalIcon": "j_8.png",
+      "originalPath": "bin/res/assets/Images/Icon/j_8.png",
+      "records": [
+        {
+          "ID": "130",
+          "name": "祭司",
+          "description": "神的仆人，祭典的主持者。",
+          "star": "4",
+          "skill": "30"
+        },
+        {
+          "ID": "131",
+          "name": "大主教",
+          "description": "高等的圣职人员，额外受到神的恩宠。",
+          "star": "5",
+          "skill": "31"
+        },
+        {
+          "ID": "132",
+          "name": "教皇",
+          "description": "享有至高的神权和强大的生命魔法。",
+          "star": "6",
+          "skill": "32"
+        }
+      ],
+      "uniqueNames": [
+        "大主教",
+        "教皇",
+        "祭司"
+      ]
+    },
+    {
+      "originalIcon": "j_9.png",
+      "originalPath": "bin/res/assets/Images/Icon/j_9.png",
+      "records": [
+        {
+          "ID": "127",
+          "name": "神官",
+          "description": "神的使者，医骨仁心，普济众生。",
+          "star": "4",
+          "skill": "27"
+        },
+        {
+          "ID": "128",
+          "name": "神罚使",
+          "description": "神的使者，执掌善恶，恭行神罚。",
+          "star": "5",
+          "skill": "28"
+        },
+        {
+          "ID": "129",
+          "name": "圣光之主",
+          "description": "拥有神圣的光明魔法，并在对敌中附加眩晕效果。",
+          "star": "6",
+          "skill": "29"
+        }
+      ],
+      "uniqueNames": [
+        "圣光之主",
+        "神官",
+        "神罚使"
+      ]
+    }
+  ]
+}

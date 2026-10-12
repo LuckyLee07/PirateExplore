@@ -1,4 +1,5 @@
 local AdventureProgress = require 'LuaClass/AdventureProgress'
+local EventSceneIdentity = require 'LuaClass/EventSceneIdentity'
 require 'LuaClass/DialogTheme'
 local function eventLabel(text, _, size) return MasterTheme.label(text,size,MasterTheme.colors.paper,0,0,false,.5) end
 require "AudioEngine"
@@ -45,6 +46,7 @@ function EventLayer:create()
 end
 
 function EventLayer:init()
+    if EventPageUI and EventPageUI.theme() then return self:initCoherentEncounter() end
     -- print("EventLayer:init!");
 
     self.worldMapLayer = nil
@@ -138,6 +140,7 @@ end
 
 --显示滚动按钮
 function EventLayer:showMultipleButtons(  )
+    if self.coherentEventPage then return self:showCoherentArenaRecords() end
 	
 	print("showMultipleButtons")
 
@@ -369,6 +372,11 @@ end
 
 --隐藏滚动按钮
 function EventLayer:hideMultipleButtons(  )
+    if self.coherentEventPage then
+        if self.scrollview then self.scrollview:setVisible(false) end
+        local z=self.eventSize;self.eventBody:setViewSize(cc.size(z.width-48,z.height-372));self.eventBody:setPositionY(120)
+        self:layoutCoherentEncounter();return
+    end
 	if self.scrollview ~= nil then
 		self.scrollview:setVisible(false)
 	end
@@ -403,6 +411,11 @@ local strongholdRanks = {
     {"橙色 · boss据点及特殊据点", 255,157,42}
 }
 function EventLayer:refreshDifficulty(info, isOccupied)
+    if self.coherentEventPage then
+        local rank=info and not isOccupied and info.eventFucString=='changeToEnemyLayer' and strongholdRanks[tonumber(info.especial)]
+        if rank then self.siteHint:setString(rank[1]) end
+        return
+    end
     local size = cc.Director:getInstance():getVisibleSize()
     if not self.difficultyLabel then
         self.difficultyGroup = cc.Node:create()
@@ -436,6 +449,25 @@ end
 -- Prepared boarding data is also the source consumed by FightScene. Never
 -- prepare an encounter here: preparation rolls drops and consumes RNG.
 function EventLayer:refreshEnemyPreview(fighter)
+    if self.coherentEventPage then
+        self.eventSceneFighter=fighter
+        if self.eventSceneInfo then self.eventSceneModel=EventSceneIdentity.resolve(self.eventSceneInfo,self.eventSceneOccupied,fighter)end
+        if self.enemyPreview then self.enemyPreview:setVisible(false);self.enemyNameLabel:setVisible(false);self.enemyStatsLabel:setVisible(false)end
+        local hp,power=fighter and tonumber(fighter.hp),fighter and tonumber(fighter.power)
+        if fighter and type(fighter.name)=='string' and fighter.name~='' and hp and hp>0 and hp<math.huge and power and power>=0 and power<math.huge then
+            local E=EventPageUI;local W=E.theme();local parent=self.eventBody:getContainer()
+            if not self.enemyPreview then
+                self.enemyPreview=cc.Node:create();self:addChild(self.enemyPreview)
+                self.enemyNameLabel=E.text(parent,'',26,W.colors.ink,0,0,self.eventSize.width-48)
+                self.enemyStatsLabel=E.text(parent,'',22,W.colors.sea,0,0,self.eventSize.width-48)
+            end
+            self.enemyPreview:setVisible(true);self.enemyNameLabel:setVisible(true);self.enemyStatsLabel:setVisible(true)
+            self.enemyNameLabel:setString('当前敌人 · '..fighter.name)
+            self.enemyStatsLabel:setString(string.format('开战生命 %s · 攻击 %s',tostring(hp),tostring(power)))
+            self.description:setFontSize(23)
+        end
+        self:layoutCoherentEncounter();return
+    end
     local size = cc.Director:getInstance():getVisibleSize()
     local descriptionY = size.height * 0.7 - 50
     self.description:setPosition(cc.p(size.width / 2,descriptionY))
@@ -475,6 +507,11 @@ function EventLayer:refreshEnemyPreview(fighter)
 end
 
 function EventLayer:refreshLayerByInfo( info , isOccupied)
+    if self.coherentEventPage then
+        self.eventGeneration=self.eventGeneration+1;self.eventActionBusy=false;self:hideMultipleButtons()
+        self.buttons[2]:registerSingleCLick(function()self:leaveToExploreMap(true)end)
+        self.buttons[1]:setSingleCLickEnable(true);self.description:setFontSize(25);self.midTip:setVisible(false)
+    end
     self:refreshEnemyPreview(nil)
 	
 	print("getsAndSetsLayerInfoById",info)
@@ -567,6 +604,12 @@ function EventLayer:refreshLayerByInfo( info , isOccupied)
 
 	self.title:setString(title)
 	self.description:setString(description)
+    if self.coherentEventPage then
+        self.description:setString(des)
+        self.eventCost:setString(addStr~=' ' and addStr or '')
+        self.eventCost:setVisible(addStr~=' ')
+        self:refreshCoherentSite(info,isOccupied)
+    end
 	self.midTip:setString(des)
     self.difficultyInfo = info
     self:refreshDifficulty(info,isOccupied)
@@ -597,6 +640,12 @@ function EventLayer:refreshLayerByInfo( info , isOccupied)
 
 	--释放
 	transformFunc = nil
+    if self.coherentEventPage and self.buttons[1].eventBoundGeneration~=self.eventGeneration then
+        -- A gate that did not install an action must not inherit the previous
+        -- site's action (notably unavailable revival/open arena states).
+        self.buttons[1]:setVisible(false);self.buttonTips[1]:setVisible(false)
+    end
+    self:layoutCoherentEncounter()
 
 	print("refreshLayerByInfoOver",eventFucString)
 
@@ -619,9 +668,13 @@ function EventLayer:show()
 	print("EventLayer:show")
 	self:setVisible(true)
 	self.description:setVisible(true)
+    self:layoutCoherentEncounter()
 end
 
 function EventLayer:hide()
+    if self.coherentEventPage then
+        self.eventGeneration=self.eventGeneration+1;self.eventActionBusy=false;self:dismissEventDetails()
+    end
     self:refreshEnemyPreview(nil)
     if self.difficultyGroup then self.difficultyGroup:setVisible(false) end
     if self.difficultyLabel then self.difficultyLabel:setVisible(false) end
@@ -638,6 +691,11 @@ local curEnemyInfo = nil
 
 --enemy最好是个通过表的解析过的数据，不要id号
 function EventLayer:getsAndSetsEnemyLayerInfoByEnemy( enemy,addDropInfo,calBack )
+    if self.coherentEventPage then
+        self.eventGeneration=self.eventGeneration+1;self.eventActionBusy=false
+        self.buttons[2]:registerSingleCLick(function()self:leaveToExploreMap(true)end)
+        self.eventCost:setVisible(false)
+    end
     self:refreshEnemyPreview(nil)
 
 	-- enemyFighters,enemyCanoon
@@ -872,6 +930,7 @@ function EventLayer:changeToResurrectionLayer( data,isOccupied )
 end
 
 function EventLayer:enterResurrectionLayer( ... )
+    if self.coherentEventPage and self.eventDetails then return end
 	if not self.controller:checkEnterNext() then
 		return
 	end
@@ -882,6 +941,7 @@ function EventLayer:enterResurrectionLayer( ... )
     EventDetailsLayer.type = 1
     EventDetailsLayer.data = datas
     local pubLayer = EventDetailsLayer:create()
+    self:adoptEventDetails(pubLayer)
     pubLayer.leaveCalBack = function (  )
         self:enterNextLayer(false)
     end
@@ -1080,6 +1140,7 @@ function EventLayer:changeToPubLayer( data,isOccupied )
 end
 
 function EventLayer:enterPubLayer( data )
+    if self.coherentEventPage and self.eventDetails then return end
 	
 		print("enterPubLayer",data)
 
@@ -1121,6 +1182,7 @@ function EventLayer:enterPubLayer( data )
     EventDetailsLayer.type = 2
     EventDetailsLayer.data = memberInfos
     local pubLayer = EventDetailsLayer:create()
+    self:adoptEventDetails(pubLayer)
     pubLayer:setPosition(cc.p(0, 0))
     pubLayer.leaveCalBack = function (  )
     	self:enterNextLayer(false)
@@ -1145,6 +1207,7 @@ function EventLayer:changeToBlackMarket( data,isOccupied )
 end
 --进入黑市
 function EventLayer:enterBlackMarket( data)
+    if self.coherentEventPage and self.eventDetails then return end
 	print("enterBlackMarket",data)
 
 	if not self.controller:checkEnterNext() then
@@ -1186,6 +1249,7 @@ function EventLayer:enterBlackMarket( data)
     EventDetailsLayer.data = ExploreDataManager:getInstance():getBlackMarketDatas()
     printn("黑市",EventDetailsLayer.data)
     local pubLayer = EventDetailsLayer:create()
+    self:adoptEventDetails(pubLayer)
 
     pubLayer.leaveCalBack = function (  )
     	self:enterNextLayer(false)
@@ -1267,7 +1331,7 @@ function EventLayer:changeToMaterialsLayer( data,isOccupied )
     	
         if not AdventureProgress.getState(DataManager:getInstance()).enabled and not GuideController:getInstance():getIsHaveStep(71) then
     		explor.mapGuideComponent:changeFingerParent(self)
-    		explor.mapGuideComponent:showFingerActionByPosition(cc.p(self.buttonTips[1]:getPosition()))
+            explor.mapGuideComponent:showFingerActionByPosition(cc.p((self.coherentEventPage and self.buttons[1] or self.buttonTips[1]):getPosition()))
     	end
 
     else
@@ -1466,6 +1530,10 @@ function EventLayer:enterFightLayer( isNeedShipBattle,calBack )
 end
 
 function EventLayer:showTipOccupiedLayer( layerInfo )
+    if self.coherentEventPage then
+        self.eventGeneration=self.eventGeneration+1;self.eventActionBusy=false;self.eventCost:setVisible(false)
+        self:refreshCoherentSite(layerInfo,true)
+    end
     self:refreshEnemyPreview(nil)
     self:refreshDifficulty(nil,true)
 
@@ -1481,7 +1549,7 @@ function EventLayer:showTipOccupiedLayer( layerInfo )
 
 	self.buttons[2]:setVisible(false)
 	self.buttonTips[2]:setVisible(false)
-
+    self:layoutCoherentEncounter()
 
 end
 
@@ -1675,3 +1743,247 @@ function EventLayer:leaveToExploreMap( arg )
 
 end
 
+
+-- Coherent encounter page. Reviewed scenes resolve exact site/family identities;
+-- remaining pages retain their original GID presentation until separately reviewed.
+local eventKinds={changeToEnemyLayer='敌人据点',changeToMaterialsLayer='资源据点',
+ changeToSupplyPoint='航海补给',changeToPubLayer='酒馆招募',changeToBlackMarket='黑市交易',
+ changeToResurrectionLayer='船员复活',changeToNextMapEnter='海域入口',changeToTeleportLayer='世界海图',
+ changeToArenaLayer='竞技场',changeToEternalArena='永恒竞技场'}
+function EventLayer:initCoherentEncounter()
+    local E=EventPageUI;local W=E.theme();local size=cc.Director:getInstance():getVisibleSize();local w,h=size.width,size.height
+    self.coherentEventPage=true;self.eventSize=size;self.eventGeneration=1;self.eventActionBusy=false
+    self.buttons={};self.buttonTips={};self.needsPop=0;self.worldMapLayer=nil
+    self:addChild(W.panel(w,h,cc.c3b(250,252,246),0),-100)
+    local header=W.panel(w,116,W.colors.ink,0);header:setPosition(cc.p(0,h-116));self:addChild(header,-50)
+    self.eventScene=cc.Node:create();self:addChild(self.eventScene,-20)
+    self.title=E.text(self,'',32,W.colors.white,24,h-43,w-48)
+    self.title:setDimensions(cc.size(0,0));self.title:setAnchorPoint(cc.p(.5,.5));self.title:setPositionX(w/2)
+    self.siteKind=E.text(self,'',20,cc.c3b(207,229,221),w/2,h-85);self.siteKind:setAnchorPoint(cc.p(.5,.5))
+    self.siteArt=cc.Node:create();self.siteArt:setPosition(cc.p(76,h-179));self:addChild(self.siteArt)
+    self.siteState=E.text(self,'',22,W.colors.ink,140,h-157,w-164)
+    self.siteHint=E.text(self,'',19,W.colors.muted,140,h-192,w-164)
+    self.eventSiteRule=E.rule(self,24,h-234,w-48)
+    self.eventBody=E.scroll(self,24,120,w-48,h-372)
+    local body=self.eventBody:getContainer()
+    self.eventSummary=E.text(body,'',23,W.colors.sea,0,0,w-48);self.eventSummary:setVisible(false)
+    self.midTip=E.text(body,'',22,W.colors.muted,0,0,w-48);self.midTip:setVisible(false)
+    self.description=E.text(body,'',25,W.colors.ink,0,0,w-48)
+    self.eventCost=E.text(body,'',22,W.colors.sea,0,0,w-48);self.eventCost:setVisible(false)
+    self.buttonController=cc.Layer:create();self:addChild(self.buttonController,4)
+    self.buttons[1]=E.sdButton(self,w-176,60,true,function()self:enterFightLayer()end)
+    self.buttons[2]=E.sdButton(self,112,60,false,function()self:leaveToExploreMap(true)end)
+    self.buttons[1]:setPosition(cc.p(24+(w-176)/2,57));self.buttons[2]:setPosition(cc.p(w-80,57))
+    for i,b in ipairs(self.buttons)do
+        b.normalSpr:setLocalZOrder(-2);b.selectSpr:setLocalZOrder(-1)
+        local function cancelGesture()
+            b.eventGestureGeneration=nil
+            b.isTouch=false;b.eventGestureMoved=false;b.m_longProgress=false;b.pressTimes=0
+            b.normalSpr:stopAllActions();b:setActive(false)
+        end
+        -- Persistent entry buttons can be rebound while a native touch is down.
+        -- Bind the gesture to the entry at BEGIN, not its new callback at END.
+        local function viewGeneration()return self.eventGeneration end
+        local began,ended=b.onTouchBegan,b.onTouchEnded
+        function b:onTouchBegan(touch,event)
+            local accepted=began(self,touch,event)
+            self.eventGestureGeneration=accepted and viewGeneration() or nil
+            return accepted
+        end
+        function b:onTouchEnded(touch,event)
+            if self.eventGestureGeneration~=viewGeneration()then cancelGesture();return end
+            self.eventGestureGeneration=nil
+            return ended(self,touch,event)
+        end
+        b.listener:registerScriptHandler(cancelGesture,cc.Handler.EVENT_TOUCH_CANCELLED)
+        self.buttonController:addChild(b)
+        local label=E.text(b,'',24,i==1 and W.colors.white or W.colors.ink,b:getContentSize().width/2,30)
+        label:setAnchorPoint(cc.p(.5,.5));self.buttonTips[i]=label
+    end
+    E.rule(self,24,102,w-48)
+    local shield=cc.EventListenerTouchOneByOne:create();shield:setSwallowTouches(true)
+    -- Hidden persistent encounter nodes still receive scene-graph events.
+    shield:registerScriptHandler(function()return E.alive(self) end,cc.Handler.EVENT_TOUCH_BEGAN)
+    self:getEventDispatcher():addEventListenerWithSceneGraphPriority(shield,self)
+    self.eventShield=shield
+    self:registerScriptHandler(function(event)
+        if event=='exit' or event=='cleanup'then self:dismissEventDetails(event)end
+        if event=='cleanup'then
+            self.eventDisposed=true;self.eventGeneration=self.eventGeneration+1
+            local map=self.worldMapLayer;self.worldMapLayer=nil
+            if map then
+                map:setVisible(false);map:stopAllActions()
+                if map.coherentWorldSelector then
+                    map.worldDisposed=true;map.worldSuspended=true
+                    require('LuaClass/WorldChartSelector').closeModal(map,event)
+                end
+                -- The selector is also a scene sibling. Its onExit has already
+                -- finished at scene cleanup, but erasing it still invalidates
+                -- the native child-vector traversal.
+                map:runAction(cc.Sequence:create(cc.DelayTime:create(0),cc.CallFunc:create(function()
+                    if map:getParent()then map:removeFromParent(true)end
+                end)))
+            end
+            if self.eventShield then self:getEventDispatcher():removeEventListener(self.eventShield);self.eventShield=nil end
+        end
+    end)
+    return true
+end
+function EventLayer:layoutCoherentEncounter()
+    if not self.coherentEventPage then return end
+    local E=EventPageUI;local W=E.theme();local w,h=self.eventSize.width,self.eventSize.height
+    local nodes={}
+    if self.eventSummary:isVisible() and self.eventSummary:getString()~=''then nodes[#nodes+1]=self.eventSummary end
+    if self.eventSceneModel and self.eventCost:isVisible()then nodes[#nodes+1]=self.eventCost end
+    if self.midTip:isVisible() and self.midTip:getString()~='' then nodes[#nodes+1]=self.midTip end
+    if self.enemyPreview and self.enemyPreview:isVisible()then
+        nodes[#nodes+1]=self.enemyNameLabel;nodes[#nodes+1]=self.enemyStatsLabel
+    end
+    if self.description:isVisible() and self.description:getString()~=''then nodes[#nodes+1]=self.description end
+    if self.otherTips then
+        local parent=self.otherTips:getParent()
+        if parent~=self.eventBody:getContainer()then self.otherTips:retain();self.otherTips:removeFromParent(false);self.eventBody:getContainer():addChild(self.otherTips);self.otherTips:release()end
+        self.otherTips:setColor(W.colors.ink);self.otherTips:setFontName(W.font);self.otherTips:setFontSize(23)
+        self.otherTips:setDimensions(cc.size(w-48,0));nodes[#nodes+1]=self.otherTips
+    end
+    if not self.eventSceneModel and self.eventCost:isVisible()then nodes[#nodes+1]=self.eventCost end
+    local model=self.eventSceneModel
+    local hasRecords=self.scrollview and self.scrollview:isVisible()
+    local adaptive=model~=nil
+    self.eventScene:setVisible(adaptive);self.siteArt:setVisible(not adaptive)
+    if adaptive then
+        local textHeight=24
+        for _,n in ipairs(nodes)do textHeight=textHeight+n:getContentSize().height*(n:getScaleY()or 1)+14 end
+        -- Short prose gets a meaningful scene; long prose has a larger clipped
+        -- reading area. Neither may displace the original fixed action dock.
+        local bodyHeight=math.min(math.max(158,textHeight),math.floor((h-250)*.48))
+        local bodyY=120
+        if hasRecords then
+            local recordHeight=math.min(196,math.floor((h-228)*.31))
+            self.scrollview:setViewSize(cc.size(w-48,recordHeight));self.scrollview:setPosition(cc.p(24,120))
+            bodyY=120+recordHeight+16
+            bodyHeight=math.max(76,math.min(144,math.floor((h-228)*.25)))
+        end
+        local sceneBottom=bodyY+bodyHeight+76;local sceneHeight=h-116-sceneBottom
+        self.eventBody:setViewSize(cc.size(w-48,bodyHeight));self.eventBody:setPosition(cc.p(24,bodyY))
+        self.siteState:setPosition(cc.p(24,sceneBottom-25));self.siteState:setDimensions(cc.size(w-48,0))
+        self.siteHint:setPosition(cc.p(24,sceneBottom-54));self.siteHint:setDimensions(cc.size(w-48,0))
+        self.eventSiteRule:setPositionY(sceneBottom-76)
+        self.eventScene:setPosition(cc.p(0,sceneBottom))
+        local key=model.identity..':'..tostring(model.enemy)..':'..w..':'..sceneHeight
+        if self.eventScenePaintKey~=key then
+            EventSceneIdentity.paint(self.eventScene,model,w,sceneHeight,W);self.eventScenePaintKey=key
+        end
+    else
+        if not(self.scrollview and self.scrollview:isVisible())then
+            self.eventBody:setViewSize(cc.size(w-48,h-372));self.eventBody:setPosition(cc.p(24,120))
+        end
+        self.siteState:setPosition(cc.p(140,h-157));self.siteState:setDimensions(cc.size(w-164,0))
+        self.siteHint:setPosition(cc.p(140,h-192));self.siteHint:setDimensions(cc.size(w-164,0))
+        self.eventSiteRule:setPositionY(h-234)
+    end
+    E.flow(self.eventBody,nodes,adaptive and 14 or 18)
+    for _,label in ipairs(self.buttonTips)do W.fit(label,label:getParent():getContentSize().width-24)end
+    W.fit(self.title,w-48)
+end
+function EventLayer:refreshCoherentSite(info,isOccupied)
+    if not self.coherentEventPage then return end
+    local W=EventPageUI.theme();local w,h=self.eventSize.width,self.eventSize.height
+    self.eventSceneInfo=info;self.eventSceneOccupied=isOccupied==true;self.eventSceneFighter=nil
+    self.eventEntryCostText=self.eventCost:getString()
+    self.eventSceneModel=EventSceneIdentity.resolve(info,isOccupied)
+    local summary=EventSceneIdentity.summary(info,self.eventSceneModel)
+    self.eventSummary:setString(summary);self.eventSummary:setVisible(summary~='')
+    self.siteKind:setString(eventKinds[info.eventFucString] or '海上见闻')
+    self.siteState:setString(isOccupied and '已占领' or '抵达据点')
+    self.siteHint:setString(isOccupied and '查看这里的近况' or '准备好后继续探索')
+    local state,hint=EventSceneIdentity.status(self.eventSceneModel)
+    if state then self.siteState:setString(state);self.siteHint:setString(hint)end
+    self.siteArt:removeAllChildren();self.eventArtIdentity=nil
+    local props={['3067']='event-quarry-raft-clean-v1.png',['3068']='event-iron-raft-clean-v1.png',['3070']='event-timber-raft-clean-v1.png'}
+    local path=props[tostring(info.ID)]
+    local art
+    if path then art=W.sprite('Images/UI/CleanVoyage/'..path,106,108);self.eventArtIdentity='stronghold:'..tostring(info.ID)
+    else
+        local gid=tonumber(isOccupied and info.occupationgid or info.gid)
+        if gid and gid>=19 and gid<=66 then
+            path='Images/UI/Adventure/SeaChart/Tiles/events-world.png'
+            if cc.FileUtils:getInstance():isFileExist(path)then
+                local index=gid-19;art=cc.Sprite:create(path,cc.rect(index%8*64,math.floor(index/8)*64,64,64));art:setScale(1.5)
+                self.eventArtIdentity='map-gid:'..gid
+            end
+        end
+    end
+    if art then art:setPosition(cc.p(0,0));self.siteArt:addChild(art)end
+    if self.eventSceneModel then self.eventArtIdentity=self.eventSceneModel.identity end
+    self:layoutCoherentEncounter()
+end
+function EventLayer:showCoherentArenaRecords()
+    local records=DataManager:getInstance():getRoleData(roleArenaRecords)
+    if not records or #records==0 then return end
+    local E=EventPageUI;local W=E.theme();local w,h=self.eventSize.width,self.eventSize.height
+    if self.scrollview then self.scrollview:removeFromParent(true);self.scrollview=nil end
+    local height=math.min(244,math.floor((h-366)*.48));local y=120
+    self.eventBody:setViewSize(cc.size(w-48,h-372-height-22));self.eventBody:setPositionY(y+height+22)
+    local tableview=cc.TableView:create(cc.size(w-48,height));self.scrollview=tableview
+    tableview:setPosition(cc.p(24,y));tableview:setDirection(cc.SCROLLVIEW_DIRECTION_VERTICAL);tableview:setVerticalFillOrder(cc.TABLEVIEW_FILL_TOPDOWN)
+    self:addChild(tableview,2);self.arenaRecords=records;self.arenaSelected=0
+    local function choose(index)
+        self.arenaSelected=index
+        local record=records[index]
+        self.buttons[1]:registerSingleCLick(function()
+            if record then self:checkJumpToEternalArena(record.costs,record.level)else self:enterToEternalArenaByLevel()end
+        end)
+        self.buttonTips[1]:setString(record and ('挑战第'..tostring(record.level)..'关')or'挑 战')
+        local costText=self.eventEntryCostText or ''
+        if record then costText='(需要'..tostring(record.costs.num)..'个'..tostring(dataController.getResourceValueByIdAndKey(record.costs.id,'name'))..')'end
+        self.eventCost:setString(costText);self.eventCost:setVisible(costText~='')
+        tableview:reloadData();self:layoutCoherentEncounter()
+    end
+    self.selectArenaRecord=choose
+    tableview:registerScriptHandler(function()return #records+1 end,cc.NUMBER_OF_CELLS_IN_TABLEVIEW)
+    tableview:registerScriptHandler(function()return 74,w-48 end,cc.TABLECELL_SIZE_FOR_INDEX)
+    tableview:registerScriptHandler(function(view,index)
+        local cell=view:dequeueCell()or cc.TableViewCell:create();cell:removeAllChildren();cell:setTag(index)
+        if self.arenaSelected==index then cell:addChild(W.panel(w-48,74,cc.c3b(232,239,221),0))end
+        local record=records[index];local text=record and ('快速挑战到'..tostring(record.level)..'关')or'从第1层开始'
+        E.text(cell,text,23,W.colors.ink,12,49,w-72)
+        local cost=record and (tostring(dataController.getResourceValueByIdAndKey(record.costs.id,'name'))..' × '..tostring(record.costs.num))or'按当前入口条件挑战'
+        E.text(cell,cost,19,W.colors.muted,12,20,w-72);E.rule(cell,0,1,w-48);return cell
+    end,cc.TABLECELL_SIZE_AT_INDEX)
+    tableview:registerScriptHandler(function(_,cell)if E.alive(self) and not E.blocked(self)then choose(cell:getTag())end end,cc.TABLECELL_TOUCHED)
+    choose(0);tableview:reloadData()
+end
+function EventLayer:adoptEventDetails(layer)
+    if not self.coherentEventPage then return end
+    self.eventDetails=layer;layer.ownerEvent=self
+    local observer=cc.Node:create();layer:addChild(observer)
+    observer:registerScriptHandler(function(event)
+        if (event=='exit' or event=='cleanup') and self.eventDetails==layer then
+            self:dismissEventDetails(event)
+        end
+    end)
+end
+function EventLayer:dismissEventDetails(lifecycleEvent)
+    local child=self.eventDetails;self.eventDetails=nil
+    if child then
+        child.ownerEvent=nil;child.eventClosed=true;child.eventGeneration=child.eventGeneration+1
+        child:setVisible(false);child:stopAllActions()
+        require('LuaClass/WarmShortageOwnership').retire(child,lifecycleEvent)
+        local dialog=child.adventureDialog
+        if dialog then if lifecycleEvent then dialog.retire()else dialog.close()end end
+        if child.eventShield then child:getEventDispatcher():removeEventListener(child.eventShield);child.eventShield=nil end
+        -- Both onExit and cleanup traverse the parent's native child vector.
+        -- Even an exited child must not be erased during either traversal.
+        -- Invalidate now, then remove only this child on a safe running tick;
+        -- a departing scene owns its normal cleanup/destruction instead.
+        if lifecycleEvent then
+            if not child.eventRetirementQueued then
+                child.eventRetirementQueued=true
+                child:runAction(cc.Sequence:create(cc.DelayTime:create(0),cc.CallFunc:create(function()
+                    if child:getParent()then child:removeFromParent(true)end
+                end)))
+            end
+        else child:removeFromParent(true)end
+    end
+end

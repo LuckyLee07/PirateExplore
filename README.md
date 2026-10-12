@@ -1,5 +1,9 @@
 # NewPirate
 
+Guarded map2 clean presentation is enabled by default in this checkpoint.
+[Scope, original-route opt-out and verification bounds](docs/map2-guarded-rollout/ACCEPTANCE.md).
+Maps3–16 are not part of this rollout.
+
 Clean first-voyage integration (new-profile map 1 only):
 [scope, actual native voyage, old-save parity and verification limits](docs/clean-first-voyage/ACCEPTANCE.md).
 This branch is based on recovered Warm Stage 1. Historical later Warm work was

@@ -72,7 +72,56 @@ end
 -- 父类销毁执行的方法
 function BaseView:superDestory()
     cclog("BaseView:我自由了")
+    self.coherentPageDisposed = true
     pNeedUpdateLayer = nil
+end
+
+-- Explicit full-page composition contract for redesigned management pages.
+-- Callers keep their own live data, guide handles and transaction callbacks.
+-- The old shell is hidden only for pages that opt in, never globally.
+function BaseView:applyCoherentPageShell(title, subtitle, onBack)
+    local W = require 'LuaClass/WarmTheme'
+    if not W.enabled() then return nil end
+    if self.coherentShell then return self.coherentShell end
+    self.approvedPage, self.keepNavigation = true, false
+    self.coherentPageDisposed, self.coherentPageLeaving = false, false
+    for _, key in ipairs({'mainBg','titleBg','storeMenu'}) do
+        if self[key] then self[key]:setVisible(false) end
+    end
+    local size = cc.Director:getInstance():getVisibleSize()
+    local origin = cc.Director:getInstance():getVisibleOrigin()
+    local scale = math.min(size.width / 480, size.height / 800)
+    local paper = cc.LayerColor:create(cc.c4b(W.colors.paper.r,W.colors.paper.g,W.colors.paper.b,255),size.width,size.height)
+    paper:setPosition(origin);self:addChild(paper)
+    local canvas = cc.Node:create()
+    canvas:setContentSize(cc.size(480,800));canvas:setScale(scale)
+    canvas:setPosition(cc.p((size.width-480*scale)/2,(size.height-800*scale)/2))
+    paper:addChild(canvas)
+    canvas:registerScriptHandler(function(event)
+        if event=='exit' or event=='cleanup' then self.coherentPageDisposed=true end
+    end)
+    local header = W.panel(480,124,W.colors.ink,0)
+    -- The legacy renderer resets sibling arrival order after each visit.
+    -- Keep the opaque header below its labels when receipts/rows cause a
+    -- later child sort; insertion order at equal z is not stable here.
+    header:setPosition(cc.p(0,676));canvas:addChild(header,-1)
+    local heading = W.label(title or '',30,W.colors.paper,32,744,false,0)
+    W.fit(heading,416);canvas:addChild(heading)
+    local hint = W.label(subtitle or '',18,W.colors.paper,32,704,false,0)
+    W.fit(hint,416);canvas:addChild(hint)
+    local back = W.button('返回船上',100,48,function()
+        if self.coherentPageDisposed or self.coherentPageLeaving then return end
+        self.coherentPageLeaving = true
+        if onBack then onBack()
+        elseif zqDispatch and zqDispatch.mainMenu and zqDispatch.mainMenu.openRoute then
+            zqDispatch.mainMenu:openRoute(0)
+        elseif zqDispatch and zqDispatch.moveToHome then zqDispatch:moveToHome()
+        else self.coherentPageLeaving = false end
+    end,{size=18})
+    back:setPosition(cc.p(82,48));canvas:addChild(back)
+    self.coherentShell = {canvas=canvas,width=480,height=800,scale=scale,
+        body={x=32,y=104,width=416,height=546,top=650},heading=heading,subtitle=hint,back=back}
+    return self.coherentShell
 end
 
 function BaseView:init()

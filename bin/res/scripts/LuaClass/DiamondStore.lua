@@ -6,6 +6,7 @@ require "LuaClass/ChargeMode"
 require "LuaClass/CCall"
 require "LuaClass/DialogueView"
 local PurchaseAvailability = require "LuaClass/PurchaseAvailability"
+local reloadListenerSerial = 0
 
 
 DiamondStore = class("DiamondStore", function ()
@@ -40,13 +41,34 @@ function DiamondStore:create()
 end
 
 -- 清理函数
-function DiamondStore:destory()
+function DiamondStore:destory(lifecycleEvent)
+    if self.serviceDisposed then return end
+    self.serviceDisposed=true
+    require('LuaClass/WarmShortageOwnership').retire(self,lifecycleEvent)
+    if self.serviceAlert then
+        if lifecycleEvent=='exit' or lifecycleEvent=='cleanup' then
+            -- Native scene traversal owns the sibling alert. Invalidate it
+            -- without removing a child from the vector being traversed.
+            require('LuaClass/ServiceSupportPresentation').retireConfirmation(self.serviceAlert)
+        else
+            self.serviceAlert:close()
+        end
+    end
+    self:stopAllActions()
     if (self.schduler ~= nil) then
         cc.Director:getInstance():getScheduler():unscheduleScriptEntry(self.schduler)
     	self.schduler = nil
     end
 
-    DataManager:getInstance():unregisterEvent("DiamondStoreUIReload", "DiamondStore")
+    local dm=DataManager:getInstance()
+    local name=self.serviceReloadListenerName
+    if name then
+        dm:unregisterEvent("DiamondStoreUIReload", name)
+        local bucket=dm.__eventListener and dm.__eventListener.DiamondStoreUIReload
+        if bucket and bucket[name]==self.serviceReloadCallback then bucket[name]=nil end
+    end
+    self.serviceReloadListenerName=nil
+    self.serviceReloadCallback=nil
 end
 
 function DiamondStore:init()
@@ -147,6 +169,12 @@ function DiamondStore:init()
     end
 
     DialogTheme.applyBase(self)
+    self.serviceDisposed=false
+    if rawget(_G,'WARM_PIRATE_V1')~=false then
+        self.serviceShell=require('LuaClass/ServiceSupportPresentation').mount(self,'钻石商城','航海补给与旅途中的特别礼物')
+        local token=cc.Node:create();self.serviceShell.canvas:addChild(token)
+        token:registerScriptHandler(function(event)if event=='exit'or event=='cleanup'then self:destory(event)end end)
+    end
 
     local pngname = "Images/UI/tankuang_01.png"
     local background = cc.Sprite:create(pngname)
@@ -163,11 +191,15 @@ function DiamondStore:init()
 
     self:loadData(tableData)
 
-    DataManager:getInstance():registerEvent("DiamondStoreUIReload", "DiamondStore", function (event)
-        -- body
-        self:buyGigtUIRefresh(event)
-        -- self:checkAndstepNextGift(event)
-    end)
+    local reloadCallback=function(event)
+        if not self.serviceDisposed then self:buyGigtUIRefresh(event)end
+    end
+    self.serviceReloadCallback=reloadCallback
+    -- Dispatch constructs the next page before disposing the previous one.
+    -- Each instance must own both its native listener and its closure alias.
+    reloadListenerSerial=reloadListenerSerial+1
+    self.serviceReloadListenerName="DiamondStoreReload"..reloadListenerSerial
+    DataManager:getInstance():registerEvent("DiamondStoreUIReload", self.serviceReloadListenerName, reloadCallback)
 
 	return true
 end
@@ -176,13 +208,14 @@ function DiamondStore:buyGigtUIRefresh(event)
     -- body
     local function refreshUI()
         -- body
-        self:loadData(nil)
+        if not self.serviceDisposed then self:loadData(nil) end
     end
     self:runAction(cc.Sequence:create(cc.DelayTime:create(0.1), cc.CallFunc:create(refreshUI)))
     
 end
 
 function DiamondStore:loadData(storeData)
+    if self.serviceDisposed then return end
     -- body
     self.pageIndex = 1
     if (storeData ~= nil) then
@@ -291,6 +324,8 @@ function DiamondStore:loadData(storeData)
 
     DataManager:getInstance():setRoleData(roleMapBuyItems, nil, nil) 
 
+    if self.serviceWarm then return self:renderCoherentStore(goodsInfo) end
+
     local num = getTableRowNum(limitRecommended)
 
     local scrollViewDidScroll = function ()
@@ -374,7 +409,7 @@ function DiamondStore:loadData(storeData)
                     local giftData = giftCSV[giftId]
                     -- DataManager:getInstance():diamondStoreBuySomethingSuccess(giftData[dataKeyPayType])
 
-                    PurchaseAvailability.request(giftData[dataKeyPayType])
+                    self:requestGiftPurchase(giftData[dataKeyPayType])
                     print("购买礼包---------",giftId)
                 end, nil, "取 消", "购 买")
                 -- print("_alert inited")
@@ -991,6 +1026,7 @@ end
 end
 
 function DiamondStore:clearPoint(index)
+    if self.serviceWarm then return end
     -- body
     local pointSpr = self:getChildByTag(index + 10)
     if (pointSpr ~= nil) then
@@ -1000,6 +1036,7 @@ function DiamondStore:clearPoint(index)
 end
 
 function DiamondStore:moveToPoint(index)
+    if self.serviceWarm then self:showCoherentGift(index);return end
     -- body
     local pointSpr = self:getChildByTag(index + 10)
     if (pointSpr ~= nil) then
@@ -1085,6 +1122,7 @@ function PushGiftView:create()
 end
 
 function PushGiftView:init()
+    if rawget(_G,'WARM_PIRATE_V1')~=false then return self:initCoherentGift() end
     local visibleSize = cc.Director:getInstance():getVisibleSize()
     local good = DataManager:getInstance():getCurDiamondStoreGoods()
     local pushCsv = DataManager:getInstance():getCSVByID(csvOfPushGift)
@@ -1208,7 +1246,7 @@ function PushGiftView:init()
         local buyBtn = DialogTheme.menuItem("Images/btn/ann01_a.png", "Images/btn/ann01_b.png")
         buyBtn:registerScriptTapHandler(function()
             print("按了购买按钮--------")
-            PurchaseAvailability.request(data.payType)
+            self:requestGiftPurchase(data.payType)
         end)
         buyBtn:setPosition(0.5*visibleSize.width, 0.5*(visibleSize.height-bg:getContentSize().height)+60.0)
         buyBtn:setVisible(false)
@@ -1293,3 +1331,174 @@ end
 
 
 
+
+-- Warm service view consumes the same normalized store state above. Existing
+-- record initialization, roleMapBuyItems clearing and unlock rules are retained.
+function DiamondStore:renderCoherentStore(goods)
+    local S=require 'LuaClass/ServiceSupportPresentation';local W=require 'LuaClass/WarmTheme'
+    require('LuaClass/WarmShortageOwnership').retire(self)
+    self.serviceGeneration=(self.serviceGeneration or 0)+1;local generation=self.serviceGeneration
+    if self.serviceAlert then self.serviceAlert:close()end
+    if self.storeContent then self.storeContent:removeFromParent(true)end
+    local root=cc.Node:create();self.serviceShell.canvas:addChild(root);self.storeContent=root
+    S.art(root,'chest',104,600,132)
+    S.label(root,'我的钻石',19,194,634,250,W.colors.muted)
+    S.label(root,tostring(DataManager:getInstance():getRoleData(roleDiamond)),31,194,600,250)
+    S.label(root,PurchaseAvailability.isAvailable()and'购买结果由平台确认'or'当前平台暂不支持充值购买',17,194,561,254,W.colors.muted)
+    self.giftContent=cc.Node:create();root:addChild(self.giftContent)
+    self:showCoherentGift(self.pageIndex)
+    S.label(root,'钻石物品',24,32,372,280)
+    S.label(root,'上下滑动 · 查看详情',17,448,372,200,W.colors.muted,1)
+    self.storeScroll,self.storeContainer=S.scroll(root,32,109,416,235)
+    self.storeRows={};local h=math.max(235,#goods*88)
+    local csv=DataManager:getInstance():getCSVByID(csvOfShopItem)
+    for i,entry in ipairs(goods)do
+        local record=csv[entry[1]];local row=cc.Node:create();row:setContentSize(cc.size(416,88));row:setPosition(cc.p(0,h-i*88));self.storeContainer:addChild(row)
+        -- The item name and its real effect are authoritative. Legacy framed
+        -- icon artwork is deliberately not mixed into this clean catalog.
+        local kind=S.itemKind(record);local left=kind and 80 or 8
+        if kind then S.art(row,kind,34,44,60)end
+        S.label(row,record[dataKeyName],22,left,61,312-left)
+        local limit=record[dataKeyRepeat]=='0'and'本档限购一次'or'可重复购买'
+        S.label(row,'钻石 '..record[dataKeyPrice]..' · '..limit,16,left,29,312-left,W.colors.sea)
+        local bought=entry[2]==1
+        local button=S.rowAction(bought and '已购买'or'查看',self.storeScroll,function()
+            if self.serviceDisposed or self.coherentPageLeaving or self.serviceGeneration~=generation then return end
+            self:openCoherentGood(i)
+        end);button:setPosition(cc.p(367,44));row:addChild(button);button:setEnabled(not bought)
+        S.rule(row,0);self.storeRows[i]={button=button,id=entry[1],state=entry[2]}
+    end
+    if #goods==0 then S.label(root,'本章暂无可购买的钻石物品',20,240,238,392,W.colors.muted,.5)end
+    self.storeContainer:setContentSize(cc.size(416,h));self.storeScroll:setContentSize(cc.size(416,h));self.storeScroll:setContentOffset(cc.p(0,235-h))
+    self.chargeButton=W.button('充值',100,48,function()
+        if not self.serviceDisposed and not self.coherentPageLeaving and not self.serviceAlert then ChargeLayer:create()end
+    end,{size=18});self.chargeButton:setPosition(cc.p(398,48));root:addChild(self.chargeButton)
+    self.schduler=cc.Director:getInstance():getScheduler():scheduleScriptFunc(function(delta)self:updateCountdown(delta)end,1,false)
+end
+function DiamondStore:showCoherentGift(index)
+    if self.serviceDisposed or not self.giftContent then return end
+    local S=require 'LuaClass/ServiceSupportPresentation';local W=require 'LuaClass/WarmTheme'
+    self.giftContent:removeAllChildren();local root=self.giftContent;local entries=self.recommendedData
+    self.pageIndex=math.max(1,math.min(index or 1,math.max(1,#entries)))
+    local entry=entries[self.pageIndex];local csv=DataManager:getInstance():getCSVByID(csvOfShopGift);local record=entry and csv[entry[1]]
+    if not record then S.label(root,'礼包筹备中',22,32,486,416,W.colors.muted);return end
+    S.label(root,record[dataKeyName],24,32,506,260)
+    S.label(root,record[dataKeyPrice]..' 元',23,448,506,120,W.colors.sea,1)
+    local parts={};for _,text in ipairs(record[dataKeyDesc]or{})do parts[#parts+1]=type(text)=='table'and text[1]or text end
+    local desc=S.label(root,table.concat(parts,' · '),17,32,461,nil,W.colors.muted)
+    desc:setDimensions(cc.size(416,53));desc:setVerticalAlignment(cc.VERTICAL_TEXT_ALIGNMENT_CENTER);desc:setHorizontalAlignment(cc.TEXT_ALIGNMENT_LEFT)
+    self.giftCountdown=S.label(root,'',17,32,410,242,W.colors.muted)
+    local function state()
+        if entry[2]>0 then return '剩余 '..getTimeStr(self:getSurplusSecond(os.time(),entry[2]))end
+        return entry[3]==1 and '已购买'or'礼包 '..self.pageIndex..' / '..#entries
+    end
+    self.giftCountdown:setString(state())
+    self.giftButton=W.button('礼包详情',106,40,function()self:openCoherentGift(self.pageIndex)end,{size=17});self.giftButton:setPosition(cc.p(395,411));root:addChild(self.giftButton)
+    if #entries>1 then
+        for _,v in ipairs({{'‹',-1,264},{'›',1,310}})do
+            local b=W.button(v[1],38,38,function()
+                if self.serviceDisposed or self.serviceAlert then return end
+                self:clearPoint(self.pageIndex);self:moveToPoint(math.max(1,math.min(#entries,self.pageIndex+v[2])))
+            end,{size=25});b:setPosition(cc.p(v[3],411));root:addChild(b)
+        end
+    end
+    local line=cc.Node:create();line:setPosition(cc.p(32,389));root:addChild(line);S.rule(line,0)
+end
+function DiamondStore:openCoherentGift(index)
+    if self.serviceDisposed or self.coherentPageLeaving or self.serviceAlert then return end
+    local dm=DataManager:getInstance();local entry=self.recommendedData[index];if not entry then return end
+    local giftId=entry[1];local gift=dm:getCSVByID(csvOfShopGift)[giftId];if not gift then return end
+    local push=dm:getCSVByID(csvOfPushGift)[giftId];local parts={}
+    if push and push.desc then for _,v in ipairs(push.desc)do parts[#parts+1]=v[1]end end
+    parts[#parts+1]='价格：'..gift[dataKeyPrice]..' 元'
+    if not PurchaseAvailability.isAvailable()then parts[#parts+1]='当前平台暂不支持充值购买'end
+    local generation=self.serviceGeneration
+    return require('LuaClass/ServiceSupportPresentation').confirm(self,'礼包详情',gift[dataKeyName],table.concat(parts,'\n'),function()
+        if self.serviceDisposed or generation~=self.serviceGeneration then return end
+        local current=dm:getCSVByID(csvOfShopGift)[giftId]
+        self:requestGiftPurchase(current[dataKeyPayType])
+    end)
+end
+function DiamondStore:openCoherentGood(index)
+    if self.serviceDisposed or self.coherentPageLeaving or self.serviceAlert then return end
+    local slot=self.goodsShowData[index];local entry=slot and self.goodsData[slot];if not entry or entry[2]==1 then return end
+    local dm=DataManager:getInstance();local id=entry[1];local record=dm:getCSVByID(csvOfShopItem)[id];local generation=self.serviceGeneration
+    local body=record[dataKeyDesc]..'\n\n需消耗：'..record[dataKeyPrice]..' 钻石\n当前拥有：'..dm:getRoleData(roleDiamond)..' 钻石'
+    return require('LuaClass/ServiceSupportPresentation').virtualConfirm(self,'购买物品',record[dataKeyName],body,function()
+        if self.serviceDisposed or generation~=self.serviceGeneration then return end
+        return self:purchaseCoherentGood(index,id)
+    end,require('LuaClass/ServiceSupportPresentation').itemKind(record))
+end
+function DiamondStore:purchaseCoherentGood(index,goodId)
+    -- Same transaction/callback order as the original virtual-item confirmation.
+    local tag=self.goodsShowData[index];local entry=tag and self.goodsData[tag]
+    if not entry or entry[1]~=goodId or entry[2]==1 then return false end
+    local dm=DataManager:getInstance();local csv=dm:getCSVByID(csvOfShopItem);local goodTemp=csv[entry[1]]
+    local needDiamondNum=tonumber(goodTemp[dataKeyPrice]);local item=csv[goodId]
+    local resume=item[dataKeyResume]
+    local presentation=require('LuaClass/WarmShortageOwnership').forOwner(self,'serviceGeneration',function()return not self.serviceDisposed and not self.coherentPageLeaving end)
+    if dm:addDiamond(-needDiamondNum,nil,nil,presentation)==1 then
+        if not dm:buyGoodsInDiamondStore(resume[1],resume[2],item[dataKeyAchievement])then return false end
+        ToastUtil:toastString('成功购买物品：'..goodTemp[dataKeyName])
+        local nextId=item[dataKeyNextId]
+        if nextId~=nil and nextId~=''then self.goodsData[tag][1]=nextId;self.goodsData[tag][2]=0
+        elseif item[dataKeyRepeat]=='0'then self.goodsData[tag][2]=1 end
+        dm:checkAndstepNextGift();local current=dm:getRoleData(roleDiamondStoreData);self.recommendedData=current['1']
+        -- The original virtual-item OK handler removes its own modal after reload.
+        self.serviceAlert=nil
+        self:loadData({['1']=self.recommendedData,['2']=self.goodsData})
+    end
+    return true
+end
+function DiamondStore:updateCountdown(delta)
+    if self.serviceDisposed then return end
+    local dm=DataManager:getInstance();local csv=dm:getCSVByID(csvOfShopGift);local saved=dm:getRoleData(roleDiamondStoreData)
+    local recommended=saved[self.LimitRecommendedKey];local now=os.time();local refresh=false
+    for i=#recommended,1,-1 do
+        local countdown=recommended[i][2]
+        if countdown>0 then
+            if countdown-now>0 then
+                if i==self.pageIndex and self.giftCountdown then self.giftCountdown:setString('剩余 '..getTimeStr(self:getSurplusSecond(now,countdown)))end
+            else
+                local gift=csv[recommended[i][1]];local nextId=gift[dataKeyNextId]
+                recommended[i][1]=nextId;recommended[i][3]=0
+                if nextId~=nil and nextId~=''and csv[nextId]~=nil then
+                    if tonumber(csv[nextId][dataKeyTime])>0 then recommended[i][2]=now+tonumber(csv[nextId][dataKeyTime])*3600
+                    else recommended[i][2]=tonumber(csv[nextId][dataKeyTime])end
+                else recommended[i][2]=0 end
+                refresh=true
+            end
+        end
+    end
+    if refresh then self:loadData({['1']=recommended,['2']=self.goodsData})end
+end
+function PushGiftView:initCoherentGift()
+    local S=require 'LuaClass/ServiceSupportPresentation';local W=require 'LuaClass/WarmTheme'
+    local dm=DataManager:getInstance();local good=dm:getCurDiamondStoreGoods()
+    local data=dm:getCSVByID(csvOfPushGift)[good];local shop=dm:getCSVByID(csvOfShopGift)[good]
+    local root=S.sheet(self,'海神的馈赠',data and data.name or '礼包筹备中','chest')
+    self:registerScriptHandler(function(event)if event=='exit'or event=='cleanup'then self.serviceClosed=true end end)
+    if not data or not shop then S.label(root,'礼包暂不可用',23,240,365,380,W.colors.muted,.5);return true end
+    local parts={};for i=1,math.min(#data.title,#data.price)do parts[#parts+1]=data.title[i][1]..' · '..data.price[i][1]end
+    if data.bestIcon~='0'and data.bestDesc then parts[#parts+1]=data.bestDesc end
+    local scroll,container=S.scroll(root,48,297,384,130)
+    local label=S.label(container,table.concat(parts,'\n'),20,0,0,nil);label:setAnchorPoint(cc.p(0,1));label:setDimensions(cc.size(384,0));label:setHorizontalAlignment(cc.TEXT_ALIGNMENT_LEFT)
+    local h=math.max(130,label:getContentSize().height);label:setPositionY(h);container:setContentSize(cc.size(384,h));scroll:setContentSize(cc.size(384,h));scroll:setContentOffset(cc.p(0,130-h));self.giftDescription=scroll
+    S.label(root,data.allPrice,17,48,263,205,W.colors.muted);S.label(root,'现价：'..data.nowPrice,25,432,263,210,W.colors.sea,1)
+    S.label(root,PurchaseAvailability.isAvailable()and'购买结果由平台确认'or'当前平台暂不支持充值购买',17,240,221,384,W.colors.muted,.5)
+    self.timeLine=.3+.3*math.min(#data.price,#data.title)+.1+.3+.5
+    local button=W.button('购买',250,54,function()
+        if self.serviceClosed or self._dialogueClosing or not self.serviceGiftReady then return end
+        self:requestGiftPurchase(data.payType)
+    end,{size=23,primary=true});button:setPosition(cc.p(240,157));root:addChild(button)
+    button:setVisible(false);self.serviceGiftReady=false;self.giftBuyButton=button
+    button:runAction(cc.Sequence:create(cc.DelayTime:create(self.timeLine),cc.CallFunc:create(function()
+        if self.serviceClosed or self._dialogueClosing then return end
+        self.serviceGiftReady=true;button:setVisible(true)
+    end)))
+    return true
+end
+
+-- Both visual routes share the existing platform gate and product-ID handoff.
+function DiamondStore:requestGiftPurchase(payType)return PurchaseAvailability.request(payType)end
+function PushGiftView:requestGiftPurchase(payType)return PurchaseAvailability.request(payType)end

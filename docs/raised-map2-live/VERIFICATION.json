@@ -1,0 +1,207 @@
+{
+  "base": "4925032767ae9ab1451623d4e9c3cca81aabcd7e",
+  "scope": "Explicit runtime-only map2 live adapter, default off; no profile or GUI used",
+  "activationReady": false,
+  "blockers": [
+    "live-context-active",
+    "live-context-paused",
+    "live GPU texture restoration"
+  ],
+  "checks": {
+    "live-child-added": {
+      "maxChannelError": 0,
+      "changedPixels": 0
+    },
+    "live-child-removed": {
+      "maxChannelError": 0,
+      "changedPixels": 0
+    },
+    "live-context-active": {
+      "maxChannelError": 252,
+      "changedPixels": 179566
+    },
+    "live-context-paused": {
+      "maxChannelError": 252,
+      "changedPixels": 179611
+    },
+    "sourceInLive": {
+      "maxChannelError": 252,
+      "changedPixels": 713
+    },
+    "raisedOnly": {
+      "maxChannelError": 224,
+      "changedPixels": 182091
+    },
+    "independentOriginalContext": {
+      "maxChannelError": 0,
+      "changedPixels": 0
+    },
+    "partialUnknownFog": {
+      "sampledPixels": 638309,
+      "maxChannelError": 0
+    },
+    "liveGPUTextures": {
+      "Images/UI/CleanSea/water-repeat.png": {
+        "before": "f360b9ef6548c4ee",
+        "after": "bbf37ac729ca93cb",
+        "equal": false
+      },
+      "Images/UI/CleanSea/land-sand-repeat.png": {
+        "before": "3dab7f05dbaffdf3",
+        "after": "3eb33ee9e1531bcb",
+        "equal": false
+      },
+      "Images/Map/dt_ludi.png": {
+        "before": "949d6f5323ccb038",
+        "after": "949d6f5323ccb038",
+        "equal": true
+      },
+      "Images/Map/dt_senlin.png": {
+        "before": "dcd8a25ca2ac2307",
+        "after": "dcd8a25ca2ac2307",
+        "equal": true
+      },
+      "Images/Map/t_00.png": {
+        "before": "4d2399c1e7298cf0",
+        "after": "4d2399c1e7298cf0",
+        "equal": true
+      },
+      "Images/Map/dt_zhanzmw.png": {
+        "before": "0af53ebc47ce9934",
+        "after": "0af53ebc47ce9934",
+        "equal": true
+      },
+      "Images/UI/Adventure/SeaChart/Tiles/land-forest-repeat.png": {
+        "before": "ab4bc3226535d961",
+        "after": "ab4bc3226535d961",
+        "equal": true
+      },
+      "Images/UI/Adventure/SeaChart/Tiles/grid.png": {
+        "before": "8644e94da7badb3b",
+        "after": "8644e94da7badb3b",
+        "equal": true
+      }
+    },
+    "originalGPUTexturesEqual": true
+  },
+  "protectedFiles": {
+    "bin/res/assets/Images/Map/anemia_warnning.png": "628204b3a9865322baa0fc808476bc093b704e2c34afb52aa881ba11c4ba2528",
+    "bin/res/assets/Images/Map/dt_bingdao.png": "8487fd93921e38bc7977b9e5371b2d2469270464b9c87c613d682535dbd48cc0",
+    "bin/res/assets/Images/Map/dt_huoshan.png": "de495e822a00d8c1cf23dd0cfbeab14c3ffb9aa1d9fd2870f4ac5d5721ee89b4",
+    "bin/res/assets/Images/Map/dt_ludi.png": "f37182827ab435830efc5412257b75d35414bef246edea102b20ce06f2ce34fe",
+    "bin/res/assets/Images/Map/dt_senlin.png": "487e8ab1b39309d003588f03126499ba4a51b6da6c39f09ba0506893bc800d44",
+    "bin/res/assets/Images/Map/dt_youlingdao.png": "6d7b8afbe2be6f92ecc5762cc2f5964c527e712e2ae41ac070d6cb9ef03f6758",
+    "bin/res/assets/Images/Map/dt_zhanzmw.png": "83571195545b4ed78a61ba42d0ba6cc09e3e3e3bba6725a3daf8243b8b54b119",
+    "bin/res/assets/Images/Map/dt_ziseludi.png": "71dbdf5e92b60f58976d7823d9cbc1e2092c20913a70ca90ee4eea164b6e0776",
+    "bin/res/assets/Images/Map/grid.png": "6da46f2a79b8f135b70bf395d384b2c7c6bfe7dc9918cb84f135174db8c0c461",
+    "bin/res/assets/Images/Map/huanguang_015.png": "cb366388a0c9fca6218fc95803fcfc83050ed1441504587912370f059c460b2a",
+    "bin/res/assets/Images/Map/map_1.tmx": "c3301577753252ee3f6d55541716430cfc01452f2415a5594b738adf7d512d66",
+    "bin/res/assets/Images/Map/map_10.tmx": "dd757b517816e54dc437bad2507fd64704428d58afb9d3850466d4e256b183d1",
+    "bin/res/assets/Images/Map/map_11.tmx": "449da5c9e0a5d80615b9af902f6261fc597ea4beb9da5f2e25db93556745f172",
+    "bin/res/assets/Images/Map/map_12.tmx": "cf58faae112baaf1b90fd5831bcaf6e276da996749c95d8cc7608631820ef602",
+    "bin/res/assets/Images/Map/map_13.tmx": "bad60d5d43f878ca939df029dbdd4e9b76dd32b08e4d6c1e444cfabf81bf9a63",
+    "bin/res/assets/Images/Map/map_14.tmx": "6aa7429f17a5521caa069ca604fbe034e18a4fcf1b3e2fe17d066e65707b7bfc",
+    "bin/res/assets/Images/Map/map_15.tmx": "331b364ef478de40c6e32728a5df66b718d8ae8d43799b869492b0bdaa6db99d",
+    "bin/res/assets/Images/Map/map_16.tmx": "9f50213cab42ced41d2b805b8219c078b150451de973cd3cee31f5b89d542515",
+    "bin/res/assets/Images/Map/map_1_clean_v1.tmx": "c8c8d6797013716f5aed48706da869ed9d8fd07ac849e130a4bd400c18c6b33d",
+    "bin/res/assets/Images/Map/map_2.tmx": "72842a915de8fb304fc90f2e926942c4f937970dd1d519370b71083e2ed460e2",
+    "bin/res/assets/Images/Map/map_3.tmx": "637559a30a4dedb06d264b0ea73aad016ad0eff1960997424f3c234b83a5f169",
+    "bin/res/assets/Images/Map/map_4.tmx": "446c3ad333b6e497dce36567ed303476b4adc5259b36fea5d9e2a8c7550c9a57",
+    "bin/res/assets/Images/Map/map_5.tmx": "104ba88d30add5b4d5418d5eda3fa0959a013afb629f55a2a75879675f049ecf",
+    "bin/res/assets/Images/Map/map_6.tmx": "aac2ba65b7f8d201fa9d34a43a9354eb30b082bc67d6d758c7219edb35135a38",
+    "bin/res/assets/Images/Map/map_7.tmx": "48d9c7597111137439b7db58f1fe2d0cc92d9d251fa37076fe9ac4ad9ae9e651",
+    "bin/res/assets/Images/Map/map_8.tmx": "5f6d22dbb28f5fd4d7779a047615ae7fa4b0bb10e25eb4137f014e5081299a76",
+    "bin/res/assets/Images/Map/map_9.tmx": "23327c9c148b832e083de74e2a6f4149ea53481ed6b8643390dcf87802d65811",
+    "bin/res/assets/Images/Map/mask.png": "44d4ca5f30d13ebdb321a0c9a14f029c4ae4aec5478327a9dda17fa9d5a91d7f",
+    "bin/res/assets/Images/Map/shanguang_014.png": "a39d06fbd0cc75f3c87a2a9e15f2b10b26078ad0c76efed4b42d7bcc6dac8fa1",
+    "bin/res/assets/Images/Map/ship_1.png": "610b0028a3bceb06efdb142c0af9fc67540cb1a6c41b8a3cc3e6ed8f343c3286",
+    "bin/res/assets/Images/Map/ship_2.png": "dd15211bfb7e63f44e6bf376dcf8de954f39c8fe049bd281f0dccbb36f6797fb",
+    "bin/res/assets/Images/Map/ship_3.png": "0104eb3664653693976695d3301fca64a01ddbdb90a8869cf6724877a1917af5",
+    "bin/res/assets/Images/Map/ship_4.png": "7a6fe6e38e5004014228f6a321282232d2723936812950927207467d35a8921c",
+    "bin/res/assets/Images/Map/ship_5.png": "4c3a28f269eb166e51b06973c6f3475652b1af35b1d727e191e7e0e65082713e",
+    "bin/res/assets/Images/Map/ship_6.png": "a94a453738effb0e20d634eb8a30403e3e0e68a598cb6c8cb1c7b49ba47b1023",
+    "bin/res/assets/Images/Map/shuzk_01.png": "f189ea80607fa659517b141e0e1faf07e691f1a7f2c31abd4ccae6746855883d",
+    "bin/res/assets/Images/Map/strategyBtn.png": "9ce64a871f4053614729cd5cef7e64ce77f15aa70e71afb91a0fb39f777cee2d",
+    "bin/res/assets/Images/Map/strategyBtn_select.png": "b686d32afae9fc5633b39e8cdfe050812b813ceadc292dec7dfffe3b7bdb522b",
+    "bin/res/assets/Images/Map/t_00.png": "30458838a20d16e5c07a285b13b4695aec137a58fc802f899a978da121adff3d",
+    "bin/res/assets/Images/Map/tip_center.png": "477a45d9e01bf6ec944e8e7c66b26222c0b79b71ca6cb77b476ea971dfc9afc6",
+    "bin/res/assets/Images/Map/tip_direction.png": "72c697f6efd7d6c3e2864bd34ecde99641f80616ea96e0ae9c05240d1c024b80",
+    "bin/res/assets/Images/UI/CleanSea/dt_huoshan.png": "f1be8a7c7e0151f67fd2729b3369efd70ddc09f7768ef9d4f7088982a8923e50",
+    "bin/res/assets/Images/UI/CleanSea/dt_ludi.png": "90bb0df32f1d0a1d84af33dca6ecf6dca1b4a76981538b8fd35a2747772254f6",
+    "bin/res/assets/Images/UI/CleanSea/dt_senlin.png": "235a9ed52bcfdc601302d4ce02bd0212f876000cedff6298ecdb1fb849f2b01f",
+    "bin/res/assets/Images/UI/CleanSea/events-gate.png": "c1517801aba00ec1e2d7400797f8ca66d295c2119750574688da69a88bfcc618",
+    "bin/res/assets/Images/UI/CleanSea/land-forest-repeat.png": "b0f591a09ca1154e854a7c34f38a3ba7ca0373c544f2aad9b264e98b624b73d7",
+    "bin/res/assets/Images/UI/CleanSea/land-sand-repeat.png": "08a0deec4b435e69b0f7c2bfc662b862e301a94adc2532e8384d3abb9e194ded",
+    "bin/res/assets/Images/UI/CleanSea/land-volcanic-repeat.png": "8419037f169b81645a923b8f730ca8286b59958a60a44e25540c2326a2bde5d8",
+    "bin/res/assets/Images/UI/CleanSea/scenery-gate.png": "f057ec62f58169294e5d206ee56765e9a647e0561513ab5516b7845a6bf903e1",
+    "bin/res/assets/Images/UI/CleanSea/ship-clean.png": "c640655d0936a9b58715b38a6df07b1ec8f13547e37cbb763483a97c464f42de",
+    "bin/res/assets/Images/UI/CleanSea/source/event-three-kind-v1.png": "b057d0e60df5e958c999ae9bda10ba29b84bd525f53f263d346d17c8f6a1ff7c",
+    "bin/res/assets/Images/UI/CleanSea/source/material-atlas-v1.png": "ffa54cf5dadfc64370e75a257764446b75df6de457066de3ed4b9b32515149e8",
+    "bin/res/assets/Images/UI/CleanSea/source/scenery-three-family-v1.png": "f542061c1fcf10b84947a214177a49c8dd455e573adf0a0b4ac10139ba55937a",
+    "bin/res/assets/Images/UI/CleanSea/source/water-calm-v2.png": "f8f7a90116989cbbdb553565d5677cd521322586ef821edca26ada4ad73e8517",
+    "bin/res/assets/Images/UI/CleanSea/supply-not-activated.png": "72af81e859050ce284c5228fec0c9e97f2efc97820e01cfbb238299490cf61be",
+    "bin/res/assets/Images/UI/CleanSea/water-repeat.png": "7ae6ea0fce78780dd8cef7efd58c4f3b5a7bdb7a23d0c4b9f220928136e6697c",
+    "bin/res/assets/data/Encounter.csv": "7d9e007905abf48441412a468e2d57e0bd2793a33dcd48edb4f22c5df1242ac5",
+    "bin/res/assets/data/WorldMapCoordinates.csv": "2e5532b376af9a1244314be84fa5a662a34cf84fdd29707511ee5ff8b2113efe",
+    "bin/res/assets/data/achievement.csv": "1703fee6f7a62f66f8dce3e170d43e094d57933425e6ab59c5a70010084bfa09",
+    "bin/res/assets/data/blackMarket.csv": "ea82d549fc430e5deb8a1cc7c48b38a8fce2aafe757d7cd3c4ba2e61fe069f23",
+    "bin/res/assets/data/buff.csv": "949e505b87d386b59e144b2ee053e3b11ff52509e16a0a3cabec16e7aff06d89",
+    "bin/res/assets/data/build.csv": "6989d132ebfac2508e161452abf04b01e85afbec3fc3923a47d3a8e8d5b88e6b",
+    "bin/res/assets/data/esoterica.csv": "2f56c18ebc1ad22f2be9ebd15bfa611baeb3c1be83368cb748dc80fc7cbdf287",
+    "bin/res/assets/data/eternalArena.csv": "17a708327352d6faeeabbf3fc77f2160488bda4ad6f66fd14f910fc5446ed9b5",
+    "bin/res/assets/data/fightboxes.csv": "9925fb5d1ffcac86f6594289a50b60ad6df0c837d5ab266351afb51289f23e23",
+    "bin/res/assets/data/gift.csv": "1acfca23d258ed26672c03223811c24815b9403cd9f875a5f38599b58e9fe560",
+    "bin/res/assets/data/giftPush.csv": "7989b729ead4fe989d2835847e0b1506553ceeee0ed6e84ba80daab9a4bbce3b",
+    "bin/res/assets/data/loadingTips.csv": "716fb62d8d379091e1905b4017d16c72d9ad0a65729c373add56a039c18eb310",
+    "bin/res/assets/data/logingReward.csv": "1cdd54ba8508c5b71279f04a9ce2230c6efe8a15295ea1ec8f944b6c6ce3ba6d",
+    "bin/res/assets/data/plot.csv": "055a9831bcb9ae84000eb8baaf2544f6f085836193c7e9f3b178268d798b2597",
+    "bin/res/assets/data/produce.csv": "53af169c42f6266aea6e1b2df71f9580ac57141a5d8f7bcdaf2425ac112bdeed",
+    "bin/res/assets/data/randomEvent.csv": "138589fe9be4aeeafc1c6f10fe5cf54fa678b4d08a892655923fc93f3d356cf6",
+    "bin/res/assets/data/resourceInfo.csv": "6e3fca5bc8f1f61545c02b04ef1d807fb1ffed7427a4bf2e25fc3730a25f8d83",
+    "bin/res/assets/data/shopgift1.csv": "8eae1dacc6fdc8b64821df3bb1685a9747a7186a03f034fe9dfc78669ae45a09",
+    "bin/res/assets/data/shopgift2.csv": "09aed8c102a5ef4cd0f9dc6544cde67fa03e1e09240cdcc160867bef9e2f899c",
+    "bin/res/assets/data/shopitem.csv": "d192370b432f8256651d9974bf8ccaaddd052fea9ab4ff9178f9a51456c674e5",
+    "bin/res/assets/data/skillAttribute.csv": "e71848eb0e191789510a56e15a35916fb6fe72667fda207da1b34f56ca273ea3",
+    "bin/res/assets/data/soilderAttribute.csv": "55770a556185b692fd2b7554df5e13dea73337e0432e1e269de1b8f5c6278901",
+    "bin/res/assets/data/store.csv": "67a989c6f50b6fa82b47048ec07c432a3f8d7d999313f5c509898a7f444741b8",
+    "bin/res/assets/data/strongholdAttribute.csv": "919c0c9cdf2e01e4bfc8c350cdcf17e1f3b54bde14b70cf20bfd3d268ff1369b",
+    "bin/res/assets/data/strongholdDistribution.csv": "f04285ece87653ba637ad911c97dc2e67315f3d192cf6ddae6ce14104d527710",
+    "bin/res/assets/data/talent.csv": "e9821d8b7e3eb99804e911b74ee6a10abb45097b5e1196aaddf2efdd4105a4b5",
+    "bin/res/assets/data/task.csv": "2a5241cd01d294afc34bf0dce4bf42898c4ec18d9c9aecfa37a7d918aa72d98f",
+    "bin/res/assets/data/worker.csv": "ed0d7515315c59463c83114cdfac2fbabe9cf37a16f950e5da7a1dba415eb396",
+    "bin/res/scripts/LuaClass/CleanFirstMap.lua": "1e057e3839c423c8c76e66fca0cdcd9af393a7d949248b970dfc62091a875361",
+    "bin/res/scripts/LuaClass/CleanVoyageView.lua": "e760a55129ce5f45fbddb93f9cdae8c1d9a90e865ffda4ac89af5634adbc4657",
+    "bin/res/scripts/LuaClass/AdventureSea.lua": "7b90dac1b65f518cc1d5f1dc3184d01ab66dc972c466d0f3064ce8a91095560d",
+    "bin/res/scripts/LuaClass/FogManager.lua": "1f9c2cae8926386d0aa330de298ababa1b011011f420f97fa8292a12769db71c",
+    "bin/res/scripts/LuaClass/MapLayoutManagers.lua": "42314911720509d610d78e044ad7180621e6196c2828922efcf742978ac3ce5e",
+    "bin/res/scripts/LuaClass/ExploreDataManager.lua": "262a57368685915f52eaf4d0a8ef4de754a33a23301400528219e268f76d9597",
+    "bin/res/scripts/LuaClass/AdventureNavigation.lua": "18689ca5465447f19f18f02be94500cb370715b88aae5d215cd23c5914bb297a",
+    "bin/res/scripts/LuaClass/KnownRoute.lua": "ed41504beb8783b1e9bc88bcc98d1baea0eae1cd91039ca462e39c7867744d8a",
+    "bin/res/scripts/LuaClass/WorldMapLayer.lua": "fcbe210f17fb131b3c3bce13f0a4b7a214f571abc05b1b56b3cdea24ca6d09a9",
+    "bin/res/scripts/LuaClass/SeaChartWorldTheme.lua": "6fc716081e5887790d078246cbe91ba1dbd37d693966bd79356d4e707ddea49a",
+    "bin/res/scripts/LuaClass/SeaChartTheme.lua": "7d000617ad3f79120aac8121b0a27cd15526784913c07e1963d9a3a6243fa430",
+    "bin/res/scripts/LuaClass/EventLayer.lua": "783933a67078e6cd6aed41beb659ff4cbfa652ef86660999cc0cb44e6d9f6986"
+  },
+  "nativePNGs": {
+    "live-animated-fog.png": "9064561a8336d8b861a2d02b365c886a6b4a9475055bde86166e0031c8ae098f",
+    "live-child-added.png": "34dad9df3c76d5216110d4633da177e0a84c72ee54b9cb1df94484589610c2f8",
+    "live-child-removed.png": "a22cbf23dcbbc37726ce9c84e27978a924574bb06463ea3a0e86dccce7737c03",
+    "live-context-active-second.png": "274b6214e1171af4060904b98cc64117542b2d632d18639f0a2d256f869768c0",
+    "live-context-active.png": "74b5c7300474d0e12750a7e7aebacc32cf682b3061e7a8d50a3ccc4cbdaf25e0",
+    "live-context-before.png": "a22cbf23dcbbc37726ce9c84e27978a924574bb06463ea3a0e86dccce7737c03",
+    "live-context-paused.png": "185140903fb6c2f32945de143622f37d38f2bb576fd4f33acabb645543877050",
+    "live-fog-overlay.png": "a43c0ecb0e7ef4fa0ddc4adb98032c3a78a21c77e7bb2e2c870ae69bc8371353",
+    "live-fog-reference.png": "1d023c146f1e063205b85036d0999910dbbaaa254643c20d72b9c015e486207b",
+    "live-partial-fog.png": "cec609cf00928ce57645b833b47eadc23240ceea36f12c5268e747bfae5d0fed",
+    "raised-only-after.png": "debb5535249c0f780bf819e47d2666cf77e17dbf9d05e9fb189de524be2c576b",
+    "raised-only-before.png": "18b96da5ad577e93d7f279ffb1967f4e5598e2710cae9f5c37c52c5d50f5d208",
+    "source-only-after.png": "b34a497212fca9104a78c24cdfc6b5223cc38076981e0972b013dd46a89a4f68",
+    "source-only-before.png": "957924cbf62f25e792af51abfcb88aeb0894967c37021fd105adea729ad01878"
+  },
+  "limits": [
+    "Seeded native controller with deterministic event dispatch/encounter probes, not a full battle playthrough.",
+    "Native partial/fading fog and source actors retained; partial cells retain original ground art.",
+    "Legacy portal/revive/occupied art and upright dynamic actor/populated-route art acceptance remain pending.",
+    "Mesa EGL context fixture is not Android-device or mobile-performance acceptance."
+  ]
+}

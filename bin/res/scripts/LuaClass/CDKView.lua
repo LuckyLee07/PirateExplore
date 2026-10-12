@@ -19,6 +19,10 @@ function CDKView:create()
     return nil
 end
 function CDKView:init()
+    if rawget(_G,'WARM_PIRATE_V1')~=false then
+        self:registerScriptHandler(function(event)if event=='exit'or event=='cleanup'then self._closed=true end end)
+        return require('LuaClass/ServiceSupportPresentation').entry(self,{title='兑换码',subtitle='领取您的航海补给',art='chest',hint='每个兑换码仅限使用一次',maxLength=15,placeholder='点击输入兑换码',status=self:isNativeRedemptionAvailable()and'兑换结果由平台服务确认'or'此平台的兑换服务暂不可用',submit='兑换',callback=function()self:requestNetwork(self.textField:getStringValue())end})
+    end
     self:registerScriptHandler(function(event)
         if event == "exit" then self._closed = true end
     end)
@@ -127,6 +131,7 @@ end
 
 function CDKView:setRequestPending(pending)
     self._requestPending = pending
+    if self.serviceStatus and not self._closed then self.serviceStatus:setString(pending and "正在提交兑换码…"or"兑换结果由平台服务确认") end
     if not self._closed and self.submitButton then self.submitButton:setEnabled(not pending) end
 end
 
@@ -203,10 +208,7 @@ function CDKView:httpConnection(cdk)
     return true
 end
 
-function CDKView:requestNetwork(codeKey)
-    if self._closed or self._requestPending or not self:validateCode(codeKey) then return false end
-    -- The native SDK owns its connectivity. Posting to an unrelated website
-    -- neither verifies redemption availability nor proves a code is valid.
+function CDKView:isNativeRedemptionAvailable()
     local platform = cc.Application:getInstance():getTargetPlatform()
     local enabled, interfaces = false, nil
     if type(getEnableInterface) == "function" then
@@ -216,8 +218,15 @@ function CDKView:requestNetwork(codeKey)
             enabled = ok and type(interfaces) == "table" and interfaces.UserCenter == "Enabled"
         end
     end
-    if not enabled or (platform ~= cc.PLATFORM_OS_IPHONE and platform ~= cc.PLATFORM_OS_IPAD) or
-        type(decodeExKey) ~= "function" then
+    return enabled and (platform==cc.PLATFORM_OS_IPHONE or platform==cc.PLATFORM_OS_IPAD) and type(decodeExKey)=="function"
+end
+
+function CDKView:requestNetwork(codeKey)
+    if self._closed or self._requestPending or not self:validateCode(codeKey) then return false end
+    -- The native SDK owns its connectivity. Posting to an unrelated website
+    -- neither verifies redemption availability nor proves a code is valid.
+    if not self:isNativeRedemptionAvailable() then
+        if self.serviceStatus then self.serviceStatus:setString("此平台的兑换服务暂不可用") end
         ToastUtil:toastString("此平台的兑换服务暂不可用")
         return false
     end

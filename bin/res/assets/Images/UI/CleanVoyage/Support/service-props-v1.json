@@ -1,0 +1,64 @@
+{
+  "generator": "OpenAI built-in image_gen.imagegen",
+  "generatedAt": "2026-10-11",
+  "mode": "Separate transparent-background generation calls; no fallback CLI",
+  "postprocessing": "None. Original generated PNGs copied byte-for-byte into the namespaced game asset folder.",
+  "assets": [
+    {
+      "key": "chest",
+      "file": "reward-chest-clean-v1.png",
+      "source": "exec-6c60a3de-a596-4bbf-917a-c1b74dc1ece7.png",
+      "prompt": "Use case: stylized-concept. Asset type: production pirate-game reward prop on genuinely transparent background, no backdrop. Exactly ONE compact open treasure chest. Clean polished dimensional LOW-POLY 2.5D modeled art with large untextured flat facets, restrained beveled edges and warm sunny upper-left light; orthographic 30-degree elevated three-quarter view. Friendly honey-gold wooden chest with 3 broad warm wood panels, simple teal iron bands, one small gold latch. Lid visibly raised. Inside a modest readable heap of large golden coin discs and three chunky turquoise-blue faceted gems; all part of one chest prop. Bright welcoming sunny pirate adventure visual family. Strong compact silhouette, close framing, fully visible, square canvas. No skull, characters, text, logos, UI, cards, sparkles, glow, gradients, painterly texture, fine wood grain, scratches, realism, noisy detail, vignette, floor, island, water or large cast shadow. Real alpha transparency, no white rectangle.",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "sha256": "b3200e332139e8c5c513bac64d548de4298277068d04911ef13737d8bd47ba9a"
+    },
+    {
+      "key": "medal",
+      "file": "ranking-medal-clean-v1.png",
+      "source": "exec-6074a72a-1b0b-47e0-8ffd-55ac5e10ef0c.png",
+      "prompt": "Use case: stylized-concept. Asset type: one production 2.5D low-poly pirate adventure ranking medal game prop, genuinely transparent background. Exactly ONE compact round golden captain's medal with a simple raised five-point faceted star and two short teal cloth ribbons below it. Clean friendly low-poly modeled style: broad flat polygon planes, softly beveled thick edges, simple geometry, no engraved fine detail, no brush texture, no noisy surface, no realistic scratches. Bright warm sunny top-left lighting, restrained ambient occlusion and dimensional depth. Slightly angled three-quarter almost frontal orthographic view, star readable at 80 pixels. Material is warm sunlit yellow gold with deeper amber facets and blue teal ribbons. Fully visible, isolated, close square framing, no text, numbers, UI, panel, logo, characters, sparkles, glow, backdrop, floor or large cast shadow. Real alpha transparency. Match clean honey-gold and turquoise faceted treasure chest game prop.",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "sha256": "b7328724f1e3d8b60c84a637717f2ed4b0c86431fc4bde97a4de5ea4d0ffdf7b"
+    },
+    {
+      "key": "hourglass",
+      "file": "hourglass-clean-v1.png",
+      "source": "exec-9e58140a-c531-4598-bf61-6427eda090c0.png",
+      "prompt": "Use case: stylized-concept. Asset type: ONE clean production pirate adventure 2.5D game prop for production speed and offline-reward duration. Subject exactly one compact sand hourglass with honey-gold wooden top and base, three simple teal-painted supports and two clear low-poly glass bulbs holding warm pale golden sand. Clean LOW-POLY modeled render with broad polygon facets, thick softly beveled edges, simple readable silhouette, sunny top-left light, restrained ambient occlusion. Three-quarter orthographic view at 30-degree elevated camera, fully visible with close square framing. Teal, warm honey wood and golden sand. Match faceted polished cartoon treasure chest game assets. Genuinely transparent background with real alpha. No text, numbers, arrows, UI, badges, panel, gradients, painterly texture, wood grain, realistic scratches, clutter, clock face, sparkles, aura, floor or large cast shadow.",
+      "dimensions": [
+        1254,
+        1254
+      ],
+      "alphaExtrema": [
+        0,
+        255
+      ],
+      "sha256": "1b330433a572d60f9203f5d9c8b41e048fef7223158b8c807f4a120f01deeef6"
+    }
+  ],
+  "existingSemanticReuse": {
+    "first-strike talent 2005": "ProgressSupportPresentation lightning, same existing Talent identity",
+    "hunger-resistance talent 2003": "ProgressSupportPresentation food, same existing Talent identity",
+    "coin-grant effects type 7": "Images/Icon/B/r_9.png, existing approved coin resource artwork"
+  },
+  "remainingArtGates": [
+    "Portal goods 1/2/3",
+    "Return scroll good 12",
+    "Dragon goods 13/14/15/21",
+    "Pure diamond goods 20/23/24/26/28/29"
+  ]
+}

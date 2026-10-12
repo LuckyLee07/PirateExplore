@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "image": "progress-props-v1.png",
+  "dimensions": [1254, 1254],
+  "alpha": "Native generated RGBA transparency, retained unchanged",
+  "source": "OpenAI built-in image_gen, 2026-10-11",
+  "source_file": "exec-cbe7558e-e5b0-4f69-88d0-6e2262afb674.png",
+  "import": "Byte-for-byte copy of generated output. No alpha removal, color or content editing.",
+  "lighting": "Upper-left sunlight; matching brass, teal, cream and wood game props",
+  "use": "Talent and Achievement presentation only; no owned-item, reward or economy data",
+  "rectangles_xywh": {
+    "compass": [26, 2, 388, 402],
+    "medal": [473, 39, 310, 370],
+    "alchemy": [879, 20, 365, 381],
+    "target": [40, 431, 395, 391],
+    "feather": [458, 454, 356, 353],
+    "food": [870, 430, 375, 387],
+    "lightning": [68, 830, 285, 402],
+    "scout": [440, 880, 389, 307],
+    "badge": [856, 830, 378, 384]
+  },
+  "anchors": "All consumer symbols use a centered sprite inside an explicit square logical node; uniform scale only.",
+  "semantics": {
+    "精准": "target", "闪避": "feather", "耐饿": "food", "侦查": "scout", "先发制人": "lightning",
+    "other earned talents": "badge", "talent page identity": "compass", "achievement page identity": "medal", "alchemy action": "alchemy"
+  }
+}

@@ -33,3 +33,9 @@ Both pass. The regression invokes the exact production return callback and real 
 The native test uses actual Home and Cocos nodes at 480×800, 640×960 and 640×1136. It verifies text bounds, both causes, long-result pagination, no clickthrough, stale callbacks, once-only preparation/log routing and owner disposal. It also activates the real Home primary handler for empty-crew recovery and normal preparation. Presentation operations perform zero writes.
 
 Existing `adventure_return_ui_transaction_audit.lua`, `adventure_state_audit.lua` and `warm_return_result_regression.lua` also pass after the hook. This does not claim a full-game defeat visual run, mobile acceptance or publication.
+
+## Retained-cargo pagination correction
+
+Actual defeat testing with four loss rows and one retained mission shard exposed a split heading: the retained label landed at the bottom of one page and its item appeared on the next under the fixed lost-cargo title. The receipt now paginates lost and retained categories independently, with the correct category heading repeated on every page. Capture, transactions, save data and recovery routes are unchanged.
+
+Native regression now covers 360×640 as well as the prior three sizes and traverses every long receipt page. It verifies category headings, retained-item separation, text bounds, stale page controls and zero presentation writes. The original production failure transaction regression still passes for both causes and failed-save retry. Actual desktop successor pixels remain pending.

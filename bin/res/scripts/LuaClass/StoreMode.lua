@@ -25,6 +25,7 @@ function StoreLayer:create(bIsMoveToBottom, focusResourceId)
 end
 
 function StoreLayer:destory()
+    if self.disposeMarket then self.disposeMarket() end
     -- 关闭的时候清理红点
     DataManager:getInstance():cleanNewUnlock(kUnlockStore)
     -- 调用父类的析构
@@ -32,6 +33,8 @@ function StoreLayer:destory()
 end
 
 function StoreLayer:init(bIsMoveToBottom, focusResourceId)
+    local W=require "LuaClass/WarmTheme"
+    if W.enabled() then return require("LuaClass/WarmMarket").open(self,bIsMoveToBottom,focusResourceId) end
     self:applyManagementTheme()
 
     local visibleSize = cc.Director:getInstance():getVisibleSize()
@@ -389,6 +392,15 @@ function StoreLayer:buy(_csvID,_sortID,num,_oldalert)
     else
         if _oldalert ~= nil then
             _oldalert:removeFromParent()
+        end
+        if self.warmMarket then
+            local needed=tonumber(self.ResoucecsvData[tostring(_csvID)].price)*num
+            local have=tonumber(DataManager:getInstance():getPackNumWithId('1001')) or 0
+            require('LuaClass/WarmDialog').show('金币不足','本次需要 '..needed..' 金币，还差 '..math.max(0,needed-have)..' 金币。',{
+                {label='继续挑选'},
+                {label='查看金币购买',action=function()DataManager:getInstance():showBuyGoldBox()end}
+            },self)
+            return
         end
         local _alert = AlertView:create(2,0, "购买失败", function()
             DataManager:getInstance():showBuyGoldBox()

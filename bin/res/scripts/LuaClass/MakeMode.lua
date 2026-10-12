@@ -26,6 +26,7 @@ function MakeLayer:create(focusResourceId)
 end
 
 function MakeLayer:destory()
+    if CoherentRecipePage then CoherentRecipePage.dispose(self) end
     -- 干掉注册的信息
     DataManager:getInstance():unregisterEvent(roleMapInfo, "MakeLayer")
     -- 调用父类的析构
@@ -41,6 +42,10 @@ end
 
 function MakeLayer:init()
     self:applyManagementTheme()
+    if type(WarmTheme) == "table" and WarmTheme.enabled() and self.applyCoherentPageShell then
+        require "LuaClass/BuildMode"
+        return CoherentRecipePage.init(self, "make")
+    end
     DataManager:getInstance():registerEvent(roleMapInfo, "MakeLayer", function()
         -- body
         local flag = DataManager:getInstance():checkDiamondStoreNewGoods()

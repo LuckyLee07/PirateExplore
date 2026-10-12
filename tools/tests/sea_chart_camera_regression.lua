@@ -1,6 +1,7 @@
 -- Exercise production camera functions with native-point map bounds.
 -- No game state, display, save or event manager is opened by this test.
 require = function(name)
+    if name=='LuaClass/RaisedSeaMap2Live' then return {clamp=function()end,projectPoint=function(_,p)return p end,dirty=function()end}end
     if name=='LuaClass/AdventureSea' then return {refresh=function()end,tryEvent=function()return false end} end
     if name=='LuaClass/AdventureNavigation' then return {boundaryMessage='已到海图边界，请换个方向。'} end
     return {}
@@ -34,9 +35,9 @@ local function upvalue(fn, wanted)
     end
     error('missing production touch callback '..wanted)
 end
-local began = upvalue(Explore.init,'onTouchesBegan')
-local moved = upvalue(Explore.init,'onTouchesMoved')
-local cancelled = upvalue(Explore.init,'onTouchCancelled')
+local began = upvalue(Explore.installChartTouchListener,'onTouchesBegan')
+local moved = upvalue(Explore.installChartTouchListener,'onTouchesMoved')
+local cancelled = upvalue(Explore.installChartTouchListener,'onTouchCancelled')
 local function origin(layer)
     return layer.x+(layer.anchorX or 0)*(1-layer.scale),
         layer.y+(layer.anchorY or 0)*(1-layer.scale)

@@ -1,0 +1,446 @@
+{
+  "base": "e1e7fd8bddc960afe5a650092cb16bb7d7a98ebc",
+  "prototype": "62790b07a29f1c2ccdef84d4b319264e48b61532",
+  "activationReady": false,
+  "inheritedSourceHold": "Recovery-shortage ownership HOLD in base e1e7; separate repair not imported here.",
+  "nativeContractPassed": true,
+  "checks": {
+    "PASS live map2 initial native proof": true,
+    "PASS real controller parity": true,
+    "PASS native pause-save-resume": true,
+    "PASS six active/paused context recoveries": true,
+    "PASS native context and original-route fallback capture fixtures": true,
+    "controller/live-child-added": {
+      "maxChannelError": 0,
+      "changedPixels": 0
+    },
+    "controller/live-child-removed": {
+      "maxChannelError": 0,
+      "changedPixels": 0
+    },
+    "controller/live-context-active": {
+      "maxChannelError": 0,
+      "changedPixels": 0
+    },
+    "controller/live-context-paused": {
+      "maxChannelError": 0,
+      "changedPixels": 0
+    },
+    "controller/live-context-repeat-3": {
+      "maxChannelError": 0,
+      "changedPixels": 0
+    },
+    "controller/live-context-repeat-4": {
+      "maxChannelError": 0,
+      "changedPixels": 0
+    },
+    "controller/live-context-repeat-5": {
+      "maxChannelError": 0,
+      "changedPixels": 0
+    },
+    "controller/live-context-repeat-6": {
+      "maxChannelError": 0,
+      "changedPixels": 0
+    },
+    "controller/source-only-after": {
+      "maxChannelError": 0,
+      "changedPixels": 0
+    },
+    "controller/raised-only-after": {
+      "maxChannelError": 0,
+      "changedPixels": 0
+    },
+    "baseline/original-context-after": {
+      "maxChannelError": 0,
+      "changedPixels": 0
+    },
+    "baseline/original-context-paused": {
+      "maxChannelError": 0,
+      "changedPixels": 0
+    },
+    "baseline/original-context-repeat-3": {
+      "maxChannelError": 0,
+      "changedPixels": 0
+    },
+    "baseline/original-context-repeat-4": {
+      "maxChannelError": 0,
+      "changedPixels": 0
+    },
+    "baseline/original-context-repeat-5": {
+      "maxChannelError": 0,
+      "changedPixels": 0
+    },
+    "baseline/original-context-repeat-6": {
+      "maxChannelError": 0,
+      "changedPixels": 0
+    },
+    "controller/unknownFog": {
+      "sampledPixels": 638309,
+      "maxChannelError": 0
+    },
+    "controller/buffers": {
+      "columns": [
+        "cycle",
+        "liveBuffers",
+        "drawNodes",
+        "listeners",
+        "maxPerNode"
+      ],
+      "cycles": [
+        [
+          2,
+          53,
+          22,
+          22,
+          1
+        ],
+        [
+          3,
+          64,
+          22,
+          22,
+          1
+        ],
+        [
+          4,
+          53,
+          22,
+          22,
+          1
+        ],
+        [
+          5,
+          64,
+          22,
+          22,
+          1
+        ],
+        [
+          6,
+          53,
+          22,
+          22,
+          1
+        ]
+      ],
+      "samePhaseStable": true,
+      "oneListenerPerNode": true
+    },
+    "baseline/buffers": {
+      "columns": [
+        "cycle",
+        "liveBuffers",
+        "drawNodes",
+        "listeners",
+        "maxPerNode"
+      ],
+      "cycles": [
+        [
+          2,
+          43,
+          12,
+          12,
+          1
+        ],
+        [
+          3,
+          54,
+          12,
+          12,
+          1
+        ],
+        [
+          4,
+          43,
+          12,
+          12,
+          1
+        ],
+        [
+          5,
+          54,
+          12,
+          12,
+          1
+        ],
+        [
+          6,
+          43,
+          12,
+          12,
+          1
+        ]
+      ],
+      "samePhaseStable": true,
+      "oneListenerPerNode": true
+    },
+    "controller/GPUTextures": true,
+    "baseline/GPUTextures": true,
+    "controller/GPUTexturesRepeat3": true,
+    "controller/GPUTexturesRepeat4": true,
+    "controller/GPUTexturesRepeat5": true,
+    "controller/GPUTexturesRepeat6": true,
+    "controller/TextureLifetime": true,
+    "objects-480/PASS six exact semantic-object toggles": true,
+    "objects-480/PASS live occupancy": true,
+    "objects-480/PASS hidden/partial/animated fog": true,
+    "objects-480/PASS six active/paused object context recoveries": true,
+    "objects-480/PASS parent cleanup": true,
+    "objects-480/compact480-original-after": {
+      "maxChannelError": 0,
+      "changedPixels": 0
+    },
+    "objects-480/compact480-context-1": {
+      "maxChannelError": 0,
+      "changedPixels": 0
+    },
+    "objects-480/compact480-context-2": {
+      "maxChannelError": 0,
+      "changedPixels": 0
+    },
+    "objects-480/compact480-context-3": {
+      "maxChannelError": 0,
+      "changedPixels": 0
+    },
+    "objects-480/compact480-context-4": {
+      "maxChannelError": 0,
+      "changedPixels": 0
+    },
+    "objects-480/compact480-context-5": {
+      "maxChannelError": 0,
+      "changedPixels": 0
+    },
+    "objects-480/compact480-context-6": {
+      "maxChannelError": 0,
+      "changedPixels": 0
+    },
+    "objects-480/unknownFog": {
+      "sampledPixels": 184443,
+      "maxChannelError": 0
+    },
+    "objects-480/buffers": {
+      "columns": [
+        "cycle",
+        "liveBuffers",
+        "drawNodes",
+        "listeners",
+        "maxPerNode"
+      ],
+      "cycles": [
+        [
+          1,
+          77,
+          35,
+          35,
+          1
+        ],
+        [
+          2,
+          66,
+          35,
+          35,
+          1
+        ],
+        [
+          3,
+          77,
+          35,
+          35,
+          1
+        ],
+        [
+          4,
+          66,
+          35,
+          35,
+          1
+        ],
+        [
+          5,
+          77,
+          35,
+          35,
+          1
+        ],
+        [
+          6,
+          66,
+          35,
+          35,
+          1
+        ]
+      ],
+      "samePhaseStable": true,
+      "oneListenerPerNode": true
+    },
+    "objects-360/PASS six exact semantic-object toggles": true,
+    "objects-360/PASS live occupancy": true,
+    "objects-360/PASS hidden/partial/animated fog": true,
+    "objects-360/PASS six active/paused object context recoveries": true,
+    "objects-360/PASS parent cleanup": true,
+    "objects-360/compact360-original-after": {
+      "maxChannelError": 0,
+      "changedPixels": 0
+    },
+    "objects-360/compact360-context-1": {
+      "maxChannelError": 0,
+      "changedPixels": 0
+    },
+    "objects-360/compact360-context-2": {
+      "maxChannelError": 0,
+      "changedPixels": 0
+    },
+    "objects-360/compact360-context-3": {
+      "maxChannelError": 0,
+      "changedPixels": 0
+    },
+    "objects-360/compact360-context-4": {
+      "maxChannelError": 0,
+      "changedPixels": 0
+    },
+    "objects-360/compact360-context-5": {
+      "maxChannelError": 0,
+      "changedPixels": 0
+    },
+    "objects-360/compact360-context-6": {
+      "maxChannelError": 0,
+      "changedPixels": 0
+    },
+    "objects-360/unknownFog": {
+      "sampledPixels": 97138,
+      "maxChannelError": 0
+    },
+    "objects-360/buffers": {
+      "columns": [
+        "cycle",
+        "liveBuffers",
+        "drawNodes",
+        "listeners",
+        "maxPerNode"
+      ],
+      "cycles": [
+        [
+          1,
+          77,
+          35,
+          35,
+          1
+        ],
+        [
+          2,
+          66,
+          35,
+          35,
+          1
+        ],
+        [
+          3,
+          77,
+          35,
+          35,
+          1
+        ],
+        [
+          4,
+          66,
+          35,
+          35,
+          1
+        ],
+        [
+          5,
+          77,
+          35,
+          35,
+          1
+        ],
+        [
+          6,
+          66,
+          35,
+          35,
+          1
+        ]
+      ],
+      "samePhaseStable": true,
+      "oneListenerPerNode": true
+    },
+    "protectedExistingSource": true,
+    "rendererExactTwoColorDelta": true,
+    "prototypeImportByteIdentity": true
+  },
+  "failures": [],
+  "sourceSHA256": {
+    "bin/res/scripts/LuaClass/RaisedSeaMap2.lua": "1e979f581ca8e237b129949a38adb426f6ac29c47f694c5df6d88567e3db8ffe",
+    "bin/res/scripts/LuaClass/RaisedSeaMap2Live.lua": "639c7132bf09b132a7bf3cbf25ee9544655309559d0e2b2594f2423842086a87",
+    "bin/res/scripts/LuaClass/RaisedSeaMap2ObjectsLive.lua": "9ce5c8c5d3ee8840b87711dd6bcd8c9e96fb4d04509a8f0bc61cbb26b271f9e1",
+    "bin/res/scripts/LuaClass/RaisedSeaObjectPresentation.lua": "d7cbf1f459e11d1f8501b17ef7d7ac47aca3ca45f58516d45d75e984897f5ab2",
+    "bin/res/assets/Images/UI/CleanSeaObjects/gateway-v1.png": "66f6066e8d8d4b0f610ce9391552818b8ae967aa53b203219cc4cec8dbe09965",
+    "bin/res/assets/Images/UI/CleanSeaObjects/world-chart-v1.png": "0938b5c8c51982a16cbf2052e18377b0de0a45fbe3648fc2ddbf7b91188b7fea",
+    "bin/res/assets/Images/UI/CleanSeaObjects/arena-v1.png": "8caf9770df73eee06ea40bf0da03c2e5193543216763c9c1431a3dedcaef5034",
+    "bin/res/assets/Images/UI/CleanSeaObjects/resurrection-v1.png": "4e3e88fb6ea7ca5691cbfab8bfa66615ce4e8ce63461a16e4cf77b06cd659810",
+    "bin/res/assets/Images/UI/CleanSeaObjects/tavern-v1.png": "cc1dd4a32cfd0024eac3c7d8b48bb9f00d13f77b70fc4434be095751fb6c4465",
+    "bin/res/assets/Images/UI/CleanSeaObjects/port-v1.png": "ef7bcb5f61f9a3d0f72bfe6631bfcd4e83052438ad386fa70234d49c81bcb9fa",
+    "bin/res/assets/Images/UI/CleanSeaObjects/IMPORT.json": "318af9e7d3ac750b045123fcd88c9ccee118d0c767bef29544a9a1b8431ed2d1",
+    "bin/res/assets/Images/UI/CleanSeaObjects/source/sites-five-kind-v1.png": "fe4ffe794e44128ca77f4f33a02aa0ae5588b19d7ff00b9f0e0ab451ce13570e"
+  },
+  "nativePNG_SHA256": {
+    "controller/live-animated-fog.png": "fba60cb336b974427ba715f6e3205edb514e419a83efe1eec308adac1722ae7c",
+    "controller/live-child-added.png": "f60a6275ea9000402f7fbbab3abcc0bec2d170eedbd61cadbced6bb5d46f1201",
+    "controller/live-child-removed.png": "dc44a577ae1cccf46ea3fc8ae3e82d31a3c0cfcd8ff06293fca3fd05bdc97293",
+    "controller/live-context-active-second.png": "4c3fb6d827bf2c8caa1595b781bd8db907f6d6fad095d8fe950d1920836fe0b1",
+    "controller/live-context-active.png": "b02836f36d498eed26cd2ed854be59c6d7bce2c03bbc5389862a98635669e122",
+    "controller/live-context-before.png": "dc44a577ae1cccf46ea3fc8ae3e82d31a3c0cfcd8ff06293fca3fd05bdc97293",
+    "controller/live-context-paused.png": "ef7dbcbc7dd7948659a7d6a7cfaac1ab45461ef4a8ec28b71f969001aa6e591c",
+    "controller/live-context-repeat-3.png": "dfe5a6a83499b3aafb1c23a95365d74d509672afe23d22f60e82aeab4461be17",
+    "controller/live-context-repeat-4.png": "6cef113c7cf000dc09eb9a8e20f5e01a25836429da0dde80ca220e2e2615363a",
+    "controller/live-context-repeat-5.png": "cf3114582f74789f9ffec954e6aef719172c487b83ff019b6c97c2a81c7f239d",
+    "controller/live-context-repeat-6.png": "c10bc0e23c4e78544acea2a46b7e14d37b9b0a67e52409c1beeaeefd4c74c84f",
+    "controller/live-fog-overlay.png": "c96859d41ffa7df423567e0e78b50dce5abaa86feb4800c2b47b54b69863bd74",
+    "controller/live-fog-reference.png": "28c74549f0dbf140b95802e92accf5de4627395659a0a126761ca21765f093ab",
+    "controller/live-partial-fog.png": "d326c96f611f9045a7d93e009be74849ff83148fb0dd00259177c59f0a7338ca",
+    "controller/raised-only-after.png": "0f8c5e7141d19b11f6cee84e7e1c73e7bada2e7d36e8eafb50f12f6e790c0718",
+    "controller/raised-only-before.png": "c77d9da51c3e52cf1d5ea2f7086fd6c6409a01eb75775c88926658e9d63be35b",
+    "controller/source-only-after.png": "849bdb1c2a64c0f9e219fa104e1a0b045a0f97631719fbcb6ea4e49f8e5f79dd",
+    "controller/source-only-before.png": "d2cb41ad8cfa96979b9f150299f9ba78b5ae68f98bb740db2da2ebb5a0bbf1d0",
+    "baseline/original-context-after.png": "9bb3a4d9b114ec77f6ac3468570a8c0e28c85d24b0f99d4df5e7cc9df1567264",
+    "baseline/original-context-before.png": "51c053f1f64e19eeb630aee68315c4af54649594a8f964e148d981df33b5c3b1",
+    "baseline/original-context-paused.png": "4adf9db021bc8239677afa6b831707232d66bd075b0a46c6ee9327789e4634a7",
+    "baseline/original-context-repeat-3.png": "f222e0bf233b6722590eb97cb368b0670f8c2633c3bb3428bd543d8e8a608fa3",
+    "baseline/original-context-repeat-4.png": "250eec743e19faf74c81f8f8e70b797aa943d75af55a05963f5b49477bc772a7",
+    "baseline/original-context-repeat-5.png": "ffdd29e13eb5954a8ad2d3161efd48b98c87c4423b492d60d49869d4f791cfbc",
+    "baseline/original-context-repeat-6.png": "f1a8086d61e1cefe3c2c092c3c95f96c88cf66954faa4cd4733052855e8f026c",
+    "objects-480/compact480-context-1.png": "0909f3cf6d6018dfeb108e315a2c85bb7cd25cc34b427ee5d648d6898dddc5d6",
+    "objects-480/compact480-context-2.png": "d05c77574043afda137daa03689af92aaa2751805e60b9a957769d4ef13c5de5",
+    "objects-480/compact480-context-3.png": "40f648d90bd78827c74a3037fc907e2d8e2350bb56513277bf523f799ec8797d",
+    "objects-480/compact480-context-4.png": "38e373d7e7a59d6f5f0a461ca3ed344d4af945e563b759ae8ad7ba195667ee88",
+    "objects-480/compact480-context-5.png": "a35bb099abf00e0f8a9910c1924703ab40b5e672d06d652d8a2b97f61c995921",
+    "objects-480/compact480-context-6.png": "103594d861e6b913fd8abf950c735ddfdb9ef25ac783beab78d039532126f21e",
+    "objects-480/compact480-context-before.png": "539ce602018ed6a61b9afa3c2651710ddd6c8790bafcd435f845cd03a476b628",
+    "objects-480/compact480-live-before.png": "539ce602018ed6a61b9afa3c2651710ddd6c8790bafcd435f845cd03a476b628",
+    "objects-480/compact480-original-after.png": "544e7fd35ded8a532a2a7d623e95ccc091ce67e8b0fc258fe529d3d0683b1742",
+    "objects-480/compact480-original-before.png": "6009449219c299bd6ab5f13b39f87a938134d9a05b100e080cb554e06fa0abee",
+    "objects-480/objects-fog-overlay.png": "7879ee7693c70a6814722a03d7dccb904b6db0615ac4311c12a5a77f21c61204",
+    "objects-480/objects-fog-reference.png": "073cd867cc9cdf691dc466f5796a8ca5b115f758868e2bd2e54e9c357138faab",
+    "objects-480/warmup.png": "e1d4f6843bbcf79a13acd91e8dce2a304383dd946ff0eeaf15f83b2793841fcf",
+    "objects-360/compact360-context-1.png": "39bcf09bf9e350c76d07ae2424e63715f851444ea274d32fea9c626c46c79118",
+    "objects-360/compact360-context-2.png": "1076b5cd8eac9984e52df71e997e548289306b43a9a92c2e3216ba7f4846f4a2",
+    "objects-360/compact360-context-3.png": "25b567e25d8b3d44ebb8651144764ae1b1a53bfa6f69113cb4229d490ce40e2b",
+    "objects-360/compact360-context-4.png": "229bd58d8945b9b776efbe7aacd67b7c8cc7dea0e975b5cf5a4f73c576be6c65",
+    "objects-360/compact360-context-5.png": "c16778a39e4df8e50dd911477aeb6eff1a1669ad0c14e506f80c9ae1d9084ee9",
+    "objects-360/compact360-context-6.png": "01831fd664fd9e5b05686dd64acfa9dcba87c36fec0552cfbb763b82ca35e5f1",
+    "objects-360/compact360-context-before.png": "2e6e4d74cc23e9eed52d368faaa0e18a962efe91afdf84eac2fb46fad4fa6fb5",
+    "objects-360/compact360-live-before.png": "2e6e4d74cc23e9eed52d368faaa0e18a962efe91afdf84eac2fb46fad4fa6fb5",
+    "objects-360/compact360-original-after.png": "b87c2d0f7e1055edd415bbf0c9e214f954a1363ae50398fe88601382e8c75f5b",
+    "objects-360/compact360-original-before.png": "e30f4088346d486666a79e0fea65e9376897e970794ad59c7aef8cbab79e584e",
+    "objects-360/objects-fog-overlay.png": "03fe971c0920214a57ccb437c8a09373c1b0d01da3b8ee925bbe7e29660dcdeb",
+    "objects-360/objects-fog-reference.png": "6357ca5efe90ee13e674aad30155e00a87f2f37e8e71a0d12cdd8fd485cd113b",
+    "objects-360/warmup.png": "192582277a6883ff8d86883786fe816d590ca4fe761e908825e3be1230636a58"
+  },
+  "limits": [
+    "Seeded native EGL controller and semantic occupancy fixtures, not independent desktop GUI/device/full-session acceptance.",
+    "Six context cycles and retained native lifetime counts are bounded evidence, not an unbounded leak proof.",
+    "Animated native sites conservatively restore their authored sprite before runAction; replacements never own actor actions.",
+    "Mixed-viewport/recentering diagnostics and the e1e7 equal-Z counterfactual remain preserved; final recovery captures freeze exact native camera matrices. Production window-resize behavior is not accepted here."
+  ]
+}

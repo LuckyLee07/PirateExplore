@@ -54,20 +54,22 @@ result = subprocess.run(command, cwd=ROOT, env=env, text=True,
                         stdout=subprocess.PIPE, stderr=subprocess.STDOUT, timeout=60)
 print(result.stdout, end='')
 assert result.returncode == 0, 'Current native pause lifecycle failed'
-assert 'LUA ERROR' not in result.stdout and 'ASSERT FAILED' not in result.stdout
+assert all(error not in result.stdout for error in ('LUA ERROR', 'ASSERT FAILED', 'Assert failed:', 'cocos2d: error:')), 'Current native pause lifecycle logged an error'
 assert 'PASS native pause Director::end/purgeDirector' in result.stdout
 
 # Remove one guard at a time, preserving the current UI and business logic.
 # Each isolated counterfactual must reproduce native running-node destruction.
+# The dialog mutation keeps dispose idempotent so it tests unsafe sibling
+# removal rather than recursively re-entering its own native onExit handler.
 cases = [
     ('pause scene exit', 'COHERENT_PAUSE_SOURCE', 'WarmPause.lua',
      "if not scene:isRunning() and layer:isRunning() then dispose(false)\n   else layer:close(false)end", "layer:close(false)"),
     ('dialog scene exit', 'COHERENT_PAUSE_DIALOG_SOURCE', 'WarmDialog.lua',
-     "if not scene:isRunning() and layer:isRunning()then dispose()else close()end", "close()"),
+     "  dispose(true);removeLater(layer)", "  if not closed then dispose(true);layer:removeFromParent(true)end"),
     ('settings scene exit', 'COHERENT_PAUSE_SETTINGS_SOURCE', 'WarmSettings.lua',
      "if not scene:isRunning() and layer:isRunning() then dispose()\n            else close() end", "close()"),
     ('dialog scene-owner observer', 'COHERENT_PAUSE_DIALOG_SOURCE', 'WarmDialog.lua',
-     "(owner~=scene or scene:isRunning())", "(true)"),
+     "if lifecycle then removeLater(token)\n   elseif owner~=scene or scene:isRunning()then token:removeFromParent(true)end", "token:removeFromParent(true)"),
     ('settings scene-owner observer', 'COHERENT_PAUSE_SETTINGS_SOURCE', 'WarmSettings.lua',
      "(owner ~= scene or scene:isRunning())", "(true)"),
 ]

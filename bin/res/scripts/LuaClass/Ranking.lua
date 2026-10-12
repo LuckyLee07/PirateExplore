@@ -31,7 +31,9 @@ function RankingLayer:create()
 end
 
 function RankingLayer:destory()
+    if self._disposed then return end
     self._disposed = true
+    if self.nicknameView and not self.nicknameView._closed then self.nicknameView:close() end
     self._requestSerial = (self._requestSerial or 0) + 1
     if RankingLayer.instance == self then RankingLayer.instance = nil end
     self:superDestory()
@@ -43,10 +45,12 @@ function RankingLayer:changeRankType()
     self.rankData = {}
     self:reload()
     self.ranktypeLabel:setString(self.ranktype == 1 and "永恒竞技场" or "探索榜")
+    if self.serviceWarm then self:refreshCoherentRankType() end
     self:httpConnection(self.ranktype, self:getValue(self.ranktype), nil)
 end
 
 function RankingLayer:init()
+    if rawget(_G,'WARM_PIRATE_V1')~=false then return self:initCoherentRanking() end
 	local visibleSize = cc.Director:getInstance():getVisibleSize()
     local origin = cc.Director:getInstance():getVisibleOrigin()
     -- 设置title文字
@@ -176,6 +180,7 @@ function RankingLayer:init()
 	return true
 end
 function RankingLayer:reload()
+    if self.serviceWarm then return self:reloadCoherentRanking() end
     if self ~= nil and self.tableviewT ~= nil then
         self.tableviewT:reloadData()
     end
@@ -183,6 +188,8 @@ end
 function RankingLayer:setRequestState(pending, message)
     self._requestPending = pending
     if self.button then self.button:setEnabled(not pending) end
+    if self.rankSwitches then for _,b in ipairs(self.rankSwitches)do b.item:setEnabled(not pending)end end
+    if self.nicknameButton then self.nicknameButton.item:setEnabled(not pending)end
     if self.statusLabel then
         self.statusLabel:setString(message or "")
         self.statusLabel:setVisible(message ~= nil and message ~= "")
@@ -325,11 +332,16 @@ function InputNameView:create(ranking)
     local view = InputNameView.new()
     view.ranking = ranking or RankingLayer.instance
     if view and view:init() then
+        if view.ranking then view.ranking.nicknameView=view end
         return view
     end
     return nil
 end
 function InputNameView:init()
+    if rawget(_G,'WARM_PIRATE_V1')~=false then
+        self:registerScriptHandler(function(event)if event=='exit'or event=='cleanup'then self._closed=true end end)
+        return require('LuaClass/ServiceSupportPresentation').entry(self,{title='登记昵称',subtitle='排行榜 · 船长名册',art='medal',hint='在排行榜上留下您的名字',maxLength=8,placeholder='点击输入昵称（最多八个字）',status=self.ranking and type(self.ranking.serviceURL)=='string'and self.ranking.serviceURL:match('^https?://')and'提交成功后保存昵称'or'排行榜服务暂未配置',callback=function()self:submitName()end})
+    end
     self:registerScriptHandler(function(event)
         if event == "exit" then self._closed = true end
     end)
@@ -431,6 +443,7 @@ end
 function InputNameView:close()
     if self._closed then return end
     self._closed = true
+    if self.ranking and self.ranking.nicknameView==self then self.ranking.nicknameView=nil end
     DialogueView.close(self)
 end
 
@@ -447,10 +460,12 @@ function InputNameView:submitName()
         return false
     end
     self._submitting = true
+    if self.serviceStatus then self.serviceStatus:setString("正在提交昵称…") end
     self.submitButton:setEnabled(false)
     return ranking:httpConnection(ranking.ranktype, ranking:getValue(ranking.ranktype), nickname, function(success)
         if self._closed then return end
         self._submitting = false
+        if self.serviceStatus and not success then self.serviceStatus:setString(ranking.statusLabel and ranking.statusLabel:getString()or"排行榜暂不可用，请稍后重试")end
         self.submitButton:setEnabled(true)
         if success then self:close() end
     end)
@@ -475,3 +490,56 @@ function replaceStr(str , strFind ,strTarget)
 end
 
 
+
+-- Warm-only composition. Network response validation and persistence above are
+-- shared unchanged with the opt-out route.
+function RankingLayer:initCoherentRanking()
+    local S=require 'LuaClass/ServiceSupportPresentation';local W=require 'LuaClass/WarmTheme'
+    self.rankData={};self.ranktype=1;self._disposed=false;self._requestPending=false
+    local shell=S.mount(self,'排行榜','与其他船长一同留下航海记录');local root=shell.canvas
+    S.art(root,'medal',372,590,125)
+    self.ranktypeLabel=S.label(root,'永恒竞技场',28,32,627,250)
+    self.rankValueLabel=S.label(root,'',20,32,585,245,W.colors.muted)
+    self.rankSwitches={}
+    for i,title in ipairs({'竞技榜','探索榜'})do
+        local button=W.button(title,120,44,function()if self.ranktype~=i then self:changeRankType()end end,{size=19})
+        button:setPosition(cc.p(92+(i-1)*132,518));root:addChild(button);self.rankSwitches[i]=button
+    end
+    S.label(root,'名次',18,40,464,54,W.colors.muted);S.label(root,'船长昵称',18,116,464,204,W.colors.muted)
+    S.label(root,'成绩',18,406,464,78,W.colors.muted,.5)
+    local line=cc.Node:create();line:setPosition(cc.p(32,443));root:addChild(line);S.rule(line,0)
+    self.rankScroll,self.rankContainer=S.scroll(root,32,116,416,321)
+    self.statusLabel=S.label(root,'',20,240,305,392,W.colors.muted,.5)
+    self.statusLabel:setDimensions(cc.size(392,86));self.statusLabel:setHorizontalAlignment(cc.TEXT_ALIGNMENT_CENTER)
+    self.nicknameButton=W.button('登记昵称',128,48,function()
+        if self._disposed or self._requestPending or self.coherentPageLeaving then return end
+        if self.nicknameView and not self.nicknameView._closed then return end
+        self.nicknameView=InputNameView:create(self);if self.nicknameView then self.nicknameView:show()end
+    end,{size=18});self.nicknameButton:setPosition(cc.p(384,48));root:addChild(self.nicknameButton)
+    RankingLayer.instance=self;self:refreshCoherentRankType();self:httpConnection(self.ranktype,self:getValue(self.ranktype),nil)
+    return true
+end
+function RankingLayer:refreshCoherentRankType()
+    local W=require 'LuaClass/WarmTheme'
+    self.rankValueLabel:setString('我的成绩  '..tostring(self:getValue(self.ranktype)));W.fit(self.rankValueLabel,245)
+    for i,b in ipairs(self.rankSwitches)do b.label:setColor(i==self.ranktype and W.colors.sea or W.colors.muted)end
+end
+function RankingLayer:reloadCoherentRanking()
+    if self._disposed or not self.rankContainer then return end
+    local S=require 'LuaClass/ServiceSupportPresentation';local W=require 'LuaClass/WarmTheme'
+    self.rankContainer:removeAllChildren();local heights,names={},{};local height=0
+    for i,entry in ipairs(self.rankData)do
+        local name=W.label(entry.nickname,20,W.colors.ink,84,0);name:setDimensions(cc.size(230,0));name:setHorizontalAlignment(cc.TEXT_ALIGNMENT_LEFT)
+        names[i]=name;heights[i]=math.max(62,name:getContentSize().height+18);height=height+heights[i]
+    end
+    height=math.max(321,height);local top=height
+    for i,entry in ipairs(self.rankData)do
+        local rowH=heights[i];top=top-rowH;local row=cc.Node:create();row:setContentSize(cc.size(416,rowH));row:setPosition(cc.p(0,top));self.rankContainer:addChild(row)
+        local mine=entry.nickname==DataManager:getInstance():getRoleData(roleNickname)
+        local color=mine and W.colors.sea or W.colors.ink
+        S.label(row,entry.rank,20,28,rowH/2,56,color,.5)
+        local name=names[i];name:setColor(color);name:setPositionY(rowH/2);row:addChild(name)
+        S.label(row,entry.amount,20,374,rowH/2,78,color,.5);S.rule(row,1)
+    end
+    self.rankContainer:setContentSize(cc.size(416,height));self.rankScroll:setContentSize(cc.size(416,height));self.rankScroll:setContentOffset(cc.p(0,321-height))
+end

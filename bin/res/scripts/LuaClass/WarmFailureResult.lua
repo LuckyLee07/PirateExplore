@@ -71,6 +71,29 @@ function F.lines(dm,result)
     end
     return table.concat(lines,'\n')
 end
+-- Paginate each outcome category independently. A retained item must never
+-- inherit the lost-cargo title when a long receipt crosses a page boundary.
+function F.pages(dm,result)
+    local paginate=require('LuaClass/WarmActivities').textPages
+    local pages={}
+    local lost=copy(result);lost.missionCargo={}
+    for _,body in ipairs(paginate(F.lines(dm,lost),18,376,172))do
+        pages[#pages+1]={title='未带回的货舱物资',body=body}
+    end
+    local resources=dm:getCSVByID(csvOfResourceInfo)or{}
+    local keys,lines={},{}
+    for id in pairs(result.missionCargo or{})do keys[#keys+1]=id end
+    table.sort(keys)
+    for _,id in ipairs(keys)do
+        lines[#lines+1]=tostring((resources[id]or{}).name or id)..' × '..tostring(result.missionCargo[id])
+    end
+    if #lines>0 then
+        for _,body in ipairs(paginate(table.concat(lines,'\n'),18,376,172))do
+            pages[#pages+1]={title='按原任务例外保留：',body=body}
+        end
+    end
+    return pages
+end
 function F.show(dm,result,owner)
     if rawget(_G,'WARM_PIRATE_V1')==false or not result or not result.committed or not owner
         or owner.homeDisposed or not owner.warmHomePresentation then return nil end
@@ -102,7 +125,7 @@ function F.show(dm,result,owner)
         local n=W.label(text,size,color or C.ink,x,y,bold,0)
         n:setDimensions(cc.size(width,0));n:setHorizontalAlignment(cc.TEXT_ALIGNMENT_LEFT);canvas:addChild(n);return n
     end
-    local pages=require('LuaClass/WarmActivities').textPages(F.lines(dm,result),18,376,172)
+    local pages=F.pages(dm,result)
     local function button(key,text,x,y,w,h,action,primary)
         local generation=layer.generation
         local b=W.button(text,w,h,function()
@@ -120,8 +143,8 @@ function F.show(dm,result,owner)
         label('本次结算失去伙伴 '..result.lostCrew..' 人',23,52,624,376,C.ink,true)
         label(result.lostCrew>0 and '伙伴已计入复活记录，可在复活据点查看。'or '本次没有新增复活记录。',16,52,592,376,C.muted)
         add(cc.LayerColor:create(cc.c4b(C.line.r,C.line.g,C.line.b,255),376,1),52,566)
-        label('未带回的货舱物资',22,52,537,376,C.ink,true)
-        local body=label(pages[self.page],18,52,507,376,C.muted)
+        label(pages[self.page].title,22,52,537,376,C.ink,true)
+        local body=label(pages[self.page].body,18,52,507,376,C.muted)
         body:setAnchorPoint(cc.p(0,1));body:setDimensions(cc.size(376,172));body:setVerticalAlignment(cc.VERTICAL_TEXT_ALIGNMENT_TOP)
         if #pages>1 then
             button('previous','上一页',123,309,133,36,function()self.page=math.max(1,self.page-1);self:refresh()end)

@@ -22,6 +22,15 @@ function V.routeOverlay(owner,result)
     local overlay=cc.Node:create();owner.adventureRouteOverlay=overlay
     owner.moveLayer:addChild(overlay,8)
     local draw=cc.DrawNode:create();overlay:addChild(draw)
+    -- Only this passive route renderer must hear context restoration while its
+    -- map is suspended beneath combat. Never resume owner actions/schedulers.
+    if draw.registerScriptHandler and draw.getEventDispatcher then
+        local dispatcher=draw:getEventDispatcher()
+        draw:registerScriptHandler(function(event)
+            if event=='exit' then dispatcher:resumeEventListenersForTarget(draw)
+            elseif event=='cleanup' then dispatcher:pauseEventListenersForTarget(draw)end
+        end)
+    end
     local color=cc.c4f(.98,.90,.59,.8)
     for i=2,#result.path do
         draw:drawSegment(owner:positionForTilePosition(result.path[i-1]),

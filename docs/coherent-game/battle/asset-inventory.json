@@ -1,0 +1,1202 @@
+[
+  {
+    "path": "/workspace/scratch/79976da795e7/PirateExplore-pages-v3/bin/res/assets/Images/UI/Adventure/Combat/boarding-deck-b.png",
+    "size": [
+      640,
+      569
+    ],
+    "mode": "RGBA",
+    "alphaRange": [
+      0,
+      255
+    ],
+    "boundsAlphaGT32": [
+      0,
+      13,
+      640,
+      569
+    ],
+    "transparentPixels": 77557,
+    "sha256": "bf651157b7320dcb8693fe3482930ad6d2b05d4b7353e76329b66d73186b0ac8"
+  },
+  {
+    "path": "/workspace/scratch/79976da795e7/PirateExplore-pages-v3/bin/res/assets/Images/UI/Adventure/Combat/ship-deck-b.png",
+    "size": [
+      640,
+      423
+    ],
+    "mode": "RGBA",
+    "alphaRange": [
+      0,
+      255
+    ],
+    "boundsAlphaGT32": [
+      0,
+      18,
+      640,
+      423
+    ],
+    "transparentPixels": 15233,
+    "sha256": "7d64f1f9625f71dc38a6c33984ecc5dcba5ab2c35bb48895ed70e4ebc0ec3275"
+  },
+  {
+    "path": "/workspace/scratch/79976da795e7/PirateExplore-pages-v3/bin/res/assets/Images/Fight/chuan_01.png",
+    "size": [
+      640,
+      569
+    ],
+    "mode": "P",
+    "alphaRange": [
+      0,
+      255
+    ],
+    "boundsAlphaGT32": [
+      0,
+      14,
+      640,
+      569
+    ],
+    "transparentPixels": 69374,
+    "sha256": "6ac64e55abb98a0eb0d13159b44fbcc346b5e7e38748bb23d213925002293088"
+  },
+  {
+    "path": "/workspace/scratch/79976da795e7/PirateExplore-pages-v3/bin/res/assets/Images/Fight/chuan_02.png",
+    "size": [
+      101,
+      185
+    ],
+    "mode": "P",
+    "alphaRange": [
+      0,
+      255
+    ],
+    "boundsAlphaGT32": [
+      12,
+      5,
+      90,
+      182
+    ],
+    "transparentPixels": 9829,
+    "sha256": "8cdd811c11be03d4d14a51f9011fce3ad56bd2f1cce19e0b620ffc6c281ee191"
+  },
+  {
+    "path": "/workspace/scratch/79976da795e7/PirateExplore-pages-v3/bin/res/assets/Images/Fight/chuan_04.png",
+    "size": [
+      640,
+      423
+    ],
+    "mode": "P",
+    "alphaRange": [
+      0,
+      255
+    ],
+    "boundsAlphaGT32": [
+      0,
+      16,
+      640,
+      423
+    ],
+    "transparentPixels": 17728,
+    "sha256": "81458d9507811762620e4716e78f14a6329b0dffe611e5f22a567c363ba33219"
+  },
+  {
+    "path": "/workspace/scratch/79976da795e7/PirateExplore-pages-v3/bin/res/assets/Images/Fight/chuan_03.png",
+    "size": [
+      101,
+      73
+    ],
+    "mode": "P",
+    "alphaRange": [
+      0,
+      255
+    ],
+    "boundsAlphaGT32": [
+      30,
+      5,
+      70,
+      73
+    ],
+    "transparentPixels": 4769,
+    "sha256": "ba595bdbeb0e45f631fe55fee4f35147de6394fe3aee37c37706419f0169af5f"
+  },
+  {
+    "path": "/workspace/scratch/79976da795e7/PirateExplore-pages-v3/bin/res/assets/Images/Fight/fightDlg.png",
+    "size": [
+      330,
+      57
+    ],
+    "mode": "RGBA",
+    "alphaRange": [
+      0,
+      255
+    ],
+    "boundsAlphaGT32": [
+      1,
+      1,
+      329,
+      56
+    ],
+    "transparentPixels": 4470,
+    "sha256": "eed9cb6a0cd16199c5716d7902c70f3fe71a26f2d0662ed01d4bfab7ec68c1fe"
+  },
+  {
+    "path": "/workspace/scratch/79976da795e7/PirateExplore-pages-v3/bin/res/assets/Images/Fight/bait_01.png",
+    "size": [
+      395,
+      79
+    ],
+    "mode": "RGBA",
+    "alphaRange": [
+      0,
+      255
+    ],
+    "boundsAlphaGT32": [
+      68,
+      0,
+      395,
+      79
+    ],
+    "transparentPixels": 3081,
+    "sha256": "1c359dc63072b340a0b812b746e10875bd75c73d5eb2fb693d425553e3033136"
+  },
+  {
+    "path": "/workspace/scratch/79976da795e7/PirateExplore-pages-v3/bin/res/assets/Images/Fight/bait_02.png",
+    "size": [
+      396,
+      110
+    ],
+    "mode": "P",
+    "alphaRange": [
+      0,
+      255
+    ],
+    "boundsAlphaGT32": [
+      9,
+      10,
+      387,
+      101
+    ],
+    "transparentPixels": 2936,
+    "sha256": "e211649fb26f382c8b5f30e58d97d8e17b8a3aaeac9dfd66e0eb483a904a51b0"
+  },
+  {
+    "path": "/workspace/scratch/79976da795e7/PirateExplore-pages-v3/bin/res/assets/Images/Fight/bait_03.png",
+    "size": [
+      311,
+      98
+    ],
+    "mode": "P",
+    "alphaRange": [
+      0,
+      255
+    ],
+    "boundsAlphaGT32": [
+      7,
+      5,
+      306,
+      92
+    ],
+    "transparentPixels": 10668,
+    "sha256": "6deb50c59a8d91fb81c9b3863bb9bf7899c904c1533a548ed7e538418e3569b2"
+  },
+  {
+    "path": "/workspace/scratch/79976da795e7/PirateExplore-pages-v3/bin/res/assets/Images/Fight/jntiao01.png",
+    "size": [
+      163,
+      34
+    ],
+    "mode": "P",
+    "alphaRange": [
+      15,
+      118
+    ],
+    "boundsAlphaGT32": [
+      0,
+      0,
+      163,
+      34
+    ],
+    "transparentPixels": 0,
+    "sha256": "1dccb2896df71e17d77ea36eceff9966f8fb746ea21473eab79a9508fbe963db"
+  },
+  {
+    "path": "/workspace/scratch/79976da795e7/PirateExplore-pages-v3/bin/res/assets/Images/Fight/jntiao02.png",
+    "size": [
+      163,
+      34
+    ],
+    "mode": "P",
+    "alphaRange": [
+      0,
+      255
+    ],
+    "boundsAlphaGT32": [
+      0,
+      3,
+      159,
+      31
+    ],
+    "transparentPixels": 1090,
+    "sha256": "d56db87342e8d45f27a996f4d9088978c11ce0c7ae9cc97b40aa9463659d3611"
+  },
+  {
+    "path": "/workspace/scratch/79976da795e7/PirateExplore-pages-v3/bin/res/assets/Images/Fight/toux_01.png",
+    "size": [
+      74,
+      74
+    ],
+    "mode": "P",
+    "alphaRange": [
+      0,
+      239
+    ],
+    "boundsAlphaGT32": [
+      0,
+      0,
+      74,
+      74
+    ],
+    "transparentPixels": 4,
+    "sha256": "8d87b0b7b2de74c332744ab53cefe76a401afd18750c58eecfa8c6ca70f07c73"
+  },
+  {
+    "path": "/workspace/scratch/79976da795e7/PirateExplore-pages-v3/bin/res/assets/Images/Fight/zdzd_01.png",
+    "size": [
+      220,
+      134
+    ],
+    "mode": "P",
+    "alphaRange": [
+      0,
+      148
+    ],
+    "boundsAlphaGT32": [
+      0,
+      0,
+      219,
+      134
+    ],
+    "transparentPixels": 20964,
+    "sha256": "65c2fa3df5b5a1241924a3260807393072ab04e32480d101100872660c8eab8e"
+  },
+  {
+    "path": "/workspace/scratch/79976da795e7/PirateExplore-pages-v3/bin/res/assets/Images/Boss/g_300.png",
+    "size": [
+      200,
+      200
+    ],
+    "mode": "P",
+    "alphaRange": [
+      0,
+      255
+    ],
+    "boundsAlphaGT32": [
+      19,
+      8,
+      193,
+      191
+    ],
+    "transparentPixels": 3408,
+    "sha256": "1a0b43598975e47853119e40adf246525c54fbbd871f5bdd99eaebb84b914987"
+  },
+  {
+    "path": "/workspace/scratch/79976da795e7/PirateExplore-pages-v3/bin/res/assets/Images/Boss/g_301.png",
+    "size": [
+      200,
+      200
+    ],
+    "mode": "P",
+    "alphaRange": [
+      0,
+      255
+    ],
+    "boundsAlphaGT32": [
+      10,
+      3,
+      194,
+      195
+    ],
+    "transparentPixels": 3252,
+    "sha256": "2918ea0aab6c5d8a2b1a97e61bce33550e4f7587ba9af0e885b2a24d67cfdcfd"
+  },
+  {
+    "path": "/workspace/scratch/79976da795e7/PirateExplore-pages-v3/bin/res/assets/Images/Boss/g_302.png",
+    "size": [
+      200,
+      200
+    ],
+    "mode": "P",
+    "alphaRange": [
+      0,
+      255
+    ],
+    "boundsAlphaGT32": [
+      12,
+      6,
+      187,
+      188
+    ],
+    "transparentPixels": 4132,
+    "sha256": "583a3d752ec2f09683b0ef562a07bdeb6e68b0b81df89279d994162c68b3aaca"
+  },
+  {
+    "path": "/workspace/scratch/79976da795e7/PirateExplore-pages-v3/bin/res/assets/Images/Boss/g_303.png",
+    "size": [
+      200,
+      200
+    ],
+    "mode": "P",
+    "alphaRange": [
+      0,
+      255
+    ],
+    "boundsAlphaGT32": [
+      24,
+      18,
+      190,
+      178
+    ],
+    "transparentPixels": 7569,
+    "sha256": "2828c4217733132b09913e241701a1af7b607a0379a0892ecd22bdef3041caea"
+  },
+  {
+    "path": "/workspace/scratch/79976da795e7/PirateExplore-pages-v3/bin/res/assets/Images/Boss/g_304.png",
+    "size": [
+      200,
+      200
+    ],
+    "mode": "P",
+    "alphaRange": [
+      0,
+      255
+    ],
+    "boundsAlphaGT32": [
+      24,
+      31,
+      190,
+      186
+    ],
+    "transparentPixels": 7773,
+    "sha256": "88d436249fa6399b0061552913cb86dc94e60f99da98a522e018a4b86372a052"
+  },
+  {
+    "path": "/workspace/scratch/79976da795e7/PirateExplore-pages-v3/bin/res/assets/Images/Boss/g_305.png",
+    "size": [
+      200,
+      200
+    ],
+    "mode": "P",
+    "alphaRange": [
+      0,
+      255
+    ],
+    "boundsAlphaGT32": [
+      17,
+      13,
+      190,
+      175
+    ],
+    "transparentPixels": 6565,
+    "sha256": "fe9f2ef3cb0f0f76a0226988b1e05829f6ab30c391a4ae1b3a25d2118c3b45b7"
+  },
+  {
+    "path": "/workspace/scratch/79976da795e7/PirateExplore-pages-v3/bin/res/assets/Images/Boss/g_306.png",
+    "size": [
+      200,
+      200
+    ],
+    "mode": "P",
+    "alphaRange": [
+      0,
+      255
+    ],
+    "boundsAlphaGT32": [
+      21,
+      12,
+      193,
+      179
+    ],
+    "transparentPixels": 4069,
+    "sha256": "8707aa833cd04738e55f984366b520046d1bc5b1a41a78501adee926605ec4e3"
+  },
+  {
+    "path": "/workspace/scratch/79976da795e7/PirateExplore-pages-v3/bin/res/assets/Images/Boss/g_307.png",
+    "size": [
+      200,
+      200
+    ],
+    "mode": "P",
+    "alphaRange": [
+      0,
+      255
+    ],
+    "boundsAlphaGT32": [
+      19,
+      18,
+      196,
+      188
+    ],
+    "transparentPixels": 3582,
+    "sha256": "ee15a88095087d4690a3ca3c5ddd3ea349c4adcd4127566f610da9e4b5e792cb"
+  },
+  {
+    "path": "/workspace/scratch/79976da795e7/PirateExplore-pages-v3/bin/res/assets/Images/Boss/g_308.png",
+    "size": [
+      200,
+      200
+    ],
+    "mode": "P",
+    "alphaRange": [
+      0,
+      255
+    ],
+    "boundsAlphaGT32": [
+      24,
+      9,
+      190,
+      177
+    ],
+    "transparentPixels": 5118,
+    "sha256": "c0929a2d3bc5f77690c1f21f11c53b254687eaf1e4e4a901e9cc1e272856473e"
+  },
+  {
+    "path": "/workspace/scratch/79976da795e7/PirateExplore-pages-v3/bin/res/assets/Images/Boss/g_309.png",
+    "size": [
+      200,
+      200
+    ],
+    "mode": "P",
+    "alphaRange": [
+      0,
+      255
+    ],
+    "boundsAlphaGT32": [
+      8,
+      8,
+      190,
+      194
+    ],
+    "transparentPixels": 3240,
+    "sha256": "8db27ccbd4f44dae072a61f269f3a1367b618aaa7ebb4320d9db64398b488061"
+  },
+  {
+    "path": "/workspace/scratch/79976da795e7/PirateExplore-pages-v3/bin/res/assets/Images/Boss/g_310.png",
+    "size": [
+      200,
+      200
+    ],
+    "mode": "P",
+    "alphaRange": [
+      0,
+      255
+    ],
+    "boundsAlphaGT32": [
+      11,
+      16,
+      193,
+      193
+    ],
+    "transparentPixels": 3989,
+    "sha256": "3dd5d1ea45b6af2d05ba12511e8c5b3a873b81c59504a83eec48ea1d6d145ae7"
+  },
+  {
+    "path": "/workspace/scratch/79976da795e7/PirateExplore-pages-v3/bin/res/assets/Images/Boss/g_311.png",
+    "size": [
+      200,
+      200
+    ],
+    "mode": "P",
+    "alphaRange": [
+      0,
+      255
+    ],
+    "boundsAlphaGT32": [
+      15,
+      12,
+      193,
+      191
+    ],
+    "transparentPixels": 3339,
+    "sha256": "8333f0f87084f77f8c7385cb382f75b99f0176b536eadae1798192ad2447e1aa"
+  },
+  {
+    "path": "/workspace/scratch/79976da795e7/PirateExplore-pages-v3/bin/res/assets/Images/Boss/g_312.png",
+    "size": [
+      200,
+      200
+    ],
+    "mode": "P",
+    "alphaRange": [
+      0,
+      255
+    ],
+    "boundsAlphaGT32": [
+      27,
+      23,
+      194,
+      183
+    ],
+    "transparentPixels": 8000,
+    "sha256": "311c0a206f006cc2f284be658d9f4d4d2323828c1524972594d6a7a4275eca33"
+  },
+  {
+    "path": "/workspace/scratch/79976da795e7/PirateExplore-pages-v3/bin/res/assets/Images/Boss/g_313.png",
+    "size": [
+      200,
+      200
+    ],
+    "mode": "P",
+    "alphaRange": [
+      0,
+      255
+    ],
+    "boundsAlphaGT32": [
+      20,
+      12,
+      188,
+      182
+    ],
+    "transparentPixels": 6706,
+    "sha256": "30f03ff12dc28c961ea7283f909650887bc839bba951904a3ee8325c322d3f8d"
+  },
+  {
+    "path": "/workspace/scratch/79976da795e7/PirateExplore-pages-v3/bin/res/assets/Images/Boss/g_314.png",
+    "size": [
+      200,
+      200
+    ],
+    "mode": "P",
+    "alphaRange": [
+      0,
+      255
+    ],
+    "boundsAlphaGT32": [
+      20,
+      15,
+      189,
+      182
+    ],
+    "transparentPixels": 13042,
+    "sha256": "efe25a8524b8ed81dc55023acbca666a5d446e0355af9ac99e4948c6dc07ed92"
+  },
+  {
+    "path": "/workspace/scratch/79976da795e7/PirateExplore-pages-v3/bin/res/assets/Images/Boss/g_315.png",
+    "size": [
+      200,
+      200
+    ],
+    "mode": "P",
+    "alphaRange": [
+      0,
+      255
+    ],
+    "boundsAlphaGT32": [
+      20,
+      14,
+      190,
+      183
+    ],
+    "transparentPixels": 3920,
+    "sha256": "67806172ee4c50ee68be3a1f944d014e64a9077c1818fba5ff7801e984f9174b"
+  },
+  {
+    "path": "/workspace/scratch/79976da795e7/PirateExplore-pages-v3/bin/res/assets/Images/Boss/g_316.png",
+    "size": [
+      200,
+      200
+    ],
+    "mode": "P",
+    "alphaRange": [
+      0,
+      255
+    ],
+    "boundsAlphaGT32": [
+      14,
+      9,
+      197,
+      187
+    ],
+    "transparentPixels": 3965,
+    "sha256": "4007f228f118f219d247a30a06a68368fc41c8500f73ffd3fd56e2c5bcf77c06"
+  },
+  {
+    "path": "/workspace/scratch/79976da795e7/PirateExplore-pages-v3/bin/res/assets/Images/Boss/g_317.png",
+    "size": [
+      200,
+      200
+    ],
+    "mode": "P",
+    "alphaRange": [
+      0,
+      255
+    ],
+    "boundsAlphaGT32": [
+      17,
+      19,
+      195,
+      186
+    ],
+    "transparentPixels": 5324,
+    "sha256": "bf5adbc111bf581415f021e805bcd0802644e93ffd698fe06d101febffac855b"
+  },
+  {
+    "path": "/workspace/scratch/79976da795e7/PirateExplore-pages-v3/bin/res/assets/Images/Boss/g_318.png",
+    "size": [
+      200,
+      200
+    ],
+    "mode": "P",
+    "alphaRange": [
+      0,
+      251
+    ],
+    "boundsAlphaGT32": [
+      16,
+      18,
+      193,
+      178
+    ],
+    "transparentPixels": 4467,
+    "sha256": "760e732c5c6b503c9072d698b601e9ecdc020ba1fa38e7b2e6073760f23a6544"
+  },
+  {
+    "path": "/workspace/scratch/79976da795e7/PirateExplore-pages-v3/bin/res/assets/Images/Boss/g_319.png",
+    "size": [
+      200,
+      200
+    ],
+    "mode": "P",
+    "alphaRange": [
+      0,
+      255
+    ],
+    "boundsAlphaGT32": [
+      16,
+      25,
+      183,
+      182
+    ],
+    "transparentPixels": 4042,
+    "sha256": "54981309d06eba5b33885e366897575b62255e851e3b1d079734329a90f63096"
+  },
+  {
+    "path": "/workspace/scratch/79976da795e7/PirateExplore-pages-v3/bin/res/assets/Images/Icon/j_1.png",
+    "size": [
+      64,
+      64
+    ],
+    "mode": "P",
+    "alphaRange": [
+      73,
+      255
+    ],
+    "boundsAlphaGT32": [
+      0,
+      0,
+      64,
+      64
+    ],
+    "transparentPixels": 0,
+    "sha256": "2753f216f6fd6ef7b753802014d92ddbba1a7a9cc58853ed2523350817735ac8"
+  },
+  {
+    "path": "/workspace/scratch/79976da795e7/PirateExplore-pages-v3/bin/res/assets/Images/Icon/j_10.png",
+    "size": [
+      64,
+      64
+    ],
+    "mode": "P",
+    "alphaRange": [
+      73,
+      255
+    ],
+    "boundsAlphaGT32": [
+      0,
+      0,
+      64,
+      64
+    ],
+    "transparentPixels": 0,
+    "sha256": "f003b2cea1de104e3d85a89f220da7959d3cb6c3ca0a18c8fe585faebe6c9ce8"
+  },
+  {
+    "path": "/workspace/scratch/79976da795e7/PirateExplore-pages-v3/bin/res/assets/Images/Icon/j_11.png",
+    "size": [
+      64,
+      64
+    ],
+    "mode": "P",
+    "alphaRange": [
+      73,
+      255
+    ],
+    "boundsAlphaGT32": [
+      0,
+      0,
+      64,
+      64
+    ],
+    "transparentPixels": 0,
+    "sha256": "b948c1f5b4727a94e1b531f76f96212acdde2ae58df9dcaeb7ecc323f4a2e56f"
+  },
+  {
+    "path": "/workspace/scratch/79976da795e7/PirateExplore-pages-v3/bin/res/assets/Images/Icon/j_12.png",
+    "size": [
+      64,
+      64
+    ],
+    "mode": "P",
+    "alphaRange": [
+      73,
+      255
+    ],
+    "boundsAlphaGT32": [
+      0,
+      0,
+      64,
+      64
+    ],
+    "transparentPixels": 0,
+    "sha256": "b617ebe454e006378addfd5621d7ef4e97c1ebdf1fa58f42158d7639385e9299"
+  },
+  {
+    "path": "/workspace/scratch/79976da795e7/PirateExplore-pages-v3/bin/res/assets/Images/Icon/j_13.png",
+    "size": [
+      64,
+      64
+    ],
+    "mode": "P",
+    "alphaRange": [
+      73,
+      255
+    ],
+    "boundsAlphaGT32": [
+      0,
+      0,
+      64,
+      64
+    ],
+    "transparentPixels": 0,
+    "sha256": "397e92dbd163ba0e29e0500d1e6953cc35035d3ad8930f23b9347178edee8397"
+  },
+  {
+    "path": "/workspace/scratch/79976da795e7/PirateExplore-pages-v3/bin/res/assets/Images/Icon/j_14.png",
+    "size": [
+      64,
+      64
+    ],
+    "mode": "P",
+    "alphaRange": [
+      73,
+      255
+    ],
+    "boundsAlphaGT32": [
+      0,
+      0,
+      64,
+      64
+    ],
+    "transparentPixels": 0,
+    "sha256": "e49bcc8c3c23866a725639ec01c4494a94ddc8407118a0b5d42fe59df1bf9e4b"
+  },
+  {
+    "path": "/workspace/scratch/79976da795e7/PirateExplore-pages-v3/bin/res/assets/Images/Icon/j_15.png",
+    "size": [
+      64,
+      64
+    ],
+    "mode": "P",
+    "alphaRange": [
+      73,
+      255
+    ],
+    "boundsAlphaGT32": [
+      0,
+      0,
+      64,
+      64
+    ],
+    "transparentPixels": 0,
+    "sha256": "7201886ae6b78e08d8f74ff0063f115772ce394b36914c180e32e17591e87195"
+  },
+  {
+    "path": "/workspace/scratch/79976da795e7/PirateExplore-pages-v3/bin/res/assets/Images/Icon/j_16.png",
+    "size": [
+      64,
+      64
+    ],
+    "mode": "P",
+    "alphaRange": [
+      73,
+      255
+    ],
+    "boundsAlphaGT32": [
+      0,
+      0,
+      64,
+      64
+    ],
+    "transparentPixels": 0,
+    "sha256": "41a6d8c32b829ee639ccb6cb4fcab3e69e2174b4578357a1059ae5cc610b8fa0"
+  },
+  {
+    "path": "/workspace/scratch/79976da795e7/PirateExplore-pages-v3/bin/res/assets/Images/Icon/j_17.png",
+    "size": [
+      64,
+      64
+    ],
+    "mode": "P",
+    "alphaRange": [
+      73,
+      255
+    ],
+    "boundsAlphaGT32": [
+      0,
+      0,
+      64,
+      64
+    ],
+    "transparentPixels": 0,
+    "sha256": "0fee169d44f0a21ba1050cc89fd9d62a3e9fa556cd0d609d4d579ac4fd10726d"
+  },
+  {
+    "path": "/workspace/scratch/79976da795e7/PirateExplore-pages-v3/bin/res/assets/Images/Icon/j_18.png",
+    "size": [
+      64,
+      64
+    ],
+    "mode": "P",
+    "alphaRange": [
+      73,
+      255
+    ],
+    "boundsAlphaGT32": [
+      0,
+      0,
+      64,
+      64
+    ],
+    "transparentPixels": 0,
+    "sha256": "afd60f4133c8440c271d1a537e08104f923ccd73041b1f249ede930ccca7010c"
+  },
+  {
+    "path": "/workspace/scratch/79976da795e7/PirateExplore-pages-v3/bin/res/assets/Images/Icon/j_19.png",
+    "size": [
+      64,
+      64
+    ],
+    "mode": "P",
+    "alphaRange": [
+      73,
+      255
+    ],
+    "boundsAlphaGT32": [
+      0,
+      0,
+      64,
+      64
+    ],
+    "transparentPixels": 0,
+    "sha256": "4bb2628ead4fd98afc8a5829a5f2377064aaa5e2440147f98afb4eae5ab6370c"
+  },
+  {
+    "path": "/workspace/scratch/79976da795e7/PirateExplore-pages-v3/bin/res/assets/Images/Icon/j_2.png",
+    "size": [
+      64,
+      64
+    ],
+    "mode": "P",
+    "alphaRange": [
+      73,
+      255
+    ],
+    "boundsAlphaGT32": [
+      0,
+      0,
+      64,
+      64
+    ],
+    "transparentPixels": 0,
+    "sha256": "abfc5e43ed27ac3b502c7142cd0e9129ce97a02356ccb49d08117a76a1f6be28"
+  },
+  {
+    "path": "/workspace/scratch/79976da795e7/PirateExplore-pages-v3/bin/res/assets/Images/Icon/j_20.png",
+    "size": [
+      64,
+      64
+    ],
+    "mode": "P",
+    "alphaRange": [
+      73,
+      255
+    ],
+    "boundsAlphaGT32": [
+      0,
+      0,
+      64,
+      64
+    ],
+    "transparentPixels": 0,
+    "sha256": "103f8614b3e1b7561ea94196ef6a3b6eb741e4dd50c4b66ebcc0b81a67e3c5ac"
+  },
+  {
+    "path": "/workspace/scratch/79976da795e7/PirateExplore-pages-v3/bin/res/assets/Images/Icon/j_21.png",
+    "size": [
+      64,
+      64
+    ],
+    "mode": "P",
+    "alphaRange": [
+      73,
+      255
+    ],
+    "boundsAlphaGT32": [
+      0,
+      0,
+      64,
+      64
+    ],
+    "transparentPixels": 0,
+    "sha256": "9fa983067ed75ee7c6d5326e51e4f740ad20a5d2b595eaa59ce8b32d9b2f7e6f"
+  },
+  {
+    "path": "/workspace/scratch/79976da795e7/PirateExplore-pages-v3/bin/res/assets/Images/Icon/j_22.png",
+    "size": [
+      64,
+      64
+    ],
+    "mode": "P",
+    "alphaRange": [
+      73,
+      255
+    ],
+    "boundsAlphaGT32": [
+      0,
+      0,
+      64,
+      64
+    ],
+    "transparentPixels": 0,
+    "sha256": "8870c0dbd18904dd679baea5cde72dce716a75635e539793358da348de56edc2"
+  },
+  {
+    "path": "/workspace/scratch/79976da795e7/PirateExplore-pages-v3/bin/res/assets/Images/Icon/j_3.png",
+    "size": [
+      64,
+      64
+    ],
+    "mode": "P",
+    "alphaRange": [
+      73,
+      255
+    ],
+    "boundsAlphaGT32": [
+      0,
+      0,
+      64,
+      64
+    ],
+    "transparentPixels": 0,
+    "sha256": "b336af2a0c77ed13990325328bf4b5150725a3a39b79ae9a66d085c98bcc56c9"
+  },
+  {
+    "path": "/workspace/scratch/79976da795e7/PirateExplore-pages-v3/bin/res/assets/Images/Icon/j_4.png",
+    "size": [
+      64,
+      64
+    ],
+    "mode": "P",
+    "alphaRange": [
+      73,
+      255
+    ],
+    "boundsAlphaGT32": [
+      0,
+      0,
+      64,
+      64
+    ],
+    "transparentPixels": 0,
+    "sha256": "323e126812d0e3776412f8b9d5d11b8ad6ebea47b17030adca93e4d52fe59f9b"
+  },
+  {
+    "path": "/workspace/scratch/79976da795e7/PirateExplore-pages-v3/bin/res/assets/Images/Icon/j_5.png",
+    "size": [
+      64,
+      64
+    ],
+    "mode": "P",
+    "alphaRange": [
+      73,
+      255
+    ],
+    "boundsAlphaGT32": [
+      0,
+      0,
+      64,
+      64
+    ],
+    "transparentPixels": 0,
+    "sha256": "1fedfece9484406f8b2045123bbd50d1798dc1e4041a1b19c65ef86cd4d565d4"
+  },
+  {
+    "path": "/workspace/scratch/79976da795e7/PirateExplore-pages-v3/bin/res/assets/Images/Icon/j_6.png",
+    "size": [
+      64,
+      64
+    ],
+    "mode": "P",
+    "alphaRange": [
+      73,
+      255
+    ],
+    "boundsAlphaGT32": [
+      0,
+      0,
+      64,
+      64
+    ],
+    "transparentPixels": 0,
+    "sha256": "3d6a39829a9cbe7d1acc759c63e5679d122e016e9cc6cab364183c8a1305c2ca"
+  },
+  {
+    "path": "/workspace/scratch/79976da795e7/PirateExplore-pages-v3/bin/res/assets/Images/Icon/j_7.png",
+    "size": [
+      64,
+      64
+    ],
+    "mode": "P",
+    "alphaRange": [
+      73,
+      255
+    ],
+    "boundsAlphaGT32": [
+      0,
+      0,
+      64,
+      64
+    ],
+    "transparentPixels": 0,
+    "sha256": "1b00fd33a172397ee3ee17fd34e210cd253392ea0136e067611e29bfd4e926b7"
+  },
+  {
+    "path": "/workspace/scratch/79976da795e7/PirateExplore-pages-v3/bin/res/assets/Images/Icon/j_8.png",
+    "size": [
+      64,
+      64
+    ],
+    "mode": "P",
+    "alphaRange": [
+      73,
+      255
+    ],
+    "boundsAlphaGT32": [
+      0,
+      0,
+      64,
+      64
+    ],
+    "transparentPixels": 0,
+    "sha256": "de5a3a07924da5278744373921d84c0877e9f93e32e54182a92f9df2e910747a"
+  },
+  {
+    "path": "/workspace/scratch/79976da795e7/PirateExplore-pages-v3/bin/res/assets/Images/Icon/j_9.png",
+    "size": [
+      64,
+      64
+    ],
+    "mode": "P",
+    "alphaRange": [
+      73,
+      255
+    ],
+    "boundsAlphaGT32": [
+      0,
+      0,
+      64,
+      64
+    ],
+    "transparentPixels": 0,
+    "sha256": "92e05f0f5933d2a5cbfe313cc9ada255cf48fd1ae411645d1c1ba2b8725510b6"
+  },
+  {
+    "path": "/workspace/shared/pirate-audit/battle-next/assets/cannon-short-clean-v1.png",
+    "size": [
+      1475,
+      1067
+    ],
+    "mode": "RGBA",
+    "alphaRange": [
+      0,
+      255
+    ],
+    "boundsAlphaGT32": [
+      416,
+      109,
+      1053,
+      961
+    ],
+    "transparentPixels": 1100545,
+    "sha256": "6ce0f0c2f2d4495c2275b786fce64efeffac161b13c544e4a8a38a6e602755c0"
+  },
+  {
+    "path": "/workspace/shared/pirate-audit/battle-next/assets/boarding-deck-clean-v1.png",
+    "size": [
+      1330,
+      1182
+    ],
+    "mode": "RGBA",
+    "alphaRange": [
+      0,
+      255
+    ],
+    "boundsAlphaGT32": [
+      0,
+      21,
+      1330,
+      1182
+    ],
+    "transparentPixels": 322064,
+    "sha256": "ba56a6abb959826d7ba80d83f9a1dc39658777db29c2f14fc6e5c459f21e64c9"
+  },
+  {
+    "path": "/workspace/shared/pirate-audit/battle-next/assets/ship-deck-clean-v1.png",
+    "size": [
+      1542,
+      1020
+    ],
+    "mode": "RGBA",
+    "alphaRange": [
+      0,
+      255
+    ],
+    "boundsAlphaGT32": [
+      0,
+      35,
+      1542,
+      1020
+    ],
+    "transparentPixels": 84242,
+    "sha256": "f4d2a9a5187a8cb4bfc389680347c677ff0814a74bd44c9ffbda22e02da47f05"
+  },
+  {
+    "path": "/workspace/shared/pirate-audit/battle-next/assets/cannon-full-clean-v1.png",
+    "size": [
+      927,
+      1697
+    ],
+    "mode": "RGBA",
+    "alphaRange": [
+      0,
+      255
+    ],
+    "boundsAlphaGT32": [
+      114,
+      81,
+      812,
+      1626
+    ],
+    "transparentPixels": 956139,
+    "sha256": "e43088fac3baada439c4ab42d1cae57f1f7a4a59af6decb068f5e4364a736ab3"
+  }
+]

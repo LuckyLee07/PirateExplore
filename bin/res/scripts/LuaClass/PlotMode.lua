@@ -1,5 +1,6 @@
 require 'LuaClass/DialogTheme'
 local Warm=require 'LuaClass/WarmTheme'
+local OpeningStoryArt = require 'LuaClass/OpeningStoryArt'
 local function cleanStory()return type(Warm)=='table' and Warm.enabled and Warm.enabled()end
 --
 -- Created by IntelliJ IDEA.
@@ -157,11 +158,11 @@ function PlotScene:init(plotId, callback)
                 bottleNode:setPosition(0.5*winSize.width, 0.5*winSize.height+200.0)
                 baseNode:addChild(bottleNode)
 
-                local bottle = cc.Sprite:create("Images/Plot/juqing_7.png")
+                local bottle = cleanStory() and OpeningStoryArt.sprite('juqing_7') or cc.Sprite:create("Images/Plot/juqing_7.png")
                 bottle:setPosition(0.0, -100.0)
                 bottleNode:addChild(bottle)
 
-                local boat = cc.Sprite:create("Images/Plot/juqing_9.png")
+                local boat = cleanStory() and OpeningStoryArt.sprite('juqing_9') or cc.Sprite:create("Images/Plot/juqing_9.png")
                 boat:setPosition(bottle:getPositionX()+50.0, bottle:getPositionY())
                 boat:setRotation(-5.0)
                 bottleNode:addChild(boat)
@@ -175,7 +176,7 @@ function PlotScene:init(plotId, callback)
                 local action = cc.RepeatForever:create(seq)
                 boat:runAction(action)
 
-                local water = cc.Sprite:create("Images/Plot/juqing_8.png")
+                local water = cleanStory() and OpeningStoryArt.sprite('juqing_8') or cc.Sprite:create("Images/Plot/juqing_8.png")
                 water:setPosition(bottle:getPositionX()+67.0, bottle:getPositionY()-55.0)
                 bottleNode:addChild(water)
                 if cleanStory() then
@@ -207,7 +208,7 @@ function PlotScene:init(plotId, callback)
                     nodeGrid:setPosition(0.5*winSize.width, 0.5*winSize.height+100.0)
                     baseNode:addChild(nodeGrid)
 
-                    local plotImg = cc.Sprite:create("Images/Plot/"..iconId..".png")
+                    local plotImg = cleanStory() and OpeningStoryArt.sprite(iconId) or cc.Sprite:create("Images/Plot/"..iconId..".png")
                     plotImg:setPosition(0.0, 0.0)
                     nodeGrid:addChild(plotImg)
                     if cleanStory() then
