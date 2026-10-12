@@ -12,22 +12,99 @@ local function recenter(owner)
  end
 end
 local function move(child,parent,z)
- child:retain();child:removeFromParent(false);parent:addChild(child,z);child:release()
+ local arrival=child:getOrderOfArrival()
+ child:retain();child:removeFromParent(false);parent:addChild(child,z)
+ child:setOrderOfArrival(arrival);child:release()
 end
--- Cocos resets arrival order on visit and later uses an unstable equal-Z sort.
--- Adding/removing the presentation root must not reshuffle native coast/land
--- siblings. Temporarily rank the existing order, sort once, then restore every
--- original arrival value. No source child is removed, retagged or re-Z-ordered.
-local function stableMapOrder(map,changing,operation)
- map:sortAllChildren()
- local saved={}
- for index,child in ipairs(map:getChildren())do
-  if child~=changing then
-   saved[#saved+1]={node=child,order=child:getOrderOfArrival()};child:setOrderOfArrival(index)
+-- A visit resets native arrivals to zero. Cocos then uses an unstable sort
+-- when another child is added. Remember ties only; current Z/arrival requests
+-- still take precedence, including reorders made by newer callers.
+local function orderLedger(parent,marker,last,pending)
+ local ledger={parent=parent,marker=marker,last=last,ranks={},arrivals={}}
+ local children=parent:getChildren()
+ if pending then
+  -- First observe native pending work BEFORE adding our own marker. A clean
+  -- visited parent may retain old nonzero arrivals on hidden children; those
+  -- must not be mistaken for fresh requests. A dirty native parent does sort.
+  parent:sortAllChildren();local sorted=parent:getChildren();local changed=false
+  for index,child in ipairs(children)do if sorted[index]~=child then changed=true;break end end
+  if changed then
+   local rank={};for index,child in ipairs(children)do rank[child]=index end
+   -- Honor the pending native Z/arrival comparison, but stabilize equal ties
+   -- using the pre-sort vector instead of retaining std::sort's tie shuffle.
+   table.sort(children,function(a,b)
+    local az,bz=a:getLocalZOrder(),b:getLocalZOrder();if az~=bz then return az<bz end
+    local aa,ba=a:getOrderOfArrival(),b:getOrderOfArrival();if aa~=ba then return aa<ba end
+    return rank[a]<rank[b]
+   end)
   end
  end
- operation();map:sortAllChildren()
- for _,entry in ipairs(saved)do entry.node:setOrderOfArrival(entry.order)end
+ for index,child in ipairs(children)do ledger.ranks[child]=index;ledger.arrivals[child]=child:getOrderOfArrival() end
+ return ledger,children
+end
+local function stabilizeOrder(ledger)
+ local parent,marker=ledger.parent,ledger.marker
+ if marker:getParent()~=parent then return end
+ local children=parent:getChildren();local observed=ledger.observed
+ local changed=not observed or ledger.count~=#children
+ if not changed then
+  for index,child in ipairs(children)do
+   local before=observed[child]
+   if not before or before.index~=index or before.z~=child:getLocalZOrder() or before.arrival~=child:getOrderOfArrival()then changed=true;break end
+  end
+ end
+ -- Idle refresh only observes the small native sibling sets. Never dirty a
+ -- parent, sort, rewrite arrival values or allocate rank records unnecessarily.
+ if not changed then return end
+ local saved={};local ranks=ledger.ranks
+ for index,child in ipairs(children)do
+  local arrival=child:getOrderOfArrival()
+  local requested=arrival~=0 and arrival~=ledger.arrivals[child] and arrival or 0
+  saved[#saved+1]={node=child,z=child:getLocalZOrder(),arrival=arrival,requested=requested,rank=ranks[child] or #children+index}
+ end
+ table.sort(saved,function(a,b)
+  if a.node==b.node then return false end
+  if a.z~=b.z then return a.z<b.z end
+  if ledger.last and (a.node==marker or b.node==marker)then return b.node==marker end
+  if a.requested~=b.requested then return a.requested<b.requested end
+  return a.rank<b.rank
+ end)
+ local markerRank
+ ledger.ranks={};ledger.arrivals={};ledger.observed={};ledger.count=#children
+ for index,entry in ipairs(saved)do
+  entry.node:setOrderOfArrival(index);ledger.ranks[entry.node]=index;ledger.arrivals[entry.node]=entry.arrival
+  ledger.observed[entry.node]={index=index,z=entry.z,arrival=entry.arrival}
+  if entry.node==marker then markerRank=index end
+ end
+ -- Mark only our node dirty, then recover every current native property.
+ parent:reorderChild(marker,marker:getLocalZOrder());marker:setOrderOfArrival(markerRank)
+ parent:sortAllChildren()
+ for _,entry in ipairs(saved)do entry.node:setOrderOfArrival(entry.arrival)end
+end
+local function cameraSnapshot(owner,camera)
+ camera=camera or owner.moveLayer;local size=screenSize or cc.Director:getInstance():getVisibleSize()
+ return {x=camera:getPositionX(),y=camera:getPositionY(),sx=camera:getScaleX(),sy=camera:getScaleY(),
+  width=size.width,height=size.height,bottom=owner.adventureHudBottom,top=owner.adventureHudTop,
+  actor=owner.player,px=owner.player and owner.player:getPositionX(),py=owner.player and owner.player:getPositionY()}
+end
+local function sameCamera(a,b)
+ for _,key in ipairs({'x','y','sx','sy','width','height','bottom','top','actor','px','py'})do if a[key]~=b[key]then return false end end
+ return true
+end
+local function returnCamera(owner,state,focus)
+ local camera=state.moveLayer
+ if sameCamera(cameraSnapshot(owner,camera),state.mountedCamera)then
+  -- No float inverse round trip for the overwhelmingly common unchanged case.
+  camera:setPosition(cc.p(state.originalCamera.x,state.originalCamera.y));return
+ end
+ -- Preserve the CURRENT chart point under the viewport center after a pan,
+ -- zoom or movement. Do not restore a stale actor position or camera snapshot.
+ local actual=owner:convertToNodeSpace(state.map:convertToWorldSpace(focus.source))
+ local position=cc.p(camera:getPositionX()+focus.point.x-actual.x,camera:getPositionY()+focus.point.y-actual.y)
+ if owner.map==state.map and owner.moveLayer==camera then
+  owner:stopChartCameraMotion();position=owner:clampChartPosition(position)
+ end
+ camera:setPosition(position)
 end
 -- Legacy coast FBOs include a sampling gutter beyond the TMX rectangle.
 -- The original rectangular camera never sees it; the projected camera does.
@@ -56,7 +133,7 @@ end
 local function restoreCoasts(owner,state,cleanup)
  for _,entry in ipairs(state.coasts or{})do
   if not cleanup and entry.edge:getParent()==entry.clip and entry.clip:getParent()==entry.group then
-   entry.edge:removeFromParent(false);entry.group:addChild(entry.edge,entry.z);entry.edge:setOrderOfArrival(entry.order)
+   local arrival=entry.edge:getOrderOfArrival();entry.edge:removeFromParent(false);entry.group:addChild(entry.edge,entry.edge:getLocalZOrder());entry.edge:setOrderOfArrival(arrival)
    entry.clip:removeFromParent(true)
   end
   entry.edge:release();entry.clip:release();entry.group:release()
@@ -83,6 +160,9 @@ end
 local function forget(state)
  state.view=nil;state.overlay=nil;state.overlayRoot=nil;state.turn=nil
  state.squash=nil;state.observer=nil;state.originalAddChild=nil
+ state.mapOrder=nil;state.ownerOrder=nil;state.turnOrder=nil
+ state.originalCamera=nil;state.mountedCamera=nil
+ state.map:release();state.moveLayer:release();state.map=nil;state.moveLayer=nil
 end
 function L.enabled(owner)
  if not owner or tonumber(owner.mapIndex)~=2 then return false end
@@ -119,6 +199,34 @@ local dependencies={
 local function prepare(owner)
  if not owner.moveLayer or not owner.map or not owner.player or not owner.fogLayer or not owner.tipLayer then return nil,'not-ready' end
  local map=owner.map
+ -- New restoration entry points must be usable before any node is moved.
+ for _,target in ipairs({owner,owner.moveLayer,map})do
+  for _,method in ipairs({'getChildren','reorderChild','sortAllChildren','convertToNodeSpace','convertToWorldSpace'})do
+   if type(target[method])~='function'then return nil,'unsupported-restoration-api:'..method end
+  end
+  for _,child in ipairs(target:getChildren())do
+   for _,method in ipairs({'getLocalZOrder','getOrderOfArrival','setOrderOfArrival'})do
+    if type(child[method])~='function'then return nil,'unsupported-restoration-api:'..method end
+   end
+   local z,arrival=child:getLocalZOrder(),child:getOrderOfArrival()
+   if type(z)~='number'or z~=z or math.abs(z)==math.huge or type(arrival)~='number'or arrival~=arrival or arrival<0 or arrival==math.huge then
+    return nil,'unsupported-restoration-order'
+   end
+  end
+ end
+ for _,method in ipairs({'stopChartCameraMotion','clampChartPosition','getCenterViewPositionByActualPosition'})do
+  if type(owner[method])~='function'then return nil,'unsupported-restoration-api:'..method end
+ end
+ local camera=cameraSnapshot(owner)
+ for _,key in ipairs({'x','y','sx','sy','width','height','px','py'})do
+  local value=camera[key]
+  if type(value)~='number'or value~=value or math.abs(value)==math.huge then return nil,'unsupported-restoration-camera' end
+ end
+ for _,key in ipairs({'bottom','top'})do
+  local value=camera[key]
+  if value~=nil and(type(value)~='number'or value~=value or math.abs(value)==math.huge)then return nil,'unsupported-restoration-camera'end
+ end
+ if camera.sx==0 or camera.sy==0 then return nil,'unsupported-restoration-camera'end
  if tolua.type(map)~='cc.TMXTiledMap' or map:getParent()~=owner.moveLayer or owner.player:getParent()~=map then return nil,'unsupported-owner' end
  local size,tile=map:getMapSize(),map:getTileSize()
  if size.width~=31 or size.height~=31 or tile.width~=64 or tile.height~=64 then return nil,'unsupported-grid' end
@@ -247,7 +355,8 @@ function L.dirty(owner)
 end
 function L.refresh(owner)
  local state=owner.raisedMap2Live;if not state then return false end
- if not L.enabled(owner)then L.unmount(owner);return false end
+ if not L.enabled(owner)or owner.map~=state.map or owner.moveLayer~=state.moveLayer then L.unmount(owner);return false end
+ stabilizeOrder(state.mapOrder);stabilizeOrder(state.ownerOrder);stabilizeOrder(state.turnOrder)
  HUD.sync(state.hud);Boat.sync(state.boat)
  if not state.dirty then Objects.sync(state.objects);return true end
  -- Rebuild only after an authoritative discovery/event notification, never by
@@ -272,28 +381,38 @@ function L.mount(owner)
  local ok,view,reason=pcall(prepare,owner)
  if not ok then owner.raisedMap2Diagnostic=tostring(view);return fallback(owner,'incompatible-package')end
  if not view then return fallback(owner,reason)end
- local state={view=view,dirty=false,rebuilds=0,originalAddChild=owner.moveLayer.addChild}
+ local peer=tolua.getpeer(owner.moveLayer)
+ local state={view=view,map=owner.map,moveLayer=owner.moveLayer,dirty=false,rebuilds=0,originalAddChild=owner.moveLayer.addChild,
+  savedAddChild=peer and rawget(peer,'addChild'),originalCamera=cameraSnapshot(owner)}
+ state.map:retain();state.moveLayer:retain()
+ state.observer=node();state.ownerOrder=orderLedger(owner,state.observer,true,true)
  local squash,turn=node(),node();squash:setScaleY(.56);turn:setRotation(45);squash:addChild(turn)
  state.squash,state.turn=squash,turn
- local children=owner.moveLayer:getChildren()
+ local _,children=orderLedger(owner.moveLayer,squash,true,true)
  state.originalAddChild(owner.moveLayer,squash)
  for _,child in ipairs(children)do move(child,turn,child:getLocalZOrder())end
+ local marker=node();state.turnOrder=orderLedger(turn,marker,true);turn:addChild(marker)
+ stabilizeOrder(state.turnOrder)
  -- Existing game code can continue adding route, glow and particle nodes to
  -- moveLayer with the same source positions. Only their presentation parent is
  -- redirected. No actor coordinate, callback, scheduler or action is replaced.
- owner.moveLayer.addChild=function(_,child,...)
-  return turn:addChild(child,...)
+ local originalAddChild=state.originalAddChild
+ state.addChild=function(target,child,...)
+  if owner.raisedMap2Live==state then return state.turn:addChild(child,...)end
+  return originalAddChild(target,child,...)
  end
+ owner.moveLayer.addChild=state.addChild
  local unturn,unsquash=node(),node();unturn:setRotation(-45);unsquash:setScaleY(1/.56);unturn:addChild(unsquash)
  -- Raised ground is above both original land layers, below Meta/grid/fog/ship.
- stableMapOrder(owner.map,unturn,function()owner.map:addChild(unturn,owner.map:getLayer('Blocks_2'):getLocalZOrder())end)
+ state.mapOrder=orderLedger(owner.map,unturn,true,true)
+ owner.map:addChild(unturn,owner.map:getLayer('Blocks_2'):getLocalZOrder());stabilizeOrder(state.mapOrder)
  unsquash:addChild(view.root);state.overlay=unsquash;state.overlayRoot=unturn
  owner.raisedMap2Live=state;owner.raisedMap2Status='clean-map2-native-fog'
  clipCoasts(owner,state);coverBackground(owner,state)
  state.objects=Objects.create(owner,view)
  state.boat=Boat.create(owner);state.hud=HUD.create(owner,state)
  arrows(owner,true)
- local observer=node();owner:addChild(observer);state.observer=observer
+ local observer=state.observer;owner:addChild(observer);stabilizeOrder(state.ownerOrder)
  observer:registerScriptHandler(function(event)
   if event=='cleanup' then
    restoreCoasts(owner,state,true);restoreBackground(state,true)
@@ -301,29 +420,41 @@ function L.mount(owner)
    Objects.dispose(state.objects);state.objects=nil
    -- Parent cleanup is not a route toggle: never reparent dying children.
    if owner.raisedMap2Live==state then
-    owner.moveLayer.addChild=state.originalAddChild;owner.raisedMap2Live=nil
+    if state.moveLayer.addChild==state.addChild then state.moveLayer.addChild=state.savedAddChild end
+    owner.raisedMap2Live=nil
     forget(state)
    end
   end
  end)
  observer:scheduleUpdateWithPriorityLua(function()L.refresh(owner)end,0)
  -- Camera changes only presentation; the player position and save stay exact.
- recenter(owner)
+ recenter(owner);state.mountedCamera=cameraSnapshot(owner)
  return true
 end
 function L.unmount(owner)
  local state=owner and owner.raisedMap2Live;if not state then return end
+ stabilizeOrder(state.mapOrder);stabilizeOrder(state.ownerOrder);stabilizeOrder(state.turnOrder)
+ local size=screenSize or cc.Director:getInstance():getVisibleSize()
+ local point=cc.p(size.width/2,((owner.adventureHudBottom or 0)+(owner.adventureHudTop or size.height))/2)
+ local focus={point=point,source=state.map:convertToNodeSpace(owner:convertToWorldSpace(point))}
  owner.raisedMap2Live=nil
  restoreCoasts(owner,state,false);restoreBackground(state,false)
  HUD.dispose(state.hud);state.hud=nil;Boat.dispose(state.boat);state.boat=nil
  Objects.dispose(state.objects);state.objects=nil
- state.observer:unscheduleUpdate();state.observer:removeFromParent(true)
- owner.moveLayer.addChild=state.originalAddChild
- stableMapOrder(owner.map,state.overlayRoot,function()state.overlayRoot:removeFromParent(true)end)
+ state.observer:unscheduleUpdate()
+ stabilizeOrder(state.ownerOrder);state.observer:removeFromParent(true)
+ -- New decorators may still call our wrapper. Leave them installed; the
+ -- retired wrapper delegates to the original method without retaining nodes.
+ if state.moveLayer.addChild==state.addChild then state.moveLayer.addChild=state.savedAddChild end
+ state.overlayRoot:removeFromParent(true)
+ state.turnOrder.marker:removeFromParent(true)
  local children=state.turn:getChildren()
- for _,child in ipairs(children)do move(child,owner.moveLayer,child:getLocalZOrder())end
- state.squash:removeFromParent(true)
+ local returned=orderLedger(state.moveLayer,state.squash,true)
+ for child,rank in pairs(returned.ranks)do returned.ranks[child]=#children+rank end
+ for index,child in ipairs(children)do returned.ranks[child]=index;returned.arrivals[child]=child:getOrderOfArrival() end
+ for _,child in ipairs(children)do move(child,state.moveLayer,child:getLocalZOrder())end
+ stabilizeOrder(returned);state.squash:removeFromParent(true)
  arrows(owner,false);owner.raisedMap2Status='original'
- recenter(owner);forget(state)
+ returnCamera(owner,state,focus);forget(state)
 end
 return L
